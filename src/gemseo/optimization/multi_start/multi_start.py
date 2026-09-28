@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from itertools import chain
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -53,12 +54,20 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
                 "as well as multi-objective functions."
             ),
             handle_multiobjective=True,
+            handle_discrete_variables=True,
             handle_integer_variables=True,
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             settings_class=MultiStart_Settings,
         )
     }
+
+    _iterates_on_working_problem: ClassVar[bool] = False
+    """Multi-start builds sub-problems and hands them to sub-drivers.
+
+    Each sub-problem pairs a copy of the input space with the original functions,
+    so both have to be the ones the user declared.
+    """
 
     def __init__(self, algo_name: str = "MultiStart") -> None:  # noqa: D107
         super().__init__(algo_name)
@@ -125,21 +134,17 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             list(zip(samples, opt_algo_max_iter, strict=False)),
         )
 
+        function_names = [
+            self._problem.objective.name,
+            *(
+                f.name
+                for f in chain(self._problem.constraints, self._problem.observables)
+            ),
+        ]
         for problem in problems:
-            database = problem.database
-            f_hist, x_hist = database.get_function_history(
-                self._problem.objective.name, with_x_vect=True
+            self._problem.database.merge_function_histories(
+                problem.database, function_names
             )
-            for xi, fi in zip(x_hist, f_hist, strict=False):
-                self._problem.database.store(xi, {self._problem.objective.name: fi})
-
-            for functions in [self._problem.constraints, self._problem.observables]:
-                for f in functions:
-                    f_hist, x_hist = database.get_function_history(
-                        f.name, with_x_vect=True
-                    )
-                    for xi, fi in zip(x_hist, f_hist, strict=False):
-                        self._problem.database.store(xi, {f.name: fi})
 
         file_path = self._settings.multistart_file_path
         if file_path:

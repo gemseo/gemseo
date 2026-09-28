@@ -82,6 +82,15 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
     See BaseOptimizationLibrary.
     """
 
+    _iterates_on_working_problem: ClassVar[bool] = False
+    """This library reads the coefficients of the functions, not their values.
+
+    They are the ones of the problem the user built,
+    and so are the bounds handed to the solver,
+    so the two have to describe the same space.
+    Normalizing the one and not the other would hand the solver a program of its own.
+    """
+
     _support_sparse_jacobian: ClassVar[bool] = True
     """Whether the library supports sparse Jacobians."""
 
@@ -109,7 +118,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
         self, problem: OptimizationProblem
     ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
-        x_0, l_b, u_b = get_value_and_bounds(problem.input_space, False)
+        x_0, l_b, u_b = get_value_and_bounds(problem.input_space)
         # Replace infinite bounds with None
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]

@@ -435,21 +435,6 @@ class EvaluationScenario(BaseMonitoredProcess, Generic[_SpaceT]):
             )
             raise ValueError(msg)
 
-        # DOE algorithms do not normalize the input data
-        # but if an optimization algorithm was used in the previous execution,
-        # the functions attached to the OptimizationProblem
-        # expect normalized input data.
-        # So the original functions must be used.
-        # As it is possible that other types of driver do the same as optimizers,
-        # the original functions are restored each time a DOE is used.
-        if isinstance(self._algorithm_settings, BaseDOESettings):
-            self.formulation.problem.reset(
-                database=False,
-                current_iter=False,
-                input_space=False,
-                function_calls=False,
-            )
-
         if self.clear_database_before_execute:
             # Clear the database when multiple runs are performed,
             # see EvaluationScenarioAdapter.

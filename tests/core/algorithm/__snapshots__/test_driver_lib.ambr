@@ -8,3 +8,9 @@
 # name: test_no_functions
   'A driver requires a problem with at least one function.'
 # ---
+# name: test_reset_releases_the_state_of_a_run_that_raises
+  'The objective cannot be evaluated.'
+# ---
+# name: test_the_hooks_of_a_run_that_raises_are_released
+  'The objective cannot be evaluated.'
+# ---

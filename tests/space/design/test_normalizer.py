@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import pytest
 from numpy import array
 from numpy import dtype
@@ -85,4 +87,21 @@ def test_denormalize_keeps_imaginary_part(normalizer) -> None:
     denormalized = normalizer.denormalize(
         array([0.5 + 1e-8j, 1.0 + 1e-8j]), dtype("complex128")
     )
+    assert_array_equal(denormalized.imag, [2e-8, 2e-8])
+
+
+def test_denormalize_keeps_imaginary_part_with_a_real_common_dtype(normalizer) -> None:
+    """Check that denormalization keeps the imaginary part with a real common dtype.
+
+    The common dtype is taken from the current value of the design space,
+    which is real even when a complex-step perturbation is being
+    denormalized, so casting to that common dtype must not drop the
+    imaginary part.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        denormalized = normalizer.denormalize(
+            array([0.5 + 1e-8j, 1.0 + 1e-8j]), dtype("float64")
+        )
+
     assert_array_equal(denormalized.imag, [2e-8, 2e-8])

@@ -24,6 +24,7 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from dataclasses import dataclass
+from itertools import chain
 from itertools import combinations
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -126,6 +127,8 @@ class MNBIAlgorithmDescription(OptimizationAlgorithmDescription):
 
     handle_inequality_constraints: bool = True
 
+    handle_discrete_variables: bool = True
+
     handle_integer_variables: bool = True
 
     handle_multiobjective: bool = True
@@ -192,6 +195,12 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
     _debug_results: Database = Database()
     """The results of the sub-optimizations in debug mode."""
+
+    _iterates_on_working_problem: ClassVar[bool] = False
+    """mNBI builds sub-problems and hands them to sub-drivers.
+
+    It refuses a normalized top-level problem anyway.
+    """
 
     _result_class: ClassVar[type[OptimizationResult]] = MultiObjectiveOptimizationResult
     """The class used to present the result of the optimization."""
@@ -272,9 +281,9 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         Returns:
             The value of f at the design value minimizing f_i.
             The value of the design variables minimizing f_i.
-            The database of the main problem. This is returned so that it can be copied
-            in the database of the main process, to store the evaluations done in each
-            sub-process.
+            The database of the problem being solved.
+            It is returned so that it can be copied in the database of the
+            main process, to store the evaluations done in each sub-process.
             The number of calls to f.
 
         Raises:
@@ -285,6 +294,14 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             n_calls_start = pb_obj.n_calls
         design_space = DesignSpace()
         design_space.extend(self._problem.input_space)
+        # A database of its own,
+        # since its feasibility and its optimum are read from its own history.
+        # Its objective wraps the objective of the problem being solved,
+        # and its constraints are reused from that problem;
+        # both are bound to its database, so what this run evaluates of them
+        # is recorded there already.
+        # Only a parallel run has to merge back the copy of that database
+        # a worker returns.
         opt_problem = OptimizationProblem(design_space)
         for constraint in self._problem.constraints:
             opt_problem.add_constraint(constraint)
@@ -298,6 +315,10 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         opt_result = OptimizationLibraryFactory().execute(
             opt_problem, settings=self._settings.sub_optim_algo_settings
         )
+        # The constraints reused from the problem being solved are bound to
+        # its database, so a relaxed point reaches it during this run
+        # already; only the relaxed names need to be carried over here.
+        self._problem.database.merge_function_histories(opt_problem.database, ())
         if not opt_result.is_feasible:
             msg = f"No feasible optimum found for the {i}-th objective function."
             raise RuntimeError(msg)
@@ -307,10 +328,32 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         n_calls = pb_obj.n_calls - n_calls_start if pb_obj.enable_statistics else 0
         return IndividualSubOptimOutput(f_min, x_min, self._problem.database, n_calls)
 
+    def __merge_sub_database(self, database: Database) -> None:
+        """Store into the database of the problem what a worker's copy holds of it.
+
+        Only the functions of interest are merged back:
+        the objective, the constraints and the observables of the problem.
+        A sub-optimization never evaluates every one of them,
+        so an observable outside the new-iteration ones is absent from the
+        copy too.
+
+        Args:
+            database: The copy of the database of the problem
+                returned by a worker.
+        """
+        function_names = (
+            self._problem.objective.name,
+            *(
+                f.name
+                for f in chain(self._problem.constraints, self._problem.observables)
+            ),
+        )
+        self._problem.database.merge_function_histories(database, function_names)
+
     def __copy_database_save_minimum(
         self, index: int, outputs: IndividualSubOptimOutput
     ) -> None:
-        """Update the database of the optimization problem with that of the sub-problem.
+        """Merge back a worker's copy of the database, save the minimum found.
 
         The sub-problem aims to minimize a component f_i of f=(f_1,...,f_d).
 
@@ -325,22 +368,20 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             outputs: The outputs of the sub-optimization
                 returned by `_minimize_objective_component`.
         """
+        objective = self._problem.objective
         if self._settings.n_processes > 1:
-            # Store the sub-process database in the main database
-            objective = self._problem.objective
             if objective.enable_statistics:
+                # A sub-optimization running in this process evaluates the objective
+                # of this problem,
+                # which counts those calls itself;
+                # only the ones made in another process are missing from the counter.
                 objective.n_calls += outputs.n_calls
-            for functions in [
-                [objective],
-                self._problem.constraints,
-                self._problem.observables,
-            ]:
-                for f in functions:
-                    f_hist, x_hist = outputs.database.get_function_history(
-                        f.name, with_x_vect=True
-                    )
-                    for x_value, f_value in zip(x_hist, f_hist, strict=False):
-                        self._problem.database.store(x_value, {f.name: f_value})
+
+            # A sub-optimization evaluates the objective
+            # and the constraints of this problem through its functions,
+            # which record in its database;
+            # the copy another process worked on is merged here.
+            self.__merge_sub_database(outputs.database)
 
         if self._settings.debug:
             self._debug_results.store(outputs.x_min, {"obj": outputs.f_min})
@@ -469,6 +510,13 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim, settings=self._settings.sub_optim_algo_settings
         )
+        # The wrapped constraints evaluate the ones of the problem being
+        # solved, which are bound to its database, so a relaxed point
+        # reaches it during this run already; only the relaxed names need
+        # to be carried over here.
+        self._problem.database.merge_function_histories(
+            self.__beta_sub_optim.database, ()
+        )
         if not opt_res.is_feasible:
             logger.warning(
                 "No feasible optimum has been found for phi_beta = %s", phi_beta
@@ -516,19 +564,8 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             objective = self._problem.objective
             if objective.enable_statistics:
                 objective.n_calls += outputs.n_calls
-            f_hist, x_hist = database.get_function_history(
-                self._problem.objective.name, with_x_vect=True
-            )
-            for xi, fi in zip(x_hist, f_hist, strict=False):
-                self._problem.database.store(xi, {self._problem.objective.name: fi})
 
-            for functions in [self._problem.constraints, self._problem.observables]:
-                for f in functions:
-                    f_hist, x_hist = database.get_function_history(
-                        f.name, with_x_vect=True
-                    )
-                    for xi, fi in zip(x_hist, f_hist, strict=False):
-                        self._problem.database.store(xi, {f.name: fi})
+            self.__merge_sub_database(database)
 
         f_min = outputs.f_min
 

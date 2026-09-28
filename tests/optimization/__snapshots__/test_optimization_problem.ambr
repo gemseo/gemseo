@@ -8,6 +8,12 @@
 # name: test_constraints_dim
   'The function output dimension is not available yet, please call function ineq1(x): 0.5 -x[0] ** 3 <= -1 once.'
 # ---
+# name: test_discrete_opt_problem[False-Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.\nSet 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
 # name: test_evaluate_unknown_jacobians[jacobian_names0-This name is]
   'This name is not among the names of the functions: unknown.'
 # ---
@@ -26,10 +32,16 @@
 # name: test_init_with_a_random_space
   'An OptimizationProblem requires a design space; got a RandomSpace; use an EvaluationProblem to sample a random space.'
 # ---
-# name: test_int_opt_problem[False-Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.\nExecution may be forced setting the 'skip_int_check' argument to 'True'.]
+# name: test_int_opt_problem[False-Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.\nSet 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
   '''
   Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
-  Execution may be forced setting the 'skip_int_check' argument to 'True'.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_int_opt_problem_discrete_check_independent
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
   '''
 # ---
 # name: test_invalid_differentiation_method
@@ -53,9 +65,9 @@
 # name: test_no_points_in_database.1
   'The optimization history is empty.'
 # ---
-# name: test_parallel_differentiation_setting_after_functions_preprocessing
-  'The parallel differentiation cannot be changed because the functions have already been pre-processed.'
-# ---
-# name: test_parallel_differentiation_setting_after_functions_preprocessing.1
-  'The parallel differentiation cannot be changed because the functions have already been pre-processed.'
+# name: test_scipy_milp_rejects_discrete_variables
+  '''
+  Algorithm MILP is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
 # ---

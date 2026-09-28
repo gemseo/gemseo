@@ -400,10 +400,12 @@ class CallableParallelExecution(
     ) -> list[ReturnT | None]:
         """Run the tasks one after another in the calling process.
 
-        No executor is built, so the workers are neither serialized nor run in a
-        child process or thread; this is what asking for a single process means.
-        For the same reason, `wait_time_between_fork` is ignored, as nothing is
-        forked.
+        No executor is built,
+        so the workers are neither serialized nor run in a child process or thread;
+        this is what asking for a single process means.
+        For the same reason,
+        `wait_time_between_fork` is ignored,
+        as nothing is forked.
 
         Args:
             inputs: The input values.

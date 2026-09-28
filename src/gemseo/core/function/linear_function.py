@@ -16,15 +16,12 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import multiply
 from numpy import ndarray
-from numpy import where
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.util._compatibility.scipy import array_classes
@@ -37,7 +34,6 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
     from gemseo.core.function.array_function import OutputType
-    from gemseo.space.design import DesignSpace
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import SparseOrDenseRealArray
 
@@ -337,40 +333,3 @@ class LinearFunction(ArrayFunction):
             value_at_zero=new_value_at_zero,
             expr=self.__initial_expression,
         )
-
-    def normalize(self, input_space: DesignSpace) -> LinearFunction:
-        """Create a linear function using a scaled input vector.
-
-        Args:
-            input_space: The input space.
-
-        Returns:
-            The scaled linear function.
-        """
-        # Get normalization factors and shift
-        norm_policies = input_space.convert_dict_to_array(
-            input_space.name_to_normalization_mask
-        )
-        norm_factors = where(
-            norm_policies,
-            input_space.get_upper_bounds() - input_space.get_lower_bounds(),
-            1.0,
-        )
-        shift = where(norm_policies, input_space.get_lower_bounds(), 0.0)
-
-        if isinstance(self.coefficients, sparse_classes):
-            coefficients = deepcopy(self.coefficients)
-            coefficients.data *= norm_factors[coefficients.indices]
-        else:
-            coefficients = multiply(self.coefficients, norm_factors)
-
-        value_at_zero = self.evaluate(shift)
-        function = LinearFunction(
-            coefficients,
-            self.name,
-            self.f_type,
-            self.input_names,
-            value_at_zero,
-        )
-        function.expects_normalized_inputs = True
-        return function

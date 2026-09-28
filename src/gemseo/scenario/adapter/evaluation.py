@@ -384,7 +384,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
     def _reset_problem(self) -> None:
         """Reset the problem attached to the scenario."""
         self.scenario.formulation.problem.reset(
-            input_space=self._reset_x0_before_exec, database=False, preprocessing=False
+            input_space=self._reset_x0_before_exec, database=False
         )
 
     def _post_run(self) -> None:

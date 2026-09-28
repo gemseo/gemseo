@@ -391,3 +391,53 @@ def test_nnls_runtimeerror():
         constraint_type=problem.ConstraintType.INEQ,
     )
     LagrangeMultipliers(problem).compute(array([0, 0, 0]))
+
+
+def _discrete_problem() -> OptimizationProblem:
+    """Return a problem with a discrete variable, and a constraint.
+
+    Returns:
+        The problem.
+    """
+    space = DesignSpace()
+    space.add_discrete_variable("d", [1, 5, 10], value=1)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 2.7) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 2.7)]]),
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([x[0] - 9.0]), name="g", jac=lambda x: array([[1.0]])
+        ),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+    return problem
+
+
+def test_kkt_check_accepts_a_relaxed_discrete_point() -> None:
+    """Check that a KKT check accepts a point a relaxed discrete run stopped at.
+
+    `_check_feasibility` used to check a point against the full domain of
+    the design space, choices of a discrete variable included, and raised at
+    a non-candidate value a relaxed run may stop at, e.g. `2.7` for a
+    variable with the choices `[1, 5, 10]`.
+    """
+    execute_algo(
+        _discrete_problem(),
+        algo_name="SLSQP",
+        max_iter=50,
+        relax_discrete_variables=True,
+        kkt_tol_abs=1e-3,
+    )
+
+
+def test_check_feasibility_rejects_a_point_no_run_relaxed() -> None:
+    """Check that a point outside the domain of a variable no run relaxed is rejected.
+
+    Only the bounds of a variable a run relaxed are checked;
+    one that is not relaxed is still checked against its full domain.
+    """
+    with pytest.raises(ValueError, match="d is discrete"):
+        LagrangeMultipliers(_discrete_problem()).compute(array([2.7]))

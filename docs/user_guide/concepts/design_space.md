@@ -116,8 +116,9 @@ tell where the integer variables are.
 
 !!! warning
     An algorithm that does not declare that it handles integer variables
-    rejects a problem including such variables;
-    use the `skip_int_check` setting to force the execution.
+    (`handle_integer_variables`) rejects a problem including such variables;
+    set `relax_integer_variables` to `True` to relax them to float variables
+    and run it anyway.
 
 ??? abstract "API"
 
@@ -164,7 +165,10 @@ called with `DesignVariableType.DISCRETE`,
 tells whether the design space holds a discrete variable.
 
 !!! warning
-    The optimization and DOE algorithms do not currently allow the use of discrete variables and return an error.
+    An algorithm that does not declare that it handles discrete variables
+    rejects a problem including such variables;
+    set `relax_discrete_variables` to `True` to relax them to float variables
+    and run it anyway.
 
 !!! note
     The components of a discrete variable are stored as floats,

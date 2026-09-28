@@ -29,6 +29,7 @@ from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 import h5py
 from numpy import array
@@ -40,7 +41,6 @@ from numpy import ndarray
 from numpy import str_
 
 from gemseo.space._design.constants import design_space_group
-from gemseo.space.design import DesignSpace
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -64,6 +64,9 @@ def _cast(x: Any) -> Any:
 
 
 logger = logging.getLogger(__name__)
+
+_relaxed_variable_names_attr: Final[str] = "relaxed_variable_names"
+"""The name of the HDF attribute holding `Database.relaxed_variable_names`."""
 
 
 class HDFDatabase:
@@ -575,22 +578,38 @@ class HDFDatabase:
 
             input_space = database.input_space
             if input_space and (not append or design_space_group not in h5file):
-                if isinstance(input_space, DesignSpace):
-                    input_space.to_hdf(
+                try:
+                    input_space._to_hdf(
                         file_path, append=True, hdf_node_path=hdf_node_path
                     )
-                elif not self.__non_design_space_warned:
-                    # Only a design space can be serialized to HDF.
-                    # The design space group is never created in this case,
-                    # so this warning is emitted once and not on every append.
-                    logger.warning(
-                        "The %s cannot be written to the HDF file %s "
-                        "because it is not a design space; "
-                        "the database is written without it.",
-                        type(input_space).__name__,
-                        file_path,
-                    )
-                    self.__non_design_space_warned = True
+                except NotImplementedError:
+                    if not self.__non_design_space_warned:
+                        # The design space group is never created in this case,
+                        # so this warning is emitted once and not on every append.
+                        logger.warning(
+                            "The %s cannot be written to the HDF file %s "
+                            "because it is not a design space; "
+                            "the database is written without it.",
+                            type(input_space).__name__,
+                            file_path,
+                        )
+                        self.__non_design_space_warned = True
+
+            # Merged with whatever the file already holds,
+            # rather than overwritten, when appending,
+            # so that appending twice does not drop the names a first export
+            # wrote and this database does not carry in memory.
+            relaxed_variable_names = set(database.relaxed_variable_names)
+            if append:
+                relaxed_variable_names.update(
+                    name.decode() if isinstance(name, bytes) else name
+                    for name in h5file.attrs.get(_relaxed_variable_names_attr, ())
+                )
+
+            if relaxed_variable_names:
+                h5file.attrs[_relaxed_variable_names_attr] = array(
+                    sorted(relaxed_variable_names), dtype=bytes_
+                )
 
         self.__pending_arrays.clear()
 
@@ -651,6 +670,15 @@ class HDFDatabase:
                 scalar_dict.update(name_to_array)
                 scalar_dict.update(name_to_string)
                 database.store(array(design_vars_grp[str_index]), scalar_dict)
+
+            # Merged into the database rather than overwriting it,
+            # so that reading several files into the same database keeps the
+            # names every one of them relaxed;
+            # an older file without the attribute reads as empty.
+            database.relaxed_variable_names.update(
+                name.decode() if isinstance(name, bytes) else name
+                for name in h5file.attrs.get(_relaxed_variable_names_attr, ())
+            )
 
     @staticmethod
     def __read_values_from_group(

@@ -56,8 +56,8 @@ if TYPE_CHECKING:
 # %%
 # ### Prerequisites
 #
-# This how-to needs a discipline with some analytical derivatives defined and some
-# missing.
+# This how-to needs a discipline with some analytical derivatives defined
+# and some missing.
 #
 # For many different reasons, one might be in a situation where not all the derivatives
 # of a given discipline are at hand and approximating all of them might not be

@@ -118,6 +118,12 @@ def test_optimization_result(optimization_result) -> None:
         x_opt=array([0.5]),
         x_opt_as_dict={"x": array([0.5])},
         f_opt=0.5,
+        # No variable was relaxed, so the projection changes nothing
+        # and these fields are copies of the ones above.
+        x_opt_projected=array([0.5]),
+        x_opt_projected_as_dict={"x": array([0.5])},
+        f_opt_projected=0.5,
+        is_feasible_projected=False,
         objective_name="y",
         optimizer_name="PYDOE_FULLFACT",
         n_obj_call=1,
@@ -206,6 +212,28 @@ def test_from_optimization_problem_empy_database() -> None:
     problem = OptimizationProblem(DesignSpace())
     result = OptimizationResult.from_optimization_problem(problem)
     assert result == OptimizationResult(n_obj_call=0)
+
+
+def test_from_optimization_problem_with_an_empty_optimum() -> None:
+    """Check the result of a problem whose history carries no objective value.
+
+    An empty optimum is no optimum:
+    a history whose points carry a gradient but no objective value,
+    which is what a run stopped before an objective was recorded leaves behind,
+    points at no iteration of that history.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: array([x[0] ** 2]), name="f", dim=1)
+    problem.bind_functions()
+    # "@f" is the gradient of the objective; the objective itself is missing.
+    problem.database.store(array([0.5]), {"@f": array([1.0])})
+
+    result = OptimizationResult.from_optimization_problem(problem)
+
+    assert result.x_opt.size == 0
+    assert result.optimum_index is None
 
 
 @pytest.mark.parametrize(

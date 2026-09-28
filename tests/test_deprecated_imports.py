@@ -689,6 +689,39 @@ def test_renamed_class_attribute_warns_and_resolves():
     assert old_value == Dataset.default_group
 
 
+def test_renamed_aggregation_function_enum_warns_and_resolves():
+    """The enumeration of the aggregation functions resolves under its old name."""
+    from gemseo.discipline.constraint_aggregation import ConstraintAggregation
+
+    with pytest.warns(DeprecationWarning, match="'EvaluationFunction'"):
+        old_value = ConstraintAggregation.EvaluationFunction
+
+    assert old_value is ConstraintAggregation.AggregationFunction
+
+
+@pytest.mark.parametrize(
+    ("old_name", "new_name"),
+    [
+        ("_EVALUATION_FUNCTION_MAP", "_aggregation_function_map"),
+        ("_JACOBIAN_EVALUATION_FUNCTION_MAP", "_jacobian_aggregation_function_map"),
+    ],
+)
+def test_renamed_aggregation_function_map_warns_and_resolves(old_name, new_name):
+    """The maps of aggregation functions resolve under their old, master, names.
+
+    They went through a develop-only intermediate name
+    (`_evaluation_function_map`, `_jacobian_evaluation_function_map`),
+    which `bump-version.yml` must skip: the old name it registers is the one
+    of the last release, not the develop-only intermediate one.
+    """
+    from gemseo.discipline.constraint_aggregation import ConstraintAggregation
+
+    with pytest.warns(DeprecationWarning, match=old_name):
+        old_value = getattr(ConstraintAggregation, old_name)
+
+    assert old_value is getattr(ConstraintAggregation, new_name)
+
+
 def test_renamed_class_attribute_warns_and_resolves_through_an_instance():
     """The old name of a renamed class attribute also resolves through an instance."""
     from gemseo.dataset.dataset import Dataset

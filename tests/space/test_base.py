@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from numpy import array
@@ -31,6 +32,7 @@ from numpy import inf
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.space._core.variables import UnknownVariableError
 from gemseo.space._core.variables import Variables
 from gemseo.space._design.variables import DesignVariables
@@ -352,10 +354,67 @@ def test_random_space_is_not_a_design_space() -> None:
 
     Bounds, current value, normalization and serialization
     are specific to a design space,
-    so every consumer requiring one tests the space with `isinstance`.
+    so every consumer requiring one tests the space
+    for the `_supports_normalization` capability.
     This invariant is what makes those tests correct.
     """
     assert not issubclass(RandomSpace, DesignSpace)
+
+
+def test_add_default_variable_of_a_random_space() -> None:
+    """Check that a random space leaves itself unchanged.
+
+    It cannot describe a variable from a name and a size alone,
+    e.g. it also needs a probability distribution.
+    """
+    space = RandomSpace()
+
+    space._add_default_variable("x", 2)
+
+    assert not space
+
+
+def test_to_hdf_of_a_random_space(snapshot) -> None:
+    """Check that a random space cannot be written to an HDF file."""
+    space = RandomSpace()
+
+    with assert_exception(NotImplementedError, snapshot):
+        space._to_hdf("ds.h5", append=False, hdf_node_path="")
+
+
+def test_add_default_variable_of_a_design_space() -> None:
+    """Check that a design space adds a variable from a name and a size alone."""
+    space = DesignSpace()
+
+    space._add_default_variable("x", 2)
+
+    assert space.variables["x"].size == 2
+
+
+def test_to_hdf_of_a_design_space(tmp_wd) -> None:
+    """Check that a design space can be written to an HDF file."""
+    space = DesignSpace()
+    space.add_variable("x", size=2)
+    file_path = Path("ds.h5")
+
+    space._to_hdf(file_path, append=False, hdf_node_path="")
+
+    read_space = DesignSpace.from_file(file_path)
+    assert tuple(read_space.variables) == ("x",)
+    assert read_space.variables["x"].size == 2
+
+
+@pytest.mark.parametrize(
+    ("cls", "supports_normalization"),
+    [
+        (DesignSpace, True),
+        (SobieskiDesignSpace, True),
+        (RandomSpace, False),
+    ],
+)
+def test_supports_normalization(cls, supports_normalization) -> None:
+    """Check the flag telling whether a space supports normalization."""
+    assert cls._supports_normalization is supports_normalization
 
 
 def test_render_footer_is_empty_by_default() -> None:

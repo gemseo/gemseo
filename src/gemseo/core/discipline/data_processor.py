@@ -120,8 +120,8 @@ class NameMapping(DataProcessor):
     """The output mapping structure as `{global_output_name: local_output_name}`."""
 
     __reverse_output_mapping: Mapping[str, str]
-    """The reverse output mapping structure as `{local_output_name:
-    global_output_name}`."""
+    """The reverse output mapping structure
+    as `{local_output_name: global_output_name}`."""
 
     def __init__(
         self, input_mapping: Mapping[str, str], output_mapping: Mapping[str, str]
@@ -132,8 +132,8 @@ class NameMapping(DataProcessor):
                 A local input name is the name of a data provided to the
                 `.Discipline._run()` method.
                 By default, the global input name is the local input name.
-            output_mapping: The mapping from a global output name to a local output
-                name.
+            output_mapping: The mapping from a global output name
+                to a local output name.
                 A local output name is the name of a data returned by the
                 `.Discipline._run()` method.
                 By default, the global output name is the local output name.

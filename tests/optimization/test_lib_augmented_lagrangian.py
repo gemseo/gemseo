@@ -19,7 +19,9 @@ from unittest.mock import Mock
 
 import pytest
 from numpy import array
+from numpy import nan
 from numpy import zeros
+from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
@@ -31,18 +33,20 @@ from gemseo.optimization.augmented_lagrangian.settings.order_1 import (
 )
 from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.termination_criteria import kkt_residual_norm
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
 from gemseo.util.pydantic import create_model
 
 
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
 def test_kkt_norm_correctly_stored(problem) -> None:
     """Test that kkt norm is stored at each iteration requiring gradient."""
-    problem.preprocess_functions()
+    problem.bind_functions()
     options = {
         "normalize_design_space": True,
         "kkt_tol_abs": 1e-5,
@@ -184,7 +188,7 @@ def test_2d_mixed(
 def test_n_obj_func_calls(enable_function_statistics):
     """Test that n_obj_func_calls property returns correct number of function calls."""
     problem = Power2()
-    problem.preprocess_functions()
+    problem.bind_functions()
 
     options = {
         "normalize_design_space": True,
@@ -207,7 +211,7 @@ def test_n_obj_func_calls(enable_function_statistics):
 def rosenbrock_opt_problem():
     # Create the Rosenbrock optimization problem
     problem = Rosenbrock(l_b=0, u_b=1.0)
-    problem.preprocess_functions()
+    problem.bind_functions()
 
     # Define the equality constraint function (works with multiple variables)
     def eq_constraint(x):
@@ -313,6 +317,77 @@ def test_solve_sub_problem_triggers_update_options_callback(
     assert optimizer._settings.sub_algorithm_settings.max_iter == 50
 
 
+@pytest.fixture
+def problem_over_a_shifted_range() -> OptimizationProblem:
+    """A constrained problem whose design space straddles neither 0 nor 1.
+
+    A point of the normalized space is then outside the declared bounds,
+    so an evaluation made in the wrong coordinates stands out in the history.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 16.0) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 16.0)]]),
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([x[0] - 18.0]), name="g", jac=lambda x: array([[1.0]])
+        ),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+    return problem
+
+
+def test_initial_multipliers_use_the_declared_coordinates(
+    problem_over_a_shifted_range,
+):
+    """Check the point the initial Lagrange multipliers are computed at.
+
+    This library builds no working problem,
+    so its functions take a point in the coordinates the user declared;
+    asking for a normalized current value evaluated the constraints
+    at a point of the wrong coordinates
+    and recorded an extra point in the history.
+    """
+    execute_algo(
+        problem_over_a_shifted_range,
+        settings_model=Augmented_Lagrangian_Order_0_Settings(
+            max_iter=10, sub_algorithm_settings=SLSQP_Settings(max_iter=5)
+        ),
+    )
+
+    for x_vect in problem_over_a_shifted_range.database.get_x_vect_history():
+        assert 10.0 <= x_vect[0] <= 20.0
+
+
+def test_stop_if_nan(problem_over_a_shifted_range):
+    """Check that a NaN stops a library building no working problem.
+
+    The NaN check belongs to the evaluation half,
+    which is the one every driver goes through;
+    a driver building no working problem had lost the stop entirely
+    and the run died with a `ValueError` instead.
+    """
+    problem_over_a_shifted_range.objective = ArrayFunction(
+        lambda x: array([nan]), name="f", jac=lambda x: array([[0.0]])
+    )
+
+    result = execute_algo(
+        problem_over_a_shifted_range,
+        settings_model=Augmented_Lagrangian_Order_0_Settings(
+            max_iter=10, sub_algorithm_settings=SLSQP_Settings(max_iter=5)
+        ),
+    )
+
+    assert "Found a NaN in the output data of the function f" in result.message
+    # The value is recorded before the check,
+    # so the point the evaluation stopped at is visible in the history.
+    assert_equal(problem_over_a_shifted_range.database.get_x_vect(1), array([12.0]))
+
+
 def test_preconditioner_logging_direct(optimizer, caplog):
     """Test that logger.info is called when 'precond' is in sub_algorithm_settings."""
 
@@ -325,3 +400,114 @@ def test_preconditioner_logging_direct(optimizer, caplog):
         optimizer._check_for_preconditioner(sub_algorithm_settings)
 
     assert "Preconditioner Detected" in caplog.text
+
+
+def test_relaxed_integer_variable():
+    """Check a run whose sub-algorithm relaxes an integer variable.
+
+    Each sub-optimization returns a relaxed, non-integral, point, which the
+    augmented Lagrangian evaluates, and starts the next one from, without
+    writing it into a space accepting integral values only.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 3.4) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 3.4)]]),
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([x[0] - 3.2]), name="g", jac=lambda x: array([[1.0]])
+        ),
+        constraint_type="ineq",
+    )
+    execute_algo(
+        problem,
+        settings_model=Augmented_Lagrangian_Order_0_Settings(
+            max_iter=20,
+            relax_integer_variables=True,
+            sub_algorithm_settings=SLSQP_Settings(
+                relax_integer_variables=True, max_iter=10
+            ),
+        ),
+    )
+    assert design_space.get_current_value() == array([3])
+    assert "x" in problem.database.relaxed_variable_names
+    dataset = problem.to_dataset()
+    assert dataset.get_view(variable_names="x").to_numpy().dtype == float
+
+
+def test_relaxed_discrete_variable():
+    """Check a run whose sub-algorithm relaxes a discrete variable.
+
+    Each sub-optimization returns a relaxed point that is not one of the
+    declared choices (e.g. 2.7 for choices {1, 5}); the augmented Lagrangian
+    must evaluate the top-level problem at that point without running the
+    domain membership check, which would otherwise reject it.
+    """
+    design_space = DesignSpace()
+    design_space.add_discrete_variable("x", [1, 5])
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 3.4) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 3.4)]]),
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([x[0] - 3.2]), name="g", jac=lambda x: array([[1.0]])
+        ),
+        constraint_type="ineq",
+    )
+    result = execute_algo(
+        problem,
+        settings_model=Augmented_Lagrangian_Order_0_Settings(
+            max_iter=20,
+            relax_discrete_variables=True,
+            sub_algorithm_settings=SLSQP_Settings(
+                relax_discrete_variables=True, max_iter=10
+            ),
+        ),
+    )
+    assert result.x_opt is not None
+    assert design_space.get_current_value()[0] in {1, 5}
+    assert "x" in problem.database.relaxed_variable_names
+
+
+def test_relaxed_discrete_variable_order_1():
+    """Check an order-1 run whose sub-algorithm relaxes a discrete variable.
+
+    Unlike the order-0 update, `_update_lagrange_multipliers` of the order-1
+    augmented Lagrangian computes the multipliers through
+    `LagrangeMultipliers`, whose feasibility check must accept the relaxed,
+    non-candidate point (e.g. 2.7 for choices {1, 5, 10}) a sub-optimization
+    stops at.
+    """
+    design_space = DesignSpace()
+    design_space.add_discrete_variable("x", [1, 5, 10], value=10)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 2.7) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 2.7)]]),
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([2.0 - x[0]]), name="g", jac=lambda x: array([[-1.0]])
+        ),
+        constraint_type="ineq",
+    )
+    result = execute_algo(
+        problem,
+        settings_model=Augmented_Lagrangian_Order_1_Settings(
+            max_iter=20,
+            relax_discrete_variables=True,
+            sub_algorithm_settings=SLSQP_Settings(
+                relax_discrete_variables=True, max_iter=10
+            ),
+        ),
+    )
+    assert result.x_opt is not None
+    assert design_space.get_current_value()[0] in {1, 5, 10}

@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     # static visibility for mypy / IDEs
-    from gemseo.space.base import BaseVariableSpace  # noqa: F401
     from gemseo.space.design import DesignSpace  # noqa: F401
     from gemseo.space.factory import design_space_factory  # noqa: F401
     from gemseo.space.factory import random_space_factory  # noqa: F401
@@ -34,7 +33,6 @@ if TYPE_CHECKING:
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
-    "BaseVariableSpace": "base",
     "DesignSpace": "design",
     "RandomSpace": "random",
     "design_space_factory": "factory",

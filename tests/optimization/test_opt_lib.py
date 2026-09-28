@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
 
 from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
 from gemseo.core.function.array_function import ArrayFunction
@@ -134,6 +135,53 @@ def test_is_algorithm_suited_pbm_type() -> None:
     )
 
 
+@pytest.mark.parametrize("kind", ["integer", "discrete"])
+@pytest.mark.parametrize("handles_kind", [False, True])
+def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
+    """Check is_algorithm_suited with unhandled integer or discrete variables."""
+    description = OptimizationAlgorithmDescription(
+        "foo",
+        "bar",
+        handle_integer_variables=handles_kind if kind == "integer" else False,
+        handle_discrete_variables=handles_kind if kind == "discrete" else False,
+    )
+    design_space = DesignSpace()
+    if kind == "integer":
+        design_space.add_variable(
+            "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
+        )
+    else:
+        design_space.add_discrete_variable("x", [1, 2, 3], value=1)
+
+    problem = OptimizationProblem(design_space)
+    assert (
+        BaseOptimizationLibrary.is_algorithm_suited(description, problem)
+        is handles_kind
+    )
+    if handles_kind:
+        expected_reason = _UnsuitabilityReason.NO_REASON
+    elif kind == "integer":
+        expected_reason = _UnsuitabilityReason.INTEGER_VARIABLES
+    else:
+        expected_reason = _UnsuitabilityReason.DISCRETE_VARIABLES
+
+    assert (
+        BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
+        == expected_reason
+    )
+
+
+def test_filter_adapted_algorithms_excludes_integer_unsuited() -> None:
+    """Check that filter_adapted_algorithms excludes SLSQP for integer variables."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
+    )
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, "f")
+    assert "SLSQP" not in ScipyOpt.filter_adapted_algorithms(problem)
+
+
 def test_check_constraints_handling_fail(power, snapshot) -> None:
     """Test that check_constraints_handling can raise an exception."""
     lbfgsb = ScipyOpt("L_BFGS_B")
@@ -148,6 +196,7 @@ def test_optimization_algorithm() -> None:
     )
     assert not description.handle_inequality_constraints
     assert not description.handle_equality_constraints
+    assert not description.handle_discrete_variables
     assert not description.handle_integer_variables
     assert not description.require_gradient
     assert not description.positive_constraints
@@ -177,7 +226,7 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     """Check the scaling of functions."""
     library = ScipyOpt("SLSQP")
     library._problem = power
-    library._problem.preprocess_functions()
+    library._problem.bind_functions()
     library._settings = create_model(
         library.ALGORITHM_INFOS[library.algo_name].settings_class,
         max_iter=2,

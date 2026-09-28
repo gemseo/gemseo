@@ -229,16 +229,23 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
         Args:
             problem: The problem to be solved.
         """
-        algo_name = self._algo_name
         unsuitability_reason = self._get_unsuitability_reason(
-            self.ALGORITHM_INFOS[algo_name], problem
+            self._get_algorithm_description_to_check(), problem
         )
         if unsuitability_reason:
             msg = (
-                f"The algorithm {algo_name} is not adapted to the problem "
+                f"The algorithm {self._algo_name} is not adapted to the problem "
                 f"because {unsuitability_reason}."
             )
             raise ValueError(msg)
+
+    def _get_algorithm_description_to_check(self) -> AlgorithmDescription:
+        """Return the algorithm description to check the problem against.
+
+        Returns:
+            The description of the algorithm to check the problem against.
+        """
+        return self.ALGORITHM_INFOS[self._algo_name]
 
     @classmethod
     def _get_unsuitability_reason(

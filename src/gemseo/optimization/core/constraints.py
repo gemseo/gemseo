@@ -31,7 +31,7 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.collection.functions import Functions
 from gemseo.core.function.linear_function import LinearFunction
 from gemseo.core.function.quadratic_function import QuadraticFunction
-from gemseo.enum._constraint_aggregation import EvaluationFunction
+from gemseo.enum._constraint_aggregation import AggregationFunction
 from gemseo.optimization.aggregation.aggregation_func import aggregate_iks
 from gemseo.optimization.aggregation.aggregation_func import aggregate_lower_bound_ks
 from gemseo.optimization.aggregation.aggregation_func import aggregate_max
@@ -58,7 +58,7 @@ if TYPE_CHECKING:
 class Constraints(Functions):
     """A mutable sequence of constraints."""
 
-    AggregationFunction = EvaluationFunction
+    AggregationFunction: ClassVar[type[AggregationFunction]] = AggregationFunction
 
     _aggregation_function_map: Final[Mapping[str, Callable[[RealArray], float]]] = (
         MappingProxyType({
@@ -312,19 +312,26 @@ class Constraints(Functions):
         self,
         x_vect: RealArray,
         tol: float = 1e-6,
+        check_membership: bool = True,
     ) -> dict[ArrayFunction, RealArray]:
         """Indicate the active components of the different inequality constraints.
 
         Args:
             x_vect: The vector of design variables.
             tol: The tolerance for deciding whether a constraint is active.
+            check_membership: Whether to check that `x_vect` belongs to the
+                design space. A caller that already checked it,
+                e.g. against the working space of a relaxed run,
+                passes `False` to avoid checking it twice, the second time
+                too strictly.
 
         Returns:
             For each constraint,
             a boolean indicator of activation of its different components.
         """
         design_space = self.__design_space
-        design_space.check_membership(x_vect)
+        if check_membership:
+            design_space.check_membership(x_vect)
         if self._functions and self._functions[0].expects_normalized_inputs:
             x_vect = design_space.normalize_vect(x_vect)
 

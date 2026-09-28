@@ -22,7 +22,7 @@ from enum import StrEnum
 # Defined here rather than nested in ConstraintAggregation so that the modules using
 # it, e.g. gemseo.optimization.core.constraints, do not import that discipline and
 # its dependencies just for the enumeration.
-class EvaluationFunction(StrEnum):
+class AggregationFunction(StrEnum):
     """A function to compute an aggregation of constraints."""
 
     IKS = "IKS"

@@ -83,9 +83,7 @@ def deterministic_slsqp(monkeypatch):
     def mock_run(self, problem):
         from gemseo.space.util import get_value_and_bounds
 
-        _, l_b, u_b = get_value_and_bounds(
-            problem.input_space, self._settings.normalize_design_space
-        )
+        _, l_b, u_b = get_value_and_bounds(problem.input_space)
         max_iter = self._settings.max_iter
         require_grad = self.ALGORITHM_INFOS[self._algo_name].require_gradient
 

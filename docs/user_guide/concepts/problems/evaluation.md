@@ -64,11 +64,26 @@ User-defined listeners can also be triggered when storing a new entry in the dat
 ([read more][concept-database-listeners]).
 
 Before being evaluated,
-the functions are wrapped into a [PreprocessedFunction][gemseo.core.function.preprocessed_function.PreprocessedFunction] by
-[preprocess_functions()][gemseo.core.problem.evaluation.EvaluationProblem.preprocess_functions].
-This wrapper takes care of input normalization, integer variable rounding, database caching,
-and derivative approximation.
-This preprocessing step is performed automatically before the algorithm execution begins.
+the functions are wrapped in two steps,
+both performed automatically before the algorithm execution begins.
+[bind_functions()][gemseo.core.problem.evaluation.EvaluationProblem.bind_functions]
+wraps each of them in a
+[EvaluationFunction][gemseo.core.function.evaluation_function.EvaluationFunction],
+which looks the value up in the database, stores it, counts the call
+and approximates the Jacobian when asked to,
+all in the coordinates you declared.
+[create_working_problem()][gemseo.core.problem.evaluation.EvaluationProblem.create_working_problem]
+then returns a **new** problem whose functions are wrapped in a
+[TransformedInputFunction][gemseo.core.function.transformed_input_function.TransformedInputFunction],
+which maps a point of the space the algorithm works on back to a point of yours,
+denormalizing it when asked to,
+and tells each `EvaluationFunction` that transformation,
+so the perturbations of an approximated Jacobian are taken in the coordinates
+the algorithm works in and the Jacobian is recorded in yours.
+An integer or discrete variable the algorithm relaxes
+reaches your functions, and the database, with its relaxed value.
+The problem you built is left as it is,
+and the database is keyed on your own coordinates.
 
 The evaluation of the problem functions at a given design vector is done via
 [evaluate_functions()][gemseo.core.problem.evaluation.EvaluationProblem.evaluate_functions],
@@ -97,7 +112,8 @@ Please refer to the [scenario section][concept-scenarios] for more information.
 !!! warning
 
     The methods
-    [preprocess_functions()][gemseo.core.problem.evaluation.EvaluationProblem.preprocess_functions]
+    [bind_functions()][gemseo.core.problem.evaluation.EvaluationProblem.bind_functions],
+    [create_working_problem()][gemseo.core.problem.evaluation.EvaluationProblem.create_working_problem]
     and
     [evaluate_functions()][gemseo.core.problem.evaluation.EvaluationProblem.evaluate_functions]
     are intended for use by evaluation algorithms.

@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from numpy import array
 from numpy import array_equal
 from numpy.linalg import norm
 from numpy.random import default_rng
@@ -104,16 +105,28 @@ def test_algos(algo_name, dim, n_samples, options) -> None:
     assert doe_library.unit_samples.shape == (n_samples, dim)
 
 
-def test_integer_lhs() -> None:
-    """Check that a DOE with integer variables stores integer values in the Database."""
+@pytest.mark.parametrize("relax_integer_variables", [False, True])
+def test_integer_lhs(relax_integer_variables) -> None:
+    """Check that a DOE over an integer variable stores integers.
+
+    A DOE handles integer variables,
+    so the driver never relaxes them,
+    whatever `relax_integer_variables` asks for.
+    """
     problem = Rosenbrock()
     problem.input_space.add_variable(
         "y", type_="integer", lower_bound=10.0, upper_bound=15.0
     )
-    doe_library_factory.execute(problem, settings=PYDOE_LHS_Settings(n_samples=10))
+    doe_library_factory.execute(
+        problem,
+        settings=PYDOE_LHS_Settings(
+            n_samples=10, relax_integer_variables=relax_integer_variables
+        ),
+    )
 
-    for sample in problem.database.get_x_vect_history():
-        assert int(sample[-1]) == sample[-1]
+    samples = array(problem.database.get_x_vect_history())[:, -1]
+    assert all(int(sample) == sample for sample in samples)
+    assert ((samples >= 10.0) & (samples <= 15.0)).all()
 
 
 def get_expected_nsamples(

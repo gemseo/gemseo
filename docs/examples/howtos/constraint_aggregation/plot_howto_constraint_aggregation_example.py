@@ -36,7 +36,7 @@ from __future__ import annotations
 
 from gemseo import create_scenario
 from gemseo.discipline import AnalyticDiscipline
-from gemseo.enum import EvaluationFunction
+from gemseo.enum import AggregationFunction
 from gemseo.optimization import NLOPT_MMA_Settings
 from gemseo.space import DesignSpace
 
@@ -90,7 +90,7 @@ scenario.add_constraint(constraint_names, constraint_type="ineq")
 # Replace the 100 individual constraints with a single scalar one
 # using the lower bound KS function:
 scenario.formulation.problem.constraints.aggregate(
-    0, method=EvaluationFunction.LOWER_BOUND_KS, rho=10.0
+    0, method=AggregationFunction.LOWER_BOUND_KS, rho=10.0
 )
 
 # %%
@@ -124,7 +124,7 @@ scenario.execute(
 #
 # Other aggregation methods are available besides `"lower_bound_KS"`,
 # all stored into the
-# [EvaluationFunction][gemseo.discipline.constraint_aggregation.ConstraintAggregation.EvaluationFunction]
+# [AggregationFunction][gemseo.discipline.constraint_aggregation.ConstraintAggregation.AggregationFunction]
 # class.
 # The `rho` parameter controls the tightness of the approximation:
 # a higher value gives a closer approximation but may cause numerical issues.

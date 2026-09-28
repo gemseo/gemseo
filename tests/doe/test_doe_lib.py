@@ -293,9 +293,7 @@ def test_seed(algo_name) -> None:
     # For that,
     # we need to reset the current iteration because max_iter is reached
     # (for BaseDOELibrary, max_iter == n_samples).
-    problem.reset(
-        database=False, input_space=False, function_calls=False, preprocessing=False
-    )
+    problem.reset(database=False, input_space=False, function_calls=False)
     library.execute(problem, settings=settings)
     assert library.seed == 2
     assert len(problem.database) == 4
@@ -305,9 +303,7 @@ def test_seed(algo_name) -> None:
     # and equal to the previous one.
     # By doing so,
     # the input samples will be the same and the functions won't be evaluated.
-    problem.reset(
-        database=False, input_space=False, function_calls=False, preprocessing=False
-    )
+    problem.reset(database=False, input_space=False, function_calls=False)
     settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2, seed=2)
     library.execute(problem, settings=settings)
 
@@ -316,9 +312,7 @@ def test_seed(algo_name) -> None:
     assert len(problem.database) == 4
 
     # Lastly, we check that the BaseDOELibrary uses its own seed again.
-    problem.reset(
-        database=False, input_space=False, function_calls=False, preprocessing=False
-    )
+    problem.reset(database=False, input_space=False, function_calls=False)
     settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
     library.execute(problem, settings=settings)
     assert library.seed == 4
@@ -335,7 +329,11 @@ def test_seed(algo_name) -> None:
     ],
 )
 def test_variable_types(var_type1, var_type2) -> None:
-    """Verify that input data provided to a discipline match the design space types."""
+    """Verify that input data provided to a discipline match the design space types.
+
+    The integer variables are not relaxed,
+    so that the discipline receives them with the type the space declares.
+    """
     design_variable_type_to_python_type = DesignSpace.variable_types_to_dtypes
 
     class Disc(DummyDiscipline):
@@ -368,7 +366,64 @@ def test_variable_types(var_type1, var_type2) -> None:
         formulation_name="DisciplinaryOpt",
     )
 
-    scenario.execute(PYDOE_LHS_Settings(n_samples=1))
+    scenario.execute(
+        PYDOE_LHS_Settings(
+            n_samples=1, relax_integer_variables=False, relax_discrete_variables=False
+        )
+    )
+
+
+def test_full_factorial_on_an_integer_variable_records_integral_samples() -> None:
+    """Check that a DOE over an integer variable stores integers by default.
+
+    A DOE handles integer variables,
+    so `relax_integer_variables`, on by default, relaxes none of them.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, name="f")
+
+    execute_algo(problem, algo_name="PYDOE_FULLFACT", algo_type="doe", n_samples=4)
+
+    samples = array(problem.database.get_x_vect_history())[:, 0]
+    assert all(int(sample) == sample for sample in samples)
+
+
+def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline() -> None:
+    """Check that a DOE scenario runs when a discipline declares an integer input.
+
+    A DOE handles integer variables,
+    so the driver leaves `x` as declared,
+    and the discipline receives an integer,
+    consistent with its grammar,
+    instead of the `InvalidDataError` a relaxed float would raise.
+    """
+
+    class _IntegerDisc(Discipline):
+        def __init__(self) -> None:
+            super().__init__()
+            self.input_grammar.update_from_types({"x": int})
+            self.output_grammar.update_from_names(("y",))
+
+        def _run(self, input_data: StrKeyMapping):
+            return {"y": array([float(input_data["x"])])}
+
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", type_="integer", lower_bound=0, upper_bound=10, value=5
+    )
+
+    scenario = create_scenario(
+        [_IntegerDisc()],
+        "y",
+        design_space,
+        formulation_name="DisciplinaryOpt",
+        scenario_type="DOE",
+    )
+
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=4))
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
@@ -458,6 +513,85 @@ def test_use_database(
     )
     assert ("100%" in caplog.text) is enable_progress_bar
     assert bool(problem.database) is use_database
+
+
+def test_parallel_samples_are_recorded_in_the_declared_coordinates(custom_doe):
+    """Check the points a parallel DOE records when the space is normalized.
+
+    A parallel DOE stored its samples
+    under the coordinates the algorithm works on,
+    while every other writer keys the database
+    on the coordinates the user declared.
+    """
+    x_histories = []
+    for n_processes in (1, 2):
+        design_space = DesignSpace()
+        # A range straddling neither 0 nor 1,
+        # so that a normalized point differs from the declared one.
+        design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+        problem = OptimizationProblem(design_space)
+        problem.objective = ArrayFunction(f, name="f")
+        custom_doe.execute(
+            problem,
+            settings=CustomDOE_Settings(
+                # The samples of a normalized run are unit-hypercube points.
+                samples=array([[0.1], [0.3], [0.9]]),
+                n_processes=n_processes,
+                normalize_design_space=True,
+            ),
+        )
+        x_histories.append(problem.database.get_x_vect_history())
+
+    assert_almost_equal(x_histories[0], [array([11.0]), array([13.0]), array([19.0])])
+    assert_almost_equal(x_histories[1], x_histories[0])
+
+
+def f_squared(x):
+    return x**2
+
+
+def f_squared_jac(x):
+    return 2 * x
+
+
+def test_parallel_jacobians_are_recorded_in_the_declared_coordinates(custom_doe):
+    """Check the Jacobians a parallel DOE records when the space is normalized.
+
+    The worker evaluates the functions attached to the working problem,
+    so it returns Jacobians with respect to the working coordinates,
+    while every writer, serial or parallel,
+    keys the database on, and stores Jacobians with respect to,
+    the coordinates the user declared.
+    """
+    gradient_histories = []
+    for n_processes in (1, 2):
+        design_space = DesignSpace()
+        # A range of width 10,
+        # so that a normalized point differs from the declared one,
+        # and the Jacobian is scaled by 10 between the two spaces.
+        design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+        problem = OptimizationProblem(design_space)
+        problem.objective = ArrayFunction(f_squared, jac=f_squared_jac, name="f")
+        custom_doe.execute(
+            problem,
+            settings=CustomDOE_Settings(
+                # The samples of a normalized run are unit-hypercube points,
+                # i.e. x = 1.0, 3.0, 9.0 for this design space.
+                samples=array([[0.1], [0.3], [0.9]]),
+                n_processes=n_processes,
+                normalize_design_space=True,
+                eval_jac=True,
+            ),
+        )
+        gradient_history, x_history = problem.database.get_gradient_history(
+            "f", with_x_vect=True
+        )
+        gradient_histories.append((x_history, gradient_history))
+
+    for x_history, gradient_history in gradient_histories:
+        assert_almost_equal(gradient_history.ravel(), 2 * x_history.ravel())
+
+    assert_almost_equal(gradient_histories[0][1], gradient_histories[1][1])
 
 
 def test_serialize(custom_doe, tmp_wd):

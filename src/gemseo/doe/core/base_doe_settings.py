@@ -98,7 +98,8 @@ This option is not compatible with the vectorization of functions evaluations.
         """Check that field values are compatible.
 
         Raises:
-            NotImplementedError: When combining parallelization and vectorization.
+            NotImplementedError: When combining vectorization
+                with parallelization or preprocessors.
         """
         if self.wait_time_between_samples > 0 and self.n_processes == 1:
             logger.warning(

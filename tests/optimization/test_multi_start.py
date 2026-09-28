@@ -22,6 +22,7 @@ from numpy import array
 from numpy import vstack
 from numpy.testing import assert_almost_equal
 
+from gemseo.core.function.array_function import ArrayFunction
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
@@ -33,8 +34,10 @@ from gemseo.optimization.multi_start.settings.multi_start_settings import (
 from gemseo.optimization.nlopt.settings.nlopt_cobyla_settings import (
     NLOPT_COBYLA_Settings,
 )
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
+from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -122,9 +125,81 @@ def test_database(n_processes):
     )
 
 
+def test_normalize_design_space():
+    """Check that normalizing the design space changes nothing but the coordinates.
+
+    This algorithm builds sub-problems pairing a copy of the input space
+    with the original functions,
+    so it must be handed the problem the user declared;
+    iterating on a working one paired the normalized space
+    with the functions of the original one
+    and returned a wrong optimum.
+    """
+    x_opts = []
+    for normalize_design_space in (False, True):
+        design_space = DesignSpace()
+        # A range straddling neither 0 nor 1,
+        # so that a point of the normalized space is outside the declared bounds.
+        design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+        problem = OptimizationProblem(design_space)
+        problem.objective = ArrayFunction(
+            lambda x: array([(x[0] - 16.0) ** 2]),
+            name="f",
+            jac=lambda x: array([[2.0 * (x[0] - 16.0)]]),
+        )
+        result = MultiStart().execute(
+            problem,
+            settings=MultiStart_Settings(
+                max_iter=20,
+                normalize_design_space=normalize_design_space,
+                opt_algo_settings=SLSQP_Settings(max_iter=5),
+                doe_algo_settings=CustomDOE_Settings(samples=array([[11.0], [19.0]])),
+            ),
+        )
+        x_opts.append(result.x_opt)
+        for x_vect in problem.database.get_x_vect_history():
+            assert 10.0 <= x_vect[0] <= 20.0
+
+    assert_almost_equal(x_opts[1], x_opts[0])
+
+
 def test_factory():
     """Check that the factory of optimization algorithms knows this algorithm."""
     assert optimization_library_factory.is_available("MultiStart")
+
+
+def test_relaxed_integer_variable():
+    """Check that a relaxed integer variable is projected back and flagged.
+
+    `MultiStart` iterates on no working problem of its own,
+    so its own `_transformation` is an empty composition;
+    the point it writes back into the design space, and `to_dataset()`,
+    must nonetheless account for the relaxation the sub-optimizations did.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 3.4) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 3.4)]]),
+    )
+    algo = MultiStart()
+    algo.execute(
+        problem,
+        settings=MultiStart_Settings(
+            max_iter=20,
+            opt_algo_settings=SLSQP_Settings(relax_integer_variables=True, max_iter=5),
+            doe_algo_settings=CustomDOE_Settings(samples=array([[1.0], [5.0]])),
+        ),
+    )
+    assert design_space.get_current_value() == array([3])
+    assert "x" in problem.database.relaxed_variable_names
+    # `to_dataset` casts an integer input column to a `pandas.Int64Dtype`,
+    # which fails on a relaxed, non-integral, value unless the column is
+    # exported as a float one, decided from `relaxed_variable_names`.
+    dataset = problem.to_dataset()
+    assert dataset.get_view(variable_names="x").to_numpy().dtype == float
 
 
 @pytest.fixture(scope="module")

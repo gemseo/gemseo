@@ -58,6 +58,10 @@ A [Database][gemseo.core.problem.database.Database] plays two roles:
       attached to an
       [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem],
       keyed by design vectors compared as NumPy arrays.
+      A key is a point in the coordinates you declared,
+      whatever the algorithm normalizes or rounds;
+      see [enable_working_database][concept-default-configuration]
+      to record a run in the coordinates the algorithm works on as well.
 
     Typically, the same [cache][concept-cache] attached to a discipline may be used
     through several types of analysis (DoE, different optimization scenarios, etc.),

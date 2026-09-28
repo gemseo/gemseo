@@ -71,6 +71,9 @@ T = TypeVar("T", bound=BaseDOESettings)
 class DOEAlgorithmDescription(DriverDescription):
     """The description of a DOE algorithm."""
 
+    handle_discrete_variables: bool = True
+    """Whether the optimization algorithm handles discrete variables."""
+
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
@@ -161,7 +164,6 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         problem: EvaluationProblem,
     ) -> None:
         super()._pre_run(problem)
-        problem.stop_if_nan = False
 
         input_space = problem.input_space
         # The space configures itself for its own mapping from the unit hypercube,
@@ -209,6 +211,9 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             # the samples array has the float dtype.
             # We record the integer variables types to later be able to restore the
             # proper data type.
+            # The types are those of the working space:
+            # a DOE handles the integer and discrete variables,
+            # so the driver never relaxes them and their dtypes are recorded here.
             python_var_types = {
                 name: data_type_to_numpy_type[type_]
                 for name, type_ in variable_types.items()
@@ -237,12 +242,24 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             output_functions if self._settings.eval_func and output_functions else None
         )
         self.__jacobian_functions = jacobian_functions or None
-        if self._settings.n_processes > 1:
-            self.__run_in_parallel_one_at_a_time()
-        elif self._settings.vectorize:
-            self.__run_in_serial_all_at_once()
-        else:
-            self.__run_in_serial_one_at_a_time()
+        # A sample returning a NaN must neither stop the sampling
+        # nor truncate the history in silence,
+        # so the stop is turned off for its duration only.
+        # The functions this reaches are the ones of the problem the user keeps,
+        # which this problem is derived from and shares them with,
+        # so a run that left the stop off would leave that problem disagreeing
+        # with its own functions.
+        stop_if_nan = problem.stop_if_nan
+        problem.stop_if_nan = False
+        try:
+            if self._settings.n_processes > 1:
+                self.__run_in_parallel_one_at_a_time()
+            elif self._settings.vectorize:
+                self.__run_in_serial_all_at_once()
+            else:
+                self.__run_in_serial_one_at_a_time()
+        finally:
+            problem.stop_if_nan = stop_if_nan
 
     def __run_in_serial_one_at_a_time(self) -> None:
         """Evaluate the functions in serial, sample by sample."""
@@ -301,6 +318,24 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
                     ),
                 )
 
+    def __convert_sample_to_database_key(self, sample: RealArray) -> RealArray:
+        """Return the point a sample is recorded under.
+
+        The samples are points of the space the algorithm works on,
+        while the database is keyed on the coordinates the user declared,
+        which is what the evaluation layer stores on the serial path.
+
+        Args:
+            sample: The sample, in the coordinates the algorithm works on.
+
+        Returns:
+            The sample in the coordinates the user declared.
+        """
+        # The driver sets the transformation for the whole run,
+        # and this method is called during one only.
+        assert self._transformation is not None
+        return self._transformation.inverse_transform_value(sample, no_check=True)
+
     def __run_in_parallel_one_at_a_time(self) -> None:
         """Evaluate the functions in parallel, sample by sample."""
         logger.info(
@@ -326,7 +361,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             # Initialize the order of samples in the database
             # as parallel execution does not guarantee it.
             for sample in self.samples:
-                database.store(sample, {})
+                database.store(self.__convert_sample_to_database_key(sample), {})
 
         # The list of inputs of the tasks is the list of samples with their
         # indices, so that the workers know the sample they evaluate.
@@ -403,13 +438,21 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         """
         if self._settings.use_database:
             data, jacobian_data = output_and_jacobian_data
+            input_value = self.__convert_sample_to_database_key(self.samples[index])
             if jacobian_data:
+                # The worker returns Jacobians with respect to the working space,
+                # while the database is keyed on,
+                # and holds Jacobians with respect to,
+                # the coordinates the user declared,
+                # as on the serial path.
+                assert self._transformation is not None
                 for output_name, jacobian in jacobian_data.items():
                     data[self._problem.database.get_gradient_name(output_name)] = (
-                        jacobian
+                        self._transformation.inverse_transform_jacobian(
+                            jacobian, input_value
+                        )
                     )
 
-            input_value = self.samples[index]
             self._problem.database.store(input_value, data)
             input_value = HashableNdarray(input_value)
         else:

@@ -43,7 +43,7 @@ If `None`, use the global value of `enable_progress_bar` (see the
         description="""The tolerance on the equality constraints.""",
     )
 
-    eval_obs_jac: bool = Field(
+    evaluate_observable_jacobian: bool = Field(
         default=False,
         description="Whether to evaluate the Jacobian of the observables.",
     )
@@ -86,22 +86,38 @@ class to define the data of an evaluation problem to be displayed
 in the progress bar.""",
     )
 
+    relax_discrete_variables: bool = Field(
+        default=False,
+        description="""Whether to relax the discrete variables
+that the algorithm does not handle to float ones,
+so that it can be run on them
+and explores them continuously between their smallest and largest choices.
+The optimum written back into the design space
+is snapped to the nearest choice.
+Otherwise,
+such an algorithm raises an error on a discrete variable.
+This has no effect on discrete variables the algorithm handles,
+e.g. those of a DOE.""",
+    )
+
+    relax_integer_variables: bool = Field(
+        default=False,
+        description="""Whether to relax the integer variables
+that the algorithm does not handle to float ones,
+so that it can be run on them
+and explores them continuously between their bounds.
+The optimum written back into the design space is rounded.
+Otherwise,
+such an algorithm raises an error on an integer variable.
+This has no effect on integer variables the algorithm handles,
+e.g. those of a DOE.""",
+    )
+
     reset_iteration_counters: bool = Field(
         default=True,
         description=(
             """Whether to reset the iteration counters before each execution."""
         ),
-    )
-
-    round_ints: bool = Field(
-        default=True,
-        description="""Whether to round the integer variables.""",
-    )
-
-    skip_int_check: bool = Field(
-        default=False,
-        description=" Whether to skip the integer variable handling check "
-        "of the selected algorithm.",
     )
 
     store_jacobian: bool = Field(

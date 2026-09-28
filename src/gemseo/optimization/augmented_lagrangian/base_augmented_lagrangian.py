@@ -21,6 +21,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import TypeVar
 
 from numpy import atleast_1d
@@ -40,6 +41,7 @@ from gemseo.optimization.augmented_lagrangian.settings.base import (
 from gemseo.optimization.core.base_optimization_library import BaseOptimizationLibrary
 from gemseo.optimization.factory import OptimizationLibraryFactory
 from gemseo.optimization.problem import OptimizationProblem
+from gemseo.space.transformation._working import project_onto_declared_domain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -60,6 +62,9 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
     The abstract methods `_update_penalty()` and
     `_update_lagrange_multipliers()` need to be implemented by derived classes.
     """
+
+    _iterates_on_working_problem: ClassVar[bool] = False
+    """The augmented Lagrangian builds a sub-problem and hands it to a sub-driver."""
 
     __n_obj_func_calls: int
     """The total number of objective function calls."""
@@ -99,9 +104,10 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
             if constr.name not in self._settings.sub_problem_constraints
         ]
 
-        current_value = self._problem.input_space.get_current_value(
-            normalize=self._settings.normalize_design_space
-        )
+        # This library derives no problem,
+        # so its functions take a point in the coordinates the user declared
+        # whatever `normalize_design_space` says.
+        current_value = self._problem.input_space.get_current_value()
         eq_multipliers = {
             h.name: zeros_like(h.evaluate(current_value))
             for h in problem_eq_constraints
@@ -222,12 +228,24 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
             the equality constraint violation value,
             the active inequality constraint residuals.
         """
-        self._problem.input_space.set_current_value(x_opt)
         require_gradient = self.ALGORITHM_INFOS[self.algo_name].require_gradient
         output_functions, jacobian_functions = self._problem.get_functions(
             jacobian_names=() if require_gradient else None,
         )
+        # Evaluated at the point rather than set as the current value,
+        # and without the domain membership check that preprocessing would run:
+        # a sub-algorithm relaxing some variables returns a point
+        # outside the declared domain (e.g. a non-integral value
+        # for an integer or discrete variable), which the space would refuse.
+        # `self._problem` is the problem the user built, only bound to its own
+        # database (`_iterates_on_working_problem` is `False`, so no working
+        # problem is built on top of it), and `bind_functions()` refuses a
+        # function expecting a normalized input, so `x_opt` is already in the
+        # coordinates these functions take.
         self._function_outputs, _ = self._problem.evaluate_functions(
+            input_value=x_opt,
+            input_value_is_normalized=False,
+            preprocess_input_value=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
@@ -278,15 +296,14 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         # Get the sub problem.
         lagrangian = self.__get_lagrangian_function(lambda0, mu0, self._rho)
         dspace = deepcopy(self._problem.input_space)
-        dspace.set_current_value(x_init)
+        # The previous sub-algorithm may have relaxed some variables,
+        # and the space accepts a starting point of the declared domain only.
+        dspace.set_current_value(project_onto_declared_domain(dspace, x_init))
         sub_problem = OptimizationProblem(dspace)
         sub_problem.objective = lagrangian
         for constraint in self._problem.constraints.get_originals():
             if constraint.name in self._settings.sub_problem_constraints:
                 sub_problem.constraints.append(constraint)
-        sub_problem.preprocess_functions(
-            is_function_input_normalized=self._settings.normalize_design_space
-        )
 
         if self._update_options_callback is not None:
             self._update_options_callback(
@@ -302,6 +319,15 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         opt = lib.execute(sub_problem, settings=self._settings.sub_algorithm_settings)
 
         self._sub_problems.append(sub_problem)
+        # The Lagrangian and the sub-problem constraints are built from
+        # `.original` / `get_originals()`, so the sub-algorithm's own
+        # iterations are recorded in the sub-problem's database only,
+        # not in the top-level one; only its final `x_opt`, evaluated on
+        # the top-level functions afterward, reaches it. There is
+        # therefore nothing in the sub-problem's function history worth
+        # copying here, only the names of the variables the sub-run may
+        # have relaxed, which this problem's `to_dataset()` needs too.
+        self._problem.database.merge_function_histories(sub_problem.database, ())
 
         return sub_problem.objective.n_calls, opt.x_opt
 

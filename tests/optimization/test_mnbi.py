@@ -23,12 +23,15 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import lexsort
 from numpy.testing import assert_allclose
 from numpy.testing import assert_array_equal
 
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.function.evaluation_function import EvaluationFunction
 from gemseo.core.problem.database import Database
+from gemseo.optimization import Augmented_Lagrangian_Order_0_Settings
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
@@ -118,6 +121,210 @@ def test_mnbi_parallel(binh_korn):
         binh_korn.database.get_x_vect(1),
     )
     assert len(result.pareto_front.f_optima) >= n_sub_optim + 2
+
+
+def test_mnbi_parallel_with_an_observable_the_sub_optimizations_ignore(binh_korn):
+    """Check a parallel run with an observable no sub-optimization evaluates.
+
+    The history of a sub-optimization answers
+    for some of the functions of the problem being solved only,
+    and an observable outside the new-iteration ones is absent from it;
+    reading it unguarded raised a `KeyError`.
+    """
+    binh_korn.add_observable(
+        ArrayFunction(
+            identity,
+            name="identity",
+            f_type=ArrayFunction.FunctionType.OBS,
+            input_names=["x", "y"],
+            dim=2,
+        ),
+        new_iter=False,
+    )
+
+    result = execute_algo(
+        binh_korn,
+        algo_name="MNBI",
+        max_iter=10000,
+        n_sub_optim=5,
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
+        n_processes=2,
+        xtol_abs=0.0,
+    )
+
+    assert len(result.pareto_front.f_optima) >= 7
+
+
+def test_objective_values_of_a_parallel_run(binh_korn):
+    """Check the objective values a parallel run brings back.
+
+    A sub-optimization minimizing a component of the objective
+    evaluates the objective of the problem being solved,
+    which records in the database of that problem;
+    returning the database of the sub-problem only
+    left the individual optima without an objective value
+    and the Pareto front read from that history was smaller.
+    """
+    execute_algo(
+        binh_korn,
+        algo_name="MNBI",
+        max_iter=10000,
+        n_sub_optim=5,
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
+        n_processes=2,
+        xtol_abs=0.0,
+    )
+
+    database = binh_korn.database
+    f_hist, x_hist = database.get_function_history(
+        binh_korn.objective.name, with_x_vect=True
+    )
+    assert_array_equal(x_hist, database.get_x_vect_history())
+    assert f_hist.shape == (len(database), binh_korn.objective.dim)
+
+
+def test_serial_and_parallel_runs_store_the_same_database():
+    """Check that a serial and a parallel run store the same evaluations.
+
+    A sub-optimization evaluates the objective and the constraints of the
+    problem being solved through their bound wrappers, which already record
+    every evaluated point in the database of that problem;
+    a parallel run only has to merge back the copy of that database a
+    worker returns.
+    Both modes should therefore end up with databases of the same size and
+    the same objective history.
+
+    Viennet has three objectives, so the beta sub-optimizations always
+    restart from the initial design value instead of the previous
+    sub-optimum, and `skip_betas` is disabled;
+    with both sources of a run order dependency removed, the two modes are
+    expected to evaluate the exact same points regardless of how the
+    sub-optimizations are dispatched to worker processes.
+    """
+    common_settings = {
+        "algo_name": "MNBI",
+        "max_iter": 10000,
+        "n_sub_optim": 8,
+        "sub_optim_algo_settings": NLOPT_SLSQP_Settings(max_iter=50),
+        "skip_betas": False,
+        "xtol_abs": 0.0,
+    }
+
+    serial_problem = Viennet()
+    execute_algo(serial_problem, n_processes=1, **common_settings)
+    serial_database = serial_problem.database
+
+    parallel_problem = Viennet()
+    execute_algo(parallel_problem, n_processes=2, **common_settings)
+    parallel_database = parallel_problem.database
+
+    assert len(serial_database) == len(parallel_database)
+
+    name = serial_problem.objective.name
+    serial_f, serial_x = serial_database.get_function_history(name, with_x_vect=True)
+    parallel_f, parallel_x = parallel_database.get_function_history(
+        name, with_x_vect=True
+    )
+    # The two runs may store their points in a different order.
+    serial_order = lexsort(serial_x.T)
+    parallel_order = lexsort(parallel_x.T)
+    assert_allclose(serial_x[serial_order], parallel_x[parallel_order])
+    assert_allclose(serial_f[serial_order], parallel_f[parallel_order])
+
+
+def test_no_redundant_merge_in_a_serial_run(binh_korn, monkeypatch):
+    """Check that a serial run never merges a database by function name.
+
+    The sub-optimizations evaluate the objective and the constraints of the
+    problem being solved through their bound wrappers, which already record
+    in its database; a serial run therefore never has to merge one back by
+    function name, only the relaxed variable names, through an empty tuple
+    of function names.
+    """
+    calls_with_names = []
+    merge_function_histories = Database.merge_function_histories
+
+    def count_merge(self, database, function_names):
+        function_names = tuple(function_names)
+        if function_names:
+            calls_with_names.append(function_names)
+        return merge_function_histories(self, database, function_names)
+
+    monkeypatch.setattr(Database, "merge_function_histories", count_merge)
+
+    execute_algo(
+        binh_korn,
+        algo_name="MNBI",
+        max_iter=10000,
+        n_sub_optim=5,
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
+        n_processes=1,
+    )
+
+    assert not calls_with_names
+
+
+def test_n_calls_of_a_serial_run(binh_korn, enable_function_statistics, monkeypatch):
+    """Check the number of calls a serial run reports.
+
+    A sub-optimization running in this process
+    evaluates the objective of the problem being solved,
+    which counts those calls itself;
+    adding the count reported by the sub-optimization on top of it
+    counted them twice.
+    """
+    name = binh_korn.objective.name
+    n_evaluations = []
+    evaluate = EvaluationFunction.evaluate
+
+    def count_evaluation(self, input_value):
+        """Count the evaluations asked of the objective of the problem."""
+        if self.name == name:
+            n_evaluations.append(input_value)
+
+        return evaluate(self, input_value)
+
+    monkeypatch.setattr(EvaluationFunction, "evaluate", count_evaluation)
+
+    execute_algo(
+        binh_korn,
+        algo_name="MNBI",
+        max_iter=10000,
+        n_sub_optim=5,
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=20),
+        n_processes=1,
+    )
+
+    assert binh_korn.objective.n_calls == len(n_evaluations)
+
+
+def test_mnbi_with_an_augmented_lagrangian_sub_algorithm_records_into_the_top_database(
+    binh_korn,
+):
+    """Check that an augmented Lagrangian sub-algorithm records in the top database.
+
+    It builds its inner problem from the constraints of the MNBI sub-problem,
+    which are bound to the database of the top-level problem.
+    """
+    execute_algo(
+        binh_korn,
+        algo_name="MNBI",
+        max_iter=10000,
+        n_sub_optim=3,
+        sub_optim_algo_settings=Augmented_Lagrangian_Order_0_Settings(
+            max_iter=3,
+            sub_algorithm_settings=SLSQP_Settings(max_iter=10),
+        ),
+    )
+
+    n_entries_with_a_constraint = sum(
+        1
+        for values in binh_korn.database.values()
+        if "ineq1" in values or "ineq2" in values
+    )
+    # Without the inner evaluations,
+    # the top-level database holds 15 points evaluating a constraint.
+    assert n_entries_with_a_constraint > 18
 
 
 def test_mono_objective_error(snapshot):

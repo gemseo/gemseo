@@ -27,19 +27,19 @@ if TYPE_CHECKING:
 
 @overload
 def get_value_and_bounds(
-    design_space: DesignSpace, normalize_ds: bool, as_dict: Literal[False] = False
+    design_space: DesignSpace, *, as_dict: Literal[False] = False
 ) -> tuple[NumberArray, NumberArray, NumberArray]: ...
 
 
 @overload
 def get_value_and_bounds(
-    design_space: DesignSpace, normalize_ds: bool, as_dict: Literal[True] = True
+    design_space: DesignSpace, *, as_dict: Literal[True] = True
 ) -> tuple[dict[str, NumberArray], dict[str, NumberArray], dict[str, NumberArray]]: ...
 
 
 # TODO: return the design space to be used by the solver instead of a tuple
 def get_value_and_bounds(
-    design_space: DesignSpace, normalize_ds: bool, as_dict: bool = False
+    design_space: DesignSpace, *, as_dict: bool = False
 ) -> (
     tuple[NumberArray, NumberArray, NumberArray]
     | tuple[dict[str, NumberArray], dict[str, NumberArray], dict[str, NumberArray]]
@@ -48,7 +48,6 @@ def get_value_and_bounds(
 
     Args:
         design_space: The design space.
-        normalize_ds: Whether to normalize the design variables.
         as_dict: Whether to return dictionaries instead of NumPy arrays.
 
     Returns:
@@ -56,23 +55,8 @@ def get_value_and_bounds(
         their lower bounds,
         and their upper bounds.
     """
-    if not normalize_ds:
-        return (
-            design_space.get_current_value(complex_to_real=True, as_dict=as_dict),
-            design_space.get_lower_bounds(as_dict=as_dict),
-            design_space.get_upper_bounds(as_dict=as_dict),
-        )
-
-    current_value = design_space.get_current_value(
-        complex_to_real=True, as_dict=as_dict, normalize=True
-    )
-    lower_bounds = design_space.normalize_vect(design_space.get_lower_bounds()).real
-    upper_bounds = design_space.normalize_vect(design_space.get_upper_bounds()).real
-    if not as_dict:
-        return current_value, lower_bounds, upper_bounds
-
     return (
-        current_value,
-        design_space.convert_array_to_dict(lower_bounds),
-        design_space.convert_array_to_dict(upper_bounds),
+        design_space.get_current_value(complex_to_real=True, as_dict=as_dict),
+        design_space.get_lower_bounds(as_dict=as_dict),
+        design_space.get_upper_bounds(as_dict=as_dict),
     )

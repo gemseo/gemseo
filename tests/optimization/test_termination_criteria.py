@@ -32,7 +32,7 @@ from .problem.constant import Constant
 
 def test_is_x_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
-    pb.preprocess_functions()
+    pb.bind_functions()
     pb.objective.evaluate(0 * ones(2))
     pb.objective.evaluate(ones(2))
 
@@ -47,7 +47,7 @@ def test_is_x_tol_reached() -> None:
 
 def test_is_f_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
-    pb.preprocess_functions()
+    pb.bind_functions()
 
     pb.objective.evaluate(0 * ones(2))
     pb.objective.evaluate(ones(2))
@@ -76,7 +76,7 @@ def test_n_stop_crit_x(n_stop_crit_x, enable_function_statistics) -> None:
     the number of iterations should be n_stop_crit_x + 1.
     """
     pb = Constant()
-    pb.preprocess_functions()
+    pb.bind_functions()
     res = execute_algo(
         pb,
         algo_name="NLOPT_COBYLA",

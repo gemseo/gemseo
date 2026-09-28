@@ -76,7 +76,7 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
             ot_intersection_event = []
             ot_intersection_events.append(ot_intersection_event)
             for elementary_event in intersection_event:
-                # Use the PreprocessedFunction related to event.function
+                # Use the evaluation function related to event.function
                 function = observables[elementary_event.function.name]
                 func = _FunctionForOpenTURNS(function.evaluate, False)
                 jac = (

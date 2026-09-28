@@ -8,6 +8,9 @@
 # name: test_evaluate_functions_without_input_value_on_random_space
   'The input value cannot be None because a RandomSpace has no current value.'
 # ---
-# name: test_preprocess_function_expecting_normalized_inputs_on_random_space
-  'The function square expects normalized inputs while a RandomSpace cannot be normalized.'
+# name: test_recording_a_function_expecting_normalized_inputs[False]
+  'The function square expects normalized inputs while the evaluations are recorded in the coordinates the input space declares.'
+# ---
+# name: test_recording_a_function_expecting_normalized_inputs[True]
+  'The function square expects normalized inputs while the evaluations are recorded in the coordinates the input space declares.'
 # ---

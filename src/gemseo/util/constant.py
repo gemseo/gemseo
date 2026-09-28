@@ -49,6 +49,7 @@ _enable_discipline_status: Final[bool] = False
 _enable_function_statistics: Final[bool] = False
 _enable_parallel_execution: Final[bool] = True
 _enable_progress_bar: Final[bool] = True
+_enable_working_database: Final[bool] = False
 _validate_input_data: Final[bool] = True
 _validate_output_data: Final[bool] = True
 _logging_date_format: Final[str] = "%H:%M:%S"

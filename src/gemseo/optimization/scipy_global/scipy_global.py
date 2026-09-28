@@ -75,9 +75,6 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "SciPy Global Optimization"
     """The library name."""
 
-    handle_integer_variables: bool = True
-    """Whether the optimization algorithm handles integer variables."""
-
     settings_class: type[BaseSciPyGlobalSettings] = BaseSciPyGlobalSettings
     """The option validation model for SciPy global optimization library."""
 
@@ -117,6 +114,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             description="Differential Evolution algorithm",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
+            handle_integer_variables=True,
             internal_algorithm_name="differential_evolution",
             website=f"{__doc}scipy.optimize.differential_evolution.html",
             settings_class=DIFFERENTIAL_EVOLUTION_Settings,
@@ -126,14 +124,17 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
     def _evaluate_objective_and_constraints(self, x_vect: InputType) -> None:
         """Evaluate the objective and constraint functions.
 
+        This is a new-iteration listener, registered through
+        `problem.add_listener` with its default `at_each_iteration=True`,
+        so the point it receives is a key of the database
+        and is expressed in the coordinates the user declared.
+        The functions of the original problem are the ones that take such a point.
+
         Args:
             x_vect: The input data with which to call the functions.
         """
-        if self._settings.normalize_design_space:
-            x_vect = self._problem.input_space.normalize_vect(x_vect)
-
-        self._problem.objective.evaluate(x_vect)
-        for constraint in self._problem.constraints:
+        self._original_problem.objective.evaluate(x_vect)
+        for constraint in self._original_problem.constraints:
             constraint.evaluate(x_vect)
 
     def _compute_objective(self, x_vect: InputType) -> OutputType:
@@ -147,10 +148,9 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         return real(self._problem.objective.evaluate(x_vect))
 
     def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
-        # Get the normalized bounds:
-        _, l_b, u_b = get_value_and_bounds(
-            problem.input_space, self._settings.normalize_design_space
-        )
+        # The problem works in the coordinates the algorithm manipulates,
+        # so its space already carries the bounds the algorithm needs.
+        _, l_b, u_b = get_value_and_bounds(problem.input_space)
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
@@ -160,34 +160,56 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         # call the objective very often when the problem
         # is very constrained (Power2) and OptProblem may fail
         # to detect the optimum.
-        if problem.constraints:
-            problem.add_listener(self._evaluate_objective_and_constraints)
+        # The try block opens right after the listener is registered, so that
+        # an exception raised anywhere below, e.g. while building the settings,
+        # still reaches the finally clause that removes it.
+        try:
+            if problem.constraints:
+                problem.add_listener(self._evaluate_objective_and_constraints)
 
-        filtered_settings = self._filter_settings()
-        if self._algo_name == "SHGO":
-            constraints = self.__get_constraints_as_scipy_dictionary(problem)
-            filtered_settings["constraints"] = constraints
-        elif self._algo_name == "DIFFERENTIAL_EVOLUTION":
-            constraints = self.__get_non_linear_constraints(problem)
-            filtered_settings["constraints"] = constraints
+            filtered_settings = self._filter_settings()
+            if self._algo_name == "SHGO":
+                constraints = self.__get_constraints_as_scipy_dictionary(problem)
+                filtered_settings["constraints"] = constraints
+            elif self._algo_name == "DIFFERENTIAL_EVOLUTION":
+                constraints = self.__get_non_linear_constraints(problem)
+                filtered_settings["constraints"] = constraints
+                # The algorithm handles integer variables itself,
+                # so the working space still carries their (integral) bounds,
+                # as `DesignSpace` normalization leaves integer variables alone;
+                # SciPy is told which components are integer so that it keeps
+                # them integral at every evaluation instead of exploring them
+                # continuously, unlike the discrete ones, which stay unhandled.
+                filtered_settings["integrality"] = (
+                    problem.input_space.get_integer_mask()
+                )
 
-        # Deactivate termination criteria which are handled by GEMSEO
-        if self._algo_name == "SHGO":
-            filtered_settings["options"].update(
-                dict.fromkeys(["maxev", "maxfev", "maxiter", "maxtime"], maxsize)
+            # Deactivate termination criteria which are handled by GEMSEO
+            if self._algo_name == "SHGO":
+                filtered_settings["options"].update(
+                    dict.fromkeys(["maxev", "maxfev", "maxiter", "maxtime"], maxsize)
+                )
+                filtered_settings["options"]["ftol"] = 0.0
+            elif self._algo_name == "DUAL_ANNEALING":
+                filtered_settings["maxiter"] = filtered_settings["maxfun"] = maxsize
+            else:  # Necessarily the differential evolution algorithm
+                filtered_settings["maxiter"] = maxsize
+
+            global_optimizer = self.__names_to_functions[self._algo_name]
+            opt_result = global_optimizer(
+                func=self._compute_objective,
+                bounds=bounds,
+                **filtered_settings,
             )
-            filtered_settings["options"]["ftol"] = 0.0
-        elif self._algo_name == "DUAL_ANNEALING":
-            filtered_settings["maxiter"] = filtered_settings["maxfun"] = maxsize
-        else:  # Necessarily the differential evolution algorithm
-            filtered_settings["maxiter"] = maxsize
-
-        global_optimizer = self.__names_to_functions[self._algo_name]
-        opt_result = global_optimizer(
-            func=self._compute_objective,
-            bounds=bounds,
-            **filtered_settings,
-        )
+        finally:
+            # Otherwise the listener outlives this run and dereferences
+            # `self._original_problem`, which `_reset()` sets back to `None`,
+            # so the next store on this problem's database would fail.
+            if problem.constraints:
+                problem.database.clear_listeners(
+                    new_iter_listeners=(self._evaluate_objective_and_constraints,),
+                    store_listeners=None,
+                )
 
         return opt_result.message, opt_result.success
 

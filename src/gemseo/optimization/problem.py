@@ -85,7 +85,37 @@ BestInfeasiblePointType = tuple[
 
 
 class OptimizationProblem(EvaluationProblem[DesignSpace]):
-    """An optimization problem."""
+    """An optimization problem.
+
+    It extends an
+    [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem]
+    with an
+    [objective][gemseo.optimization.problem.OptimizationProblem.objective]
+    to minimize,
+    or to maximize when
+    [minimize_objective][gemseo.optimization.problem.OptimizationProblem.minimize_objective]
+    is `False`,
+    and with constraints added by
+    [add_constraint][gemseo.optimization.problem.OptimizationProblem.add_constraint],
+    which the problem rewrites as `g(x) <= 0` and `h(x) = 0`
+    and judges against its
+    [tolerances][gemseo.optimization.problem.OptimizationProblem.tolerances].
+    The observables of an evaluation problem are still available;
+    the objective and the constraints are evaluated, recorded and adapted
+    exactly as they are.
+
+    The input space is a
+    [DesignSpace][gemseo.space.design.DesignSpace],
+    exposed as
+    [design_space][gemseo.optimization.problem.OptimizationProblem.design_space],
+    which bounds the variables and gives the starting point.
+    An optimization algorithm solves the problem
+    and leaves its result in `solution`;
+    [optimum][gemseo.optimization.problem.OptimizationProblem.optimum]
+    reads the best feasible point back from the whole history,
+    whatever ran it,
+    a sampling algorithm included.
+    """  # noqa: E501
 
     _is_optimization: ClassVar[bool] = True
 
@@ -205,14 +235,41 @@ class OptimizationProblem(EvaluationProblem[DesignSpace]):
         return (
             (
                 self._objective is None
-                or isinstance(self._objective.original, LinearFunction)
+                or isinstance(
+                    self.__get_fully_original(self._objective), LinearFunction
+                )
             )
             and all(
-                isinstance(function.original, LinearFunction)
+                isinstance(self.__get_fully_original(function), LinearFunction)
                 for function in self.__constraints
             )
             and not self.constraints.aggregated_constraint_indices
         )
+
+    @staticmethod
+    def __get_fully_original(function: ArrayFunction) -> ArrayFunction:
+        """Return the function at the end of its chain of `original` functions.
+
+        `original` stops at a wrapper a *different* problem installed, e.g.
+        a sub-problem built by reusing the bound functions of the problem it
+        comes from directly, such as an mNBI per-objective sub-problem
+        reusing the constraints of the problem it was built from: one such
+        function's own `original` is that other problem's wrapper, not the
+        raw function underneath it. Deciding whether a function is linear
+        needs to see past every one of these wrappers instead, so that
+        reusing a bound linear function this way is not misclassified as
+        non-linear only because of how the sub-problem was built.
+
+        Args:
+            function: The function to unwrap.
+
+        Returns:
+            The function at the end of its `original` chain.
+        """
+        while function.original is not function:
+            function = function.original
+
+        return function
 
     @property
     def tolerances(self) -> ConstraintTolerances:
@@ -732,7 +789,7 @@ class OptimizationProblem(EvaluationProblem[DesignSpace]):
                 solution_data = convert_h5_group_to_dict(
                     h5file, problem._solution_group
                 )
-                for name in ["x_0_as_dict", "x_opt_as_dict"]:
+                for name in ["x_0_as_dict", "x_opt_as_dict", "x_opt_projected_as_dict"]:
                     if name in h5file:
                         solution_data[name] = convert_h5_group_to_dict(h5file, name)
 
@@ -988,34 +1045,6 @@ class OptimizationProblem(EvaluationProblem[DesignSpace]):
                     constraint.get_indexed_name(index) for index in range(dimension)
                 ])
         return constraint_names
-
-    def reset(  # noqa: D102
-        self,
-        database: bool = True,
-        current_iter: bool = True,
-        input_space: bool = True,
-        function_calls: bool = True,
-        preprocessing: bool = True,
-    ) -> None:
-        if preprocessing and self._functions_are_preprocessed:
-            n_obj_calls = self._objective.n_calls
-            n_constraint_calls = [c.n_calls for c in self.__constraints]
-            self._objective = self._objective.original
-            self.__constraints.reset()
-            if not function_calls:
-                self._objective.n_calls = n_obj_calls
-                for constraint, n_calls in zip(
-                    self.__constraints, n_constraint_calls, strict=False
-                ):
-                    constraint.n_calls = n_calls
-
-        super().reset(
-            database=database,
-            current_iter=current_iter,
-            input_space=input_space,
-            function_calls=function_calls,
-            preprocessing=preprocessing,
-        )
 
     def _get_optimization_metadata(self) -> OptimizationMetadata:
         """Return the optimization metadata.

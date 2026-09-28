@@ -37,6 +37,7 @@ or set `logging.configure_root_logger = True` to let GEMSEO configure the root l
 - `enable_function_statistics`, default: `False` - Whether to record the statistics attached to the functions, in charge of counting their number of evaluations.
 - `enable_parallel_execution`, default: `True` - Whether to let GEMSEO use parallelism (multi-processing or multi-threading) by default. When `False`, the default number of threads/processes of the parallel MDAs, of [ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain] and of [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution] is 1.
 - `enable_progress_bar`, default: `True` - Whether to enable the progress bar attached to the drivers, in charge to log the execution of the process: iteration, execution time and objective value.
+- `enable_working_database`, default: `False` - Whether to record the evaluations of a run a second time, in the coordinates the algorithm works on, which a driver leaves in the `working_database` of the problem. This is a debugging aid: nothing of GEMSEO reads that store, and a run gives the same results whether it is enabled or not. An algorithm building sub-problems and handing them to a sub-driver leaves it at `None`, working in the coordinates you declared itself. It is written by the process performing the evaluation, so a parallel run records the evaluations of its own process only.
 - `logging`, default: enabled - The logging configuration of type [LoggingConfiguration][gemseo.util.logging.LoggingConfiguration]; use `logging.enable = False` to disable logging.
 - `validate_input_data`, default: `True` - Whether to validate the input data of a discipline before execution.
 - `validate_output_data`, default: `True` - Whether to validate the output data of a discipline after execution.
@@ -76,6 +77,7 @@ This disables the options that cost time at every evaluation:
 - `enable_discipline_status`,
 - `enable_function_statistics`,
 - `enable_parallel_execution`,
+- `enable_working_database`,
 - `validate_input_data`,
 - `validate_output_data`.
 
@@ -114,6 +116,7 @@ The global configuration can also be changed using one of these environment vari
 - GEMSEO_ENABLE_FUNCTION_STATISTICS,
 - GEMSEO_ENABLE_PARALLEL_EXECUTION,
 - GEMSEO_ENABLE_PROGRESS_BAR,
+- GEMSEO_ENABLE_WORKING_DATABASE,
 - GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER
 - GEMSEO_LOGGING_DATE_FORMAT
 - GEMSEO_LOGGING_ENABLE
@@ -136,6 +139,7 @@ GEMSEO_ENABLE_DISCIPLINE_STATUS = False
 GEMSEO_ENABLE_FUNCTION_STATISTICS = False
 GEMSEO_ENABLE_PARALLEL_EXECUTION = True
 GEMSEO_ENABLE_PROGRESS_BAR = True
+GEMSEO_ENABLE_WORKING_DATABASE = False
 GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER = False
 GEMSEO_LOGGING_DATE_FORMAT = %H:%M:%S
 GEMSEO_LOGGING_ENABLE = False

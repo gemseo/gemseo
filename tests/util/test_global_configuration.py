@@ -32,7 +32,7 @@ from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
-from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.function.evaluation_function import EvaluationFunction
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -90,8 +90,11 @@ def assert_applied(configuration: GlobalConfiguration) -> None:
     assert ExecutionStatistics.is_enabled is configuration.enable_discipline_statistics
     assert ExecutionStatus.is_enabled is configuration.enable_discipline_status
     assert (
-        PreprocessedFunction.enable_statistics
-        is configuration.enable_function_statistics
+        EvaluationFunction.enable_statistics is configuration.enable_function_statistics
+    )
+    assert (
+        EvaluationProblem.enable_working_database
+        is configuration.enable_working_database
     )
     assert BaseDriverLibrary.enable_progress_bar is configuration.enable_progress_bar
     assert BaseDiscipline.validate_input_data is configuration.validate_input_data
@@ -115,6 +118,7 @@ def test_default():
         "enable_function_statistics",
         "enable_parallel_execution",
         "enable_progress_bar",
+        "enable_working_database",
         "logging",
         "directory_manager",
         "validate_input_data",
@@ -128,6 +132,7 @@ def test_default():
     assert not settings.enable_function_statistics
     assert settings.enable_parallel_execution
     assert settings.enable_progress_bar
+    assert not settings.enable_working_database
     assert settings.validate_input_data
     assert settings.validate_output_data
     assert_applied(settings)

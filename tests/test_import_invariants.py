@@ -184,7 +184,8 @@ def test_core_imports_no_domain() -> None:
     """``gemseo.core`` must only depend on the shared foundations."""
     # `space` and `dataset` are a TEMPORARY exception for gemseo.core, pending
     # the dataset-inversion MR that removes this foundation-layer dependency.
-    allowed_segments = {"core", "util", "space", "dataset"}
+    # `enum` only depends on `util`: gemseo.core reads DataType from there.
+    allowed_segments = {"core", "enum", "util", "space", "dataset"}
     violations = [
         (finding.file, finding.lineno, finding.module)
         for finding in all_imports
@@ -228,7 +229,7 @@ domain_core_exceptions: dict[str, set[str]] = {
     # BaseDOELibrary exposes gemseo.optimization.result.OptimizationResult as
     # its default result class.
     "doe.core": {"optimization"},
-    # Constraints.AggregationFunction reuses EvaluationFunction from
+    # Constraints.AggregationFunction reuses AggregationFunction from
     # gemseo.enum._constraint_aggregation.
     "optimization.core": {"enum"},
     # BaseMDASolverSettings reuses BaseLinearSolverSettings and LGMRES_Settings
@@ -288,7 +289,7 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         "util",
     }),
     "_deprecation": frozenset({"_deprecation", "util"}),
-    "core": frozenset({"core", "dataset", "space", "util"}),
+    "core": frozenset({"core", "dataset", "enum", "space", "util"}),
     "dataset": frozenset({"core", "dataset", "util"}),
     "discipline": frozenset({
         "core",
@@ -372,7 +373,14 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         "space",
         "util",
     }),
-    "space": frozenset({"core", "optimization", "space", "uncertainty", "util"}),
+    "space": frozenset({
+        "core",
+        "enum",
+        "optimization",
+        "space",
+        "uncertainty",
+        "util",
+    }),
     "uncertainty": frozenset({
         "core",
         "dataset",
