@@ -25,6 +25,7 @@ import logging
 import warnings
 from collections.abc import Mapping
 from contextlib import contextmanager
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -132,6 +133,8 @@ class DesignSpace(
     """The current value of the variables."""
 
     _variables_class: ClassVar[type[DesignVariables]] = DesignVariables
+
+    _supports_normalization: ClassVar[bool] = True
 
     DesignVariableType = DataType
 
@@ -363,6 +366,9 @@ class DesignSpace(
             # and use a design space which contains variables that leads to error.
             self.remove_variable(name)
             raise
+
+    def _add_default_variable(self, name: str, size: int) -> None:  # noqa: D102
+        self.add_variable(name, size=size)
 
     def add_real_variable(
         self,
@@ -701,7 +707,16 @@ class DesignSpace(
         Returns:
             The normalized gradient.
         """
-        return self.denormalize_vect(g_vect, minus_lb=False, no_check=True)
+        # A gradient is a direction,
+        # not a point of the space,
+        # so it keeps the dtype it comes with,
+        # where a point takes the common dtype of the current value:
+        # the real gradient of a space holding complex values
+        # would otherwise come back complex,
+        # and an algorithm reading it refuses it.
+        return self._normalizer.denormalize(
+            g_vect, g_vect.dtype, add_lower_bound=False, no_check=True
+        )
 
     def denormalize_grad(self, g_vect: RealOrComplexArrayT) -> RealOrComplexArrayT:
         r"""Denormalize a normalized gradient.
@@ -727,7 +742,11 @@ class DesignSpace(
         Returns:
             The original gradient.
         """
-        return self.normalize_vect(g_vect, minus_lb=False)
+        # The dtype of a gradient is its own; see
+        # [normalize_grad][gemseo.space.design.DesignSpace.normalize_grad].
+        return self._normalizer.normalize(
+            g_vect, g_vect.dtype, subtract_lower_bound=False
+        )
 
     def denormalize_vect(
         self,
@@ -1126,6 +1145,9 @@ class DesignSpace(
             self, file_path, append=append, hdf_node_path=hdf_node_path
         )
 
+    def _to_hdf(self, file_path: StrPath, append: bool, hdf_node_path: str) -> None:  # noqa: D102
+        self.to_hdf(file_path, append=append, hdf_node_path=hdf_node_path)
+
     @classmethod
     def from_hdf(cls, file_path: StrPath, hdf_node_path: str = "") -> DesignSpace:
         """Create a design space from an HDF file.
@@ -1338,6 +1360,75 @@ class DesignSpace(
         self._register_variable(
             name, space.variables[name], space._current_value.get(name)
         )
+
+    def _copy_with_variables(
+        self,
+        name_to_variable: Mapping[str, BaseDeterministicVariable],
+        name_to_value: Mapping[str, NumberArray | None],
+    ) -> DesignSpace:
+        """Copy this space, replacing some of its variables and its current value.
+
+        Every variable keeps the position and the size it has in this space,
+        so the index ranges are copied instead of being recomputed,
+        only the normalization masks of the replaced variables are,
+        since a variable of another kind may have another policy,
+        and the current value is written in a single pass.
+        Adding the variables one by one would instead reindex the whole space
+        and refresh its current value once per variable,
+        which costs a quadratic time in the number of variables.
+
+        A variable this space keeps is shared with the copy
+        rather than duplicated,
+        which is safe
+        since a variable is immutable.
+
+        Args:
+            name_to_variable: The variables replacing the ones of this space,
+                one entry per variable to replace.
+                A replacing variable must have the size of the variable it replaces.
+                Names sharing one variable object,
+                as a space built by adding the same variable under several names has,
+                must all map to the same replacement:
+                the substitution is keyed by the variable object
+                rather than by the name,
+                so the entry of the last of these names decides for all of them,
+                and leaving one of them out replaces none of them.
+            name_to_value: The current value of the copy,
+                one entry per variable of this space,
+                `None` for a variable without a value.
+                The values are written as they are:
+                they come from a space that already checked them.
+
+        Returns:
+            The copy,
+            of the class of this space and bearing its name,
+            as every space derived from another one does, e.g.
+            [to_scalar_variables][gemseo.space.design.DesignSpace.to_scalar_variables].
+        """
+        # Mapping a variable to its replacement in the memo of the copy
+        # is what gives the copy its index ranges
+        # without a single reindexing,
+        # a variable of the same size standing where the one it replaces stood.
+        # A variable that is kept maps to itself,
+        # so that the copy shares it instead of duplicating it.
+        space = deepcopy(
+            self,
+            {
+                id(variable): name_to_variable.get(name, variable)
+                for name, variable in self._variables.items()
+            },
+        )
+        # The normalization policy belongs to the kind of a variable,
+        # so the masks of the replaced variables are recomputed,
+        # which also marks the registry of the copy as changed:
+        # the components of the copy carry what they derived from the variables
+        # this space holds,
+        # keyed by the version of its registry,
+        # and the bounds, the normalization factors and the integer mask
+        # are derived again from what it now holds.
+        space._variables.refresh_normalization_masks(name_to_variable)
+        space._current.set(name_to_value)
+        return space
 
     def to_scalar_variables(self) -> DesignSpace:
         """Create a new design space with the variables splitted into scalar variables.

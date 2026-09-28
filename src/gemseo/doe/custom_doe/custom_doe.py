@@ -57,6 +57,14 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
 
     A csv file format is assumed to have a header whereas a text file (extension .txt)
     does not.
+
+    The samples are expressed in the coordinates the algorithm works on,
+    which are those of the input space
+    unless `normalize_design_space` is `True`;
+    in that case,
+    the components that can be normalized are expected in `[0,1]`
+    and a sample written in the coordinates of the input space
+    is evaluated outside its bounds.
     """
 
     _use_unit_hypercube: ClassVar[bool] = False

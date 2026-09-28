@@ -116,10 +116,6 @@ class Functions(MutableSequence[ArrayFunction]):
             )
             raise ValueError(msg)
 
-    def reset(self) -> None:
-        """Reset the functions."""
-        self._functions = list(self.get_originals())
-
     def format(self, function: ArrayFunction) -> ArrayFunction:
         """Format a function.
 

@@ -137,3 +137,28 @@ def test_autoscale_setting(scaling_threshold):
     """Check that the `scale_threshold` setting enables the `autoscale` setting."""
     settings = DUAL_SIMPLEX_Settings(scaling_threshold=scaling_threshold)
     assert settings.autoscale if scaling_threshold else not settings.autoscale
+
+
+@pytest.mark.parametrize("algo_name", ScipyLinprog.ALGORITHM_INFOS)
+def test_design_space_that_is_not_the_unit_box(algo_name, library_cls) -> None:
+    """Check a linear program over a box that is not the unit one.
+
+    This library reads the coefficients of the functions
+    and hands the solver the bounds of the space,
+    so the two have to describe the same space.
+    A design space that is already the unit box hides a mismatch between them.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=6.0, value=0.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = LinearFunction(array([[1.0, 2.0]]), "obj", value_at_zero=0.0)
+    problem.add_constraint(
+        LinearFunction(array([[1.0, 1.0]]), "cstr", value_at_zero=3.0),
+        constraint_type=LinearFunction.ConstraintType.INEQ,
+    )
+
+    optimization_result = library_cls(algo_name).execute(problem)
+
+    assert allclose(optimization_result.x_opt, array([-2.0, -2.0]))
+    assert allclose(optimization_result.f_opt, -6.0)

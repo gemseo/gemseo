@@ -50,8 +50,9 @@ _rc_params: dict[str, Any] = {
     "axes.edgecolor": _ink,
     "xtick.color": _ink,
     "ytick.color": _ink,
-    # matplotlib defaults `hatch.color` to "edge", i.e. the hatch follows the edge
-    # color of the artist, which the dark page would leave nearly invisible.
+    # matplotlib defaults `hatch.color` to "edge",
+    # i.e. the hatch follows the edge color of the artist,
+    # which the dark page would leave nearly invisible.
     "hatch.color": _ink,
     # `savefig.transparent` does not reach the legend patch, which would stay
     # white; only its edge is kept. A legend therefore masks nothing, so no figure

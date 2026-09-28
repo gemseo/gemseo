@@ -33,6 +33,8 @@ class _UnsuitabilityReason(StrEnum):
 
     # BaseDriverLibrary
     EMPTY_VARIABLE_SPACE = "the variable space is empty"
+    INTEGER_VARIABLES = _optimizer_template.format("integer variables")
+    DISCRETE_VARIABLES = _optimizer_template.format("discrete variables")
 
     # BaseLinearSolverLibrary
     NOT_SYMMETRIC = _linear_solver_template.format("symmetric")

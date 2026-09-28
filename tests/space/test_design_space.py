@@ -36,6 +36,7 @@ from numpy import float64
 from numpy import inf
 from numpy import int64
 from numpy import isnan
+from numpy import matrix as np_matrix
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -44,6 +45,7 @@ from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from pydantic import ValidationError
 from scipy.sparse import csr_array
+from scipy.sparse import csr_matrix
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.problem import OptimizationProblem
@@ -1572,6 +1574,66 @@ def test_gradient_denormalization(design_space) -> None:
         design_space.normalize_vect(x_vect, minus_lb=False),
         design_space.denormalize_grad(x_vect),
     )
+
+
+def test_gradient_normalization_keeps_the_integer_components() -> None:
+    """Check that normalizing a gradient does not round its integer components."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_variable(
+        "i", type_="integer", lower_bound=0, upper_bound=10, value=2
+    )
+    gradient = array([2.0, 2.3])
+
+    # A gradient is a direction, not a point of the space,
+    # so its components are scaled but never snapped to the integer grid.
+    assert_array_equal(design_space.normalize_grad(gradient), array([20.0, 2.3]))
+    assert_array_equal(design_space.denormalize_grad(gradient), array([0.2, 2.3]))
+    # A point of the space, on the other hand, is still rounded.
+    assert_array_equal(
+        design_space.denormalize_vect(array([0.2, 2.3])), array([2.0, 2.0])
+    )
+
+
+def test_normalization_of_a_densified_sparse_matrix() -> None:
+    """Check the normalization of a value a legacy sparse matrix was densified into.
+
+    Such a value is a `numpy.matrix`,
+    whose augmented assignments are matrix products
+    rather than elementwise operations,
+    so scaling its components used to raise over a space of more than one component.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=2.0, value=1.0)
+
+    gradient = csr_matrix(array([[1.0, 1.0]])).todense()
+    normalized_gradient = design_space.normalize_grad(gradient)
+    assert_array_equal(normalized_gradient, array([[10.0, 2.0]]))
+    # The value keeps the type it came with, which a caller hands to an algorithm.
+    assert isinstance(normalized_gradient, np_matrix)
+    assert_array_equal(design_space.denormalize_grad(gradient), array([[0.1, 0.5]]))
+
+    point = csr_matrix(array([[0.5, 0.5]])).todense()
+    assert_array_equal(design_space.denormalize_vect(point), array([[5.0, 1.0]]))
+    assert_array_equal(design_space.normalize_vect(point * 10), array([[0.5, 2.5]]))
+
+
+def test_gradient_normalization_keeps_the_dtype_of_the_gradient() -> None:
+    """Check that normalizing a gradient does not cast it to the dtype of the space."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.to_complex()
+    gradient = array([2.0])
+
+    # A gradient is a direction, not a point of the space,
+    # so the dtype of the current value is no concern of its:
+    # an algorithm reading a real gradient of a space holding complex values
+    # refuses a complex one.
+    assert design_space.normalize_grad(gradient).dtype == float64
+    assert design_space.denormalize_grad(gradient).dtype == float64
+    # A complex gradient, on the other hand, keeps its own dtype.
+    assert design_space.normalize_grad(gradient.astype(complex128)).dtype == complex128
 
 
 def test_sparse_normalization() -> None:

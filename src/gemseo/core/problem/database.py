@@ -53,6 +53,7 @@ from numpy import printoptions
 from numpy.linalg import norm
 from pandas import MultiIndex
 
+from gemseo.core.function._blocks import iter_blocks
 from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
@@ -188,6 +189,32 @@ class Database(Mapping):
     __listener_output_names: list[str]
     """The names of the output variables whose values are stored by listeners."""
 
+    relaxed_variable_names: set[str]
+    """The names of the input variables the current run relaxed to float ones.
+
+    Empty by default. A
+    [BaseDriverLibrary][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary]
+    run building a
+    [SpaceRelaxation][gemseo.space.transformation.relaxation.SpaceRelaxation]
+    sets this to the names it relaxes,
+    so that
+    [to_dataset][gemseo.core.problem.database.Database.to_dataset]
+    decides the dtype of an input column from this flag
+    rather than from the values recorded,
+    which may happen to be integral even for a relaxed run.
+    It is *set*, not merged, at the start of each run:
+    a database may outlive the run that built it,
+    e.g. a second, non-relaxed, run on the same problem,
+    which must not keep exporting the columns of the first run as float.
+    Cleared by [clear][gemseo.core.problem.database.Database.clear],
+    merged, not overwritten,
+    when a file is read into a non-empty database,
+    and merged from a sub-optimization's own database by
+    [merge_function_histories][gemseo.core.problem.database.Database.merge_function_histories],
+    since that carries evaluations of the same run into this database
+    rather than starting a new one.
+    """  # noqa: E501
+
     def __init__(
         self, name: str = "", input_space: BaseVariableSpace | None = None
     ) -> None:
@@ -206,6 +233,7 @@ class Database(Mapping):
         self.__hdf_database = HDFDatabase()
         self.__input_space = DesignSpace() if input_space is None else input_space
         self.__listener_output_names = []
+        self.relaxed_variable_names = set()
 
     @property
     def listener_output_names(self) -> list[str]:
@@ -216,11 +244,11 @@ class Database(Mapping):
     def input_space(self) -> BaseVariableSpace:
         """The input space."""
         input_space = self.__input_space
-        if self and isinstance(input_space, DesignSpace) and not input_space:
-            # The space can only be described from the stored input values
-            # if a variable can be added from its name and size only;
-            # e.g. a RandomSpace also requires a probability distribution.
-            input_space.add_variable(
+        if self and not input_space:
+            # The space decides whether it can describe the stored inputs
+            # from their size alone; e.g. a RandomSpace cannot, as it also
+            # requires a probability distribution, and leaves itself unchanged.
+            input_space._add_default_variable(
                 self.default_input_name, size=self.get_last_n_x_vect(1)[0].size
             )
 
@@ -293,6 +321,7 @@ class Database(Mapping):
     def clear(self) -> None:
         """Clear the database."""
         self.__data.clear()
+        self.relaxed_variable_names.clear()
 
     def clear_from_iteration(self, iteration: int) -> None:
         """Delete the items after a given iteration.
@@ -410,6 +439,45 @@ class Database(Mapping):
             return output_history, array(input_history)
 
         return output_history
+
+    def merge_function_histories(
+        self, database: Database, function_names: Iterable[str]
+    ) -> None:
+        """Store into this database what another one evaluated of some functions.
+
+        A sub-optimization run on a problem of its own,
+        e.g. one built by
+        [MultiStart][gemseo.optimization.multi_start.multi_start.MultiStart]
+        or [MNBI][gemseo.optimization.mnbi.mnbi.MNBI],
+        keeps a database of its own;
+        this copies the history of the functions of interest from it into this
+        database, and carries over the names its run relaxed, restricted to
+        the input variables this database has, so that
+        [to_dataset][gemseo.core.problem.database.Database.to_dataset] still
+        decides the dtype of a shared input column from a single flag.
+
+        Args:
+            database: The database of the sub-optimization.
+            function_names: The names of the functions whose history is copied.
+        """
+        for function_name in function_names:
+            try:
+                f_hist, x_hist = database.get_function_history(
+                    function_name, with_x_vect=True
+                )
+            except KeyError:
+                # The sub-optimization evaluates its own functions,
+                # not necessarily every one of interest here,
+                # e.g. an observable outside the new-iteration ones.
+                continue
+
+            for x_value, f_value in zip(x_hist, f_hist, strict=False):
+                self.store(x_value, {function_name: f_value})
+
+        input_names = set(self.input_space)
+        self.relaxed_variable_names.update(
+            database.relaxed_variable_names & input_names
+        )
 
     def get_gradient_history(
         self,
@@ -576,6 +644,44 @@ class Database(Mapping):
         # because listeners may need an updated x
         if self.__new_iter_listeners and outputs and current_outputs_is_empty:
             self.notify_new_iter_listeners(x_vect)
+
+    def store_batch(
+        self,
+        input_values: NumberArray,
+        output_values: NumberArray,
+        name: str,
+        is_jacobian: bool = False,
+    ) -> None:
+        """Store the values of a matrix of samples, one entry per sample.
+
+        Args:
+            input_values: The samples, of shape `(n_samples, input_dimension)`.
+            output_values: The values to store, one entry per sample.
+                Either the stacked output values of the samples,
+                reshaped to `(n_samples, -1)`,
+                or, when `is_jacobian` is set,
+                the block diagonal Jacobian matrix of the samples,
+                of shape
+                `(n_samples * output_dimension, n_samples * input_dimension)`,
+                whose diagonal blocks are cut with
+                [iter_blocks][gemseo.core.function._blocks.iter_blocks],
+                one block per sample, whatever format carries the matrix.
+            name: The name under which to store each value.
+            is_jacobian: Whether `output_values` is the block diagonal Jacobian
+                matrix of the samples rather than their stacked output values.
+        """
+        n_samples = len(input_values)
+        if is_jacobian:
+            output_dimension = output_values.shape[0] // n_samples
+            input_dimension = input_values.shape[1]
+            values = iter_blocks(
+                output_values, n_samples, output_dimension, input_dimension
+            )
+        else:
+            values = output_values.reshape((n_samples, -1))
+
+        for input_value, value in zip(input_values, values, strict=False):
+            self.store(self.get_hashable_ndarray(input_value), {name: value})
 
     def add_store_listener(
         self, function: ListenerType, output_names: Iterable[str] = ()
@@ -1108,13 +1214,20 @@ class Database(Mapping):
         name_to_size = {
             name: variable.size for name, variable in input_variables.items()
         }
-        name_to_type = {
-            (input_group, name, component): dtype(
-                data_type_to_numpy_type[variable.type]
+        # A variable a run relaxed is exported as a float column,
+        # decided from `relaxed_variable_names`, the relaxation the driver
+        # recorded, rather than from the values themselves,
+        # which may happen to be integral even for a relaxed run.
+        name_to_type = {}
+        for name, variable in input_variables.items():
+            type_ = (
+                dtype(float)
+                if name in self.relaxed_variable_names
+                else dtype(data_type_to_numpy_type[variable.type])
             )
-            for name, variable in input_variables.items()
-            for component in range(variable.size)
-        }
+            for component in range(variable.size):
+                name_to_type[input_group, name, component] = type_
+
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
         input_values = list(input_values)

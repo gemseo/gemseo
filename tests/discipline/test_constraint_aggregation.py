@@ -148,12 +148,12 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val) -
 @pytest.mark.parametrize(
     "aggregation_attribute_value",
     [
-        (ConstraintAggregation.EvaluationFunction.LOWER_BOUND_KS, "lower_bound_KS"),
-        (ConstraintAggregation.EvaluationFunction.UPPER_BOUND_KS, "upper_bound_KS"),
+        (ConstraintAggregation.AggregationFunction.LOWER_BOUND_KS, "lower_bound_KS"),
+        (ConstraintAggregation.AggregationFunction.UPPER_BOUND_KS, "upper_bound_KS"),
     ],
 )
 def test_evaluation_function_as_enum(aggregation_attribute_value) -> None:
-    """Check the use of EvaluationFunction."""
+    """Check the use of AggregationFunction."""
     discipline = create_discipline(
         "ConstraintAggregation",
         constraint_names=["constr"],

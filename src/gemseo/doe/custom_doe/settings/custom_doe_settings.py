@@ -54,7 +54,13 @@ If empty, use `samples`.""",
         description="""The input samples.
 
 They must be at least a 2D-array, a dictionary of 2D-arrays
-or a list of dictionaries of 1D-arrays. If empty, use `doe_file`.""",
+or a list of dictionaries of 1D-arrays. If empty, use `doe_file`.
+
+They are expressed in the coordinates the algorithm works on,
+which are those of the input space unless `normalize_design_space` is `True`;
+in that case, the components that can be normalized are expected in `[0,1]`
+and a sample written in the coordinates of the input space
+is evaluated outside its bounds.""",
     )
 
     delimiter: str = Field(

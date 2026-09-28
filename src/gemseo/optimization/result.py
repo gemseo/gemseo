@@ -50,13 +50,58 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The design variable names bound to the initial design values."""
 
     x_opt: ndarray | None = None
-    """The optimal values of the design variables, called the *optimum*."""
+    """The optimal values of the design variables, called the *optimum*.
+
+    They are expressed in the coordinates the user declared,
+    at the point where `f_opt` was evaluated:
+    a variable the driver relaxed keeps its relaxed value here,
+    while the design space of the problem receives
+    its projection onto the declared domain.
+    """
 
     x_opt_as_dict: dict[str, ndarray] = field(default_factory=dict)
-    """The design variable names bound to the optimal design values."""
+    """The design variable names bound to the optimal design values.
+
+    As `x_opt`, a relaxed variable keeps its relaxed value.
+    """
 
     f_opt: ndarray | None = None
     """The value of the objective function at the optimum."""
+
+    x_opt_projected: ndarray | None = None
+    """The optimum, projected onto the domain the user declared.
+
+    `x_opt` itself when the projection changes nothing,
+    e.g. a run that relaxed no variable;
+    otherwise the value the design space receives,
+    an integer component of `x_opt` rounded and a discrete one snapped to
+    its nearest choice.
+    """
+
+    x_opt_projected_as_dict: dict[str, ndarray] = field(default_factory=dict)
+    """The design variable names bound to the projected optimal design values.
+
+    As `x_opt_projected`, `x_opt_as_dict` itself when the projection changes
+    nothing.
+    """
+
+    f_opt_projected: ndarray | None = None
+    """The value of the objective function at the projected optimum.
+
+    `f_opt` itself when the projection changes nothing;
+    otherwise the objective evaluated at `x_opt_projected`,
+    or `None` when that evaluation could not be completed,
+    e.g. it raised a termination criterion.
+    """
+
+    is_feasible_projected: bool | None = None
+    """Whether the projected optimum is feasible.
+
+    `is_feasible` itself when the projection changes nothing;
+    otherwise the feasibility of `x_opt_projected`,
+    or `None` when it could not be evaluated,
+    e.g. `f_opt_projected` is `None` too in that case.
+    """
 
     objective_name: str = ""
     """The name of the objective function."""
@@ -260,7 +305,10 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             objective_name = problem.objective.name
 
-        if x_opt is None:
+        if x_opt is None or not x_opt.size:
+            # An empty optimum is no optimum:
+            # the history holds no point carrying this objective,
+            # which happens when a run stops before evaluating one.
             optimum_index = None
         else:
             optimum_index = problem.database.get_iteration(x_opt) - 1

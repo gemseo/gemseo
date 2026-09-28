@@ -80,8 +80,10 @@ modules:
   gemseo.algos.pareto.pareto_plot_biobjective: gemseo.optimization.pareto.pareto_plot_biobjective
   gemseo.algos.pareto.utils: gemseo.optimization.pareto.util
   gemseo.algos.pareto: gemseo.optimization.pareto
+  # PreprocessedFunction was removed; the recording half of what it did is
+  # EvaluationFunction, which is why the old modules point there.
   gemseo.algos.problem_function: gemseo.problem.preprocessed_function
-  gemseo.problem.preprocessed_function: gemseo.core.function.preprocessed_function
+  gemseo.problem.preprocessed_function: gemseo.core.function.evaluation_function
   gemseo.algos.post_optimal_analysis: gemseo.optimization.post_optimal_analysis
   gemseo.algos.stop_criteria: gemseo.optimization.termination_criteria
 
@@ -379,7 +381,6 @@ attributes:
   gemseo.algos.parameter_space.ParameterSpace: RandomSpace
   gemseo.algos.parameter_space_factory.ParameterSpaceFactory: RandomSpaceFactory
   gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: WingWeightRandomSpace
-  gemseo.algos.problem_function.ProblemFunction: PreprocessedFunction
   gemseo.algos.stop_criteria.TerminationCriterion: gemseo.core.problem.termination_criterion.TerminationCriterion
   gemseo.algos.stop_criteria.FunctionIsNan: gemseo.core.problem.termination_criterion.FunctionIsNan
   gemseo.algos.stop_criteria.DesvarIsNan: gemseo.core.problem.termination_criterion.DesvarIsNan
@@ -854,11 +855,16 @@ dissolved:
 # alone does not preserve the behavior of the old one. Each entry is
 # `old_qualified_name: how to migrate`, the value being free text without any colon.
 # gemseo._deprecation raises an ImportError carrying that text instead of resolving the
-# `attributes:` entry of the same name, which is kept so that the codemod still renames
-# the class; the user then has to complete the migration by hand.
+# `attributes:` entry of the same name, which is kept when renaming the class is the
+# right first step for the codemod; the user then has to complete the migration by hand.
+# A name the codemod cannot rewrite at all, because the new name it would have to choose
+# depends on the use, has no `attributes:` entry.
 
 manual:
   gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_optimal_objective=True
+  # One class became two, and which one replaces a given use depends on what
+  # that use needed, so the codemod cannot choose.
+  gemseo.algos.problem_function.ProblemFunction: EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its argument to the coordinates an algorithm works on, or both stacked as EvaluationProblem.bind_functions and EvaluationProblem.create_working_problem do
   # gemseo.space.random, which replaces gemseo.algos.parameter_space, defines no logger.
   gemseo.algos.parameter_space.LOGGER: logging.getLogger("gemseo.space.random")
 
@@ -1241,6 +1247,12 @@ classes:
     __init__:
       fast: null
 
+  #### Constraint aggregation
+  ConstraintAggregation:
+    EvaluationFunction: AggregationFunction
+    _EVALUATION_FUNCTION_MAP: _aggregation_function_map
+    _JACOBIAN_EVALUATION_FUNCTION_MAP: _jacobian_aggregation_function_map
+
   #### Misc
   # Settings: settings_class
   PCERegressor_Settings:
@@ -1311,7 +1323,14 @@ classes:
       max_design_space_dimension_to_log: null
       settings_model: settings={settings_model}_Settings
   BaseDriverSettings:
+    eval_obs_jac: evaluate_observable_jacobian
     max_design_space_dimension_to_log: max_input_space_dimension_to_log
+    round_ints: null
+    # the rounding at every evaluation no longer exists; skipping the check no
+    # longer has an equivalent either, since relaxing evaluates non-integral
+    # points instead, so this entry stays codemod-only, dropping the argument
+    # rather than aliasing it to a setting of a different meaning.
+    skip_int_check: null
   BaseDOELibrary:
     _USE_UNIT_HYPERCUBE: _use_unit_hypercube
     compute_doe:
@@ -1321,10 +1340,17 @@ classes:
       settings_model: settings={settings_model}_Settings
   EvaluationProblem:
     design_space: input_space
+    preprocess_functions: null
+    # use EvaluationProblem.bind_functions to bind the functions to the database
+    # and the counters, and EvaluationProblem.create_working_problem to derive a problem whose
+    # functions work in the coordinates an algorithm manipulates.
     __init__:
       design_space: input_space
     reset:
       design_space: input_space
+      preprocessing: null
+      # the functions are rebuilt by the next call to bind_functions, so there
+      # is nothing left to undo.
     evaluate_functions:
       design_vector: input_value
       design_vector_is_normalized: input_value_is_normalized
@@ -1542,6 +1568,11 @@ classes:
     # TODO: use gemseo.util.derivative.check.function.FunctionJacobianChecker instead.
     rel_err: null
     filt_0: null
+
+  MDOLinearFunction:
+    normalize: null
+    # the normalization of a design space is a transformation of the space, see
+    # gemseo.space.transformation, applied by EvaluationProblem.create_working_problem.
 
   DisciplineJacApprox:
     generator_class: null

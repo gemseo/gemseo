@@ -28,8 +28,16 @@
 #
 # Apart from `flatten_processes` and `DataType`, the only public class attributes,
 # methods and signatures renamed between `develop` and this branch are the ones of the
-# scenario adapters, listed under `classes:`. The paragraphs of this header say what the
-# table cannot express, so a rebase needs them as much as the names below.
+# scenario adapters, the fields of the driver settings and the enumeration of
+# `ConstraintAggregation`, listed under `classes:`. The paragraphs of this header say
+# what the table cannot express, so a rebase needs them as much as the names below. The
+# `round_ints` field of the driver settings was removed without replacement: the
+# rounding at every evaluation no longer exists, and a call passing it has to drop it,
+# and pass `relax_integer_variables=True` to run an algorithm that does not handle
+# integer variables. The `skip_int_check` entry below maps to that setting, the
+# closest one, but its meaning differs: the functions now receive non-integral values
+# where they used to receive rounded ones, so a call relying on integer inputs has to
+# round them itself or use an algorithm handling integer variables.
 # Private internals did move though: a branch touching them has to reconcile its design
 # with the one of this branch. The private attributes of the scenario adapters holding
 # the renamed arguments were renamed in step with them (`_reset_x0_before_exec`,
@@ -127,7 +135,9 @@ modules:
   gemseo.algos.pareto: gemseo.optimization.pareto
   gemseo.algos.pareto.utils: gemseo.optimization.pareto.util
   gemseo.algos.post_optimal_analysis: gemseo.optimization.post_optimal_analysis
-  gemseo.algos.problem_function: gemseo.core.function.preprocessed_function
+  # One class became two: the recording half and the adaptation half. A
+  # rebased branch lands on the recording one, which a problem installs.
+  gemseo.algos.problem_function: gemseo.core.function.evaluation_function
   gemseo.algos.sequence_transformer: gemseo.mda.sequence_transformer
   gemseo.algos.stop_criteria: gemseo.optimization.termination_criteria
   gemseo.caches: gemseo.core.cache
@@ -293,7 +303,7 @@ modules:
 names:
   gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
   gemseo.algos.base_algo_factory._AlgoFactoryMeta: gemseo.core.algorithm.base_algorithm_factory._AlgorithmFactoryMeta
-  gemseo.algos.problem_function.ProblemFunction: gemseo.core.function.preprocessed_function.PreprocessedFunction
+  gemseo.algos.problem_function.ProblemFunction: gemseo.core.function.evaluation_function.EvaluationFunction
   gemseo.algos.stop_criteria.DesvarIsNan: gemseo.core.problem.termination_criterion.DesvarIsNan
   gemseo.algos.stop_criteria.FtolReached: gemseo.core.problem.termination_criterion.FtolReached
   gemseo.algos.stop_criteria.FunctionIsNan: gemseo.core.problem.termination_criterion.FunctionIsNan
@@ -324,6 +334,13 @@ classes:
   # `variable_types_to_dtypes["float"]` raises a `KeyError`.
   gemseo.algos._variable.DataType:
     FLOAT: REAL
+  gemseo.core.algorithm.base_driver_settings.BaseDriverSettings:
+    eval_obs_jac: evaluate_observable_jacobian
+    skip_int_check: relax_integer_variables
+  gemseo.disciplines.constraint_aggregation.ConstraintAggregation:
+    EvaluationFunction: AggregationFunction
+    _evaluation_function_map: _aggregation_function_map
+    _jacobian_evaluation_function_map: _jacobian_aggregation_function_map
   gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: &scenario-adapter-class
     keep_opt_history: keep_databases
     save_opt_history: save_databases

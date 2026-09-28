@@ -87,9 +87,14 @@ class BaseReliabilityAlgorithm(metaclass=ABCGoogleDocstringInheritanceMeta):
         if settings is None:
             settings = self.settings_class()
 
-        problem.preprocess_functions(
-            is_function_input_normalized=False, use_database=settings.use_database
-        )
+        # A reliability algorithm evaluates the events
+        # in the coordinates the user declared,
+        # so the problem binds its functions to its database
+        # and takes no coordinate step.
+        # The space is checked as a driver checks it,
+        # so that an empty one is named here rather than by the solver.
+        problem.check()
+        problem.bind_functions(use_database=settings.use_database)
 
         results = {}
         for event_name in name_to_event:

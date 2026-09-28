@@ -220,7 +220,23 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
     """The name of the function."""
 
     original: ArrayFunction
-    """The function before preprocessing by the [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]."""  # noqa: E501
+    """The function before preprocessing, through any depth of wrapping a problem
+    installs on its own functions.
+
+    This function itself when it has not been preprocessed.
+
+    Algebraic operations,
+    such as the offset and the negation applied to a constraint,
+    are **not** traversed:
+    they define what the function is,
+    so the original of an offset constraint is that offset constraint.
+
+    Nor is a wrapper installed by a *different* problem, e.g. a sub-problem
+    built on the functions of another one: `original` stops there instead of
+    reaching past it, so that a sub-algorithm rebuilding a problem from
+    `original` keeps that wrapper, and the evaluations it makes still reach
+    the database of the problem that installed it.
+    """  # noqa: E501
 
     special_repr: str
     """The string representation of the function overloading its default string ones."""  # noqa: E501

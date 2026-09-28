@@ -1003,8 +1003,7 @@ def test_scenario_to_dataset(tmp_wd):
             True,
             [
                 array([0.123]),
-                array([0.41533333]),
-                array([1.11022302e-16]),
+                array([-0.4305]),
                 array([0.0]),
             ],
         ),

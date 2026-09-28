@@ -95,7 +95,7 @@ from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
-from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.function.evaluation_function import EvaluationFunction
 from gemseo.core.grammar.error import InvalidDataError
 from gemseo.core.grammar.json import JSONGrammar
 from gemseo.core.problem.database import Database
@@ -842,7 +842,7 @@ def test_print_configuration(capfd) -> None:
       The counters are enabled.
       The input data are checked before running the discipline.
       The output data are checked after running the discipline.
-   PreprocessedFunction
+   EvaluationFunction
       The counters are enabled.
    BaseDriverLibrary
       The progress bar is enabled."""
@@ -998,7 +998,7 @@ def test_configure(
         validate_output_data=validate_output_data,
         enable_parallel_execution=enable_parallel_execution,
     )
-    assert PreprocessedFunction.enable_statistics == enable_function_statistics
+    assert EvaluationFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
     assert Discipline.validate_input_data == validate_input_data
     assert Discipline.validate_output_data == validate_output_data
@@ -1017,7 +1017,7 @@ def test_configure(
 def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
-    assert PreprocessedFunction.enable_statistics is False
+    assert EvaluationFunction.enable_statistics is False
     assert ExecutionStatistics.is_enabled is False
     assert ExecutionStatus.is_enabled is False
     assert Discipline.validate_input_data is True

@@ -135,3 +135,32 @@ def test_solve_milp(milp_problem, problem_is_feasible, algo_options) -> None:
         assert pytest.approx(optim_result.f_opt, abs=tolerance) == 0.5
     else:
         assert pytest.approx(array([1.0, 5, 0]), abs=tolerance) == optim_result.x_opt
+
+
+def test_design_space_that_is_not_the_unit_box() -> None:
+    """Check a mixed-integer program over a box that is not the unit one.
+
+    This library reads the coefficients of the functions
+    and hands the solver the bounds of the space,
+    so the two have to describe the same space.
+    A design space that is already the unit box hides a mismatch between them.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=6.0, value=0.0)
+    design_space.add_variable(
+        "i", type_="integer", lower_bound=-3, upper_bound=7, value=0
+    )
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = LinearFunction(array([[1.0, 2.0]]), "obj", value_at_zero=0.0)
+    problem.add_constraint(
+        LinearFunction(array([[1.0, 1.0]]), "cstr", value_at_zero=3.0),
+        constraint_type=LinearFunction.ConstraintType.INEQ,
+    )
+
+    optimization_result = optimization_library_factory.execute(
+        problem, settings=MILP_Settings()
+    )
+
+    assert pytest.approx(array([-2.0, -3.0])) == optimization_result.x_opt
+    assert pytest.approx(-8.0) == optimization_result.f_opt

@@ -24,13 +24,18 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo import configuration
+from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
 from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
+from gemseo.space.transformation._working import create_working_transformation
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -83,7 +88,6 @@ def test_check_desvars_bounds(snapshot):
 
     evaluation_problem = EvaluationProblem(design_space)
     evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
-    evaluation_problem.preprocess_functions(is_function_input_normalized=False)
     output_functions, _ = evaluation_problem.get_functions(
         observable_names=(), jacobian_names=None
     )
@@ -169,28 +173,35 @@ def test_evaluate_functions_with_normalized_input_value_on_random_space(
         problem.evaluate_functions(array([0.5]), output_functions=problem.observables)
 
 
-def test_preprocess_function_expecting_normalized_inputs_on_random_space(
+@pytest.mark.parametrize("space_is_a_design_space", [False, True])
+def test_recording_a_function_expecting_normalized_inputs(
+    space_is_a_design_space,
     snapshot,
 ) -> None:
-    """Check the error when a function expects normalized inputs on a RandomSpace.
+    """Check the error when a function expects normalized inputs.
 
-    Normalization is a notion of a
-    [DesignSpace][gemseo.space.design.DesignSpace],
-    so such a function cannot be fed with the inputs it expects
-    when the input space is not one;
-    evaluating it at a point of the space instead
-    would return a value that is not the one asked for.
+    The evaluation half evaluates a function
+    in the coordinates the input space declares,
+    whatever that space is,
+    and the half normalizing a point wraps it
+    instead of handing it a normalized point back;
+    evaluating such a function at a point of the space
+    would silently return a value that is not the one asked for.
     """
-    random_space = RandomSpace()
-    random_space.add_variable("x", OTUniformDistribution_Settings())
+    if space_is_a_design_space:
+        space = DesignSpace()
+        space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    else:
+        space = RandomSpace()
+        space.add_variable("x", OTUniformDistribution_Settings())
 
     function = ArrayFunction(lambda x: array([x[0] ** 2]), name="square")
     function.expects_normalized_inputs = True
 
-    problem = EvaluationProblem(random_space)
+    problem = EvaluationProblem(space)
     problem.add_observable(function)
     with assert_exception(ValueError, snapshot):
-        problem.preprocess_functions(is_function_input_normalized=False)
+        problem.bind_functions()
 
 
 def test_reset_on_random_space() -> None:
@@ -254,7 +265,7 @@ def test_reset_restores_the_current_value_of_the_design_space() -> None:
     assert_equal(design_space.get_current_value(), array([1.0]))
 
 
-def test_preprocess_functions_finite_differences_on_random_space() -> None:
+def test_bind_functions_finite_differences_on_random_space() -> None:
     """Check that the Jacobian is approximated by finite differences over a
     RandomSpace.
 
@@ -269,7 +280,207 @@ def test_preprocess_functions_finite_differences_on_random_space() -> None:
         random_space, differentiation_method="finite_differences"
     )
     problem.add_observable(ArrayFunction(lambda x: x**2, name="f"))
-    problem.preprocess_functions(is_function_input_normalized=False)
+    problem.bind_functions()
 
     function = problem.observables[0]
     assert_allclose(function.jac(array([2.0])), array([[4.0]]), atol=1e-4)
+
+
+def test_wrapper_original_is_transitive() -> None:
+    """Check that `original` reaches the raw function through stacked wrappers."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=1, lower_bound=0.0, upper_bound=1.0)
+
+    problem = EvaluationProblem(design_space)
+    raw_function = ArrayFunction(sum, name="sum")
+    problem.add_observable(raw_function)
+
+    chain = create_working_transformation(design_space, normalize=True)
+    problem.bind_functions()
+    assert problem.observables[0].original is raw_function
+
+    # Stacking a second wrapper must not hide the raw function behind the first one.
+    working_problem = problem.create_working_problem(chain)
+    assert working_problem.observables[0].original is raw_function
+
+
+def test_bind_functions_after_database_replaced() -> None:
+    """Check that a new database is the only one recording after a rebind."""
+    problem = Power2()
+    problem.bind_functions()
+    old_database = problem.database
+    problem.database = Database(input_space=problem.input_space)
+    problem.bind_functions()
+
+    problem.evaluate_functions(
+        input_value=array([0.5, 0.5, 0.5]), input_value_is_normalized=False
+    )
+
+    assert len(old_database) == 0
+    assert len(problem.database) == 1
+
+
+def test_bind_functions_carries_over_the_call_counter(
+    enable_function_statistics,
+) -> None:
+    """Check that rebinding past the problem's own wrapper keeps the counter.
+
+    Rebuilding the wrapper used to start a fresh counter at zero, so a
+    second `scenario.execute()` counted only its own calls, even though
+    nothing asked for the previous count to be dropped, e.g. two runs with
+    no `reset()` in between.
+    """
+    problem = Power2()
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.5, 0.5, 0.5]), input_value_is_normalized=False
+    )
+    problem.evaluate_functions(
+        input_value=array([0.4, 0.4, 0.4]), input_value_is_normalized=False
+    )
+    assert problem.objective.n_calls == 2
+
+    # A second run rebinds the functions of the problem.
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.3, 0.3, 0.3]), input_value_is_normalized=False
+    )
+
+    assert problem.objective.n_calls == 3
+
+
+def test_reset_function_calls_false_keeps_counting_across_a_rebind(
+    enable_function_statistics,
+) -> None:
+    """Check that `reset(function_calls=False)` does not zero the counter.
+
+    `problem.reset(function_calls=False)` clears the database without
+    resetting the counters, and the count must still carry over once the
+    functions are rebound for a second run.
+    """
+    problem = Power2()
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.5, 0.5, 0.5]), input_value_is_normalized=False
+    )
+    assert problem.objective.n_calls == 1
+
+    problem.reset(function_calls=False)
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.4, 0.4, 0.4]), input_value_is_normalized=False
+    )
+
+    assert problem.objective.n_calls == 2
+
+
+def test_reset_function_calls_true_still_zeroes_the_counter_across_a_rebind(
+    enable_function_statistics,
+) -> None:
+    """Check that `reset(function_calls=True)` still zeroes the counter.
+
+    The counter is carried over past the problem's own wrapper when it is
+    rebuilt, so an explicit reset in between two runs must still be honoured.
+    """
+    problem = Power2()
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.5, 0.5, 0.5]), input_value_is_normalized=False
+    )
+    assert problem.objective.n_calls == 1
+
+    problem.reset(function_calls=True)
+    problem.bind_functions()
+    problem.evaluate_functions(
+        input_value=array([0.4, 0.4, 0.4]), input_value_is_normalized=False
+    )
+
+    assert problem.objective.n_calls == 1
+
+
+def test_wrapper_original_stops_at_algebraic_operations() -> None:
+    """Check that `original` does not reach through an offset."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=1, lower_bound=0.0, upper_bound=1.0)
+
+    problem = EvaluationProblem(design_space)
+    offset_function = ArrayFunction(sum, name="sum") - 1.0
+    problem.add_observable(offset_function)
+
+    problem.bind_functions()
+
+    assert problem.observables[0].original is offset_function
+
+
+@pytest.mark.parametrize(
+    "variable_settings",
+    [
+        {"type_": "integer", "lower_bound": -2, "upper_bound": 2, "value": 1},
+        {"lower_bound": 1.0, "upper_bound": 1.0, "value": 1.0},
+    ],
+    ids=["integer", "coinciding_bounds"],
+)
+def test_finite_differences_step_of_a_component_without_a_range(
+    variable_settings,
+) -> None:
+    """Check the finite-difference step of a component the space does not normalize.
+
+    The step is taken in the coordinates the algorithm works in
+    and no longer scaled by the range of a variable,
+    so an integer component and one whose bounds coincide,
+    neither of which the working space normalizes,
+    keep the step as it is instead of coming out as exactly `0.0`;
+    scaling by the range used to divide the approximated Jacobian by zero
+    and the run stopped at its starting point on a `NaN`.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=1.0)
+    design_space.add_variable("y", **variable_settings)
+
+    problem = OptimizationProblem(
+        design_space, differentiation_method="finite_differences"
+    )
+    problem.objective = ArrayFunction(
+        lambda x: array([x[0] ** 2 + x[1] ** 2]), name="f"
+    )
+
+    result = execute_algo(
+        problem,
+        settings_model=SLSQP_Settings(max_iter=30, relax_integer_variables=True),
+    )
+
+    # The starting point is x=1, which the run must leave.
+    assert_allclose(result.x_opt[0], 0.0, atol=1e-6)
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_a_run_counts_the_evaluations_of_its_functions(
+    n_processes, enable_function_statistics
+) -> None:
+    """Check that a run whose counters are enabled evaluates and counts.
+
+    A counter is built only for a function counting its calls,
+    and a worker gets that function through pickle,
+    which brings the count back as a plain integer
+    rather than as the shared counter it was;
+    a function without a counter to count in
+    would stop the worker it is evaluated by.
+    Whether the count of a worker reaches the process the user reads it from
+    depends on the way the platform starts that worker,
+    so a parallel run is checked on the samples it records.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    problem = EvaluationProblem(design_space)
+    problem.add_observable(ArrayFunction(sum, name="sum"))
+
+    CustomDOE().execute(
+        problem,
+        settings=CustomDOE_Settings(
+            samples=array([[2.0, 3.0], [4.0, 5.0]]), n_processes=n_processes
+        ),
+    )
+
+    assert_equal(problem.database.get_function_history("sum"), array([5.0, 9.0]))
+    if n_processes == 1:
+        assert problem.observables[0].n_calls == 2

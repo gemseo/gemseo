@@ -172,7 +172,7 @@ def test_get_f_hist() -> None:
     """Test the objective history extraction."""
     problem = Rosenbrock()
     database = problem.database
-    problem.preprocess_functions()
+    problem.bind_functions()
     for x_vec in (array([0.0, 1.0]), array([1, 2.0])):
         problem.objective.evaluate(x_vec)
         problem.objective.jac(x_vec)
@@ -897,6 +897,151 @@ def test_to_dataset_with_missing_integer() -> None:
     ].astype("Int64")
 
     assert dataset.equals(expected_dataset)
+
+
+def test_to_dataset_exports_a_relaxed_variable_as_float() -> None:
+    """Check that a relaxed variable is exported as a float column.
+
+    The dtype is decided from `relaxed_variable_names`,
+    the relaxation a driver recorded,
+    and not from the values,
+    which happen to be integral here even though the run relaxed the
+    variable.
+    """
+    space = DesignSpace()
+    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    database = Database(input_space=space)
+    database.store(array([2.0]), {"f": array([1.0])})
+    database.store(array([3.0]), {"f": array([2.0])})
+    database.relaxed_variable_names = {"i"}
+
+    dataset = database.to_dataset()
+
+    assert dataset["parameters", "i", 0].dtype.kind == "f"
+
+
+def test_to_dataset_exports_a_non_relaxed_integer_as_integer() -> None:
+    """Check that an integer variable the run did not relax stays integer.
+
+    The same values as
+    `test_to_dataset_exports_a_relaxed_variable_as_float`,
+    but with an empty `relaxed_variable_names`,
+    export as an integer column.
+    """
+    space = DesignSpace()
+    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    database = Database(input_space=space)
+    database.store(array([2.0]), {"f": array([1.0])})
+    database.store(array([3.0]), {"f": array([2.0])})
+
+    dataset = database.to_dataset()
+
+    assert dataset["parameters", "i", 0].dtype.name == "Int64"
+
+
+def test_merge_function_histories_copies_matching_functions() -> None:
+    """Check that the history of the named functions is copied over."""
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    database = Database(input_space=space)
+    other = Database(input_space=space)
+    other.store(array([1.0]), {"f": array([1.0]), "g": array([2.0])})
+    other.store(array([2.0]), {"f": array([3.0])})
+
+    database.merge_function_histories(other, ["f", "h"])
+
+    f_history, x_history = database.get_function_history("f", with_x_vect=True)
+    assert_almost_equal(f_history, array([1.0, 3.0]))
+    assert_almost_equal(x_history, array([[1.0], [2.0]]))
+    assert "g" not in database.get_function_names()
+
+
+def test_merge_function_histories_tolerates_a_function_absent_from_the_other() -> None:
+    """Check that a function the other database never evaluated is skipped."""
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    database = Database(input_space=space)
+    other = Database(input_space=space)
+    other.store(array([1.0]), {"f": array([1.0])})
+
+    database.merge_function_histories(other, ["f", "unknown"])
+
+    assert len(database) == 1
+
+
+def test_merge_function_histories_restricts_relaxed_names_to_own_inputs() -> None:
+    """Check that only the relaxed names this database itself has are carried over."""
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    database = Database(input_space=space)
+
+    other_space = DesignSpace()
+    other_space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    other_space.add_variable("t", lower_bound=0.0, upper_bound=1.0)
+    other = Database(input_space=other_space)
+    other.relaxed_variable_names = {"x", "t"}
+
+    database.merge_function_histories(other, ())
+
+    assert database.relaxed_variable_names == {"x"}
+
+
+def test_relaxed_variable_names_default_empty() -> None:
+    """Check that a database starts, and clears, with no relaxed variable."""
+    database = Database()
+    assert database.relaxed_variable_names == set()
+
+    database.relaxed_variable_names = {"i"}
+    database.clear()
+
+    assert database.relaxed_variable_names == set()
+
+
+def test_relaxed_variable_names_hdf_round_trip(tmp_wd) -> None:
+    """Check that `relaxed_variable_names` survives an HDF round trip."""
+    space = DesignSpace()
+    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    database = Database(input_space=space)
+    database.store(array([2.0]), {"f": array([1.0])})
+    database.relaxed_variable_names = {"i"}
+    path = Path("relaxed.h5")
+
+    database.to_hdf(path)
+    loaded = Database.from_hdf(path)
+
+    assert loaded.relaxed_variable_names == {"i"}
+
+
+def test_relaxed_variable_names_missing_attribute_reads_as_empty(tmp_wd) -> None:
+    """Check that a file with no such attribute, e.g. an older one, loads as empty."""
+    database = Database()
+    database.store(array([1.0]), {"f": array([1.0])})
+    path = Path("no_relaxed_names.h5")
+
+    database.to_hdf(path)
+    loaded = Database.from_hdf(path)
+
+    assert loaded.relaxed_variable_names == set()
+
+
+def test_relaxed_variable_names_merged_on_append(tmp_wd) -> None:
+    """Check that appending merges the relaxed names instead of overwriting them."""
+    space = DesignSpace()
+    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_variable("j", type_="integer", lower_bound=0, upper_bound=10)
+    database = Database(input_space=space)
+    database.store(array([2.0, 3.0]), {"f": array([1.0])})
+    database.relaxed_variable_names = {"i"}
+    path = Path("merged.h5")
+    database.to_hdf(path)
+
+    database.store(array([4.0, 5.0]), {"f": array([2.0])})
+    database.relaxed_variable_names = {"j"}
+    database.to_hdf(path, append=True)
+
+    loaded = Database.from_hdf(path)
+
+    assert loaded.relaxed_variable_names == {"i", "j"}
 
 
 @pytest.mark.parametrize("string_value", ["some_string", array(["some_string"])])

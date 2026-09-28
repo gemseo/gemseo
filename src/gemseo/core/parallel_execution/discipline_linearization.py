@@ -133,7 +133,8 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
             task_submitted_callback=task_submitted_callback,
         )
 
-        # In serial mode, the disciplines were linearized in the calling process,
+        # In serial mode,
+        # the disciplines were linearized in the calling process,
         # so their data, Jacobians and execution statistics are already up to date.
         if not self._is_serial:
             if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
@@ -159,9 +160,10 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
                 for disc, output in zip(
                     self._disciplines, ordered_outputs, strict=False
                 ):
-                    # When the discipline in the worker failed, output is None.
-                    # We do not update the data such that the issue is caught by the
-                    # output grammar.
+                    # When the discipline in the worker failed,
+                    # output is None.
+                    # We do not update the data
+                    # such that the issue is caught by the output grammar.
                     if output is not None:
                         disc.io.input_data = DisciplineData(output.input_data)
                         disc.io.output_data = DisciplineData(output.output_data)

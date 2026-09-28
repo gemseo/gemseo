@@ -25,6 +25,7 @@ from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.typing import BooleanArray
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
     from typing import Any
 
@@ -129,6 +130,28 @@ class DesignVariables(Variables[BaseDeterministicVariable]):
         self.__name_to_normalization_mask[name] = self.__get_normalization_mask(
             self[name]
         )
+
+    def refresh_normalization_masks(self, names: Iterable[str]) -> None:
+        """Recompute the normalization masks of some variables.
+
+        A variable substituted in place for one of another kind,
+        as a space copied with some of its variables replaced does,
+        keeps the position and the size of the one it replaces
+        but not necessarily its normalization policy,
+        e.g. a float variable relaxing an integer one.
+
+        Note:
+            Calling this method increments the version number.
+
+        Args:
+            names: The names of the variables.
+        """
+        for name in names:
+            self.__name_to_normalization_mask[name] = self.__get_normalization_mask(
+                self[name]
+            )
+
+        self.bump_version()
 
     def __get_normalization_mask(
         self, variable: BaseDeterministicVariable

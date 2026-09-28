@@ -20,10 +20,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import asarray
 from numpy import column_stack
 from numpy import expand_dims
 from numpy import hstack
 from numpy import vstack
+from numpy.testing import assert_allclose
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 from scipy.sparse import block_diag
@@ -146,7 +148,7 @@ class Callback:
 )
 @pytest.mark.parametrize("vectorize", [False, True])
 @pytest.mark.parametrize("use_database", [False, True])
-def test_preprocess_functions_vectorize(
+def test_bind_functions_vectorize(
     design_space,
     preprocess_input_value,
     input_value_is_normalized,
@@ -154,7 +156,7 @@ def test_preprocess_functions_vectorize(
     vectorize,
     use_database,
 ):
-    """Check the EvaluationProblem.preprocess_functions's argument `vectorize`.
+    """Check the EvaluationProblem.bind_functions's argument `vectorize`.
 
     Whatever the value of `vectorize`,
     `EvaluationProblem.evaluate_functions` can evaluate a vectorized function.
@@ -166,11 +168,7 @@ def test_preprocess_functions_vectorize(
 
     problem = EvaluationProblem(design_space)
     problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
-    problem.preprocess_functions(
-        use_database=use_database,
-        vectorize=vectorize,
-        is_function_input_normalized=preprocess_input_value,
-    )
+    problem.bind_functions(use_database=use_database, vectorize=vectorize)
     outputs = problem.evaluate_functions(
         design_vectors,
         output_functions=problem.get_functions(observable_names=())[0],
@@ -200,7 +198,7 @@ def test_doe_vectorize_evaluation_problem(
         ),
     )
 
-    # Check the number of calls to the PreprocessedFunction.
+    # Check the number of calls to the evaluation function.
     assert problem.observables[-1].n_calls == (1 if vectorize else n_samples)
 
     # Check the evaluations
@@ -244,7 +242,7 @@ def test_doe_vectorize_optimization_problem(
         ),
     )
 
-    # Check the number of calls to the PreprocessedFunction.
+    # Check the number of calls to the evaluation function.
     assert problem.objective.n_calls == 1 if vectorize else n_samples
 
     # Check the evaluations
@@ -253,6 +251,27 @@ def test_doe_vectorize_optimization_problem(
         problem.database.to_dataset(export_gradients=True),
         database.to_dataset(export_gradients=True),
     )
+
+
+def test_doe_vectorize_one_sample_without_database(design_space):
+    """Check a vectorized DOE evaluating the Jacobian of a single sample.
+
+    The tail returning a raveled Jacobian for a function of dimension 1
+    was applied to the vectorized path too,
+    where the caller splits the rows of the block-diagonal matrix
+    back into one block per sample.
+    """
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized)
+
+    SciPyDOE("MC").execute(
+        problem,
+        settings=MC_Settings(
+            n_samples=1, vectorize=True, eval_jac=True, use_database=False
+        ),
+    )
+
+    assert not problem.database
 
 
 @pytest.mark.parametrize("vectorize", [False, True])
@@ -277,7 +296,7 @@ def test_doe_vectorize_scenario(
     )
     problem = scenario.formulation.problem
 
-    # Check the number of calls to the PreprocessedFunction.
+    # Check the number of calls to the evaluation function.
     assert problem.objective.n_calls == 1 if vectorize else n_samples
 
     # Check the evaluations
@@ -330,3 +349,128 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     # Compare the results
     # in terms of input values, output values and gradient values.
     assert_frame_equal(result, reference)
+
+
+@pytest.mark.parametrize("vectorize", [False, True])
+def test_doe_vectorize_with_normalization(
+    database, design_space, eval_jac, vectorize, enable_function_statistics
+):
+    """Check that normalizing the design space changes nothing but the coordinates.
+
+    The evaluations are recorded in the coordinates the user declared,
+    so a run normalizing the design space records what the same run records without it,
+    vectorized or not.
+    The Jacobian of a vectorized run is the block diagonal matrix of the samples,
+    whose every block the normalization must reach.
+    """
+    problem = EvaluationProblem(design_space)
+    problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
+    callback = Callback()
+
+    SciPyDOE("MC").execute(
+        problem,
+        settings=MC_Settings(
+            n_samples=n_samples,
+            vectorize=vectorize,
+            eval_jac=eval_jac,
+            normalize_design_space=True,
+            callbacks=(callback,),
+        ),
+    )
+
+    assert problem.observables[-1].n_calls == (1 if vectorize else n_samples)
+    assert_frame_equal(
+        problem.database.to_dataset(export_gradients=True),
+        database.to_dataset(export_gradients=True),
+    )
+
+    if not eval_jac:
+        return
+
+    # The algorithm is handed the Jacobian in the coordinates it works on,
+    # one block per sample,
+    # where the history above is in the ones the user declared.
+    gradients = database.get_gradient_history("out")
+    for index, (_, (_, jacobians)) in enumerate(callback.x):
+        # A vectorized run hands back the block of the sample,
+        # a serial one the row it computed,
+        # so the two are compared component by component.
+        assert_allclose(
+            asarray(jacobians["out"]).ravel(),
+            design_space.normalize_grad(gradients[index]).ravel(),
+        )
+
+
+@pytest.mark.parametrize("vectorize", [False, True])
+def test_doe_vectorize_with_normalization_and_integers(vectorize):
+    """Check a vectorized run over a space the transformation rounds and normalizes.
+
+    A design space does not normalize its integer variables,
+    so the chain of a run asking for both leaves that component alone
+    and scales the other one;
+    the two runs must agree whatever the number of samples a call carries.
+    """
+    datasets = []
+    callbacks = []
+    for vectorized in (False, vectorize):
+        design_space = DesignSpace()
+        design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
+        design_space.add_variable(
+            "i",
+            lower_bound=0,
+            upper_bound=4,
+            type_=DesignSpace.DesignVariableType.INTEGER,
+        )
+        problem = EvaluationProblem(design_space)
+        problem.add_observable(
+            ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized)
+        )
+        callback = Callback()
+        SciPyDOE("MC").execute(
+            problem,
+            settings=MC_Settings(
+                n_samples=n_samples,
+                vectorize=vectorized,
+                eval_jac=True,
+                normalize_design_space=True,
+                callbacks=(callback,),
+                seed=1,
+            ),
+        )
+        datasets.append(problem.database.to_dataset(export_gradients=True))
+        callbacks.append(callback)
+
+    assert_frame_equal(*datasets)
+    # The history is in the coordinates the user declared;
+    # what the algorithm was handed is in the ones it works on,
+    # and the two runs must agree there too.
+    for serial, vectorized in zip(*(c.x for c in callbacks), strict=True):
+        assert_allclose(
+            asarray(vectorized[1][1]["out"]).ravel(),
+            asarray(serial[1][1]["out"]).ravel(),
+        )
+
+
+def test_doe_normalization_of_a_densified_sparse_jacobian(caplog):
+    """Check a run normalizing a Jacobian a driver had densified.
+
+    A driver declaring no support for a sparse Jacobian densifies it,
+    which yields a `numpy.matrix`;
+    scaling its columns used to raise,
+    and the DOE logged the failure and skipped the sample.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("in", size=2, lower_bound=0.0, upper_bound=2.0)
+    problem = EvaluationProblem(design_space)
+    problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
+
+    SciPyDOE("MC").execute(
+        problem,
+        settings=MC_Settings(
+            n_samples=n_samples, eval_jac=True, normalize_design_space=True
+        ),
+    )
+
+    assert len(problem.database) == n_samples
+    assert len(problem.database.get_gradient_history("out")) == n_samples
+    assert "skipping to the next point" not in caplog.text

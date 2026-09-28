@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from numpy import asarray
 from numpy import concatenate
 from numpy import isin
 from numpy import where
@@ -130,18 +131,27 @@ class Normalizer(RegistryDerivedData):
             current_x_dtype = float64_dtype
 
         value = full_value.astype(current_x_dtype)
+        is_sparse = isinstance(value, sparse_classes)
+        # A dense value is read through a base array view of itself,
+        # which shares its memory:
+        # the augmented assignments below are elementwise on an array
+        # and matrix products on a `numpy.matrix`,
+        # which is what a densified legacy sparse matrix is,
+        # and a matrix of more than one column made them raise.
+        # The view costs nothing and the value keeps the type it came with.
+        components = value if is_sparse else asarray(value)
         if subtract_lower_bound:
-            value[..., normalization_indices] -= self.__bounds.full_lower_bound[
+            components[..., normalization_indices] -= self.__bounds.full_lower_bound[
                 normalization_indices
             ]
 
-        if isinstance(value, sparse_classes):
+        if is_sparse:
             column_mask = isin(value.indices, normalization_indices)
             value.data[column_mask] *= self.__normalization_factor_inv[value.indices][
                 column_mask
             ]  # type: ignore[index]
         else:
-            value[..., normalization_indices] *= self.__normalization_factor_inv[
+            components[..., normalization_indices] *= self.__normalization_factor_inv[
                 normalization_indices
             ]  # type: ignore[index]
 
@@ -188,37 +198,61 @@ class Normalizer(RegistryDerivedData):
                 logger.warning(msg)
 
         current_dtype = common_dtype
+        if full_value.dtype.kind == "c":
+            # A complex full value carries a complex-step perturbation
+            # in its imaginary part,
+            # which recasting it to the (real) common dtype would silently drop.
+            # Kept at its own dtype instead,
+            # so it already matches `current_dtype` below
+            # and neither the conversion nor the integer recast touches it.
+            current_dtype = full_value.dtype
+
         recast_to_int = current_dtype.kind == "i"
         if recast_to_int:
             current_dtype = float64_dtype
 
-        has_integer = self.__integer_rounder.has_integer
+        # Adding the lower bound back is what tells a point of the space
+        # from a direction in it:
+        # a gradient is denormalized without it,
+        # and rounding a gradient would destroy its integer components
+        # instead of snapping a point to the grid.
+        round_integers = self.__integer_rounder.has_integer and add_lower_bound
         # The integer recast only occurs when there are integer components to round.
-        recast_to_int = recast_to_int and has_integer
+        recast_to_int = recast_to_int and round_integers
 
         if full_value.dtype == current_dtype:
             value = full_value.copy()
         else:
-            # convert_array_type takes the real part when the target dtype is complex,
-            # hence it must only be called when a conversion is actually needed,
-            # otherwise the imaginary part of a complex full value would be lost.
+            # convert_array_type drops the imaginary part of a complex array
+            # whatever the target dtype is:
+            # explicitly, through its own real part, when the target is complex,
+            # and implicitly, through the cast itself, when it is not.
+            # This call is skipped whenever the dtypes already match,
+            # which the branch above guarantees for a complex full value,
+            # so it only ever converts a real one here.
             value = convert_array_type(full_value, current_dtype)
 
         if normalization_indices is not None and normalization_indices.size:
-            if isinstance(value, sparse_classes):
+            # A dense value is scaled through a base array view of itself;
+            # see `normalize`.
+            is_sparse = isinstance(value, sparse_classes)
+            components = value if is_sparse else asarray(value)
+            if is_sparse:
                 column_mask = isin(value.indices, normalization_indices)
                 value.data[column_mask] *= self.__normalization_factor[value.indices][
                     column_mask
                 ]  # type: ignore[index]
             else:
-                value[..., normalization_indices] *= self.__normalization_factor[
+                components[..., normalization_indices] *= self.__normalization_factor[
                     normalization_indices
                 ]  # type: ignore[index]
 
             if add_lower_bound:
-                value[..., normalization_indices] += lower_bounds[normalization_indices]
+                components[..., normalization_indices] += lower_bounds[
+                    normalization_indices
+                ]
 
-        if has_integer:
+        if round_integers:
             value = self.__integer_rounder.round(value, copy=False)
 
         return convert_array_type(value, int64_dtype) if recast_to_int else value

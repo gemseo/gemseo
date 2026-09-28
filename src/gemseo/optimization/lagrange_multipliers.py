@@ -116,9 +116,7 @@ class LagrangeMultipliers:
                 on which Lagrange multipliers shall be computed.
         """  # noqa: D205, D212, D415
         self.optimization_problem = opt_problem
-        self.optimization_problem.reset(
-            database=False, input_space=False, preprocessing=False
-        )
+        self.optimization_problem.reset(database=False, input_space=False)
         self.active_lb_names = []
         self.active_ub_names = []
         self.active_ineq_names = []
@@ -227,20 +225,76 @@ class LagrangeMultipliers:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
         problem = self.optimization_problem
-        problem.input_space.check_membership(x_vect)
+        self.__check_membership(problem, x_vect)
 
         # Check that the point satisfies other constraints
         output_functions, jacobian_functions = problem.get_functions(
             evaluate_objective=False, observable_names=None
         )
+        # Normalized by hand, and evaluated without the domain membership
+        # check that preprocessing would otherwise run: `__check_membership`
+        # above already checked the point, relaxed variables included, and
+        # preprocessing would reject one outside the domain the user
+        # declared, e.g. `2.7` for a discrete variable, at a point a relaxed
+        # run may stop at.
+        input_value = (
+            problem.input_space.normalize_vect(x_vect) if self.__normalized else x_vect
+        )
         values, _ = self.optimization_problem.evaluate_functions(
-            input_value=x_vect,
-            input_value_is_normalized=False,
+            input_value=input_value,
+            input_value_is_normalized=self.__normalized,
+            preprocess_input_value=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
         if not self.optimization_problem.constraints.is_point_feasible(values):
             logger.warning("Infeasible point, Lagrange multipliers may not exist.")
+
+    @staticmethod
+    def __check_membership(problem: OptimizationProblem, x_vect: ndarray) -> None:
+        """Check that a point is in the design space.
+
+        A variable a run relaxed to a float one, e.g. a discrete variable
+        explored continuously, may take a value outside the domain the user
+        declared for it, e.g. `2.7` for one with the choices `[1, 5, 10]`;
+        such a point is the one an algorithm can stop at,
+        and only the bounds of a relaxed variable are checked, as they were
+        for the working space of the run,
+        while a variable that is not relaxed is checked against its full
+        domain.
+
+        Args:
+            problem: The optimization problem the point is checked against.
+            x_vect: The point to check.
+
+        Raises:
+            ValueError: If the point falls outside the bounds of a variable,
+                or outside the domain of a variable that is not relaxed.
+        """
+        space = problem.input_space
+        relaxed_names = problem.database.relaxed_variable_names
+        if not relaxed_names:
+            space.check_membership(x_vect)
+            return
+
+        # The working space of a relaxation has the relaxed variables
+        # substituted with float ones of the same bounds,
+        # so checking a point against it checks the bounds only of these
+        # and the full domain of the others.
+        from gemseo.space.transformation.relaxation import SpaceRelaxation
+        from gemseo.space.variable import DataType
+
+        variables = space.variables
+        working_space = SpaceRelaxation(
+            space,
+            relax_integer=any(
+                variables[name].type == DataType.INTEGER for name in relaxed_names
+            ),
+            relax_discrete=any(
+                variables[name].type == DataType.DISCRETE for name in relaxed_names
+            ),
+        ).working_space
+        working_space.check_membership(x_vect)
 
     def _get_act_bound_jac(self, act_bounds: dict[str, ndarray]):
         """Return the Jacobian of the active bounds.
@@ -292,7 +346,12 @@ class LagrangeMultipliers:
         # one of its component (in case of multidimensional constraints) is
         # active
         problem = self.optimization_problem
-        act_constraints = problem.constraints.get_active(x_vect, ineq_tolerance)
+        # `compute` already checked `x_vect` through `_check_feasibility`,
+        # against the working space of a relaxed run,
+        # so it is not checked again here, against the declared one.
+        act_constraints = problem.constraints.get_active(
+            x_vect, ineq_tolerance, check_membership=False
+        )
         dspace = problem.input_space
 
         if self.__normalized:

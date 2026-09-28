@@ -1558,7 +1558,7 @@ def compute_doe(
 def _log_settings() -> str:
     from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
     from gemseo.core.discipline import Discipline
-    from gemseo.core.function.preprocessed_function import PreprocessedFunction
+    from gemseo.core.function.evaluation_function import EvaluationFunction
     from gemseo.util.string import MultiLineString
 
     add_not_prefix = lambda x: "" if x else " not"  # noqa: E731
@@ -1584,11 +1584,11 @@ def _log_settings() -> str:
         add_not_prefix(Discipline.validate_output_data),
     )
     text.dedent()
-    text.add("PreprocessedFunction")
+    text.add("EvaluationFunction")
     text.indent()
     text.add(
         "The counters are {}enabled.",
-        add_not_prefix(PreprocessedFunction.enable_statistics),
+        add_not_prefix(EvaluationFunction.enable_statistics),
     )
     text.dedent()
     text.add("BaseDriverLibrary")

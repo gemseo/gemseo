@@ -392,10 +392,11 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         Raises:
             TerminationCriterion: If the driver stops for some reason.
         """  # noqa: D205, D212
-        # Get the bounds anx x0
-        x_0, l_b, u_b = get_value_and_bounds(
-            problem.input_space, self._settings.normalize_design_space
-        )
+        # The problem works in the coordinates the algorithm manipulates,
+        # so its space already carries the bounds
+        # and the starting point the algorithm needs:
+        # normalizing here would do it a second time.
+        x_0, l_b, u_b = get_value_and_bounds(problem.input_space)
 
         nlopt_problem = opt(
             self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name, x_0.shape[0]

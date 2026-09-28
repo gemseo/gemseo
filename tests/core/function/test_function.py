@@ -43,15 +43,13 @@ from scipy.sparse import csr_array
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.concatenate import Concatenate
 from gemseo.core.function.convex_linear_approx import ConvexLinearApprox
+from gemseo.core.function.evaluation_function import EvaluationFunction
 from gemseo.core.function.not_implementable_callable import NotImplementedCallable
-from gemseo.core.function.preprocessed_function import PreprocessedFunction
 from gemseo.core.function.restricted_function import RestrictedFunction
 from gemseo.core.function.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.function.taylor_polynomial import compute_linear_approximation
 from gemseo.core.function.taylor_polynomial import compute_quadratic_approximation
-from gemseo.core.problem.counter import EvaluationCounter
 from gemseo.problem.optimization.power_2 import Power2
-from gemseo.space.design import DesignSpace
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.check.function import FunctionJacobianChecker
 from gemseo.util.pickle import from_pickle
@@ -484,7 +482,7 @@ def test_concatenation() -> None:
 @pytest.mark.parametrize("normalize", [False, True])
 def test_set_pt_from_database(normalize) -> None:
     problem = Power2()
-    problem.preprocess_functions(is_function_input_normalized=normalize)
+    problem.bind_functions()
     x = zeros(3)
     problem.evaluate_functions(input_value=x, input_value_is_normalized=normalize)
     function = ArrayFunction(sum, name=problem.objective.name)
@@ -618,16 +616,7 @@ def test_expect_normalized_inputs_from_database(
 def test_activate_counters(enable_function_statistics) -> None:
     """Check that the function counter is active by default."""
     func = ArrayFunction(lambda x: x, name="func")
-    func = PreprocessedFunction(
-        func,
-        (func.func,),
-        (func.func,),
-        False,
-        None,
-        EvaluationCounter(),
-        False,
-        DesignSpace(),
-    )
+    func = EvaluationFunction(func)
     assert func.n_calls == 0
     func.evaluate(array([1.0]))
     assert func.n_calls == 1
@@ -635,27 +624,18 @@ def test_activate_counters(enable_function_statistics) -> None:
 
 def test_deactivate_counters(snapshot) -> None:
     """Check that the function counter is set to None when deactivated."""
-    enable_statistics = PreprocessedFunction.enable_statistics
+    enable_statistics = EvaluationFunction.enable_statistics
 
-    PreprocessedFunction.enable_statistics = False
+    EvaluationFunction.enable_statistics = False
 
     func = ArrayFunction(lambda x: x, name="func")
-    func = PreprocessedFunction(
-        func,
-        (func.func,),
-        (func.func,),
-        False,
-        None,
-        EvaluationCounter(),
-        False,
-        DesignSpace(),
-    )
+    func = EvaluationFunction(func)
     assert not func.n_calls
 
     with assert_exception(RuntimeError, snapshot):
         func.n_calls = 1
 
-    PreprocessedFunction.enable_statistics = enable_statistics
+    EvaluationFunction.enable_statistics = enable_statistics
 
 
 def test_get_indexed_name(function) -> None:
@@ -795,16 +775,7 @@ def test_serialize_deserialize(
         tmp_wd: Fixture to move into a temporary work directory.
     """
     function = mdo_function(**kwargs)
-    function = PreprocessedFunction(
-        function,
-        (sum,),
-        (sum,),
-        False,
-        None,
-        EvaluationCounter(),
-        False,
-        DesignSpace(),
-    )
+    function = EvaluationFunction(function)
     out_file = "function1.o"
     function.enable_statistics = enable_statistics
     function.evaluate(value)
@@ -929,16 +900,7 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
 def test_func(method, n_calls, enable_function_statistics):
     """Check that the property func is an alias of _func."""
     f = ArrayFunction(lambda x: 2 * x, name="f")
-    f = PreprocessedFunction(
-        f,
-        (f.func,),
-        (f.func,),
-        False,
-        None,
-        EvaluationCounter(),
-        False,
-        DesignSpace(),
-    )
+    f = EvaluationFunction(f)
     assert f.n_calls == 0
     assert_array_equal(getattr(f, method)(array([2])), array([4]))
     assert f.n_calls == n_calls

@@ -224,7 +224,7 @@ class ScalableProblem(unittest.TestCase):
 
         opt_pb = scenario.formulation.problem
 
-        opt_pb.preprocess_functions()
+        opt_pb.bind_functions()
         for func in opt_pb.functions:
             checker = FunctionJacobianChecker(func)
             assert checker.check(opt_pb.design_space.get_current_value(), step=1e-6)

@@ -11,6 +11,9 @@
 # name: test_check_an_empty_space[RandomSpace]
   'The random space is empty.'
 # ---
+# name: test_to_hdf_of_a_random_space
+  'A RandomSpace cannot be written to an HDF file.'
+# ---
 # name: test_variables_view_gives_unfreezable_bounds[lower_bound-<lambda>]
   'cannot set WRITEABLE flag to True of this array'
 # ---

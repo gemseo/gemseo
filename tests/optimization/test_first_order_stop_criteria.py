@@ -48,7 +48,7 @@ def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum) -> None:
 def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
     """Test KKT criterion on Power2 problem."""
     problem = Power2()
-    problem.preprocess_functions()
+    problem.bind_functions()
     design_point = (
         array([0.5 ** (1.0 / 3.0), 0.5 ** (1.0 / 3.0), 0.9 ** (1.0 / 3.0)])
         if is_optimum
@@ -70,7 +70,7 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
 def test_kkt_norm_correctly_stored(settings_class, problem, store_jacobian) -> None:
     """Test that kkt norm is stored at each iteration requiring gradient."""
-    problem.preprocess_functions()
+    problem.bind_functions()
     options = {
         "normalize_design_space": True,
         "kkt_tol_abs": 1e-5,
@@ -99,3 +99,36 @@ def test_kkt_norm_correctly_stored(settings_class, problem, store_jacobian) -> N
             optimization_library_factory.execute(
                 problem, settings=settings_class(**options)
             )
+
+
+def test_kkt_checker_removed_after_each_run() -> None:
+    """A KKT checker no longer accumulates as a store listener across runs."""
+    problem = Power2()
+    problem.bind_functions()
+    settings = SLSQP_Settings(max_iter=50, kkt_tol_abs=1e-3)
+    for _ in range(3):
+        optimization_library_factory.execute(problem, settings=settings)
+
+    _, store_listeners = problem.database.clear_listeners()
+    assert not store_listeners
+
+
+def test_stale_kkt_checker_does_not_shortcut_a_tighter_run() -> None:
+    """A loose KKT tolerance from a previous run does not leak into the next one."""
+    reference_problem = Power2()
+    reference_problem.bind_functions()
+    reference_result = optimization_library_factory.execute(
+        reference_problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-12)
+    )
+
+    problem = Power2()
+    problem.bind_functions()
+    optimization_library_factory.execute(
+        problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-1)
+    )
+    problem.reset()
+    result = optimization_library_factory.execute(
+        problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-12)
+    )
+
+    assert result.f_opt == pytest.approx(reference_result.f_opt, abs=1e-10)

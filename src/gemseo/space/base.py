@@ -53,6 +53,7 @@ if TYPE_CHECKING:
 
     from gemseo.space.variable import BaseVariable
     from gemseo.util.typing import IntegerArray
+    from gemseo.util.typing import StrPath
 
 _VariablesT = TypeVar("_VariablesT", bound="Variables[Any]")
 """The type of the registry of the variables of the space."""
@@ -100,6 +101,11 @@ class BaseVariableSpace(
 
     _variables_view_class: ClassVar[type[VariablesView[Any]]] = VariablesView
     """The class of the read-only view over the registry of the variables."""
+
+    _supports_normalization: ClassVar[bool] = False
+    """Whether the space offers a current value, bounds, membership checking and
+    normalization, i.e. the API that an evaluation needs to prepare an input value
+    and bound a finite-difference step."""
 
     def __init__(self, name: str = "") -> None:
         """
@@ -164,6 +170,19 @@ class BaseVariableSpace(
             raise ValueError(msg)
 
         self._variables[name] = variable
+
+    def _add_default_variable(self, name: str, size: int) -> None:
+        """Add a variable described by nothing more than a name and a size.
+
+        A space that can describe a variable from its name and size only,
+        e.g. a design space, adds it.
+        One that needs more, e.g. a probability distribution for a random space,
+        leaves the space unchanged.
+
+        Args:
+            name: The name of the variable.
+            size: The size of the variable.
+        """
 
     @property
     def dimension(self) -> int:
@@ -291,6 +310,23 @@ class BaseVariableSpace(
         e.g. a random space,
         so the base implementation does nothing.
         """
+
+    def _to_hdf(self, file_path: StrPath, append: bool, hdf_node_path: str) -> None:
+        """Export the space to an HDF file.
+
+        Args:
+            file_path: The path to the file to export the space.
+            append: If `False`, existing node data is replaced by the current space.
+                If `True`, the space is exported alongside the rest of the file.
+            hdf_node_path: The path of the HDF node in which the space should be
+                exported. If empty, the root node is considered.
+
+        Raises:
+            NotImplementedError: As the base implementation cannot write the space
+                to an HDF file.
+        """
+        msg = f"A {self.__class__.__name__} cannot be written to an HDF file."
+        raise NotImplementedError(msg)
 
     @property
     @abstractmethod

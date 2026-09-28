@@ -199,7 +199,7 @@ def x2_problem() -> X2:
          A X_2 problem.
     """
     x2_problem = X2()
-    x2_problem.preprocess_functions()
+    x2_problem.bind_functions()
     return x2_problem
 
 

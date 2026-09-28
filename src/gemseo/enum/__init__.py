@@ -51,7 +51,12 @@ if TYPE_CHECKING:
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Hypersphere  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Optimizer  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Strength  # noqa: F401
-    from gemseo.enum._constraint_aggregation import EvaluationFunction  # noqa: F401
+    from gemseo.enum._constraint_aggregation import AggregationFunction  # noqa: F401
+
+    # TODO: name conflict (issue #1812): DataType clashes with SobieskiBase.DataType;
+    # rename both at definition site (DesignVariableType / SobieskiDataType) and drop
+    # the aliases.
+    from gemseo.enum._data_type import DataType as DesignVariableType  # noqa: F401
     from gemseo.enum._ot_optimal_lhs import SpaceFillingCriterion  # noqa: F401
     from gemseo.enum._ot_optimal_lhs import TemperatureProfile  # noqa: F401
     from gemseo.machine_learning.core.quality.base_ml_model_quality import (
@@ -100,11 +105,6 @@ if TYPE_CHECKING:
         SobieskiBase as _SobieskiBase,
     )
     from gemseo.problem.uncertainty.util import UniformDistribution  # noqa: F401
-
-    # TODO: name conflict (issue #1812): DataType clashes with SobieskiBase.DataType;
-    # rename both at definition site (DesignVariableType / SobieskiDataType) and drop
-    # the aliases.
-    from gemseo.space.variable import DataType as DesignVariableType  # noqa: F401
     from gemseo.uncertainty.distribution.core.base_fitter import (
         BaseDistributionFitter as _BaseDistributionFitter,
     )
@@ -235,6 +235,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "AccelerationMethod": (
         "gemseo.mda.sequence_transformer.acceleration:AccelerationMethod"
     ),
+    "AggregationFunction": "gemseo.enum._constraint_aggregation:AggregationFunction",
     "Algorithm": "gemseo.uncertainty.sensitivity.sobol:SobolAnalysis.Algorithm",
     "Alpha": "gemseo.doe.pydoe.settings.pydoe_ccdesign:Alpha",
     "AnalysisType": "gemseo.uncertainty.sensitivity.hsic:HSICAnalysis.AnalysisType",
@@ -254,11 +255,10 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "DatasetTrend": "gemseo.post.dataset.trend:Trend",
     "DatasetType": "gemseo.problem.dataset:DatasetType",
     "DerivationMode": "gemseo.core.derivative.derivation_mode:DerivationMode",
-    "DesignVariableType": "gemseo.space.variable:DataType",
+    "DesignVariableType": "gemseo.enum._data_type:DataType",
     "DifferentiationMethod": (
         "gemseo.core.problem.evaluation:EvaluationProblem.DifferentiationMethod"
     ),
-    "EvaluationFunction": "gemseo.enum._constraint_aggregation:EvaluationFunction",
     "EvaluationFunctionName": (
         "gemseo.machine_learning.core.quality.base_ml_model_quality"
         ":BaseMLModelQuality.EvaluationFunctionName"

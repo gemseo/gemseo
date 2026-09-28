@@ -30,7 +30,7 @@ from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
-from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.function.evaluation_function import EvaluationFunction
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -44,6 +44,7 @@ from gemseo.util.constant import _enable_discipline_status
 from gemseo.util.constant import _enable_function_statistics
 from gemseo.util.constant import _enable_parallel_execution
 from gemseo.util.constant import _enable_progress_bar
+from gemseo.util.constant import _enable_working_database
 from gemseo.util.constant import _validate_input_data
 from gemseo.util.constant import _validate_output_data
 from gemseo.util.constant import n_cpus
@@ -106,7 +107,18 @@ def _apply_enable_function_statistics(value: bool) -> None:
     Args:
         value: The value of the field.
     """
-    PreprocessedFunction.enable_statistics = value
+    EvaluationFunction.enable_statistics = value
+
+
+def _apply_enable_working_database(value: bool) -> None:
+    """Apply `enable_working_database`.
+
+    Args:
+        value: The value of the field.
+    """
+    # The problem is what derives a run in the coordinates of the algorithm,
+    # so it is what decides whether a store of them is built.
+    EvaluationProblem.enable_working_database = value
 
 
 def _apply_enable_parallel_execution(value: bool) -> None:
@@ -152,6 +164,7 @@ _apply: Final[Mapping[str, Callable[[bool], None]]] = MappingProxyType({
     "enable_discipline_statistics": _apply_enable_discipline_statistics,
     "enable_discipline_status": _apply_enable_discipline_status,
     "enable_function_statistics": _apply_enable_function_statistics,
+    "enable_working_database": _apply_enable_working_database,
     "enable_parallel_execution": _apply_enable_parallel_execution,
     "enable_progress_bar": _apply_enable_progress_bar,
     "validate_input_data": _apply_validate_input_data,
@@ -238,6 +251,19 @@ is 1.""",
         description="""Whether to enable the progress bar attached to the drivers,
 in charge to log the execution of the process:
 iteration, execution time and objective value.""",
+    )
+
+    enable_working_database: bool = Field(
+        default=_enable_working_database,
+        description="""Whether to record the evaluations of a run
+a second time, in the coordinates the algorithm works on,
+which a driver leaves in the `working_database` of the problem.
+This is a debugging aid: nothing of GEMSEO reads that store,
+and a run gives the same results whether it is enabled or not.
+An algorithm building sub-problems and handing them to a sub-driver
+leaves it at `None`, working in the coordinates the user declared itself.
+It is written by the process performing the evaluation,
+so a parallel run records the evaluations of its own process only.""",
     )
 
     validate_input_data: bool = Field(
@@ -343,6 +369,7 @@ after execution.""",
         - `enable_discipline_status`,
         - `enable_function_statistics`,
         - `enable_parallel_execution`,
+        - `enable_working_database`,
         - `validate_input_data`,
         - `validate_output_data`.
 

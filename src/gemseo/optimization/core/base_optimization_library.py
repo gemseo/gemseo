@@ -122,10 +122,30 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         tuple[type[BaseGradientBasedAlgorithmSettings]]
     ] = (BaseGradientBasedAlgorithmSettings,)
 
+    _kkt_checker: _KKTChecker | None = None
+    """The KKT-norm checker attached to the current run's database, if any.
+
+    It is a store listener on the problem the user built,
+    so it has to be removed from it at the end of the run,
+    whatever the outcome,
+    or a later run would find the tolerances of this one still watching its database.
+    """
+
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self._f_tol_tester = ObjectiveToleranceTester()
         self._x_tol_tester = DesignToleranceTester()
+
+    def _reset(self) -> None:
+        # Ahead of `super()._reset()`, which sets `_original_problem` back to
+        # `None`: the checker is removed from its database before that
+        # reference is lost.
+        if self._kkt_checker is not None:
+            self._original_problem.database.clear_listeners(
+                new_iter_listeners=None, store_listeners=(self._kkt_checker,)
+            )
+            self._kkt_checker = None
+        super()._reset()
 
     def _check_constraints_handling(self, problem: OptimizationProblem) -> None:
         """Check if problem and algorithm are consistent for constraints handling."""
@@ -167,6 +187,32 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
             return [-constraint for constraint in problem.constraints]
         return problem.constraints
 
+    def _attach_criteria(self, problem: OptimizationProblem) -> None:  # noqa: D102
+        super()._attach_criteria(problem)
+
+        # Only the KKT checker is bound to a problem.
+        # The tolerance testers are configured from the settings
+        # and handed a problem
+        # when they run,
+        # and the settings they read are adjusted by some `_pre_run` implementations,
+        # so they are built there
+        # rather than here.
+        if self.ALGORITHM_INFOS[self._algo_name].require_gradient:
+            kkt_abs_tol = self._settings.kkt_tol_abs
+            kkt_rel_tol = self._settings.kkt_tol_rel
+            if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
+                self._kkt_checker = _KKTChecker(
+                    problem,
+                    kkt_abs_tol,
+                    kkt_rel_tol,
+                    self._settings.ineq_tolerance,
+                )
+                problem.add_listener(
+                    self._kkt_checker,
+                    at_each_iteration=False,
+                    at_each_function_call=True,
+                )
+
     def _pre_run(self, problem: OptimizationProblem) -> None:
         super()._pre_run(problem)
 
@@ -192,21 +238,6 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         )
 
         require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
-        if require_gradient:
-            kkt_abs_tol = self._settings.kkt_tol_abs
-            kkt_rel_tol = self._settings.kkt_tol_rel
-            if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
-                problem.add_listener(
-                    _KKTChecker(
-                        problem,
-                        kkt_abs_tol,
-                        kkt_rel_tol,
-                        self._settings.ineq_tolerance,
-                    ),
-                    at_each_iteration=False,
-                    at_each_function_call=True,
-                )
-
         problem.input_space.initialize_missing_current_values()
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
             problem.input_space.to_complex()
@@ -218,7 +249,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         )
 
         function_values, _ = problem.evaluate_functions(
-            input_value_is_normalized=self._settings.normalize_design_space,
+            # The problem handed here works in the coordinates the algorithm manipulates
+            # and its current value is already expressed in them,
+            # so there is nothing left to denormalize.
+            input_value_is_normalized=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )

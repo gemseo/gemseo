@@ -32,7 +32,7 @@ it is recommended to evaluate the array function using the
 [evaluate()][gemseo.core.function.array_function.ArrayFunction.evaluate] method,
 which can perform post-processing,
 such as calculating execution statistics
-(if the function is a [PreprocessedFunction][gemseo.core.function.preprocessed_function.PreprocessedFunction])
+(if the function is a [EvaluationFunction][gemseo.core.function.evaluation_function.EvaluationFunction])
 or extracting the real part when dealing with an imaginary number.
 
 The [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] can also

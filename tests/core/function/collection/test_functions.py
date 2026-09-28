@@ -76,8 +76,8 @@ def test_names(functions: Functions, mdo_functions: list[ArrayFunction]):
     ]
 
 
-def test_original_reset(functions: Functions, mdo_functions: list[ArrayFunction]):
-    """Check the property original and the method reset."""
+def test_original(functions: Functions, mdo_functions: list[ArrayFunction]):
+    """Check the property original."""
     functions.extend(mdo_functions)
     assert list(functions.get_originals()) == mdo_functions
     original_mdo_functions = [
@@ -90,10 +90,6 @@ def test_original_reset(functions: Functions, mdo_functions: list[ArrayFunction]
         mdo_function.original = original_mdo_function
 
     assert list(functions) == mdo_functions
-    assert list(functions.get_originals()) == original_mdo_functions
-
-    functions.reset()
-    assert list(functions) == original_mdo_functions
     assert list(functions.get_originals()) == original_mdo_functions
 
 

@@ -22,6 +22,7 @@ from openturns import AnalyticalResult
 from openturns import FORMResult
 
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.reliability.openturns.form import OT_FORM
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
@@ -112,6 +113,21 @@ def test_type_errors(random_space, f, snapshot):
     problem.add_event((f > 0.75) & (f > 0.75), event_name="a")
     with assert_exception(TypeError, snapshot):
         form.execute(problem)
+
+
+def test_empty_random_space(f, snapshot):
+    """Check the error raised when the random space is empty.
+
+    The problem is checked as a driver checks it,
+    so that an empty space is named by the space check
+    instead of surfacing as an `AttributeError` raised by OpenTURNS.
+    """
+    problem = ReliabilityProblem(RandomSpace())
+    function = ArrayFunction(f, name="y")
+    problem.add_event(problem.get_event_variables(function) > 0.75, event_name="a")
+
+    with assert_exception(ValueError, snapshot):
+        OT_FORM().execute(problem)
 
 
 @pytest.mark.parametrize(

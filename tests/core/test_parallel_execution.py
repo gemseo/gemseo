@@ -516,8 +516,9 @@ def test_check_method_in_init(monkeypatch, snapshot) -> None:
 def test_serial_execution_in_calling_process(use_threading) -> None:
     """With a single process, the tasks run in the calling process and thread.
 
-    A pool with a single worker runs the tasks one after another, but still in a
-    child process or thread, which is not what asking for a serial execution means.
+    A pool with a single worker runs the tasks one after another,
+    but still in a child process or thread,
+    which is not what asking for a serial execution means.
     """
     parallel_execution = CallableParallelExecution(
         [_get_worker_ids], n_processes=1, use_threading=use_threading
