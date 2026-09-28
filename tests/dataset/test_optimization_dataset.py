@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import pytest
 from numpy import arange
+from numpy import array
+from numpy import nan
 from numpy.testing import assert_equal
 from pandas.testing import assert_frame_equal
 
@@ -296,3 +298,68 @@ def test_get_best_iter_history(optim_data) -> None:
 
     best_iteration_history = dataset_2.get_best_iteration_history()
     assert_equal(best_iteration_history, [1, 2, 3, 3, 3, 3, 3])
+
+
+@pytest.mark.parametrize(
+    ("add_constraint_group", "feasible_value"),
+    [
+        ("add_inequality_constraint_group", -1.0),
+        ("add_equality_constraint_group", 0.0),
+    ],
+)
+@pytest.mark.parametrize("component", [0, 1, None])
+@pytest.mark.parametrize(
+    ("iteration", "expected"),
+    [(1, [1, 2, 3]), (2, [1, 1, 3]), (3, [1, 1, 1])],
+)
+def test_get_best_iter_history_nan_constraint(
+    add_constraint_group, feasible_value, iteration, component, expected
+) -> None:
+    """Check that an iteration whose constraints contain NaN is infeasible.
+
+    Its violation is infinite,
+    so it is never preferred as least infeasible iteration,
+    and the first iteration is recorded
+    even when all its constraints are NaN.
+    """
+    constraint_values = array([
+        [feasible_value, feasible_value],
+        [0.5, feasible_value],
+        [feasible_value, feasible_value],
+    ])
+    # component is None for the "full NaN" case,
+    # i.e. all the constraint components of the iteration are NaN.
+    nan_components = slice(None) if component is None else component
+    constraint_values[iteration - 1, nan_components] = nan
+    dataset = OptimizationDataset()
+    dataset.add_design_group(array([[0.0], [1.0], [3.0]]), "x")
+    dataset.add_objective_group(array([[5.0], [1.0], [3.0]]), "f")
+    getattr(dataset, add_constraint_group)(constraint_values, ("g1", "g2"))
+    assert_equal(dataset.get_best_iteration_history(), expected)
+
+
+@pytest.mark.parametrize(
+    ("objective_values", "constraint_values", "expected"),
+    [
+        ([nan, 3.0, 1.0], [-1.0, -1.0, -1.0], [1, 2, 3]),
+        ([5.0, nan, 1.0], [1.0, -1.0, -1.0], [1, 2, 3]),
+        ([nan, 3.0, 1.0], None, [1, 2, 3]),
+    ],
+    ids=[
+        "feasible_first",
+        "after_infeasible",
+        "unconstrained_first",
+    ],
+)
+def test_get_best_iter_history_nan_objective(
+    objective_values, constraint_values, expected
+) -> None:
+    """Check that a NaN objective is considered as the worst objective value."""
+    dataset = OptimizationDataset()
+    dataset.add_design_group(array([[0.0], [1.0], [2.0]]), "x")
+    dataset.add_objective_group(array(objective_values).reshape(-1, 1), "f")
+    if constraint_values is not None:
+        dataset.add_inequality_constraint_group(
+            array(constraint_values).reshape(-1, 1), "g"
+        )
+    assert_equal(dataset.get_best_iteration_history(), expected)

@@ -387,6 +387,10 @@ class OptimizationDataset(Dataset):
         either the best feasible iteration up to this iteration
         in terms of objective
         or the least unfeasible solution.
+        An iteration whose constraints contain a NaN value
+        is considered infeasible,
+        with an infinite violation,
+        and a NaN objective is considered as the worst objective value.
 
         Args:
             ineq_tolerance: The tolerance on the inequality constraints,
@@ -405,7 +409,7 @@ class OptimizationDataset(Dataset):
             ineq_tolerance = metadata.tolerances.inequality
             eq_tolerance = metadata.tolerances.equality
 
-        objective_history = self.get_view(group_names=self.objective_group)
+        objective_history = self.get_view(group_names=self.objective_group).fillna(inf)
         best_objective = inf
         best_iteration_history = []
         there_are_equality_constraints = self.equality_constraint_group in self
@@ -415,10 +419,14 @@ class OptimizationDataset(Dataset):
             max_constraint = []
             if there_are_equality_constraints:
                 eq = self.get_view(group_names=self.equality_constraint_group)
-                max_constraint.append((eq.abs() - eq_tolerance).max(axis=1))
+                max_constraint.append(
+                    (eq.abs() - eq_tolerance).max(axis=1, skipna=False).fillna(inf)
+                )
             if there_are_inequality_constraints:
                 ineq = self.get_view(group_names=self.inequality_constraint_group)
-                max_constraint.append((ineq - ineq_tolerance).max(axis=1))
+                max_constraint.append(
+                    (ineq - ineq_tolerance).max(axis=1, skipna=False).fillna(inf)
+                )
 
             if len(max_constraint) == 1:
                 max_constraint = max_constraint[0]
@@ -430,7 +438,11 @@ class OptimizationDataset(Dataset):
             for iteration, objectives in objective_history.iterrows():
                 objective = objectives.iloc[0]
                 constraint = max_constraint[iteration]
-                if is_feasible[iteration] or iteration == 0:
+                if not best_iteration_history:
+                    best_objective = objective
+                    best_unfeasible_constraint = constraint
+                    best_iteration_history.append(iteration)
+                elif is_feasible[iteration]:
                     if (
                         objective < best_objective
                         or not is_feasible[best_iteration_history[-1]]
@@ -449,7 +461,7 @@ class OptimizationDataset(Dataset):
         else:
             for iteration, objectives in objective_history.iterrows():
                 objective = objectives.iloc[0]
-                if objective < best_objective:
+                if not best_iteration_history or objective < best_objective:
                     best_objective = objective
                     best_iteration_history.append(iteration)
                 else:
