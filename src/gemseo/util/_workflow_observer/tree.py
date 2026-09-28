@@ -23,6 +23,8 @@ from threading import current_thread
 from typing import TYPE_CHECKING
 from typing import Final
 
+from gemseo.util._worker_context import get_thread_parent_id
+
 if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
 
@@ -49,7 +51,7 @@ class ObserverTree:
 
         # Determine the potential parent ids from younger to older.
         parent_process_ids = (getpid(), getppid())
-        if (tid := getattr(current_thread(), "parent_id", None)) is None:
+        if (tid := get_thread_parent_id()) is None:
             parent_ids = parent_process_ids
         else:
             parent_ids = (tid, *parent_process_ids)
@@ -96,9 +98,8 @@ class ObserverTree:
         Returns:
             The ID of the current thread or process.
         """
-        thread = current_thread()
-        if (parent_thread_id := getattr(thread, "parent_id", None)) and (
-            thread_id := thread.native_id
+        if (parent_thread_id := get_thread_parent_id()) and (
+            thread_id := current_thread().native_id
         ) != parent_thread_id:
             return thread_id
         return getpid()

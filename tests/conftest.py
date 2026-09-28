@@ -17,12 +17,14 @@
 from __future__ import annotations
 
 import operator
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import NamedTuple
 
 import matplotlib
 import pytest
+from matplotlib import font_manager
 from numpy import array
 
 from gemseo import set_data_converters
@@ -43,6 +45,40 @@ if TYPE_CHECKING:
 matplotlib.use("agg")
 
 doc_example_mark = "doc_examples"
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Stop the session when matplotlib does not use its bundled fonts.
+
+    The images of the snapshot tests are rendered with the fonts bundled with
+    matplotlib. The matplotlib font cache is shared by all the environments of the
+    user; when it is written by a matplotlib whose bundled fonts are missing, for
+    example while a virtual environment is being reinstalled, the system fonts are
+    used instead and all the image comparisons fail.
+
+    Args:
+        session: The pytest session.
+    """
+    font_path = Path(
+        font_manager.findfont(
+            font_manager.FontProperties(family=["DejaVu Sans"]),
+            fallback_to_default=False,
+        )
+    )
+    # The paths are resolved because matplotlib can be imported through a symbolic
+    # link, e.g. lib64 -> lib in a virtual environment whose platlibdir is lib64.
+    data_path = Path(matplotlib.get_data_path()).resolve()
+    if not font_path.resolve().is_relative_to(data_path):
+        cache_path = Path(
+            matplotlib.get_cachedir(),
+            f"fontlist-v{font_manager.FontManager.__version__}.json",
+        )
+        pytest.exit(
+            f"matplotlib uses the font {font_path} instead of the one it bundles, "
+            "the image comparisons would fail: its font cache is stale. "
+            f"Delete {cache_path} and run the tests again.",
+            returncode=pytest.ExitCode.USAGE_ERROR,
+        )
 
 
 def pytest_collection_modifyitems(

@@ -32,8 +32,8 @@ from gemseo.util._workflow_observer.tree import ObserverTree
 if TYPE_CHECKING:
     from gemseo.util._directory_manager.processor.factory import DMProcessorFactory
     from gemseo.util._workflow_observer.base_processor import BaseProcessor
-    from gemseo.util._workflow_observer.interface import CallArguments
     from gemseo.util._workflow_observer.interface import CallSpec
+    from gemseo.util.typing import StrKeyMapping
 
 
 @dataclass
@@ -73,13 +73,13 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
     __processor_factory: Final[DMProcessorFactory] = dm_processor_factory
     """The observation processor factory."""
 
-    _object: object
+    object_: object
     """The observed object."""
 
     _status: Status
     """The status for the observation of a workflow."""
 
-    _processor: BaseProcessor
+    __processor: BaseProcessor
     """The object that does the actual processing of the observed object."""
 
     # __stream_handler: StreamHandler
@@ -88,18 +88,18 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
     def __init__(  # noqa: D107
         self,
         object_: object,
-        init_arguments: CallArguments,
+        init_arguments: StrKeyMapping,
     ) -> None:
-        self._object = object_
+        self.object_ = object_
         self._status = Status()
-        self._processor = self.__processor_factory.create(self, init_arguments)
+        self.__processor = self.__processor_factory.create(self, init_arguments)
         # self.__stream_handler = StreamHandler(StringIO())
 
     def start(self, call_spec: CallSpec) -> None:  # noqa: D102
         if self._status.is_started:
             msg = "Cannot start an already started observer."
             raise RuntimeError(msg)
-        self._processor.start(call_spec)
+        self.__processor.start(call_spec)
         self._status.is_started = True
         self.__observer_tree.put(self)
         # self.__add_logging_handler()
@@ -110,7 +110,7 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
             raise RuntimeError(msg)
         self._status.is_started = False
         try:
-            self._processor.end(call_spec, returned_data)
+            self.__processor.end(call_spec, returned_data)
         finally:
             # Always remove the observer from the tree, even when the processor
             # fails: a leftover entry would corrupt the parent-child bookkeeping
@@ -125,7 +125,7 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
     #     """Add a logging handler to for logging in the observer directory."""
     #     # Logging message may come from any class ancestors,
     #     # thus all module loggers are instrumented.
-    #     for class_ in self._object.__class__.__mro__:
+    #     for class_ in self.object_.__class__.__mro__:
     #         module_logger = getLogger(class_.__module__)
     #         module_logger.addHandler(self.__stream_handler)
 
@@ -137,7 +137,7 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
     #     even if the related object is not being currently used.
     #     """
     #     stream_handler = self.__stream_handler
-    #     for class_ in self._object.__class__.__mro__:
+    #     for class_ in self.object_.__class__.__mro__:
     #         module_logger = getLogger(class_.__module__)
     #         for handler in module_logger.handlers[:]:
     #             if handler == stream_handler:

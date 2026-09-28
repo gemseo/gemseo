@@ -18,6 +18,7 @@ from pathlib import Path
 from threading import Thread
 from threading import current_thread
 from threading import get_native_id
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
@@ -50,6 +51,8 @@ from gemseo.util._directory_manager.manager import DirectoryManager
 from gemseo.util._directory_manager.settings import CleanUpPolicy
 from gemseo.util._directory_manager.settings import MDACleanUpPolicy
 from gemseo.util._directory_manager.settings import Settings
+from gemseo.util._filename_sanitizer import secure_filename
+from gemseo.util._workflow_observer.scenario import ScenarioWorkflowObserver
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.global_configuration import _configuration
 from gemseo.util.platform import platform_is_windows
@@ -63,6 +66,7 @@ from .directory_manager_test_helper import read_paths_from_txt
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
     from gemseo.scenario.evaluation import EvaluationScenario
     from gemseo.util.typing import StrKeyMapping
@@ -112,7 +116,17 @@ def assert_directory_tree(ref_file_path: Path) -> None:
     """Validate the tree against a reference one."""
     root_path = _configuration.directory_manager.execution_root_path
     ref_dir_paths = read_paths_from_txt(ref_file_path, root_path)
-    actual_dir_paths = {path for path in root_path.rglob("*") if path.is_dir()}
+    # The trace registry subtree, and the arrays directory a large traced
+    # value is written to (see `_NpyArrayStore`), are not part of the
+    # workflow-mirroring tree the reference files describe: both are excluded
+    # rather than added to every reference file.
+    actual_dir_paths = {
+        path
+        for path in root_path.rglob("*")
+        if path.is_dir()
+        and not path.is_relative_to(root_path / ".gemseo-traces")
+        and path.name != ".gemseo-trace.arrays"
+    }
     assert ref_dir_paths == actual_dir_paths, (
         f"Missing dirs: {ref_dir_paths - actual_dir_paths}"
     )
@@ -382,6 +396,26 @@ def test_all_policies_sobieski_bilevel(
 )
 @parametrized_clean_up_policy
 @pytest.mark.xfail(
+    strict=True,
+    raises=AssertionError,
+    reason=(
+        "The reference directory trees are stale. The assertion below used to "
+        "compare the reference set with itself, so it asserted nothing; once "
+        "corrected it fails, with exactly the same missing directories on "
+        "upstream/develop, hence the drift predates this branch. Deciding "
+        "which tree is the correct one, and regenerating the reference files "
+        "with their explanatory comments, is a task of its own. The mark is "
+        "strict and restricted to the assertion failure, so that a breakage of "
+        "the scenario run itself is still reported, and so that regenerating "
+        "the reference files reports an XPASS asking for the mark's removal."
+    ),
+)
+# Stacked below the mark above on purpose: pytest keeps the first xfail mark
+# whose condition holds, scanning from the one closest to the function, so this
+# one wins on Windows, where the failure is the long directory paths and not the
+# stale references, hence neither an `AssertionError` nor something to be strict
+# about.
+@pytest.mark.xfail(
     platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
@@ -427,8 +461,14 @@ def test_all_policies_bilevel_bcd_sobieski(
         / reference_directories.format(platform, clean_up_policy)
     )
     ref_dir_paths = read_paths_from_txt(ref_file_path, dm_settings.execution_root_path)
+    # The trace registry subtree is not part of the workflow-mirroring tree
+    # the reference files describe: it is excluded rather than added to
+    # every reference file.
     actual_dir_paths = {
-        path for path in dm_settings.execution_root_path.rglob("*") if path.is_dir()
+        path
+        for path in dm_settings.execution_root_path.rglob("*")
+        if path.is_dir()
+        and not path.is_relative_to(dm_settings.execution_root_path / ".gemseo-traces")
     }
     # There can be legitimate variations in the execution of a BCD scenario when it is
     # executed in different machines, mostly because of the gradient-based optimizer at
@@ -436,8 +476,8 @@ def test_all_policies_bilevel_bcd_sobieski(
     # includes at least the reference directories.
     # In case of failure, check the generated directories and verify that the executed
     # workflow is consistent with the directory tree, then update the reference file.
-    assert ref_dir_paths.issubset(ref_dir_paths), (
-        f"Extra dirs: {ref_dir_paths - actual_dir_paths}"
+    assert ref_dir_paths.issubset(actual_dir_paths), (
+        f"Missing dirs: {ref_dir_paths - actual_dir_paths}"
     )
 
 
@@ -746,6 +786,36 @@ def test_scenario_with_non_ascii_name(dm_settings, snapshot):
         scenario.execute(LHS_Settings(n_samples=1))
 
 
+def test_scenario_named_after_the_trace_registry_directory(dm_settings):
+    """Verify that a root-level observee named `gemseo-traces` does not clash.
+
+    The trace registry writes under the root path, in the very namespace in
+    which the manager creates the execution directories, and it does so before
+    any of them exists. Its directory name therefore starts with a dot, which
+    no sanitized observee name can produce, so that the bare `mkdir` of
+    `DirectoryManager.start_directory` cannot hit it.
+    """
+    discipline = DisciplineWithFiles()
+    design_space = create_design_space()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    scenario = create_scenario(
+        discipline,
+        "y",
+        design_space,
+        formulation_settings_model=DisciplinaryOpt_Settings(),
+        name="gemseo-traces",
+    )
+
+    scenario.execute(LHS_Settings(n_samples=1))
+
+    root_path = dm_settings.execution_root_path
+    assert (
+        root_path / "gemseo-traces" / "DOE_sample_1" / "DisciplineWithFiles_execution"
+    ).is_dir()
+    # The registry is named after the class, not after the observee.
+    assert (root_path / ".gemseo-traces" / "MDOScenario" / "0.trace.yml").exists()
+
+
 def test_discipline_exception(dm_settings, snapshot):
     """Verify that a the observation end is done when a discipline fails."""
 
@@ -877,6 +947,52 @@ def test_solution_policy_with_non_iteration_managed_directory(dm_settings):
     assert not (scenario_path / "DisciplineWithFiles_execution").exists()
 
 
+def test_solution_policy_keeps_everything_when_optimum_is_not_in_the_database(
+    dm_settings,
+):
+    """Verify that a database miss on the optimum design keeps every directory.
+
+    `OptimizationHistory.optimum` returns an empty design vector when no
+    feasible point carries the value of the objective, and
+    `Database.get_iteration` raises `KeyError` for such a vector (a database
+    that is non-empty, but has no feasible optimum): the solution-based
+    policies must then keep everything rather than mask the exception being
+    propagated (see `DirectoryManager.__get_removals_solution`).
+    """
+    dm_settings.clean_up_policy = CleanUpPolicy.KEEP_SOLUTION_ONLY
+
+    class _FakeDatabase:
+        """A non-empty database that never holds the optimum design."""
+
+        def get_iteration(self, design: Any) -> int:
+            """Raise as the real database does for a design it does not hold.
+
+            Args:
+                design: The design vector to look up.
+
+            Returns:
+                Never returns.
+            """
+            msg = "unknown design"
+            raise KeyError(msg)
+
+    problem = SimpleNamespace(database=_FakeDatabase(), optimum=(None, array([])))
+    observer = ScenarioWorkflowObserver.__new__(ScenarioWorkflowObserver)
+    observer.object_ = SimpleNamespace(formulation=SimpleNamespace(problem=problem))
+
+    manager = DirectoryManager()
+    scenario_path = manager.start_directory(observer, "FakeScenario")
+    for index in (1, 2):
+        iteration_observer = SimpleNamespace()
+        manager.start_directory(iteration_observer, f"Optimizer_iteration_{index}")
+        manager.end_directory(iteration_observer)
+
+    manager.end_directory(observer)
+
+    assert (scenario_path / "Optimizer_iteration_1").is_dir()
+    assert (scenario_path / "Optimizer_iteration_2").is_dir()
+
+
 def test_history_view_skipped_for_short_history(dm_settings):
     """Verify that no history view is plotted with 2 iterations or less."""
     dm_settings.save_history_backup = True
@@ -960,3 +1076,28 @@ def test_execution_root_path_creation(tmp_wd):
     existing_path.mkdir()
     with pytest.raises(FileExistsError):
         dm_settings.execution_root_path = existing_path
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["gemseo-traces", ".gemseo-traces", "..gemseo-traces", "_.gemseo-traces._"],
+)
+def test_secure_filename_never_returns_the_trace_registry_directory_name(name):
+    """Verify that a sanitized name can never collide with the trace registry.
+
+    The trace registry lives in a `.gemseo-traces` directory under the execution
+    root, next to the directories named after the observed objects, whose names
+    go through `secure_filename`. What keeps the two apart is the trailing
+    `strip("._")` of `secure_filename`, a vendored copy of the werkzeug
+    function: were it dropped by a re-synchronization with werkzeug, an object
+    named `.gemseo-traces` would be given the registry directory and the
+    execution would fail with a `FileExistsError`.
+
+    Args:
+        name: The name of an observed object, sanitizing to the registry
+            directory name but for its leading dot.
+    """
+    sanitized_name = secure_filename(name)
+
+    assert sanitized_name == "gemseo-traces"
+    assert sanitized_name != ".gemseo-traces"

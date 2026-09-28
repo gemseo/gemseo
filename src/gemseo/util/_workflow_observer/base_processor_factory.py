@@ -24,7 +24,7 @@ from gemseo.util._workflow_observer.base_processor import BaseProcessor
 
 if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
-    from gemseo.util._workflow_observer.interface import CallArguments
+    from gemseo.util.typing import StrKeyMapping
 
 T = TypeVar("T", bound=BaseProcessor)
 
@@ -35,7 +35,7 @@ class BaseProcessorFactory(BaseFactory[T]):
     def create(
         self,
         observer: BaseWorkflowObserver,
-        init_arguments: CallArguments,
+        init_arguments: StrKeyMapping,
     ) -> T:
         """
         Args:

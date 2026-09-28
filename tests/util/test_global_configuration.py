@@ -266,8 +266,13 @@ def test_fast_rejected_from_a_dotenv_file(tmp_wd, snapshot):
         GlobalConfiguration()
 
 
-def test_fast_rejected_from_an_environment_variable(monkeypatch, snapshot):
-    """Check that the removed fast option raises when set in the environment."""
+def test_fast_rejected_from_an_environment_variable(tmp_wd, monkeypatch, snapshot):
+    """Check that the removed fast option raises when set in the environment.
+
+    The test runs in an empty working directory: `GlobalConfiguration` also reads
+    the `.env` file of the working directory, whose keys would otherwise appear in
+    the snapshotted message, e.g. the `UV_PYTHON` of the justfile's local `.env`.
+    """
     monkeypatch.setenv("GEMSEO_FAST", "True")
     with assert_exception(ValidationError, snapshot):
         GlobalConfiguration()

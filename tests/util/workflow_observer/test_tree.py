@@ -66,7 +66,7 @@ def test_parent_uses_thread_parent_id_when_set(monkeypatch):
         parent_id = thread_parent_id
 
     monkeypatch.setattr(
-        "gemseo.util._workflow_observer.tree.current_thread", lambda: _FakeThread()
+        "gemseo.util._worker_context.current_thread", lambda: _FakeThread()
     )
     assert ObserverTree().parent is sentinel
 

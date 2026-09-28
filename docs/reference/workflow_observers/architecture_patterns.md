@@ -50,13 +50,17 @@ def execute(self):
 
 # After decoration with _decorate_with_both
 def execute(self):
-    observer.start(CallSpec(...))
+    call_spec = CallSpec.create_safely(execute, args, kwargs)
+    observer.start(call_spec)
     try:
         result = self._run()
     finally:
-        observer.end(CallSpec(...), result)
+        observer.end(call_spec, result)
     return result
 ```
+
+`CallSpec.create_safely()` normalizes the arguments by parameter name, binding a variadic
+signature too: tracing must never break an observed call.
 
 **Why not subclass?**
 

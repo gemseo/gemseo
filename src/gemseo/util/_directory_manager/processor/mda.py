@@ -20,10 +20,13 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.util._directory_manager.processor.base import BaseDMProcessor
+from gemseo.util._tracer.mda import MDAExecutionTracer
+from gemseo.util._tracer.mda import MDAIterationTracer
 from gemseo.util._workflow_observer.mda import MDAExecutionWorkflowObserver
 from gemseo.util._workflow_observer.mda import MDAIterationWorkflowObserver
 
 if TYPE_CHECKING:
+    from gemseo.util._tracer.base import BaseTracer
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
 
 
@@ -36,6 +39,8 @@ class MDAExecutionDMProcessor(BaseDMProcessor):
 
     observer_class: ClassVar[type[BaseWorkflowObserver]] = MDAExecutionWorkflowObserver
 
+    _tracer_class: ClassVar[type[BaseTracer]] = MDAExecutionTracer
+
 
 class MDAIterationDMProcessor(BaseDMProcessor):
     """Directory manager for MDA solver iteration events.
@@ -46,6 +51,8 @@ class MDAIterationDMProcessor(BaseDMProcessor):
 
     observer_class: ClassVar[type[BaseWorkflowObserver]] = MDAIterationWorkflowObserver
 
+    _tracer_class: ClassVar[type[BaseTracer]] = MDAIterationTracer
+
     def __str__(self) -> str:
-        object_ = self._observer._object
+        object_ = self._observer.object_
         return f"{object_}_iteration_{object_._current_iter}"

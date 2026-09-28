@@ -26,11 +26,9 @@ from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from multiprocessing import current_process
 from multiprocessing import get_context
 from os import getpid
 from pathlib import Path
-from threading import current_thread
 from threading import get_native_id
 from typing import TYPE_CHECKING
 from typing import Any
@@ -40,6 +38,8 @@ from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
+from gemseo.util._worker_context import tag_process_worker
+from gemseo.util._worker_context import tag_thread_worker
 from gemseo.util.constant import _enable_parallel_execution
 from gemseo.util.constant import n_cpus
 from gemseo.util.multiprocessing import start_method
@@ -160,9 +160,7 @@ def _init_process_worker(
         parent_path: The working directory of the parent at submission time.
     """
     _init_worker(task_callables)
-    worker = current_process()
-    worker.parent_id = parent_id  # type: ignore[attr-defined]
-    worker.parent_path = parent_path  # type: ignore[attr-defined]
+    tag_process_worker(parent_id, parent_path)
 
 
 def _init_thread_worker(parent_id: int, parent_path: Path) -> None:
@@ -179,9 +177,7 @@ def _init_thread_worker(parent_id: int, parent_path: Path) -> None:
         parent_id: The native id of the parent thread.
         parent_path: The working directory of the parent at submission time.
     """
-    worker = current_thread()
-    worker.parent_id = parent_id  # type: ignore[attr-defined]
-    worker.parent_path = parent_path  # type: ignore[attr-defined]
+    tag_thread_worker(parent_id, parent_path)
 
 
 def _run_task(task_index: int, input_: Any) -> Any:

@@ -24,8 +24,8 @@ from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
-    from gemseo.util._workflow_observer.interface import CallArguments
     from gemseo.util._workflow_observer.interface import CallSpec
+    from gemseo.util.typing import StrKeyMapping
 
 
 class BaseProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -47,7 +47,7 @@ class BaseProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         observer: BaseWorkflowObserver,
-        init_arguments: CallArguments,
+        init_arguments: StrKeyMapping,
     ) -> None:
         """
         Args:
