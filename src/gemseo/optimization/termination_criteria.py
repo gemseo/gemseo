@@ -93,21 +93,21 @@ class BaseToleranceTester:
         Args:
             problem: The optimization problem to which the database is attached.
             raise_exception: Whether to raise an exception
-                when the tolerance criterion is not met.
+                when the tolerance criterion is met.
             **kwargs: The options of the tester.
 
         Returns:
-            Whether the tolerance criterion is not met.
+            Whether the tolerance criterion is met.
 
         Raises:
-            TerminationCriterion: When the tolerance criterion is not met
+            TerminationCriterion: When the tolerance criterion is met
                 and `raise_exception` is `True`.
         """
-        tolerance_criterion_is_reached = self._check(problem, **kwargs)
-        if raise_exception and tolerance_criterion_is_reached:
+        tolerance_criterion_is_met = self._check(problem, **kwargs)
+        if raise_exception and tolerance_criterion_is_met:
             raise self.termination_criterion
 
-        return tolerance_criterion_is_reached
+        return tolerance_criterion_is_met
 
     @abstractmethod
     def _check(self, problem: OptimizationProblem, *args: Any, **kwargs: Any) -> bool:
@@ -119,7 +119,7 @@ class BaseToleranceTester:
             **kwargs: The options of the tester.
 
         Returns:
-            Whether the tolerance criterion is not met.
+            Whether the tolerance criterion is met.
         """
 
 
