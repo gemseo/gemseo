@@ -14,6 +14,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+import pytest
 from numpy import array
 from numpy.testing import assert_array_equal
 
@@ -21,6 +24,9 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.uncertainty.reliability.event import Event
 from gemseo.uncertainty.reliability.event_variable import EventVariable as V
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def make_event_comparable(
@@ -180,3 +186,26 @@ def test_from_functions_or_names():
     assert a._EventVariable__name == "a"
     assert b._EventVariable__name == "b"
     assert c._EventVariable__name == "c"
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda: 2 < V("h") < 5,
+        lambda: (V("f") < 3) and (V("g") > 4),
+        lambda: (V("f") < 3) or (V("g") > 4),
+        lambda: not (V("f") < 3),
+        lambda: bool(V("f") < 3),
+    ],
+    ids=[
+        "chained_comparison",
+        "and",
+        "or",
+        "not",
+        "bool",
+    ],
+)
+def test_bool_raises(build: Callable[[], object], snapshot):
+    """An Event cannot be used in a boolean context, e.g. via and, or, not or bool."""
+    with assert_exception(TypeError, snapshot):
+        build()
