@@ -1468,6 +1468,15 @@ classes:
     __init__:
       names_to_default_values: name_to_default_value
       add_uncertain_variables: null
+    # ScalableDesignSpace derived from ParameterSpace and is now a DesignSpace,
+    # which has no random variable. These identity rules stop the inherited
+    # ParameterSpace renames to add_variable, which would silently add a
+    # deterministic variable; the call is left unchanged and fails loudly.
+    # TODO: add the random variables to a separate RandomSpace instead.
+    add_random_variable:
+      __name__: add_random_variable
+    add_random_vector:
+      __name__: add_random_vector
   ScenarioResult:
     POST_FACTORY: post_factory
     optimization_problems_to_results: optimization_problem_to_result
