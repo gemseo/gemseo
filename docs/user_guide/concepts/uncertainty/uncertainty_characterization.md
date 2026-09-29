@@ -137,6 +137,19 @@ depending on the backend.
 When the components are (stochastically) dependent,
 the OpenTURNS backend supports [copulas](https://en.wikipedia.org/wiki/Copula_(statistics)),
 which separate the marginal distributions from the dependence structure.
+The dependence can be declared block-wise,
+each copula covering a subset of the components,
+the components outside these blocks being independent.
+The way these blocks are declared conditions the cost
+of the OpenTURNS reliability analyses,
+which rely on the iso-probabilistic transformation of the joint distribution;
+see [add_copula()][gemseo.space.random.RandomSpace.add_copula]
+and [OTJointDistribution][gemseo.uncertainty.distribution.openturns.joint.OTJointDistribution].
+Conditioning the components of each block-wise Rosenblatt transform
+in ascending order,
+as GEMSEO does,
+coincides with the OpenTURNS iso-probabilistic transformation
+[@Rosenblatt1952] [@Lebrun2009].
 
 Finally,
 the dependency structure can be visualized from the data

@@ -453,11 +453,7 @@ def test_remove_variable_keeps_the_other_copula_and_remaps_its_indices() -> None
         "Normal(mu=1.0, sigma=2.0), "
         "Normal(mu=1.0, sigma=2.0), "
         "Normal(mu=1.0, sigma=2.0); "
-        "MarginalDistribution("
-        "distribution=BlockIndependentCopula("
-        "NormalCopula(R = [[ 1 0 ]\n [ 0 1 ]]), "
-        "IndependentCopula(dimension = 1)), "
-        "indices=[0,2,1]))"
+        "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]]))"
     )
 
 

@@ -17,12 +17,18 @@ from __future__ import annotations
 import pickle
 
 import pytest
+from numpy import array
 from numpy.testing import assert_almost_equal
 from openturns import AnalyticalResult
+from openturns import CorrelationMatrix
 from openturns import FORMResult
+from openturns import NormalCopula
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 from gemseo.uncertainty.reliability.openturns.form import OT_FORM
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
@@ -165,3 +171,34 @@ def test_nlopt_settings_are_picklable() -> None:
     """The NLopt optimizer settings must survive a pickle round trip."""
     settings = OTNLopt(algo_name=NLoptAlgorithmName.LD_SLSQP)
     assert pickle.loads(pickle.dumps(settings)) == settings
+
+
+@pytest.mark.parametrize("use_block_copula", [False, True])
+def test_form_with_block_copula(use_block_copula):
+    """Check OT_FORM with a copula defined on a subset of the random variables.
+
+    The probability must match the one obtained
+    with the equivalent copula defined on all the random variables,
+    and the analysis must be fast,
+    which requires OpenTURNS to compute the iso-probabilistic transformation
+    analytically.
+    """
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.5
+    full_correlation = CorrelationMatrix(3)
+    full_correlation[0, 1] = 0.5
+    random_space = RandomSpace()
+    for name in ["x1", "x2", "x3"]:
+        random_space.add_variable(name, OTNormalDistribution_Settings())
+
+    if use_block_copula:
+        random_space.add_copula(("x1", "x2"), NormalCopula(correlation))
+    else:
+        random_space.add_copula(("x1", "x2", "x3"), NormalCopula(full_correlation))
+
+    problem = ReliabilityProblem(random_space)
+    f = problem.get_event_variables(ArrayFunction(lambda x: array([x.sum()]), name="y"))
+    problem.add_event(f > 2.0, event_name="a")
+    results = OT_FORM().execute(problem)
+    # x1 + x2 + x3 ~ N(0, 3 + 2 * 0.5) = N(0, 4)
+    assert results["a"].probability == pytest.approx(0.158655, abs=1e-4)
