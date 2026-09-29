@@ -46,7 +46,7 @@ class OTJointDistribution_Settings(  # noqa: N801
     to model the dependency structure
     between the components $U_1,\ldots,U_d$ of the random vector $U=(U_1,\ldots,U_d)$.
 
-    Let $F_i$ be the marginal cumulative density function (CDF) of $U_i$
+    Let $F_i$ be the marginal cumulative distribution function (CDF) of $U_i$
     and $F$ the joint CDF of $U$.
     The Sklar's theorem states that
     F is the combination of $F_1,\ldots,F_d$
@@ -55,7 +55,7 @@ class OTJointDistribution_Settings(  # noqa: N801
     When $U_1,\ldots,U_d$ are continuous random variables,
     this function is unique and defined
     by $C(\boldsymbol{\xi})=F(F_1^{(-1)}(\xi_1),\ldots,F_d^{(-1)}(\xi_d))$
-    where $\xi_1,\ldots,\xi_d$ are independent and uniformly distributed in $[0,1]$.\\
+    where $\xi_1,\ldots,\xi_d$ are the arguments of $C$, in $[0,1]$.\\
 
     When the random variables $U_1,\ldots,U_d$ are independent by block,
     the copula $C$ can be defined as a product of copulas, i.e.
@@ -65,13 +65,21 @@ class OTJointDistribution_Settings(  # noqa: N801
     \times C_2(\boldsymbol{\xi}^{[2]})
     \times \ldots
     \times C_K(\boldsymbol{\xi}^{[K]})
+    \times \prod_{i\notin I_1\cup\ldots\cup I_K}\xi_i
     \]
     where
 
-    - $\boldsymbol{xi}^{[k]}=(\xi_{n_1+\ldots+n_{k-1}+1},\ldots,\xi_{n_1+\ldots+n_k})$,
-    - the random vectors $\boldsymbol{\xi}^{[1]},\ldots,\boldsymbol{\xi}^{[K]}$
+    - $I_k=(i_{k,1},\ldots,i_{k,n_k})$ are the positions
+      of the components of the $k$-th block in the random vector,
+      which can be any components in any order,
+      the blocks $I_1,\ldots,I_K$ being disjoint,
+    - $\boldsymbol{\xi}^{[k]}=(\xi_{i_{k,1}},\ldots,\xi_{i_{k,n_k}})$,
+    - $\boldsymbol{U}^{[k]}=(U_{i_{k,1}},\ldots,U_{i_{k,n_k}})$,
+    - the random vectors $\boldsymbol{U}^{[1]},\ldots,\boldsymbol{U}^{[K]}$
       are independent,
-    - $C_k$ is the copula of $\boldsymbol{u}^{[k]}$.
+    - $C_k$ is the copula of $\boldsymbol{U}^{[k]}$,
+    - the components belonging to no block are independent,
+      i.e. $n_1+\ldots+n_K$ can be smaller than $d$.
     """
 
     marginal_settings: Sequence[BaseDistributionSettings] = Field(

@@ -210,6 +210,26 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
             other_space.add_copula(names, copula)
         ```
 
+        !!! warning
+            With the OpenTURNS backend,
+            a non-normal copula over random variables
+            that are not consecutive in the random space,
+            or a normal copula over random variables surrounding those
+            of a non-normal copula,
+            forces OpenTURNS to compute its iso-probabilistic transformation
+            numerically,
+            which makes
+            [OT_FORM][gemseo.uncertainty.reliability.openturns.form.OT_FORM],
+            [OT_SORM][gemseo.uncertainty.reliability.openturns.sorm.OT_SORM],
+            [OT_IS_FORM][gemseo.uncertainty.reliability.openturns.is_form.OT_IS_FORM]
+            and
+            [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+            several orders of magnitude slower.
+            Add the random variables sharing a non-normal copula consecutively,
+            in any order,
+            and keep a normal copula from surrounding a non-normal one;
+            normal copulas are otherwise free of these constraints.
+
         Args:
             names: The name of the random variable
                 or the names of the random variables covered by the copula.

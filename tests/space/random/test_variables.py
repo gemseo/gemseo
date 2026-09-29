@@ -223,11 +223,7 @@ def test_delitem_keeps_the_other_copula_and_remaps_its_indices() -> None:
         "Normal(mu=0.0, sigma=1.0), "
         "Normal(mu=0.0, sigma=1.0), "
         "Normal(mu=0.0, sigma=1.0); "
-        "MarginalDistribution("
-        "distribution=BlockIndependentCopula("
-        "NormalCopula(R = [[ 1 0 ]\n [ 0 1 ]]), "
-        "IndependentCopula(dimension = 1)), "
-        "indices=[0,2,1]))"
+        "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]]))"
     )
 
 
