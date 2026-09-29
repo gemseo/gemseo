@@ -37,6 +37,7 @@ plugins:
           - griffe_inherited_docstrings
           - docstring_inheritance.griffe
           - griffe_fieldz: {include_inherited: true}
+          - docs/_scripts/griffe_lazy_exports.py
           filters:
           - "!^_"
           docstring_options:

@@ -663,9 +663,8 @@ class Database(Mapping):
                 the block diagonal Jacobian matrix of the samples,
                 of shape
                 `(n_samples * output_dimension, n_samples * input_dimension)`,
-                whose diagonal blocks are cut with
-                [iter_blocks][gemseo.core.function._blocks.iter_blocks],
-                one block per sample, whatever format carries the matrix.
+                whose diagonal blocks are cut one block per sample,
+                whatever format carries the matrix.
             name: The name under which to store each value.
             is_jacobian: Whether `output_values` is the block diagonal Jacobian
                 matrix of the samples rather than their stacked output values.

@@ -18,7 +18,7 @@ search:
 
 # Discipline { #concept-discipline }
 
-  A [Discipline][gemseo.core.discipline.Discipline]
+  A [Discipline][gemseo.core.discipline.discipline.Discipline]
   is one of the basic building components of GEMSEO:
   it computes output variables from input variables
   through any software — Python functions, external python packages,

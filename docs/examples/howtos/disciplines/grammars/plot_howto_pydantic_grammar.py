@@ -24,7 +24,7 @@ such as type constraints, value ranges, or custom validators.
 ## Solution
 
 You can change the default discipline grammars and use Pydantic grammars instead.
-Your discipline shall inherit from [Discipline][gemseo.core.discipline.Discipline].
+Your discipline shall inherit from [Discipline][gemseo.core.discipline.discipline.Discipline].
 
 !!! note
     Different grammars are supported, and this how-to can be adapted to use any of them.
