@@ -19,6 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import NoReturn
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -76,8 +77,10 @@ class Event:
     !!! warning
         Each elementary comparison must be parenthesized,
         e.g. `(EventVariable(f) < 3) & (EventVariable(g) > 4)` and not `EventVariable(f) < 3 & EventVariable(g) > 4`.
-        Chained comparisons such as `2 < EventVariable(h) < 5` are not supported.
-        Write `(2 < EventVariable(h)) & (EventVariable(h) < 5)` instead.
+        Chained comparisons such as `2 < EventVariable(h) < 5`
+        and the Python operators `and`, `or` and `not` raise a `TypeError`.
+        Write `(2 < EventVariable(h)) & (EventVariable(h) < 5)` instead of `2 < EventVariable(h) < 5`,
+        or `EventVariable(h).isin([2, 5])` for the closed interval `2 <= h <= 5`.
     """  # noqa: E501
 
     default_name: ClassVar[str] = "event"
@@ -92,6 +95,15 @@ class Event:
             *events: The elementary events of a single intersection.
         """  # noqa: D205, D212
         self.__intersections = [tuple(events)] if events else []
+
+    def __bool__(self) -> NoReturn:
+        msg = (
+            "The truth value of an Event is ambiguous. "
+            'Combine events with "&" and "|" instead of "and" and "or", '
+            'do not use "not", parenthesize each comparison, '
+            'and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+        )
+        raise TypeError(msg)
 
     def __and__(self, other: Event) -> Event:
         # DNF distribution: (a1|a2) & (b1|b2) = a1b1 | a1b2 | a2b1 | a2b2.

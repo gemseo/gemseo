@@ -88,6 +88,19 @@ def test_event_without_function(random_space, snapshot):
         problem.add_event(f > 0, event_name="a")
 
 
+def test_add_event_isin_deduplicates_observable(random_space, caplog):
+    """add_event with isin does not add the same observable twice."""
+    function = ArrayFunction(sum, name="h")
+
+    problem = ReliabilityProblem(random_space)
+    h = problem.get_event_variables(function)
+    problem.add_event(h.isin([2, 5]), event_name="a")
+
+    observable_names = [observable.name for observable in problem.observables]
+    assert observable_names.count("h") == 1
+    assert 'already observes "h"' not in caplog.text
+
+
 def test_string_representation(random_space):
     """Test ReliabilityProblem._get_string_representation."""
     function_1 = ArrayFunction(sum, name="f1")

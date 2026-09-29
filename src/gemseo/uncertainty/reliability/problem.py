@@ -74,7 +74,7 @@ class ReliabilityProblem(EvaluationProblem[RandomSpace]):
         for intersection_event in event:
             for elementary_event in intersection_event:
                 function = elementary_event.function
-                if function not in self.observables:
+                if function not in self.observables and function not in observables:
                     if function is None:
                         msg = (
                             "The function field of the elementary event "
