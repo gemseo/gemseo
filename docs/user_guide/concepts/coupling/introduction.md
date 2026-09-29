@@ -18,7 +18,7 @@ search:
 
 # Coupled systems { #concept-coupled-systems }
 
-When dealing with multiple [Disciplines][gemseo.core.discipline.Discipline],
+When dealing with multiple [Disciplines][gemseo.core.discipline.discipline.Discipline],
 outputs of one discipline may connect to inputs of another.
 These connections are called **couplings**.
 

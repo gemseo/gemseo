@@ -39,7 +39,7 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
 
     Whatever its kind, a variable reads as
     `size`, the number of its components,
-    and `type`, the [DataType][gemseo.space.variable.base.DataType] of these
+    and `type`, the [DesignVariableType][gemseo.enum.DesignVariableType] of these
     components;
     what else defines it depends on its kind,
     e.g. bounds for a variable whose components are numbers
