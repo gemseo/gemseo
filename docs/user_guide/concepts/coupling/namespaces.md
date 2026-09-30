@@ -120,13 +120,114 @@ being a seed is what matters, not the variable's role.
     of its affected inputs and outputs —
     to rewrite such external references by prepending the namespace to them.
 
+### Excluding variables from the namespace
+
+The typical use case for propagating a namespace is running a copy
+of a group of disciplines alongside the original one,
+the two differing by a variation on a single seed variable.
+Often, though, part of the downstream computation is known to be insensitive
+to that variation, or must be kept identical to the original by design.
+The `excluded_names` argument marks such variables:
+a copied discipline consuming one keeps the bare name and so reads the
+value from the original group, and a discipline reached only through excluded
+variables is not duplicated at all, so the computation it carries downstream
+of them is not re-executed.
+
+An excluded variable acts as a barrier to the propagation:
+a coupling edge whose variables are all excluded is not traversed,
+so a discipline reached only through such edges is not reached at all,
+and is left completely untouched.
+The mark is global to the variable name —
+every consumer of that name keeps it bare,
+including one reached through another, non-excluded path.
+
+For example, with `a: x -> y, z`, `b: y -> u`, `c: u -> v` and `d: z -> w`,
+seeding the propagation with `{"x"}` and excluding `{"y"}` reaches only `a` and `d`:
+the edge from `a` to `b` carries only the excluded `y` and is not traversed,
+so `b`, and transitively `c`, are left untouched,
+while the edge from `a` to `d` carries `z`, which is not excluded,
+and is traversed as usual.
+
+The graph below shows this branching example.
+The dotted edge is the one carrying only the excluded `y`,
+which is not traversed;
+the reached disciplines `a` and `d` are shown in one colour,
+the untouched `b` and `c` in another.
+
+```mermaid
+graph LR
+    x((x)) --> a
+    a -. "y (excluded)" .-> b
+    b -- u --> c
+    c --> v((v))
+    a -- z --> d
+    d --> w((w))
+
+    classDef reached fill:#c8e6c9,stroke:#2e7d32,color:#1b5e20;
+    classDef untouched fill:#eceff1,stroke:#90a4ae,color:#37474f;
+    class a,d reached;
+    class b,c untouched;
+```
+
+The graph below shows the combined group once the namespace `left` is propagated
+over the copy.
+The reached `a` and `d` are duplicated and their copies namespaced,
+while `b` and `c` are instantiated only once, in the original group,
+and consume the bare `y` produced by the original `a`.
+The namespaced `left:y` produced by the copy of `a` is consumed by nobody.
+
+```mermaid
+graph LR
+    subgraph original
+        x((x)) --> a
+        a -- y --> b
+        b -- u --> c
+        c --> v((v))
+        a -- z --> d
+        d --> w((w))
+    end
+
+    subgraph copy
+        left_x(("left:x")) --> a_copy["a"]
+        a_copy --> left_y(("left:y"))
+        a_copy -- "left:z" --> d_copy["d"]
+        d_copy --> left_w(("left:w"))
+    end
+
+    classDef reached fill:#c8e6c9,stroke:#2e7d32,color:#1b5e20;
+    classDef untouched fill:#eceff1,stroke:#90a4ae,color:#37474f;
+    class a_copy,d_copy reached;
+    class a,b,c,d untouched;
+```
+
+The same reasoning prunes a discipline further down the reached set: a
+discipline whose outputs are non-empty and all excluded would have its
+namespaced outputs consumed by nobody, an excluded name being bare for every
+consumer, so it is left out of the reached set too, and left completely
+untouched. For example, with `a: x -> y` and `b: y -> z`,
+seeding the propagation with `{"x"}` and excluding `{"z"}` reaches `b` through
+`a`, but `b`'s only output `z` is excluded, so `b` is pruned and left untouched.
+
+!!! warning
+    A discipline left out of the reached set because of `excluded_names`
+    must be instantiated only **once**, in the original group,
+    and shared by both groups instead of being duplicated.
+
+An excluded variable that is also an output of a reached discipline
+with at least one non-excluded output is still namespaced —
+leaving it bare would give the combined group two producers of the same bare name —
+so in the first example above `a` still gets `left:y` namespaced,
+and that namespaced copy ends up consumed by nobody.
+
 [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] raises a `ValueError` when
 
 - a seed name is neither an input nor an output of any of the disciplines,
+- an excluded name is neither an input nor an output of any of the disciplines,
+- a name is both a seed and an excluded variable,
 - an affected input or output already carries a namespace,
 - an affected output is also produced by a discipline outside the reached set.
 
-The second case is a composition limit rather than a typo guard:
+The already-namespaced case is a composition limit rather than a typo guard:
 a group whose affected variables already carry a namespace
 cannot be passed to [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] at all,
 so the cascade cannot be applied twice

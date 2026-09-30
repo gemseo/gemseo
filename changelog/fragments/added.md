@@ -15,9 +15,6 @@
   re-used as an intermediate value is an output only. This means that different
   disciplines that inherit from `BaseModelDiscipline` can share the same Pydantic model, each of them using only a
   subset of the model's fields for their I/O's.
-- `gemseo.discipline.propagate_namespace` propagates a namespace forward along the discipline coupling graph, namespacing every
-  input and output affected by the seed variables while leaving untouched the variables that are neither seeds nor
-  produced inside the reached set.
 - The abstract class `gemseo.space.base.BaseVariableSpace` is the common parent of `DesignSpace` and `RandomSpace`; it
   owns the registry of the variables of a space and everything derived from their names, sizes, types and order, and
   declares the mapping to and from the unit hypercube.
