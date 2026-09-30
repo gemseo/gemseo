@@ -20,13 +20,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from numpy import array
 from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.discipline.namespace import namespaces_separator
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline import propagate_namespace
 from gemseo.discipline.namespace import _compute_affected_ios
+from gemseo.mda import MDAGaussSeidel
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -47,6 +50,19 @@ def _create_sobieski_disciplines() -> list[Discipline]:
     ])
 
 
+def _create_two_step_chain() -> tuple[Discipline, Discipline]:
+    """Return a two-discipline chain.
+
+    The chain is ``disc_1`` (``x`` -> ``y``) followed by ``disc_2`` (``y`` -> ``z``).
+
+    Returns:
+        The disciplines ``disc_1`` and ``disc_2``.
+    """
+    disc_1 = AnalyticDiscipline(expressions={"y": "x + 1"})
+    disc_2 = AnalyticDiscipline(expressions={"z": "y + 1"})
+    return disc_1, disc_2
+
+
 def _create_chain() -> tuple[Discipline, Discipline, Discipline]:
     """Return a linear chain plus a disconnected discipline.
 
@@ -56,10 +72,40 @@ def _create_chain() -> tuple[Discipline, Discipline, Discipline]:
     Returns:
         The disciplines ``a``, ``b`` and ``c``.
     """
-    disc_a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"})
-    disc_b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"})
+    disc_a, disc_b = _create_two_step_chain()
     disc_c = create_discipline("AnalyticDiscipline", expressions={"v": "w + 1"})
     return disc_a, disc_b, disc_c
+
+
+def _create_branching_group() -> tuple[Discipline, Discipline, Discipline, Discipline]:
+    """Return a group whose seed discipline feeds two branches that never merge.
+
+    The group is ``a`` (``x`` -> ``y``, ``z``), ``b`` (``y`` -> ``u``),
+    ``c`` (``u`` -> ``v``) and ``d`` (``z`` -> ``w``).
+
+    Returns:
+        The disciplines ``a``, ``b``, ``c`` and ``d``.
+    """
+    disc_a = AnalyticDiscipline(expressions={"y": "x + 1", "z": "x + 2"})
+    disc_b = AnalyticDiscipline(expressions={"u": "y + 1"})
+    disc_c = AnalyticDiscipline(expressions={"v": "u + 1"})
+    disc_d = AnalyticDiscipline(expressions={"w": "z + 1"})
+    return disc_a, disc_b, disc_c, disc_d
+
+
+def _create_partially_excluded_group() -> tuple[Discipline, Discipline]:
+    """Return a group where a discipline consumes an excluded and a non-excluded input.
+
+    The group is ``a`` (``x`` -> ``y``, ``z``) followed by ``b`` (``y``, ``z``
+    -> ``u``), so the edge from ``a`` to ``b`` carries both an excluded and a
+    non-excluded coupling.
+
+    Returns:
+        The disciplines ``a`` and ``b``.
+    """
+    disc_a = AnalyticDiscipline(expressions={"y": "x + 1", "z": "x + 2"})
+    disc_b = AnalyticDiscipline(expressions={"u": "y + z"})
+    return disc_a, disc_b
 
 
 def test_seed_propagates_to_whole_coupling_graph() -> None:
@@ -155,7 +201,7 @@ def test_compute_affected_ios_does_not_mutate() -> None:
         for discipline in disciplines
     }
 
-    affected, _ = _compute_affected_ios(disciplines, {"x_2"})
+    affected, _ = _compute_affected_ios(disciplines, {"x_2"}, set())
     assert affected
 
     for discipline in disciplines:
@@ -297,6 +343,189 @@ def test_producer_outside_reached_set_raises_without_mutation(snapshot) -> None:
     for discipline in disciplines:
         assert sorted(discipline.io.input_grammar) == before[discipline][0]
         assert sorted(discipline.io.output_grammar) == before[discipline][1]
+
+
+def test_excluded_variable_cuts_a_branch() -> None:
+    """An excluded variable stops the propagation through the edge carrying only it."""
+    disc_a, disc_b, disc_c, disc_d = _create_branching_group()
+    prefix = f"left{namespaces_separator}"
+    before_b = (
+        sorted(disc_b.io.input_grammar),
+        sorted(disc_b.io.output_grammar),
+    )
+    before_c = (
+        sorted(disc_c.io.input_grammar),
+        sorted(disc_c.io.output_grammar),
+    )
+
+    affected, _ = _compute_affected_ios([disc_a, disc_b, disc_c, disc_d], {"x"}, {"y"})
+
+    # b and c are only reachable through the edge carrying the excluded y, so
+    # they are not reached at all.
+    assert set(affected) == {disc_a, disc_d}
+    assert affected[disc_a].inputs == frozenset({"x"})
+    assert affected[disc_a].outputs == frozenset({"y", "z"})
+    assert affected[disc_d].inputs == frozenset({"z"})
+    assert affected[disc_d].outputs == frozenset({"w"})
+
+    propagate_namespace([disc_a, disc_b, disc_c, disc_d], "left", {"x"}, {"y"})
+
+    assert list(disc_a.io.input_grammar) == [f"{prefix}x"]
+    # y is excluded, but a still produces it, so leaving it bare would give the
+    # combined group two producers of the bare name: it is namespaced too,
+    # even though its namespaced copy is then consumed by nobody.
+    assert sorted(disc_a.io.output_grammar) == [f"{prefix}y", f"{prefix}z"]
+    assert list(disc_d.io.input_grammar) == [f"{prefix}z"]
+    assert list(disc_d.io.output_grammar) == [f"{prefix}w"]
+
+    # b and c are untouched.
+    assert (
+        sorted(disc_b.io.input_grammar),
+        sorted(disc_b.io.output_grammar),
+    ) == before_b
+    assert (
+        sorted(disc_c.io.input_grammar),
+        sorted(disc_c.io.output_grammar),
+    ) == before_c
+
+
+def test_reached_discipline_with_only_excluded_outputs_is_pruned() -> None:
+    """A reached discipline whose outputs are all excluded is pruned and untouched."""
+    disc_a, disc_b = _create_two_step_chain()
+    before_b = (
+        sorted(disc_b.io.input_grammar),
+        sorted(disc_b.io.output_grammar),
+    )
+
+    affected, _ = _compute_affected_ios([disc_a, disc_b], {"x"}, {"z"})
+
+    # b's only output, z, is excluded: its namespaced copy would be consumed by
+    # nobody, so b is pruned from the reached set even though it is reachable
+    # from the seed through the non-excluded y.
+    assert set(affected) == {disc_a}
+
+    propagate_namespace([disc_a, disc_b], "left", {"x"}, {"z"})
+
+    assert (
+        sorted(disc_b.io.input_grammar),
+        sorted(disc_b.io.output_grammar),
+    ) == before_b
+
+
+def test_seed_discipline_with_only_excluded_outputs_is_pruned() -> None:
+    """A seed discipline whose outputs are all excluded is pruned too."""
+    disc_a, disc_b = _create_two_step_chain()
+
+    affected, _ = _compute_affected_ios([disc_a, disc_b], {"x"}, {"y"})
+
+    # a is the seed, but its only output y is excluded, so it is pruned like any
+    # other discipline whose outputs are all excluded; b is then unreachable
+    # since the edge carrying only y is cut.
+    assert affected == {}
+
+
+def test_excluded_input_stays_bare_when_discipline_reached_through_other_path() -> None:
+    """An excluded input stays bare even when its discipline is reached otherwise."""
+    disc_a, disc_b = _create_partially_excluded_group()
+    prefix = f"left{namespaces_separator}"
+
+    affected = propagate_namespace([disc_a, disc_b], "left", {"x"}, {"y"})
+
+    # The edge from a to b also carries z, which is not excluded, so it is not
+    # cut and b is reached.
+    assert disc_b in affected
+    assert list(disc_b.io.output_grammar) == [f"{prefix}u"]
+    input_names = set(disc_b.io.input_grammar)
+    assert "y" in input_names
+    assert f"{prefix}y" not in input_names
+    assert f"{prefix}z" in input_names
+
+
+def test_excluded_name_outside_reached_set_is_a_no_op() -> None:
+    """An excluded variable outside the reached set changes nothing."""
+    disciplines = _create_chain()
+
+    with_excluded, _ = _compute_affected_ios(disciplines, {"x"}, {"w"})
+    without_excluded, _ = _compute_affected_ios(disciplines, {"x"}, set())
+
+    assert with_excluded == without_excluded
+
+
+def test_seed_and_excluded_overlap_raises_without_mutation(snapshot) -> None:
+    """A name that is both seed and excluded raises and leaves the group untouched."""
+    disciplines = _create_chain()
+    before = {
+        discipline: (
+            sorted(discipline.io.input_grammar),
+            sorted(discipline.io.output_grammar),
+        )
+        for discipline in disciplines
+    }
+
+    with assert_exception(ValueError, snapshot):
+        propagate_namespace(disciplines, "ns", {"x"}, {"x"})
+
+    for discipline in disciplines:
+        assert sorted(discipline.io.input_grammar) == before[discipline][0]
+        assert sorted(discipline.io.output_grammar) == before[discipline][1]
+
+
+def test_unknown_excluded_name_raises_without_mutation(snapshot) -> None:
+    """An excluded name owned by no discipline raises and leaves the group untouched."""
+    disciplines = _create_chain()
+    before = {
+        discipline: (
+            sorted(discipline.io.input_grammar),
+            sorted(discipline.io.output_grammar),
+        )
+        for discipline in disciplines
+    }
+
+    with assert_exception(ValueError, snapshot):
+        propagate_namespace(disciplines, "ns", {"x"}, {"unknown"})
+
+    for discipline in disciplines:
+        assert sorted(discipline.io.input_grammar) == before[discipline][0]
+        assert sorted(discipline.io.output_grammar) == before[discipline][1]
+
+
+def test_excluded_variable_reuses_the_original_discipline_in_an_mda() -> None:
+    """An MDA over original and namespaced disciplines reuses the excluded coupling."""
+    prefix = f"left{namespaces_separator}"
+    original_input = {"x": array([1.0])}
+    reference = MDAGaussSeidel(list(_create_branching_group())).execute(original_input)
+
+    original_a, original_b, original_c, original_d = _create_branching_group()
+    copy_a, copy_b, copy_c, copy_d = _create_branching_group()
+    affected = propagate_namespace(
+        [copy_a, copy_b, copy_c, copy_d], "left", {"x"}, {"y"}
+    )
+
+    # copy_b and copy_c dropped out of the reached set: a's only
+    # non-excluded output is z, so b and c, only reachable through the excluded
+    # y, are not reached at all. They are not part of the assembled group below;
+    # the original b and c, which produce the same bare names, are reused
+    # instead of being duplicated.
+    assert set(affected) == {copy_a, copy_d}
+
+    # The two seeds take different values, so the original branch and the
+    # namespaced one compute different numbers.
+    combined = MDAGaussSeidel([
+        original_a,
+        original_b,
+        original_c,
+        original_d,
+        copy_a,
+        copy_d,
+    ]).execute({**original_input, f"{prefix}x": array([10.0])})
+
+    # The MDA solves, and original_b and original_c consume the bare "y" produced
+    # by original_a: the excluded variable keeps the original value, whatever
+    # the namespaced branch computes for its own "left:y".
+    assert_almost_equal(combined["u"], reference["u"])
+    assert_almost_equal(combined["v"], reference["v"])
+    assert f"{prefix}y" in combined
+    assert f"{prefix}w" in combined
 
 
 def test_propagate_namespace_grammar_order_is_sorted() -> None:

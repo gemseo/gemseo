@@ -37,6 +37,7 @@ from numpy import array
 
 from gemseo import create_discipline
 from gemseo import create_mda
+from gemseo import generate_coupling_graph
 from gemseo.discipline import propagate_namespace
 
 # %%
@@ -55,12 +56,10 @@ b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"}, name="b"
 c = create_discipline("AnalyticDiscipline", expressions={"w": "z + y"}, name="c")
 disciplines = [a, b, c]
 
-for discipline in disciplines:
-    print(
-        f"{discipline.name}:  "
-        f"inputs={list(discipline.io.input_grammar)}  "
-        f"outputs={list(discipline.io.output_grammar)}"
-    )
+# %%
+# Using the [generate_coupling_graph()][gemseo.generate_coupling_graph] function, you
+# can easily visualize these couplings.
+generate_coupling_graph(disciplines, "")
 
 # %%
 # The goal is to run this group alongside a second, independent copy of itself,
@@ -94,14 +93,17 @@ for discipline in disciplines:
     )
 
 # %%
+# Once again, we generate
+# the coupling graph to visualize the couplings.
+generate_coupling_graph(disciplines, "")
+
+# %%
 # The fix is the seventh and last call, easy to miss among the others:
 c.add_namespace_to_input("y", "left")
-for discipline in disciplines:
-    print(
-        f"{discipline.name}:  "
-        f"inputs={list(discipline.io.input_grammar)}  "
-        f"outputs={list(discipline.io.output_grammar)}"
-    )
+
+# %%
+# The updated coupling graph shows the effect of this correction.
+generate_coupling_graph(disciplines, "")
 
 # %%
 # ### 2. The same result with `propagate_namespace()`
@@ -130,6 +132,7 @@ for discipline in disciplines:
         f"inputs={list(discipline.io.input_grammar)}  "
         f"outputs={list(discipline.io.output_grammar)}"
     )
+generate_coupling_graph(disciplines, "")
 
 # %%
 # ### 3. The namespaced group still solves
@@ -143,7 +146,71 @@ print(f"left:w = {result['left:w']}")
 # left:x=1 -> left:y=2 -> left:z=3 -> left:w=3+2=5
 
 # %%
-# ### 4. Before committing: the self-containment caveat
+# ### 4. Excluding a variable from the namespace
+#
+# `propagate_namespace()` can also be told that some variables are *excluded*
+# from the namespace: the copy reads them from the original group instead of
+# duplicating and re-executing the disciplines reached only through them.
+#
+# To illustrate this point, we will create two fresh groups. The original one, without
+# namespaces and the copy, with the namespace `"left"`.
+a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"}, name="a")
+b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"}, name="b")
+c = create_discipline("AnalyticDiscipline", expressions={"w": "z + y"}, name="c")
+disciplines = [a, b, c]
+
+a_copy = create_discipline(
+    "AnalyticDiscipline", expressions={"y": "x + 1"}, name="a_copy"
+)
+b_copy = create_discipline(
+    "AnalyticDiscipline", expressions={"z": "y + 1"}, name="b_copy"
+)
+c_copy = create_discipline(
+    "AnalyticDiscipline", expressions={"w": "z + y"}, name="c_copy"
+)
+disciplines_copy_group = [a_copy, b_copy, c_copy]
+
+# %%
+# Seeding the propagation with `x` as before, excluding `z` this time: the value
+# of `z` will come from the original group.
+affected = propagate_namespace(disciplines_copy_group, "left", {"x"}, {"z"})
+for discipline, ios in affected.items():
+    print(
+        f"{discipline.name}:  "
+        f"inputs={sorted(ios.inputs)}  outputs={sorted(ios.outputs)}"
+    )
+
+# %%
+# `b_copy` produces only `z`, and `z` is excluded: its namespaced output
+# would be consumed by nobody, since an excluded name stays bare for every
+# consumer. `propagate_namespace()` therefore leaves `b_copy` out of the
+# reached set and completely untouched, so `affected` only holds
+# `a_copy` and `c_copy`. `a_copy` is fully namespaced, while
+# `c_copy` is only partially namespaced, since its `z` input stays bare:
+for discipline in disciplines_copy_group:
+    print(
+        f"{discipline.name}:  "
+        f"inputs={list(discipline.io.input_grammar)}  "
+        f"outputs={list(discipline.io.output_grammar)}"
+    )
+generate_coupling_graph(disciplines_copy_group, "")
+
+# %%
+# `b_copy`, left untouched, now duplicates what the original,
+# non-namespaced `b` already computes. Per the rule documented in
+# [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace], a
+# discipline left out of the reached set because of `excluded_names` must be
+# instantiated only once, in the original group, and shared by both groups:
+# `b` is the one to keep, supplying `z` to both the original and the
+# namespaced disciplines, so `b_copy` should not be used at all.
+#
+# The combined group is therefore `[*disciplines, a_copy, c_copy]`.
+# Have a look at its coupling graph:
+combined_groups = [*disciplines, a_copy, c_copy]
+generate_coupling_graph(combined_groups, "")
+
+# %%
+# ### 5. Before committing: the self-containment caveat
 #
 # Remember that the group of disciplines you pass must be self-contained:
 # references held by objects that are not disciplines — design space variable

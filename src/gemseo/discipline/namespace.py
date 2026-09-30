@@ -26,6 +26,11 @@ and namespaces every input and output affected by the propagation.
 The forward walk relies on `compute_reachable_nodes()`
 over the [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
 
+The propagation can be stopped short of a discipline by declaring one or more
+variables excluded from the namespace: the coupling edges carrying only
+excluded variables are not traversed, so a discipline reached exclusively
+through such edges is left untouched.
+
 Notes:
     The set of disciplines passed to
     [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace]
@@ -57,6 +62,7 @@ if TYPE_CHECKING:
 def _compute_affected_ios(
     disciplines: Sequence[BaseDiscipline],
     variable_names: set[str],
+    excluded_names: set[str],
 ) -> tuple[dict[BaseDiscipline, DisciplineIOs], frozenset[str]]:
     """Compute the inputs and outputs affected by namespacing the seed variables.
 
@@ -67,6 +73,19 @@ def _compute_affected_ios(
     reached set. Consequently, design variables that are neither seeds nor
     produced inside the reached set remain unaffected.
 
+    An excluded variable acts as a barrier to the propagation: a coupling edge
+    whose variables are all excluded is not traversed, so a discipline reached
+    only through such edges is not reached at all, and is left completely
+    untouched. For the same reason, a reached discipline whose outputs are
+    non-empty and all excluded is pruned from the reached set and left
+    untouched too: its namespaced outputs would be consumed by nobody, since an
+    excluded name stays bare for every consumer. A seed discipline whose
+    outputs are all excluded is pruned as well. An excluded variable that is
+    also an output of a reached discipline with at least one non-excluded
+    output is still namespaced, since leaving it bare would give the combined
+    group two producers of the same bare name; its namespaced copy is then
+    consumed by nobody.
+
     This function does not mutate the disciplines; it only reports what
     [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace]
     would namespace.
@@ -74,6 +93,9 @@ def _compute_affected_ios(
     Args:
         disciplines: The disciplines forming the coupling graph.
         variable_names: The set of names of the seed variables to namespace.
+        excluded_names: The set of names of the variables considered identical
+            to those of the original (non-namespaced) group, along which the
+            propagation is not carried out.
 
     Returns:
         The affected inputs and all outputs of each reached discipline,
@@ -82,20 +104,31 @@ def _compute_affected_ios(
 
     Raises:
         ValueError: If a seed name is neither an input nor an output
-            of any of the disciplines.
+            of any of the disciplines, if an excluded name is neither an input
+            nor an output of any of the disciplines, or if a name is both
+            a seed and an excluded variable.
     """
+    seeds_and_excluded = variable_names & excluded_names
+    if seeds_and_excluded:
+        msg = (
+            "The following variables are both seed and excluded variables: "
+            f"{pretty_repr(seeds_and_excluded)}."
+        )
+        raise ValueError(msg)
+
     graph = DependencyGraph(disciplines).graph
 
     sources = set()
-    unmatched_seeds = set(variable_names)
+    all_names = set()
     for discipline in graph.nodes:
         io = discipline.io
-        matched_seeds = variable_names.intersection(
-            io.input_grammar
-        ) | variable_names.intersection(io.output_grammar)
-        if matched_seeds:
+        names = set(io.input_grammar).union(io.output_grammar)
+        all_names |= names
+        if variable_names & names:
             sources.add(discipline)
-            unmatched_seeds -= matched_seeds
+
+    unmatched_seeds = variable_names - all_names
+    unmatched_excluded = excluded_names - all_names
 
     if unmatched_seeds:
         msg = (
@@ -104,13 +137,43 @@ def _compute_affected_ios(
         )
         raise ValueError(msg)
 
+    if unmatched_excluded:
+        msg = (
+            "The following excluded variables are neither inputs nor outputs of "
+            f"the disciplines: {pretty_repr(unmatched_excluded)}."
+        )
+        raise ValueError(msg)
+
+    if excluded_names:
+        # The graph is built locally from a throwaway DependencyGraph,
+        # so removing edges cannot affect the caller.
+        graph.remove_edges_from([
+            (source, target)
+            for source, target, io_names in graph.edges(data=DependencyGraph.io)
+            if excluded_names.issuperset(io_names)
+        ])
+
     reached = compute_reachable_nodes(graph, sources)
+
+    # A reached discipline whose outputs are non-empty and all excluded would
+    # have its namespaced outputs consumed by nobody, since an excluded name
+    # stays bare for every consumer: prune it from the reached set, like a
+    # discipline cut off by excluded edges. One pass suffices here: the edges
+    # out of such a discipline carry only excluded variables and were already
+    # removed above, so nothing downstream depends on it. A seed discipline
+    # whose outputs are all excluded is pruned too.
+    reached = {
+        discipline
+        for discipline in reached
+        if not discipline.io.output_grammar
+        or not excluded_names.issuperset(discipline.io.output_grammar)
+    }
 
     produced = set()
     for discipline in reached:
         produced.update(discipline.io.output_grammar)
 
-    seeds_or_produced = variable_names | produced
+    seeds_or_produced = variable_names.union(produced.difference(excluded_names))
     # Iterate over graph.nodes rather than over reached: the latter is a set of
     # disciplines hashed by identity, so its iteration order varies between runs,
     # whereas graph.nodes preserves the order of the disciplines. Callers rely on
@@ -133,6 +196,7 @@ def propagate_namespace(
     disciplines: Sequence[BaseDiscipline],
     namespace: str,
     variable_names: Iterable[str],
+    excluded_names: Iterable[str] = (),
 ) -> dict[BaseDiscipline, DisciplineIOs]:
     """Namespace the inputs and outputs affected by the seed variables.
 
@@ -167,10 +231,21 @@ def propagate_namespace(
         its affected inputs and outputs, to rewrite such external references by
         prepending `namespace` to them.
 
+        An excluded variable keeps its bare name, so it is supplied by the other
+        (original, non-namespaced) group instead of being duplicated. A discipline
+        left out of the reached set because of `excluded_names` must therefore be
+        instantiated only once, in the original group, and shared by both groups.
+        An excluded variable that is an output of a reached discipline with at
+        least one non-excluded output is still namespaced, and that namespaced
+        copy is consumed by nobody.
+
     Args:
         disciplines: The disciplines forming the coupling graph.
         namespace: The name of the namespace to prepend to the affected variables.
         variable_names: The names of the seed variables to namespace.
+        excluded_names: The names of the variables considered identical to
+            those of the original (non-namespaced) group, along which the
+            propagation is not carried out.
 
     Returns:
         The affected inputs and all outputs of each reached discipline,
@@ -179,12 +254,14 @@ def propagate_namespace(
 
     Raises:
         ValueError: If a seed name is neither an input nor an output of any of the
-            disciplines, if an affected input or output already has a namespace,
-            or if an affected output is also produced by a discipline outside
-            the set of disciplines reached from the seeds.
+            disciplines, if an excluded name is neither an input nor an output of
+            any of the disciplines, if a name is both a seed and an excluded
+            variable, if an affected input or output already has a namespace, or
+            if an affected output is also produced by a discipline outside the set
+            of disciplines reached from the seeds.
     """
     discipline_to_ios, produced = _compute_affected_ios(
-        disciplines, set(variable_names)
+        disciplines, set(variable_names), set(excluded_names)
     )
 
     already_namespaced = set()
