@@ -67,6 +67,7 @@ from numpy import promote_types
 from numpy import setdiff1d
 from pandas import DataFrame
 from pandas import MultiIndex
+from pandas import concat
 from pandas import read_csv
 
 from gemseo.util.constant import read_only_empty_dict
@@ -76,6 +77,7 @@ from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Self
 
     from pandas._typing import Axes
     from pandas._typing import Dtype
@@ -573,6 +575,55 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 group_name=group_name,
                 components=component,
             )
+
+    @classmethod
+    def concatenate(cls, datasets: Iterable[Dataset], name: str = "") -> Self:
+        """Concatenate several datasets sharing the same columns into one.
+
+        The concatenated dataset is an instance of the class
+        on which this method is called,
+        whatever the classes of the datasets to concatenate;
+        e.g. `Dataset.concatenate(datasets)` returns a
+        [Dataset][gemseo.dataset.dataset.Dataset]
+        and
+        `OptimizationDataset.concatenate(datasets)` returns an
+        [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset].
+
+        The [misc][gemseo.dataset.dataset.Dataset.misc] dictionary
+        of the concatenated dataset is empty,
+        as merging the miscellaneous information of several datasets
+        is not well defined.
+
+        Args:
+            datasets: The datasets to concatenate, in order.
+            name: The name of the concatenated dataset.
+                If empty, use the name of the first dataset.
+
+        Returns:
+            The dataset resulting from stacking the rows of `datasets`.
+
+        Raises:
+            ValueError: If `datasets` is empty
+                or if the datasets do not all have the same columns.
+        """
+        datasets = list(datasets)
+        if not datasets:
+            msg = "At least one dataset is required."
+            raise ValueError(msg)
+
+        reference_columns = datasets[0].columns
+        for index, dataset in enumerate(datasets[1:], start=1):
+            if not dataset.columns.equals(reference_columns):
+                msg = (
+                    f"The dataset at index {index} does not have the same columns "
+                    "as the first dataset."
+                )
+                raise ValueError(msg)
+
+        concatenated_dataset = cls(concat(datasets, ignore_index=True))
+        concatenated_dataset.name = name or datasets[0].name
+        concatenated_dataset.misc = {}
+        return concatenated_dataset
 
     @staticmethod
     def __check_data_shape_consistency(

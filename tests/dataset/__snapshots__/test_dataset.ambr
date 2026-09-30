@@ -5,6 +5,12 @@
 # name: test_add_variable_twice
   "The group 'parameters' has already a variable 'x' defined."
 # ---
+# name: test_concatenate_with_different_columns
+  'The dataset at index 2 does not have the same columns as the first dataset.'
+# ---
+# name: test_concatenate_without_dataset
+  'At least one dataset is required.'
+# ---
 # name: test_create_dataset_from_wrong_file_extension
   'The dataset can be created from a file with a .csv or .txt extension, not .png.'
 # ---

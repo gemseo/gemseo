@@ -25,8 +25,10 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import TypeVar
 
+from gemseo.core.cache.simple import SimpleCache
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.problem.database import Database
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChain
@@ -49,6 +51,7 @@ if TYPE_CHECKING:
     from gemseo.core.problem.database import DatabaseKeyType
     from gemseo.scenario.mdo import MDOScenario
     from gemseo.space.base import BaseVariableSpace
+    from gemseo.util.hashable_ndarray import HashableNdarray
     from gemseo.util.typing import StrKeyMapping
 
 logger = logging.getLogger(__name__)
@@ -108,6 +111,30 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
     _scenario_adapters: list[MDOScenarioAdapter]
     """The adapters of the optimization sub-scenarios."""
 
+    sub_scenario_execution_indices: list[dict[HashableNdarray, int]]
+    """The executions of the sub-scenarios paired with the system-level evaluations.
+
+    One mapping per adapter of an optimization sub-scenario,
+    in the order of the adapters,
+    from the system-level input value of a new iteration of the system-level database
+    to the index, in the `input_data_history` of the adapter,
+    of the last execution of the adapter before this iteration was stored,
+    i.e. the execution that produced the system-level outputs of this iteration.
+
+    The pairing is recorded only for the executions
+    made during the run that stores the iteration,
+    when the adapter keeps or saves
+    the optimization histories of its sub-scenario
+    and is executed in the main process.
+    It is also skipped when the cache of the adapter can hold several entries,
+    i.e. when it is neither `None` nor a `SimpleCache`,
+    as an execution may then be replaced by a cached one
+    and the last execution is no longer the one that produced the outputs.
+    """
+
+    __n_executions_at_start: list[int]
+    """The lengths of the input data histories of the adapters at the start of a run."""
+
     _mda1: BaseMDA | None
     """The first MDA that solves the couplings before sub-scenarios.
 
@@ -146,6 +173,11 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
         self.problem.database.add_new_iter_listener(
             self._store_optimal_local_design_values
         )
+        self.sub_scenario_execution_indices = [{} for _ in self._scenario_adapters]
+        self.__n_executions_at_start = [0] * len(self._scenario_adapters)
+        self.problem.database.add_new_iter_listener(
+            self._record_sub_scenario_executions
+        )
 
     @property
     def mda1(self) -> BaseMDA | None:
@@ -175,14 +207,16 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
             adapter_class: The class of the adapters.
             **adapter_options: The options for the adapters' initialization.
         """
-        for scenario in self.get_sub_scenarios():
+        for index, scenario in enumerate(self.get_sub_scenarios()):
             input_names = self._compute_adapter_inputs(scenario)
             output_names = self._compute_adapter_outputs(scenario)
             adapter = adapter_class(
                 scenario,
                 input_names,
                 output_names,
-                database_file_prefix=scenario.name,
+                # The index makes the prefix unique,
+                # as two sub-scenarios can have the same name.
+                database_file_prefix=f"{scenario.name}_{index}",
                 **adapter_options,
             )
             self._scenario_adapters.append(adapter)
@@ -588,6 +622,41 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
             if disc.io.output_grammar.has_names(output_names):
                 return True
         return False
+
+    def pre_execute(self) -> None:  # noqa: D102
+        # The executions made by the adapters before this run must not be paired
+        # with its new iterations,
+        # e.g. when the adapters are executed in separate processes
+        # and so do not extend their history in the main process.
+        # The pairings of the previous runs remain valid
+        # as they index real executions.
+        self.__n_executions_at_start = [
+            len(adapter.input_data_history) for adapter in self._scenario_adapters
+        ]
+
+    def _record_sub_scenario_executions(self, x_vect: DatabaseKeyType) -> None:
+        """Pair a new iteration of the system-level database with the executions.
+
+        Args:
+            x_vect: The input value of the new iteration.
+        """
+        hashable_x_vect = Database.get_hashable_ndarray(x_vect, copy=True)
+        for adapter, execution_indices, n_executions_at_start in zip(
+            self._scenario_adapters,
+            self.sub_scenario_execution_indices,
+            self.__n_executions_at_start,
+            strict=True,
+        ):
+            # The history did not grow since the start of the run
+            # when it is not kept nor saved,
+            # or when the adapter is executed in separate processes.
+            # A cache hit after an execution of the run keeps the pairing.
+            # The pairing is also unreliable when the cache can hold several entries.
+            # It is checked here because the cache can be changed after creation.
+            if len(adapter.input_data_history) > n_executions_at_start and (
+                adapter.cache is None or isinstance(adapter.cache, SimpleCache)
+            ):
+                execution_indices[hashable_x_vect] = len(adapter.input_data_history) - 1
 
     def _store_optimal_local_design_values(self, x_vect: DatabaseKeyType) -> None:
         """Store the optimal values of the local design variables in the database.

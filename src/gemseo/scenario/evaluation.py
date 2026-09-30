@@ -440,6 +440,7 @@ class EvaluationScenario(BaseMonitoredProcess, Generic[_SpaceT]):
             # see EvaluationScenarioAdapter.
             self.formulation.problem.database.clear()
 
+        self.formulation.pre_execute()
         n_x = len(self.formulation.problem.database)
 
         self._execute_monitored()

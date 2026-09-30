@@ -1,4 +1,31 @@
 # serializer version: 1
 # name: test_get_sub_optimization_result
-  'The index (1) of a sub-optimization result must be between 0 and 0.'
+  'The index (1) of a sub-scenario must be between 0 and 0.'
+# ---
+# name: test_get_sub_optimization_result_negative_index
+  'The index (-1) of a sub-scenario must be between 0 and 0.'
+# ---
+# name: test_get_sub_scenario_history_dataset_bad_index
+  'The index (1) of a sub-scenario must be between 0 and 0.'
+# ---
+# name: test_get_sub_scenario_history_dataset_negative_index
+  'The index (-1) of a sub-scenario must be between 0 and 0.'
+# ---
+# name: test_get_sub_scenario_history_dataset_no_history
+  'No sub-scenario history is available; enable keep_opt_history or save_opt_history on the BiLevel formulation.'
+# ---
+# name: test_get_sub_scenario_history_dataset_non_numeric_upper_level_value
+  "The upper-level value of the variable 'label' is of type str instead of a NumPy array; a non-numeric upper-level value cannot be used to label the sub-scenario history."
+# ---
+# name: test_get_sub_scenario_history_dataset_of_discipline
+  'The sub-scenario at index 1 is a discipline and has no optimization history.'
+# ---
+# name: test_get_sub_scenario_history_dataset_separate_processes[settings0]
+  'No sub-scenario history is available; the sub-scenario histories are not collected when the sub-scenarios are executed in separate processes.'
+# ---
+# name: test_get_sub_scenario_history_dataset_separate_processes[settings1]
+  'No sub-scenario history is available; the sub-scenario histories are not collected when the sub-scenarios are executed in separate processes.'
+# ---
+# name: test_get_sub_scenario_history_dataset_with_missing_hdf5_file
+  'The HDF5 file of the execution 1 of the sub-scenario no longer exists; its optimization history is no longer available.'
 # ---

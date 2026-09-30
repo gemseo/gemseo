@@ -217,10 +217,15 @@ len(structure_databases)
 
 # %%
 # !!! note
-#     Post-processes can be applied to the database created at the optimal point.
-#     To do so,
-#     the index must be found using the
-#     `system_scenario.optimization_result.optimum_index` index.
+#     The sub-optimization result at the system-level optimum
+#     is given by the
+#     [get_sub_optimization_result()][gemseo.scenario.scenario_result.bilevel_scenario_result.BiLevelScenarioResult.get_sub_optimization_result]
+#     method of the result presented below.
+#     Do not look for it in these databases
+#     with `system_scenario.optimization_result.optimum_index`:
+#     a sub-scenario can be executed several times per system-level iteration,
+#     or not at all after a cache hit,
+#     and then the databases no longer match the system-level iterations.
 #
 # More structured results can be retrieved from the
 # [get_result()][gemseo.scenario.mdo.MDOScenario.get_result] method,
