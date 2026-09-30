@@ -569,6 +569,14 @@ class BaseFormulation(Generic[T, _SpaceT], metaclass=ABCGoogleDocstringInheritan
 
         return [disc for disc in self.disciplines if isinstance(disc, MDOScenario)]
 
+    def pre_execute(self) -> None:
+        """Prepare the formulation for an execution of its scenario.
+
+        This method is called by the scenario
+        right before it applies its algorithm.
+        It does nothing by default.
+        """
+
     def _set_default_input_values_from_space(self) -> None:
         """Initialize the top level disciplines from the input space.
 

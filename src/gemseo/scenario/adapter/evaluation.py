@@ -24,7 +24,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 from numpy import clip
@@ -92,7 +94,41 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
     """
 
     databases: list[Database]
-    """The copies of the scenario databases after execution."""
+    """The copies of the scenario databases after execution.
+
+    When the adapter is executed in parallel by separate processes,
+    the sub-processes do not fill this list in the main process.
+    """
+
+    database_file_paths: list[Path]
+    """The paths of the HDF5 files exported after each execution, in execution order.
+
+    When the adapter is executed in parallel by separate processes,
+    the sub-processes do not fill this list in the main process.
+    """
+
+    database_file_mtimes: list[int]
+    """The modification times (ns) of the HDF5 files right after their export.
+
+    Aligned with `database_file_paths`.
+    They make it possible to detect that a file was overwritten afterwards,
+    e.g. by another adapter exporting to the same path.
+    This detection relies on the timestamp resolution of the filesystem
+    and can miss an overwrite made within this resolution,
+    e.g. 2 s on FAT, 1 s on HFS+ and ext3, or coarser on some network mounts.
+    When the adapter is executed in parallel by separate processes,
+    the sub-processes do not fill this list in the main process.
+    """
+
+    input_data_history: list[dict[str, Any]]
+    """The input values of each execution, in execution order.
+
+    This is appended to whenever a database is kept or saved,
+    so it is aligned by construction with `databases` and with `database_file_paths`.
+    When the adapter is executed in parallel by separate processes,
+    the sub-processes do not fill this list in the main process,
+    exactly as for `databases`.
+    """
 
     keep_databases: bool
     """Whether to keep copies of the database of the scenario after each execution."""
@@ -214,6 +250,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         self.keep_databases = keep_databases
         self.save_databases = save_databases
         self.databases = []
+        self.database_file_paths = []
+        self.database_file_mtimes = []
+        self.input_data_history = []
         self.__database_file_prefix = (
             database_file_prefix or self.default_database_file_prefix
         )
@@ -390,13 +429,27 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
     def _post_run(self) -> None:
         """Post-process the scenario."""
         database = self.scenario.formulation.problem.database
+        if self.keep_databases or self.save_databases:
+            # Record the input values of this execution
+            # so that the kept and saved databases can be labelled afterwards.
+            data = self.io.get_merged_data()
+            self.input_data_history.append({
+                input_name: deepcopy(data[input_name])
+                for input_name in self._input_names
+            })
+
         if self.keep_databases:
             self.databases.append(deepcopy(database))
 
         if self.save_databases:
-            database.to_hdf(
+            # The directory manager changes the current directory during execution,
+            # hence the path is resolved before being used and stored.
+            path = Path(
                 f"{self.__database_file_prefix}_{self.__name_generator.generate_name()}.h5"
-            )
+            ).resolve()
+            database.to_hdf(path)
+            self.database_file_paths.append(path)
+            self.database_file_mtimes.append(path.stat().st_mtime_ns)
 
         self._evaluate_design_point_of_interest()
         self._retrieve_top_level_outputs()

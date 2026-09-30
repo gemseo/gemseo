@@ -16,12 +16,21 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose
 from numpy import array
 
+from gemseo.core.discipline import Discipline
+from gemseo.doe import CustomDOE_Settings
+from gemseo.scenario import EvaluationScenario
 from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter
+from gemseo.space import DesignSpace
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.util.typing import StrKeyMapping
 
 
 @pytest.mark.parametrize("evaluation_scenario", [1, 2], indirect=True)
@@ -68,3 +77,55 @@ def test_evaluation_scenario_linearization(evaluation_scenario, snapshot) -> Non
     )
     with assert_exception(NotImplementedError, snapshot):
         adapter.linearize({"z": array([2.0])}, compute_all_jacobians=True)
+
+
+class DisciplineWithStringInput(Discipline):
+    """A discipline computing y=x from x and a string input."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:
+        super().__init__(name="d")
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.input_grammar.update_from_types({"label": str})
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults["label"] = "foo"
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": input_data["x"]}
+
+
+def test_string_input_data_history() -> None:
+    """Check that the input values of a string input are recorded."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = EvaluationScenario([DisciplineWithStringInput()], design_space)
+    scenario.add_observable("y")
+    scenario.set_algorithm(CustomDOE_Settings(samples=array([[0.0], [1.0]])))
+    adapter = EvaluationScenarioAdapter(
+        scenario, input_names=["label"], output_names=["y"], keep_databases=True
+    )
+
+    adapter.execute({"label": "bar"})
+
+    assert adapter.input_data_history == [{"label": "bar"}]
+
+
+def test_database_file_mtimes(tmp_wd) -> None:
+    """Check that the modification times of the exported files are recorded."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = EvaluationScenario([DisciplineWithStringInput()], design_space)
+    scenario.add_observable("y")
+    scenario.set_algorithm(CustomDOE_Settings(samples=array([[0.0], [1.0]])))
+    adapter = EvaluationScenarioAdapter(
+        scenario, input_names=["label"], output_names=["y"], save_databases=True
+    )
+
+    adapter.execute({"label": "bar"})
+    adapter.execute({"label": "baz"})
+
+    assert len(adapter.database_file_paths) == 2
+    assert adapter.database_file_mtimes == [
+        path.stat().st_mtime_ns for path in adapter.database_file_paths
+    ]

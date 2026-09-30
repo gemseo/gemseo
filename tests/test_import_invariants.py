@@ -364,6 +364,9 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
     }),
     "scenario": frozenset({
         "core",
+        # BiLevelScenarioResult builds the sub-scenario histories as a
+        # gemseo.dataset.dataset.Dataset.
+        "dataset",
         "doe",
         "formulation",
         "optimization",

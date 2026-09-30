@@ -36,6 +36,7 @@ from pandas import concat
 from pandas.testing import assert_frame_equal
 
 from gemseo import create_dataset
+from gemseo.dataset import OptimizationDataset
 from gemseo.dataset.dataset import Dataset
 from gemseo.problem.dataset.iris import create_iris_dataset
 from gemseo.util.testing.helper import assert_exception
@@ -1253,3 +1254,70 @@ def test_add_group_with_single_variable_name(variable_names):
     )
     dataframe = DataFrame(data=data, columns=columns)
     assert_frame_equal(dataset, dataframe)
+
+
+def test_concatenate_without_dataset(snapshot) -> None:
+    """Check that concatenating no dataset raises an error."""
+    with assert_exception(ValueError, snapshot):
+        Dataset.concatenate([])
+
+
+def test_concatenate_with_different_columns(dataset, snapshot) -> None:
+    """Check that concatenating datasets with different columns raises an error."""
+    other_dataset = Dataset.from_array(array([[1.0, 2.0]]), ["var_1", "var_3"])
+    with assert_exception(ValueError, snapshot):
+        Dataset.concatenate([dataset, dataset, other_dataset])
+
+
+@pytest.mark.parametrize(("name", "expected_name"), [("", "foo"), ("bar", "bar")])
+def test_concatenate_name(dataset, name, expected_name) -> None:
+    """Check the name of the concatenated dataset."""
+    dataset.name = "foo"
+    other_dataset = dataset.copy()
+    other_dataset.name = "baz"
+    assert Dataset.concatenate([dataset, other_dataset], name=name).name == (
+        expected_name
+    )
+
+
+def test_concatenate(dataset, data) -> None:
+    """Check the concatenated dataset, including its row index."""
+    other_dataset = dataset.copy()
+    other_dataset.iloc[:, :] *= 10
+    expected_dataset = Dataset.from_array(
+        vstack([data, 10 * data]),
+        ["var_1", "var_2"],
+        {"var_1": 1, "var_2": 2},
+        {"var_2": "foo"},
+    )
+    assert_frame_equal(Dataset.concatenate([dataset, other_dataset]), expected_dataset)
+
+
+def test_concatenate_misc(dataset) -> None:
+    """Check that the misc of the concatenated dataset is empty."""
+    dataset.misc["foo"] = "bar"
+    other_dataset = dataset.copy()
+    other_dataset.misc["baz"] = "qux"
+    assert Dataset.concatenate([dataset, other_dataset]).misc == {}
+
+
+@pytest.mark.parametrize("cls", [Dataset, OptimizationDataset])
+def test_concatenate_class(cls) -> None:
+    """Check that the concatenated dataset is an instance of the receiving class.
+
+    Otherwise the concatenated dataset would be an `OptimizationDataset`
+    without optimization metadata,
+    as the misc of the concatenated dataset is empty.
+    """
+    dataset = OptimizationDataset.from_array(
+        array([[1.0, 2.0]]),
+        ["x", "f"],
+        variable_name_to_group_name={
+            "x": OptimizationDataset.design_group,
+            "f": OptimizationDataset.objective_group,
+        },
+    )
+    dataset.misc["optimization_metadata"] = "foo"
+    concatenated_dataset = cls.concatenate([dataset, dataset])
+    assert type(concatenated_dataset) is cls
+    assert concatenated_dataset.misc == {}

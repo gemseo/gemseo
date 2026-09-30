@@ -90,7 +90,78 @@ an enhancement is proposed with the
 [bi-level BCD formulation][concept-the-bi-level-block-coordinate-descent-formulation]
 which extends the range of problems that can be solved with Bi-level approaches.
 
+## Post-processing the sub-scenario histories { #concept-post-processing-the-sub-scenario-histories }
+
+When `BiLevel_Settings.keep_opt_history`
+and/or `BiLevel_Settings.save_opt_history` are enabled,
+the optimization history of each sub-scenario is retained
+after every execution of the sub-scenario.
+`BiLevelScenarioResult.get_sub_scenario_history_dataset`
+combines that retained history,
+across all these executions,
+into a single [Dataset][gemseo.dataset.dataset.Dataset]
+— one row per sub-scenario iteration,
+tagged with the execution number,
+the sub-scenario iteration number
+and the upper-level values passed to the sub-scenario for that execution:
+
+```python
+scenario.execute()
+scenario_result = scenario.get_result()
+history_dataset = scenario_result.get_sub_scenario_history_dataset(0)
+```
+
+As this dataset stacks several independent optimization histories,
+it is a plain [Dataset][gemseo.dataset.dataset.Dataset]
+carrying no optimization metadata;
+it is therefore not meant to be passed to [execute_post][gemseo.execute_post].
+
+!!! warning
+    The sub-scenario histories are not collected
+    when the sub-scenarios are executed in separate processes,
+    for example with `BiLevel_Settings(parallel_scenarios=True, multithread_scenarios=False)`,
+    or with a system-level DOE that uses several processes:
+    `get_sub_scenario_history_dataset` then raises a `ValueError`,
+    even if the files of `save_opt_history` are written to the disk.
+
+!!! warning
+    With `save_opt_history` alone,
+    the histories are read back from the HDF5 files.
+    An overwrite of these files,
+    e.g. by another scenario exporting to the same path,
+    is detected through their modification time.
+    This may miss a rewrite made within the timestamp resolution of the filesystem,
+    e.g. 1-2 s on FAT, HFS+, ext3 or some network mounts,
+    and the history of another run is then returned without error.
+    When a file was deleted or moved,
+    `get_sub_optimization_result` logs a warning and returns `None`,
+    and `get_sub_scenario_history_dataset` raises a `ValueError`,
+    so keep the files in place until the post-processing is done.
+    The files are written in the current working directory
+    and named after the scenario, the sub-scenario index and `BiLevel_Settings.naming`.
+    Execute each scenario from its own directory,
+    use `naming=NameGenerator.Naming.UUID`,
+    or enable `keep_opt_history`.
+
+The columns are grouped as follows:
+
+| Group | Variables | Meaning |
+|---|---|---|
+| `designs` | the sub-scenario design variables | one column per component |
+| `objectives` | the sub-scenario objective(s) | from `OptimizationProblem.to_dataset` |
+| `equality_constraints`, `inequality_constraints` | the sub-scenario constraints, if any | from `OptimizationProblem.to_dataset` |
+| `observables` | the sub-scenario observables, if any | from `OptimizationProblem.to_dataset` |
+| `executions` (`BiLevelScenarioResult.executions_group`) | `execution`, `sub_iteration` | 1-based execution and iteration numbers |
+| `upper_level_designs` (`BiLevelScenarioResult.upper_level_designs_group`) | the upper-level variables | the values passed to the sub-scenario for that execution |
+
+See
+[Post-process the sub-scenario histories of a bi-level scenario][post-process-the-sub-scenario-histories-of-a-bi-level-scenario]
+for a worked example
+that builds this dataset, extracts subsets of it
+and plots the sub-scenario convergence across executions.
+
 ## Going further { #concept-going-further }
 
 !!! tip "How-tos"
     - [MDO formulation][mdo-formulation]
+    - [Post-process the sub-scenario histories of a bi-level scenario][post-process-the-sub-scenario-histories-of-a-bi-level-scenario]

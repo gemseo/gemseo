@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import array
 from numpy import isfinite
+from numpy.testing import assert_allclose
 
 from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
@@ -54,6 +55,9 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.mdo import MDOScenario
+from gemseo.scenario.scenario_result.bilevel_scenario_result import (
+    BiLevelScenarioResult,
+)
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.scipy.uniform_settings import (
@@ -151,6 +155,43 @@ def test_bilevel_aerostructure(aerostructure_scenario) -> None:
 
     assert isinstance(scenario.optimization_result, OptimizationResult)
     assert scenario.formulation.problem.database.n_iterations == 5
+
+
+def test_sub_optimization_result_at_system_optimum(
+    aerostructure_scenario,
+) -> None:
+    """Check the sub-optimization results are those at the system-level optimum.
+
+    With `BiLevelBCD`,
+    the Gauss-Seidel loop executes each adapter
+    several times per system-level evaluation,
+    with the same system-level design values and different couplings;
+    the sub-optimization result must be the one of the converged iterate,
+    i.e. the last execution before the system-level iteration was stored.
+    """
+    scenario = aerostructure_scenario
+    scenario_result = BiLevelScenarioResult(scenario)
+    for index, adapter in enumerate(scenario.formulation.scenario_adapters):
+        result = scenario_result.get_sub_optimization_result(index)
+        assert result is not None
+        # The optimal local design values stored in the system-level database
+        # come from the same execution of the sub-scenario.
+        variable_name = next(iter(adapter.scenario.design_space.variables))
+        assert_allclose(
+            result.x_opt,
+            scenario_result.design_variable_name_to_value[variable_name],
+        )
+
+
+@pytest.mark.parametrize("formulation_name", ["BiLevelBCD"])
+def test_bcd_executes_adapters_several_times_per_evaluation(
+    aerostructure_scenario,
+) -> None:
+    """Check that BiLevelBCD executes each adapter several times per evaluation."""
+    scenario = aerostructure_scenario
+    n_evaluations = len(scenario.formulation.problem.database)
+    for adapter in scenario.formulation.scenario_adapters:
+        assert len(adapter.input_data_history) > n_evaluations
 
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
@@ -547,9 +588,11 @@ def test_save_opt_history(
         save_opt_history=save_opt_history, naming=naming
     )
     scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
-    # path_structure= Path("StructureScenario")
-    # path_aero = Path("AerodynamicsScenario")
-    path_propulsion = Path("PropulsionScenario")
+    # path_structure= Path("StructureScenario_0")
+    # path_aero = Path("AerodynamicsScenario_1")
+    # The suffix of the prefix is the index of the sub-scenario,
+    # making the file names unique even when two sub-scenarios have the same name.
+    path_propulsion = Path("PropulsionScenario_2")
     if naming == NameGenerator.Naming.NUMBERED:
         assert (
             path_propulsion.parent / f"{path_propulsion.name}_1.h5"
