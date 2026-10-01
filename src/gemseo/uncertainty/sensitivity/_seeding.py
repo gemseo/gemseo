@@ -22,11 +22,11 @@ from typing import TYPE_CHECKING
 from openturns import RandomGenerator
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
 
 @contextmanager
-def seed_ot_random_generator(seed: int | None) -> Iterator[bool]:
+def seed_ot_random_generator(seed: int | None) -> Generator[bool, None, None]:
     """Temporarily seed the OpenTURNS random generator.
 
     On exit, the generator state is restored to what it was before entering,

@@ -42,6 +42,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 from abc import abstractmethod
+from collections.abc import Generator
 from collections.abc import Iterable
 from contextlib import contextmanager
 from contextlib import nullcontext
@@ -83,8 +84,6 @@ from gemseo.util.string import _convert_camel_case_to_lower_case_words
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gemseo.core.algorithm._progress_bar.base import BaseProgressBar
     from gemseo.core.algorithm.progress_bar_data.factory import ProgressBarDataName
     from gemseo.optimization.problem import OptimizationProblem
@@ -900,7 +899,7 @@ class BaseDriverLibrary(
     @contextmanager
     def __record_iterations(
         self, problem: EvaluationProblem[_SpaceT]
-    ) -> Iterator[None]:
+    ) -> Generator[None, None, None]:
         """Hook the driver onto the evaluation layer of the problem.
 
         The hooks are released whatever the run does,
