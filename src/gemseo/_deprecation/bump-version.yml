@@ -2609,3 +2609,20 @@ functions:
     input_names_to_default_values: input_name_to_default_value
   get_variables_with_components:
     names_to_sizes: name_to_size
+
+# The factories returning an object of the class one of their arguments names, by
+# the name of that parameter: the codemod applies the rules of that class, which the
+# return type of the factory, a base class, does not tell, to the result, e.g. to
+# `model.set_clusterer(...)` after `model = create_regression_model("MOERegressor", data)`.
+# A key is a function, or a method as Class.method.
+factories:
+  create_cache: cache_type
+  create_classification_model: name
+  create_clustering_model: name
+  create_discipline: discipline_name
+  create_distribution: distribution_name
+  create_mda: mda_name
+  create_mlearning_model: name
+  create_regression_model: name
+  BaseFactory.create: class_name
+  DisciplineFactory.create: discipline_name
