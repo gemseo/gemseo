@@ -2171,11 +2171,18 @@ classes:
   Splitter:
     __init__:
       output_names_to_input_indices: output_name_to_input_indices
+  # The renaming API now tells inputs from outputs (changelog 1659), which only the
+  # user knows: the calls keep their arguments and are marked.
   VariableRenamer:
+    from_translations: TODO the tuples are now (discipline_name, is_input, variable_name, new_variable_name)
+    from_dictionary: TODO the values are now a pair (input_name_to_new_input_name, output_name_to_new_output_name)
+    from_csv: TODO the file now has an is_input column in second position, True or False
+    from_spreadsheet: TODO the file now has an is_input column in second position, True or False
+    add_translation: TODO a translation is now (discipline_name, is_input, variable_name, new_variable_name)
     add_translations_by_discipline:
-      variable_names_to_new_variable_names: null
+      variable_names_to_new_variable_names: TODO split the mapping into input_name_to_new_input_name and output_name_to_new_output_name, two positional arguments
     add_translations_by_variable:
-      discipline_names_to_variable_names: null
+      discipline_names_to_variable_names: TODO the values are now (variable_name, is_input) pairs; the argument is renamed discipline_name_and_io_mapping
 
   FilteringDiscipline:
     __init__:
@@ -2576,6 +2583,9 @@ classes:
 #   old_arg_name: new_arg_name={old_arg}_Settings  # rename and wrap value in a Settings instance
 
 functions:
+  # See VariableRenamer in classes:.
+  rename_discipline_variables:
+    translators: TODO the translators are now a mapping from the discipline name to a pair (input_name_to_new_input_name, output_name_to_new_output_name)
   # See DistributionFactory in classes:.
   create_distribution:
     options: settings={distribution_name}_Settings(**{options})
