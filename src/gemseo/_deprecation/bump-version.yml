@@ -2325,6 +2325,31 @@ classes:
   DatasetPlot:
     DEFAULT_PLOT_ENGINE: default_plot_engine
     FILE_FORMATS_TO_PLOT_ENGINES: file_formats_to_plot_engines
+    # The display options of a plot moved to its settings.
+    color: settings.color
+    colormap: settings.colormap
+    font_size: settings.font_size
+    legend_location: settings.legend_location
+    linestyle: settings.linestyle
+    marker: settings.marker
+    title: settings.title
+    xtick_rotation: settings.xtick_rotation
+    rmin: settings.rmin
+    rmax: settings.rmax
+    xmin: settings.xmin
+    xmax: settings.xmax
+    ymin: settings.ymin
+    ymax: settings.ymax
+    zmin: settings.zmin
+    zmax: settings.zmax
+    xlabel: settings.xlabel
+    ylabel: settings.ylabel
+    zlabel: settings.zlabel
+    grid: settings.grid
+    labels: settings.labels
+    fig_size: settings.fig_size
+    fig_size_x: TODO use settings.fig_size, the pair of the width and the height, instead
+    fig_size_y: TODO use settings.fig_size, the pair of the width and the height, instead
   DependencyGraph:
     IO: io
   F1Measure:
