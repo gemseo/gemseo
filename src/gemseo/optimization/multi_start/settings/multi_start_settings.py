@@ -66,3 +66,21 @@ If empty, do not save the local optima.""",
             "The maximum number of processes used to parallelize the sub-optimizations."
         ),
     )
+
+    skip_failed_starting_points: bool = Field(
+        default=True,
+        description="""Whether to skip the starting points whose sub-optimization fails.
+
+When `True`,
+a sub-optimization raising an exception or evaluating no objective value
+is logged as a warning,
+the design values it evaluated before failing are stored in the database
+and the next starting points are still processed;
+a `ValueError` is raised only when all the starting points fail.
+When `False`,
+the failure stops the multi-start optimization.
+
+This setting does not apply to the evaluation of the functions
+at the current design value,
+which is done before the sub-optimizations.""",
+    )

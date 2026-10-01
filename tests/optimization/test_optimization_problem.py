@@ -533,12 +533,14 @@ def test_get_dv_names() -> None:
 def test_get_best_infeasible_point() -> None:
     problem = Power2()
     problem.bind_functions()
-    f_val = problem.objective.evaluate(zeros(3))
+    x_solution, _ = Power2.get_solution()
+    outputs, _ = problem.evaluate_functions(x_solution, input_value_is_normalized=False)
+    f_val = outputs["pow2"]
     x_opt, f_opt, is_opt_feasible, opt_fd = (
         problem.history._OptimizationHistory__get_best_infeasible_point()
     )
     assert is_opt_feasible
-    assert (x_opt == zeros(3)).all()
+    assert_allclose(x_opt, x_solution)
     assert f_opt == f_val
     assert "pow2" in opt_fd
 
@@ -561,6 +563,45 @@ def test_get_best_infeasible_point() -> None:
     assert is_feas == problem.constraints.is_point_feasible(
         problem.evaluate_functions(x_2, input_value_is_normalized=False)[0]
     )
+
+
+def test_get_best_infeasible_point_ignores_incomplete_point() -> None:
+    """Check that an incomplete point is never the least infeasible optimum.
+
+    A design point missing a constraint value must not be reported as the
+    least infeasible optimum,
+    even though its partial violation measure would otherwise be smaller
+    than that of a complete infeasible point.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, name="obj")
+    problem.add_constraint(
+        ArrayFunction(lambda x: x, name="cstr1"),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+    problem.add_constraint(
+        ArrayFunction(lambda x: x, name="cstr2"),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+
+    # A complete infeasible point, with a large but finite violation.
+    x_complete = array([1.0])
+    problem.database.store(
+        x_complete,
+        {"obj": array([1.0]), "cstr1": array([10.0]), "cstr2": array([10.0])},
+    )
+    # An incomplete point that would otherwise look less infeasible.
+    x_incomplete = array([0.5])
+    problem.database.store(x_incomplete, {"obj": array([0.5]), "cstr1": array([0.1])})
+
+    x_opt, _, is_opt_feasible, _ = (
+        problem.history._OptimizationHistory__get_best_infeasible_point()
+    )
+    assert not is_opt_feasible
+    assert_array_equal(x_opt, x_complete)
 
 
 def test_no_points_in_database(snapshot):
@@ -2348,6 +2389,33 @@ def test_is_mono_objective_without_objective(snapshot) -> None:
     design_space.add_variable("x", 1)
     with assert_exception(ValueError, snapshot):
         OptimizationProblem(design_space).is_mono_objective  # noqa: B018
+
+
+def test_check_design_point_is_feasible_missing_constraint() -> None:
+    """Check that a design point missing a constraint value is infeasible.
+
+    A design point missing the value of a constraint used to be considered
+    feasible with a violation measure computed only from the constraints
+    evaluated before the missing one.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, name="obj")
+    problem.add_constraint(
+        ArrayFunction(lambda x: x, name="cstr1"),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+    problem.add_constraint(
+        ArrayFunction(lambda x: x, name="cstr2"),
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
+    )
+
+    x_vect = array([1.0])
+    # cstr1 would be satisfied on its own, but cstr2 is missing altogether.
+    problem.database.store(x_vect, {"obj": array([1]), "cstr1": array([-1.0])})
+    assert problem.history.check_design_point_is_feasible(x_vect) == (False, inf)
 
 
 def test_is_multi_objective(snapshot) -> None:

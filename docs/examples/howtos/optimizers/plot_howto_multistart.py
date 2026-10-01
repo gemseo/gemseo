@@ -65,6 +65,16 @@ scenario.add_constraint("cstr", constraint_type="ineq")
 # Combine a local algorithm (SLSQP) with a DOE to generate starting points
 # (here, a 10-point full-factorial design).
 # Set `multistart_file_path` to save the history of local optima:
+#
+# !!! tip
+#     Some starting points may cause the sub-optimization to crash
+#     with a Python exception (`ValueError`, `ZeroDivisionError`, ...).
+#     By default,
+#     such a starting point is skipped with a warning
+#     and the multi-start optimization moves on to the next one;
+#     it fails only if all the starting points fail.
+#     Set `skip_failed_starting_points` to `False`
+#     to stop at the first failure instead.
 scenario.execute(
     MultiStart_Settings(
         max_iter=100,

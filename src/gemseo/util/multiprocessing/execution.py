@@ -41,6 +41,7 @@ def execute(
     callbacks: Iterable[CallbackType],
     n_processes: int,
     inputs: Sequence[ArgT],
+    exceptions_to_re_raise: Sequence[type[Exception]] = (),
 ) -> list[ReturnT | None]:
     """Run the worker with the given inputs in sequential or parallel mode.
 
@@ -53,6 +54,12 @@ def execute(
             If empty, no function is called.
         n_processes: The number of processes used to evaluate the inputs.
         inputs: The inputs to be evaluated.
+        exceptions_to_re_raise: The exception types that,
+            when raised by the worker,
+            must be re-raised instead of being swallowed
+            and represented as a `None` entry in the returned list.
+            Ignored in sequential mode,
+            where any exception raised by the worker already propagates immediately.
 
     Returns:
         The outputs of the evaluations.
@@ -67,5 +74,9 @@ def execute(
 
         return all_outputs
 
-    parallel_exec = CallableParallelExecution([worker], n_processes=n_processes)
+    parallel_exec = CallableParallelExecution(
+        [worker],
+        n_processes=n_processes,
+        exceptions_to_re_raise=exceptions_to_re_raise,
+    )
     return parallel_exec.execute(inputs, exec_callbacks=callbacks)

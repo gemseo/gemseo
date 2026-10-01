@@ -141,6 +141,10 @@ class OptimizationHistory:
 
         If the design point is feasible, the constraint violation measure is 0.
 
+        If the design point is missing the value of a constraint,
+        it is considered infeasible,
+        with an infinite constraint violation measure.
+
         Args:
             x_vect: The design point $x$.
 
@@ -159,7 +163,7 @@ class OptimizationHistory:
         for constraint in constraints:
             constraint_value = output_name_to_value.get(constraint.name)
             if constraint_value is None:
-                break
+                return False, inf
 
             f_type = constraint.f_type
             if constraints.is_constraint_satisfied(f_type, constraint_value):

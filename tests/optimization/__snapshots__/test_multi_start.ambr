@@ -1,4 +1,10 @@
 # serializer version: 1
+# name: test_all_starting_points_fail[1]
+  'Multi-start optimization: all the 2 starting points failed; the last one failed with: ValueError: The discipline diverged.'
+# ---
+# name: test_all_starting_points_fail[2]
+  'Multi-start optimization: all the 2 starting points failed; the last one failed with: ValueError: The discipline diverged.'
+# ---
 # name: test_max_iter_error_1[4]
   'Multi-start optimization: the maximum number of iterations (4) must be greater than the number of initial points (5).'
 # ---
@@ -7,4 +13,13 @@
 # ---
 # name: test_max_iter_error_2
   'Multi-start optimization: the sum of the maximum number of iterations (50) related to the sub-optimizations is greater than the limit (10-1=9).'
+# ---
+# name: test_no_objective_evaluation_without_skipping
+  "Multi-start optimization: the sub-optimization from the starting point 1 ([0.2 0.5 0.4]) evaluated no value of the objective 'pow2'; set skip_failed_starting_points back to its default value True to skip it."
+# ---
+# name: test_skip_failed_starting_points_disabled[1]
+  'The discipline diverged.'
+# ---
+# name: test_skip_failed_starting_points_disabled[2]
+  'The discipline diverged.'
 # ---
