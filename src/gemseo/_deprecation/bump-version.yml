@@ -1318,23 +1318,26 @@ classes:
   # deterministic and random variables, so the members below either moved to the
   # variables view, belong to DesignSpace only, or have no equivalent at all.
   ParameterSpace:
+    # A random space holds random variables only.
+    add_variable: TODO a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead
     add_random_variable:
       __name__: add_variable
       # There is one distribution settings model per component now, so a variable
       # of size n is added with add_variable(name, *[settings] * n). The old
       # arguments cannot be rewritten mechanically: distribution was the name of a
-      # distribution and its parameters were passed apart.
-      distribution: null
-      size: null
-      interfaced_distribution: null
-      interfaced_distribution_parameters: null
+      # distribution and its parameters were passed apart. They are kept, and the
+      # call is marked.
+      distribution: &random-variable-distribution TODO pass the distribution settings model, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), as the second positional argument, once per component; a distribution name with its parameters must be written as a settings model
+      size: TODO repeat the settings model size times, i.e. add_variable(name, *[settings] * size)
+      interfaced_distribution: &random-variable-interfaced-distribution TODO set interfaced_distribution in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
+      interfaced_distribution_parameters: &random-variable-interfaced-distribution-parameters TODO set parameters in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
     add_random_vector:
       __name__: add_variable
       # Same restructuring as add_random_variable.
-      distribution: null
-      size: null
-      interfaced_distribution: null
-      interfaced_distribution_parameters: null
+      distribution: *random-variable-distribution
+      size: TODO pass one distribution settings model per component, i.e. add_variable(name, *settings)
+      interfaced_distribution: *random-variable-interfaced-distribution
+      interfaced_distribution_parameters: *random-variable-interfaced-distribution-parameters
     distribution: "{receiver}.variables.distribution"
     distributions: TODO use space.variables[name].distribution instead
     uncertain_variables: list({receiver}.variables)
@@ -2152,14 +2155,12 @@ classes:
       names_to_default_values: name_to_default_value
       add_uncertain_variables: null
     # ScalableDesignSpace derived from ParameterSpace and is now a DesignSpace,
-    # which has no random variable. These identity rules stop the inherited
-    # ParameterSpace renames to add_variable, which would silently add a
-    # deterministic variable; the call is left unchanged and fails loudly.
-    # TODO: add the random variables to a separate RandomSpace instead.
-    add_random_variable:
-      __name__: add_random_variable
-    add_random_vector:
-      __name__: add_random_vector
+    # which has no random variable. These rules stop the inherited ParameterSpace
+    # renames to add_variable, which would silently add a deterministic variable,
+    # and its TODO on add_variable, which adds one indeed.
+    add_variable: add_variable
+    add_random_variable: TODO add the random variables to a separate RandomSpace instead
+    add_random_vector: TODO add the random variables to a separate RandomSpace instead
   ScenarioResult:
     POST_FACTORY: post_factory
     optimization_problems_to_results: optimization_problem_to_result
