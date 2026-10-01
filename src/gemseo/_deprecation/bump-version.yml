@@ -1188,16 +1188,21 @@ classes:
     LEARNING: learning
     MULTIOUTPUT: multioutput
     algos: models
-  #    __init__:
-  #      algo: settings
+    # The name of the model, its loose settings and its transformer go to
+    # settings=<the model class>_Settings(...) (changelog 1696).
+    __init__:
+      algo: settings={algo}_Settings(**{algo_settings}, transformer={transformer})
   MLAlgoCalibration:
     algo_assessor: model_assessor
     optimal_algorithm: optimal_model
     algos: models
     execute:
       algo_name: settings={algo_name}_Settings(**{algo_settings})
-    #    __init__:
-    #      algo: settings
+    # As for MLAlgoAssessor; the names of the parameters to calibrate are those of
+    # the variables of the calibration space now.
+    __init__:
+      algo: settings={algo}_Settings(**{algo_settings}, transformer={transformer})
+      parameters: null
   MLAlgoSelection:
     #    __init__:
     #      calibration_algorithm: calibration_settings
