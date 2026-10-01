@@ -43,7 +43,7 @@ from gemseo.util.multiprocessing.manager import get_multi_processing_manager
 from gemseo.util.singleton import SingleInstancePerFileAttribute
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
@@ -414,7 +414,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                         sample_value[cls.hash_tag][0] = data_hash
 
     @contextmanager
-    def __open(self, mode: str = "r") -> Iterator[None]:
+    def __open(self, mode: str = "r") -> Generator[None, None, None]:
         """Open a hdf5 file.
 
         The file handle is used via `__file`.
@@ -431,7 +431,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 self.__close()
 
     @contextmanager
-    def keep_open(self) -> Iterator[None]:
+    def keep_open(self) -> Generator[None, None, None]:
         """Keep the file open for all file operations done in this context manager."""
         self.__keep_open = True
         yield  # noqa: RUF075

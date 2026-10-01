@@ -28,8 +28,8 @@ from gemseo.util.derivative.check.base import BaseJacobianChecker
 from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
     from collections.abc import Iterable
-    from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
 
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def _restore_discipline_state(discipline: Discipline) -> Iterator[None]:
+def _restore_discipline_state(discipline: Discipline) -> Generator[None, None, None]:
     """Snapshot the data of a discipline on entry and restore it on exit.
 
     The numerical approximation of the Jacobian executes the discipline

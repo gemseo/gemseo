@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import warnings
+from collections.abc import Generator
 from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
@@ -64,7 +65,6 @@ from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Iterator
     from collections.abc import Sequence
 
     from numpy import float64
@@ -863,7 +863,7 @@ class DesignSpace(
     @contextmanager
     def _prepare_untransformation(
         self, check_boundedness: bool = False
-    ) -> Iterator[None]:
+    ) -> Generator[None, None, None]:
         """
         Notes:
             The mapping from the unit hypercube to a design space is geometric,

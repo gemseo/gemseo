@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Mapping
 from contextlib import contextmanager
@@ -439,7 +440,7 @@ class MultiLineString:
 
     @classmethod
     @contextmanager
-    def offset(cls) -> Iterator[None]:
+    def offset(cls) -> Generator[None, None, None]:
         """Create a temporary offset with a context manager."""
         cls.default_level += 1
         try:

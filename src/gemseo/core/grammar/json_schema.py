@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta
+from collections.abc import Generator
 from collections.abc import MutableMapping
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
@@ -84,7 +85,7 @@ class _MergeStrategy(Object):  # type: ignore[misc]
     """Whether to update or merge the schema."""
 
     @contextmanager
-    def __handle_update(self) -> Iterator[None]:
+    def __handle_update(self) -> Generator[None, None, None]:
         """A context manager to handle the update vs merge."""
         # Pass the update switch to _SchemaNode.
         self.node_class.update = self.update

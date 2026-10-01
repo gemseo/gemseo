@@ -37,7 +37,7 @@ from gemseo.optimization.result import OptimizationResult
 from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Generator
 
     from gemseo.core.discipline import Discipline
     from gemseo.optimization.problem import OptimizationProblem
@@ -158,7 +158,7 @@ class BiLevelScenarioResult(ScenarioResult):
     @contextmanager
     def __use_database(
         sub_problem: OptimizationProblem, database: Database
-    ) -> Iterator[None]:
+    ) -> Generator[None, None, None]:
         """Temporarily replace the database of a sub-optimization problem.
 
         Args:

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Mapping
 from contextlib import contextmanager
@@ -357,7 +358,7 @@ class JSONGrammar(BaseGrammar):
         return cast("str", json.dumps(self.schema, *args, **kwargs))
 
     @contextmanager
-    def __sync_required_names(self) -> Iterator[None]:
+    def __sync_required_names(self) -> Generator[None, None, None]:
         """Synchronize the required names while processing the schema builder."""
         self.__schema_builder.required.update(self._required_names)
         try:
