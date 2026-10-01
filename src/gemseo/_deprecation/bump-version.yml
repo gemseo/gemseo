@@ -1090,9 +1090,18 @@ classes:
   #### Surrogate model
   SurrogateDiscipline:
     regression_model: regressor
+    # A surrogate discipline is built from a regressor only; create_surrogate, which
+    # takes a regressor, its name or its settings, as the old constructor did, is the
+    # successor of the constructor (changelog 1706).
     __init__:
-      surrogate: regressor
-      disc_name: name
+      __name__: gemseo.create_surrogate
+      <<: &create-surrogate
+        surrogate: regressor
+        disc_name: name
+        # The loose settings, and the input and output names, go to the settings of
+        # the regressor, which replace its name.
+        settings: regressor={surrogate}_Settings(**{settings}, input_names={input_names}, output_names={output_names})
+        default_input_data: io.input_grammar.defaults.update({default_input_data})
 
   #### ML model quality
   BaseMLAlgoQuality:
@@ -2593,9 +2602,8 @@ functions:
     options: settings={distribution_name}_Settings(**{options})
   write_design_space:
     header_char: null
-  create_surrogate:
-    surrogate: regressor
-    disc_name: name
+  # See SurrogateDiscipline in classes:.
+  create_surrogate: *create-surrogate
   generate_xdsm:
     discipline: process
 
