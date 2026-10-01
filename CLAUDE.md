@@ -159,16 +159,18 @@ central settings package.
 
 `src/gemseo/_deprecation/` keeps a rename cycle working for users:
 
-- `bump-version.yml` is the single rename map. Its `modules:`, `attributes:`,
-  `dissolved:` and `manual:` sections are read at runtime; `classes:` is read too, but
+- `bump-version.yml` is the single rename map. Its `modules:` and `attributes:`
+  sections are read at runtime (dissolved packages such as
+  `gemseo.settings` are derived from `modules:`); `classes:` is read too, but
   only its scalar entries (renamed class attributes and methods) — nested
   method-parameter blocks and `null` targets are for the external codemod only.
 - `aliases.py` computes the old→new tables from that file at import time.
 - `install()` registers a `MetaPathFinder` that redirects old imports, adds a module
   `__getattr__` when only a class was renamed, and sets data descriptors for renamed
   class attributes, each emitting a `DeprecationWarning`.
-- Names under `manual:` cannot be migrated automatically and raise an `ImportError`
-  explaining the migration.
+- Names whose `attributes:` value is `TODO <text>` cannot be migrated automatically: the
+  `ImportError` they raise ends with the text, an instruction telling how to migrate by
+  hand, and the external codemod marks the code using them with it.
 
 **Any user-visible rename must be registered in `bump-version.yml`.** Entries stay there
 until their scheduled removal, which is what makes the aliases accumulate across

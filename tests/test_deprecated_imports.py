@@ -19,20 +19,28 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import io
+import logging
 import os
 import pickle
 import pkgutil
 import subprocess
 import sys
 import warnings
+from enum import StrEnum
 from pathlib import Path
+from types import ModuleType
+from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 import pytest
 
 import gemseo  # noqa: F401 - ensures the deprecated-import finder is installed
 from gemseo.util.testing.helper import assert_exception
 from tests.marks import requires_numpy_2
+
+if TYPE_CHECKING:
+    from _pytest.mark.structures import ParameterSet
 
 
 def test_moved_module_and_renamed_class():
@@ -197,6 +205,127 @@ def test_moved_module_level_constant():
     assert epsilon == OLD_EPSILON
 
 
+@pytest.mark.parametrize(
+    "old_module_name", ["gemseo.utils.logging", "gemseo.utils.logging_tools"]
+)
+def test_removed_gemseo_logger_constant_resolves_to_the_gemseo_logger(
+    old_module_name,
+):
+    """The removed GEMSEO_LOGGER constant is the gemseo logger from its old paths."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        old_module = importlib.import_module(old_module_name)
+
+    with pytest.warns(DeprecationWarning, match="'gemseo.logger'"):
+        gemseo_logger = old_module.GEMSEO_LOGGER
+
+    assert gemseo_logger is logging.getLogger("gemseo")
+
+
+@pytest.mark.parametrize(
+    ("old_name", "new_module_name", "new_name"),
+    [
+        ("BaseScenario", "gemseo.scenario.evaluation", "EvaluationScenario"),
+        (
+            "BaseParallelMDASettings",
+            "gemseo.mda.core.base_parallel_solver_settings",
+            "BaseMDAParallelSolverSettings",
+        ),
+    ],
+)
+def test_renamed_top_level_reexport(old_name, new_module_name, new_name):
+    """A class re-exported by the gemseo 6.3.2 package is reachable from it."""
+    new_object = getattr(importlib.import_module(new_module_name), new_name)
+
+    with pytest.warns(DeprecationWarning, match=f"'{new_module_name}.{new_name}'"):
+        old_object = getattr(gemseo, old_name)
+
+    assert old_object is new_object
+
+
+_top_level_module_warning: Final[str] = (
+    "The attribute 'base_parallel_mda_settings' of the module 'gemseo' is deprecated; "
+    "use 'gemseo.mda.core.base_parallel_solver_settings' instead."
+)
+"""The warning of the module re-exported by the gemseo 6.3.2 package."""
+
+
+def test_renamed_top_level_reexport_of_a_module():
+    """A module re-exported by the gemseo 6.3.2 package is importable from it."""
+    from gemseo.mda.core import base_parallel_solver_settings
+
+    with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
+        from gemseo import base_parallel_mda_settings
+
+    assert base_parallel_mda_settings is base_parallel_solver_settings
+
+
+def test_renamed_top_level_reexport_of_a_module_as_an_attribute():
+    """A module re-exported by the gemseo 6.3.2 package is an attribute of it."""
+    from gemseo.mda.core import base_parallel_solver_settings
+
+    with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
+        module = gemseo.base_parallel_mda_settings
+
+    assert module is base_parallel_solver_settings
+
+
+def test_renamed_attribute_to_a_module_not_imported_yet(monkeypatch):
+    """An attribute renamed to a module imports the latter when not imported yet.
+
+    Args:
+        monkeypatch: Fixture to forget the module and the table of the renames.
+    """
+    from gemseo import _deprecation
+
+    live_module = ModuleType("gemseo.fake_live_module")
+    new_name = "gemseo.mda.core.base_parallel_solver_settings"
+    monkeypatch.setattr(
+        _deprecation, "attribute_renames", {live_module.__name__: {"old": new_name}}
+    )
+    monkeypatch.delitem(sys.modules, new_name)
+    monkeypatch.delattr(
+        importlib.import_module("gemseo.mda.core"), "base_parallel_solver_settings"
+    )
+    _deprecation._install_attribute_aliases(live_module)
+
+    with pytest.warns(DeprecationWarning, match=f"use '{new_name}' instead"):
+        module = live_module.old
+
+    assert module is sys.modules[new_name]
+
+
+@pytest.mark.parametrize(
+    "new_name",
+    [
+        # Neither an attribute nor a submodule of a package.
+        "gemseo.mda.core.does_not_exist",
+        # Not an attribute of a module, which has no submodule.
+        "gemseo.util.string.does_not_exist",
+    ],
+)
+def test_renamed_attribute_to_a_missing_name_raises(monkeypatch, new_name, snapshot):
+    """An attribute renamed to a missing name raises an `AttributeError`.
+
+    Args:
+        monkeypatch: Fixture to patch the table of the renamed attributes.
+        new_name: The missing new name.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo import _deprecation
+
+    live_module = ModuleType("gemseo.fake_live_module")
+    monkeypatch.setattr(
+        _deprecation, "attribute_renames", {live_module.__name__: {"old": new_name}}
+    )
+    _deprecation._install_attribute_aliases(live_module)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(AttributeError, snapshot):
+            live_module.old  # noqa: B018
+
+
 def test_star_import_from_deprecated_module():
     """A star import from an old path binds the names of the new one."""
     from gemseo.util import string
@@ -209,6 +338,54 @@ def test_star_import_from_deprecated_module():
     expected = {name for name in vars(string) if not name.startswith("_")}
     assert expected
     assert expected <= set(namespace)
+
+
+def test_star_import_from_deprecated_module_skips_unmigrated_names(monkeypatch):
+    """A star import from an old path skips the names that raise.
+
+    A name removed with no replacement, or whose migration cannot be automated, is
+    left out of the `__all__` of the stand-in even when the new module defines it, so
+    that the star import does not fail partway.
+
+    Args:
+        monkeypatch: Fixture to forget the stand-in and patch the table of the names
+            that raise.
+    """
+    from gemseo import _deprecation
+
+    module_name = "gemseo.utils.string_tools"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        importlib.import_module(module_name)
+    # The stand-in is rebuilt from the patched tables, and restored afterwards.
+    monkeypatch.delitem(sys.modules, module_name)
+    monkeypatch.setattr(
+        _deprecation,
+        "unmigrated_attributes",
+        {module_name: frozenset({"partial", "deepcopy"})},
+    )
+    namespace: dict[str, object] = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        exec(f"from {module_name} import *", namespace)  # noqa: S102
+
+    assert "escape" in namespace
+    assert "partial" not in namespace
+    assert "deepcopy" not in namespace
+
+
+def test_star_import_from_deprecated_module_binds_the_renamed_names():
+    """A star import from an old path binds the old names renamed in the old module.
+
+    The new module does not define them, as `ParameterSpace` renamed to `RandomSpace`.
+    """
+    from gemseo.space.random import RandomSpace
+
+    namespace: dict[str, object] = {}
+    with pytest.warns(DeprecationWarning, match="'ParameterSpace'"):
+        exec("from gemseo.algos.parameter_space import *", namespace)  # noqa: S102
+
+    assert namespace["ParameterSpace"] is RandomSpace
 
 
 def test_dir_of_deprecated_module():
@@ -224,16 +401,18 @@ def test_dir_of_deprecated_module():
 
 
 def test_star_import_from_dissolved_package(monkeypatch):
-    """A star import from the dissolved settings package binds its former names."""
-    from gemseo.optimization import SLSQP_Settings
+    """A star import from the dissolved settings package binds nothing.
 
+    The old package defined no name, only its submodules were renamed.
+    """
     monkeypatch.delitem(sys.modules, "gemseo.settings", raising=False)
     namespace: dict[str, object] = {}
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         exec("from gemseo.settings import *", namespace)  # noqa: S102
 
-    assert namespace["SLSQP_Settings"] is SLSQP_Settings
+    # `__warningregistry__` is added by the warnings machinery, not by the import.
+    assert set(namespace) - {"__builtins__", "__warningregistry__"} == set()
 
 
 def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
@@ -250,6 +429,42 @@ def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
     monkeypatch.setitem(old.__dict__, "_deprecation_target", _Boom())
     with pytest.raises(ModuleNotFoundError, match="some_optional_dependency"):
         old.MDAGSNewton  # noqa: B018
+
+
+@pytest.mark.parametrize(
+    "new_name",
+    [
+        # A module of GEMSEO.
+        "gemseo.mda.gauss_seidel_newton_raphson",
+        # A module of an installed plugin, whose own dependency is missing.
+        "gemseo_fake_plugin.module",
+    ],
+)
+def test_missing_dependency_of_a_redirected_module_is_reraised(monkeypatch, new_name):
+    """A dependency missing behind a stand-in is re-raised unchanged.
+
+    It is not mistaken for a module moved to a plugin that is not installed.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module.
+        new_name: The name of the new module.
+    """
+    from gemseo import _deprecation
+
+    error = ModuleNotFoundError(
+        "No module named 'some_optional_dependency'", name="some_optional_dependency"
+    )
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    loader = _deprecation._DeprecatedModuleLoader("gemseo.fake_old_module", new_name)
+
+    with pytest.raises(ModuleNotFoundError) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value is error
 
 
 def test_user_warning_filters_are_not_overridden():
@@ -491,16 +706,34 @@ def test_warning_shown_under_default_filters(tmp_path):
 
 
 def test_dissolved_settings_package(monkeypatch):
-    """The dissolved gemseo.settings package resolves attributes across its targets."""
-    from gemseo.formulation import MDF_Settings
-    from gemseo.optimization import SLSQP_Settings
-
+    """The dissolved gemseo.settings package imports and warns, but has no names."""
     monkeypatch.delitem(sys.modules, "gemseo.settings", raising=False)
     with pytest.warns(DeprecationWarning, match="'gemseo.settings' is deprecated"):
         settings = importlib.import_module("gemseo.settings")
 
-    assert settings.SLSQP_Settings is SLSQP_Settings
-    assert settings.MDF_Settings is MDF_Settings
+    assert "SLSQP_Settings" not in dir(settings)
+    assert not hasattr(settings, "SLSQP_Settings")
+    assert not hasattr(settings, "__all__")
+
+
+def test_dissolved_settings_from_package_import_submodule(monkeypatch):
+    """A submodule of the dissolved package is importable from the package."""
+    monkeypatch.delitem(sys.modules, "gemseo.settings", raising=False)
+    monkeypatch.delitem(sys.modules, "gemseo.settings.opt", raising=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        from gemseo.settings import opt
+
+    assert opt.SLSQP_Settings.__name__ == "SLSQP_Settings"
+
+
+def test_dissolved_settings_name_is_not_resolved(monkeypatch):
+    """The dissolved package does not resolve the names of its new locations."""
+    monkeypatch.delitem(sys.modules, "gemseo.settings", raising=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with pytest.raises(ImportError):
+            from gemseo.settings import SLSQP_Settings  # noqa: F401
 
 
 def test_dissolved_settings_submodule_redirect(monkeypatch):
@@ -526,7 +759,7 @@ def test_dissolved_settings_chain_flattened(monkeypatch):
 
 
 def test_dissolved_package_unknown_attribute(snapshot):
-    """An unknown attribute of a dissolved package raises AttributeError."""
+    """Any attribute of a dissolved package raises AttributeError."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         settings = importlib.import_module("gemseo.settings")
@@ -535,26 +768,46 @@ def test_dissolved_package_unknown_attribute(snapshot):
         settings.does_not_exist  # noqa: B018
 
 
+def _needs_a_missing_package(old_module: str) -> bool:
+    """Return whether an old module is redirected to a package that is not installed.
+
+    Such a package is a GEMSEO plugin, e.g. `gemseo_excel`, or a third-party one
+    whose names the codemod renames, e.g. `strenum`.
+
+    Args:
+        old_module: The old fully-qualified module name.
+
+    Returns:
+        Whether the module is, or moved to, a package outside GEMSEO missing from the
+        environment.
+    """
+    from gemseo._deprecation.aliases import module_renames
+
+    new_module = module_renames.get(old_module, old_module)
+    package = new_module.partition(".")[0]
+    return package != "gemseo" and importlib.util.find_spec(package) is None
+
+
 def test_every_rename_entry_is_reachable():
     """Every rename-table entry redirects to an importable target.
 
-    The names whose migration cannot be automated are excluded:
-    importing one raises instead of resolving.
+    The names whose migration cannot be automated, the `TODO <text>` entries of
+    `attributes:`, are no renames: importing one raises instead of resolving.
     """
     from gemseo._deprecation.aliases import attribute_renames
-    from gemseo._deprecation.aliases import manual_migrations
     from gemseo._deprecation.aliases import module_renames
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         for old_module in module_renames:
-            importlib.import_module(old_module)
+            if not _needs_a_missing_package(old_module):
+                importlib.import_module(old_module)
         for old_module, renames in attribute_renames.items():
+            if _needs_a_missing_package(old_module):
+                continue
             module = importlib.import_module(old_module)
-            manual_names = manual_migrations.get(old_module, {})
             for old_name in renames:
-                if old_name not in manual_names:
-                    getattr(module, old_name)
+                getattr(module, old_name)
 
 
 def test_manual_migration_raises(snapshot):
@@ -562,7 +815,8 @@ def test_manual_migration_raises(snapshot):
 
     An `ImportError` is raised rather than an `AttributeError`, so that a
     `from ... import ...` of the name reports this message instead of the generic
-    one that the import machinery builds from an `AttributeError`.
+    one that the import machinery builds from an `AttributeError`. The message ends
+    with the instruction of the `TODO <text>` entry of the name.
 
     Args:
         snapshot: Fixture to compare the error message with a snapshot.
@@ -577,16 +831,267 @@ def test_manual_migration_raises(snapshot):
 
 
 def test_every_manual_migration_entry_raises():
-    """Every entry of the manual-migration table raises instead of being aliased."""
+    """Every entry of the manual-migration table raises instead of being aliased.
+
+    The message of the error ends with the instruction of the entry.
+    """
     from gemseo._deprecation.aliases import manual_migrations
 
+    assert manual_migrations
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
         for old_module, migrations in manual_migrations.items():
             module = importlib.import_module(old_module)
-            for old_name in migrations:
-                with pytest.raises(ImportError):
+            for old_name, migration in migrations.items():
+                with pytest.raises(ImportError) as exc_info:
                     getattr(module, old_name)
+                assert str(exc_info.value) == (
+                    f"The attribute {old_name!r} of the module {old_module!r} was "
+                    f"removed; {migration}."
+                )
+
+
+def test_removed_module_raises(snapshot):
+    """A module removed with no replacement raises, instead of being redirected.
+
+    Without it, the rename of its package would redirect the import to a module that
+    does not exist either, with a message naming the latter.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ModuleNotFoundError, snapshot):
+            importlib.import_module("gemseo.utils.enumeration")
+
+
+@pytest.mark.parametrize(
+    ("package_name", "module_name"),
+    [
+        # A renamed package, reached through its stand-in.
+        ("gemseo.utils", "enumeration"),
+        # A package that kept its name.
+        ("gemseo.core", "_discipline_class_injector"),
+    ],
+)
+def test_removed_module_raises_when_imported_from_its_package(
+    package_name, module_name, snapshot
+):
+    """A module removed with no replacement raises when imported from its package.
+
+    The import machinery swallows the error of `from package import module` for a
+    module that does not exist, when the error names the module; the message must
+    not be lost.
+
+    Args:
+        package_name: The name of the package of the removed module.
+        module_name: The name of the removed module in its package.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ModuleNotFoundError, snapshot):
+            exec(f"from {package_name} import {module_name}", {})  # noqa: S102
+
+
+def test_removed_module_raises_when_its_spec_is_found(snapshot):
+    """Finding the spec of a module removed with no replacement raises.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ModuleNotFoundError, snapshot):
+            importlib.util.find_spec("gemseo.utils.enumeration")
+
+
+_removed_attribute_cases: Final[tuple[ParameterSet, ...]] = (
+    # A renamed module, reached through its stand-in.
+    pytest.param(
+        "gemseo.utils.study_analyses.study_analysis_cli",
+        "STUDY_ANALYSIS_TYPES",
+        id="gemseo.utils.study_analyses.study_analysis_cli-STUDY_ANALYSIS_TYPES",
+    ),
+    # A module that kept its name.
+    pytest.param(
+        "gemseo.core.discipline.io",
+        "_GRAMMAR_FACTORY",
+        id="gemseo.core.discipline.io-_GRAMMAR_FACTORY",
+    ),
+)
+"""The modules, reached through a stand-in or live, and one of their removed names."""
+
+
+@pytest.mark.parametrize(("module_name", "name"), _removed_attribute_cases)
+def test_removed_attribute_raises(module_name, name, snapshot):
+    """An attribute removed with no replacement raises an error saying so.
+
+    It is an `AttributeError`, whether the module was renamed or kept its name.
+
+    Args:
+        module_name: The old name of the module defining the attribute.
+        name: The name of the removed attribute.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        module = importlib.import_module(module_name)
+        with assert_exception(AttributeError, snapshot):
+            getattr(module, name)
+
+
+@pytest.mark.parametrize(("module_name", "name"), _removed_attribute_cases)
+def test_removed_attribute_is_probeable(module_name, name):
+    """`hasattr` and `getattr` with a default work on a removed attribute.
+
+    Args:
+        module_name: The old name of the module defining the attribute.
+        name: The name of the removed attribute.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        module = importlib.import_module(module_name)
+    sentinel = object()
+    assert not hasattr(module, name)
+    assert getattr(module, name, sentinel) is sentinel
+
+
+@pytest.mark.parametrize(("module_name", "name"), _removed_attribute_cases)
+def test_removed_attribute_raises_when_imported_from_its_module(
+    module_name, name, snapshot
+):
+    """A removed attribute imported by a `from` statement raises an error saying so.
+
+    It is an `ImportError`, as the `from` statement would replace an `AttributeError`
+    by a generic one losing the message.
+
+    Args:
+        module_name: The old name of the module defining the attribute.
+        name: The name of the removed attribute.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ImportError, snapshot):
+            exec(f"from {module_name} import {name}", {})  # noqa: S102
+
+
+@pytest.fixture
+def dissolved_package_with_a_removed_attribute(monkeypatch) -> ModuleType:
+    """Return the dissolved `gemseo.settings` package, with a removed attribute `Gone`.
+
+    Args:
+        monkeypatch: Fixture to patch the table of the removed attributes.
+
+    Returns:
+        The stand-in of the dissolved package.
+    """
+    from gemseo import _deprecation
+
+    monkeypatch.setattr(
+        _deprecation, "removed_attributes", {"gemseo.settings": frozenset({"Gone"})}
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        return importlib.import_module("gemseo.settings")
+
+
+def test_removed_attribute_of_dissolved_package_is_not_an_attribute(
+    dissolved_package_with_a_removed_attribute,
+):
+    """`hasattr` returns `False` for a removed attribute of a dissolved package.
+
+    Args:
+        dissolved_package_with_a_removed_attribute: The stand-in of a dissolved
+            package with a removed attribute `Gone`.
+    """
+    assert not hasattr(dissolved_package_with_a_removed_attribute, "Gone")
+
+
+def test_removed_attribute_of_dissolved_package_gets_the_default(
+    dissolved_package_with_a_removed_attribute,
+):
+    """`getattr` returns the default for a removed attribute of a dissolved package.
+
+    Args:
+        dissolved_package_with_a_removed_attribute: The stand-in of a dissolved
+            package with a removed attribute `Gone`.
+    """
+    sentinel = object()
+    assert getattr(dissolved_package_with_a_removed_attribute, "Gone", sentinel) is (
+        sentinel
+    )
+
+
+def test_removed_attribute_of_dissolved_package_raises(
+    dissolved_package_with_a_removed_attribute, snapshot
+):
+    """A removed attribute of a dissolved package raises an error saying so.
+
+    Args:
+        dissolved_package_with_a_removed_attribute: The stand-in of a dissolved
+            package with a removed attribute `Gone`.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with assert_exception(AttributeError, snapshot):
+        dissolved_package_with_a_removed_attribute.Gone  # noqa: B018
+
+
+def test_removed_attribute_of_dissolved_package_raises_when_imported_from_it(
+    dissolved_package_with_a_removed_attribute, snapshot
+):
+    """A removed attribute imported from a dissolved package raises an error saying so.
+
+    Args:
+        dissolved_package_with_a_removed_attribute: The stand-in of a dissolved
+            package with a removed attribute `Gone`.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    module_name = dissolved_package_with_a_removed_attribute.__name__
+    with assert_exception(ImportError, snapshot):
+        exec(f"from {module_name} import Gone", {})  # noqa: S102
+
+
+def test_module_moved_to_a_missing_plugin_raises(snapshot):
+    """A module moved to a plugin that is not installed raises an error naming it.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    if importlib.util.find_spec("gemseo_excel") is not None:
+        pytest.skip("The gemseo-excel plugin is installed.")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ModuleNotFoundError, snapshot):
+            importlib.import_module("gemseo.disciplines.wrappers.xls_discipline")
+
+
+def test_every_removal_entry_raises():
+    """Every module and attribute removed with no replacement raises when imported."""
+    from gemseo._deprecation.aliases import removed_attributes
+    from gemseo._deprecation.aliases import removed_modules
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        for old_module in removed_modules:
+            with pytest.raises(ModuleNotFoundError) as exc_info:
+                importlib.import_module(old_module)
+            assert str(exc_info.value) == (
+                f"The module {old_module!r} was removed, with no replacement."
+            )
+        for old_module, names in removed_attributes.items():
+            if _needs_a_missing_package(old_module):
+                continue
+            module = importlib.import_module(old_module)
+            for name in names:
+                with pytest.raises(AttributeError) as exc_info:
+                    getattr(module, name)
+                assert str(exc_info.value) == (
+                    f"The attribute {name!r} of the module {old_module!r} was "
+                    "removed, with no replacement."
+                )
 
 
 def test_manual_migration_raises_for_dissolved_package(monkeypatch, snapshot):
@@ -606,7 +1111,7 @@ def test_manual_migration_raises_for_dissolved_package(monkeypatch, snapshot):
         "manual_migrations",
         {
             **manual_migrations,
-            "gemseo.settings": {"Animation": "gemseo.post.Animation"},
+            "gemseo.settings": {"Animation": "use gemseo.post.Animation instead"},
         },
     )
     with warnings.catch_warnings():
@@ -677,6 +1182,428 @@ def test_pickle_find_class(module_name, class_name, expected_module):
         unpickler = pickle.Unpickler(io.BytesIO(b""))
         cls = unpickler.find_class(module_name, class_name)
     assert cls.__module__ == expected_module
+
+
+@pytest.mark.parametrize(
+    ("module_name", "class_name"),
+    [
+        ("gemseo.core.problem.evaluation", "EvaluationProblem"),
+        ("gemseo.optimization.problem", "OptimizationProblem"),
+        ("gemseo.core.algorithm.base_driver_library", "BaseDriverLibrary"),
+    ],
+)
+def test_renamed_member_of_a_nested_enumeration(module_name, class_name):
+    """The old name of a member of an enumeration nested in a class resolves.
+
+    Args:
+        module_name: The name of the module defining the class.
+        class_name: The name of the class holding the enumeration.
+    """
+    cls = getattr(importlib.import_module(module_name), class_name)
+
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "The attribute 'USER_GRAD' of the class 'DifferentiationMethod' is "
+            "deprecated; use 'USER' instead."
+        ),
+    ):
+        old_member = cls.DifferentiationMethod.USER_GRAD
+
+    assert old_member is cls.DifferentiationMethod.USER
+    # The alias is not a member of the enumeration.
+    assert "USER_GRAD" not in cls.DifferentiationMethod.__members__
+
+
+def test_renamed_member_of_a_nested_enumeration_by_name():
+    """The old name of a member of a nested enumeration resolves by name lookup.
+
+    It is not listed among the members all the same.
+    """
+    from gemseo.optimization.problem import OptimizationProblem
+
+    differentiation_method = OptimizationProblem.DifferentiationMethod
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "The attribute 'USER_GRAD' of the class 'DifferentiationMethod' is "
+            "deprecated; use 'USER' instead."
+        ),
+    ):
+        old_member = differentiation_method["USER_GRAD"]
+
+    assert old_member is differentiation_method.USER
+    assert "USER_GRAD" not in differentiation_method.__members__
+    assert "USER_GRAD" not in [member.name for member in differentiation_method]
+
+
+_upper_cased_member_cases: Final[tuple[ParameterSet, ...]] = (
+    pytest.param(
+        "gemseo.doe.scipy.settings.base_scipy_doe_settings",
+        "Hypersphere",
+        "volume",
+        "VOLUME",
+        id="Hypersphere.volume",
+    ),
+    pytest.param(
+        "gemseo.doe.scipy.settings.base_scipy_doe_settings",
+        "Strength",
+        "one",
+        "ONE",
+        id="Strength.one",
+    ),
+    pytest.param(
+        "gemseo.dataset", "DatasetClassName", "IODataset", "IO_DATASET", id="IODataset"
+    ),
+    pytest.param(
+        "gemseo.post.dataset.pair_plot_settings",
+        "ColormapName",
+        "cool",
+        "COOL",
+        id="ColormapName.cool",
+    ),
+    pytest.param(
+        "gemseo.uncertainty.statistic.sp_parametric",
+        "SPParametricStatistics.DistributionName",
+        "norm",
+        "NORM",
+        id="SPParametricStatistics.DistributionName.norm",
+    ),
+    pytest.param(
+        "gemseo.uncertainty.statistic.ot_parametric",
+        "OTParametricStatistics.FittingCriterion",
+        "ChiSquared",
+        "CHI_SQUARED",
+        id="OTParametricStatistics.FittingCriterion.ChiSquared",
+    ),
+)
+"""The enumerations whose members were renamed to the upper-case convention.
+
+Each case is the module defining the enumeration, the path of the enumeration in the
+module, an old member name and the new one.
+"""
+
+
+def _get_enumeration(module_name: str, path: str) -> type[StrEnum]:
+    """Return an enumeration from its module.
+
+    Args:
+        module_name: The name of the module defining the enumeration.
+        path: The dotted path of the enumeration in the module.
+
+    Returns:
+        The enumeration.
+    """
+    enumeration = importlib.import_module(module_name)
+    for name in path.split("."):
+        enumeration = getattr(enumeration, name)
+    return enumeration
+
+
+@pytest.mark.parametrize(
+    ("module_name", "path", "old_name", "new_name"), _upper_cased_member_cases
+)
+def test_upper_cased_member_resolves(module_name, path, old_name, new_name):
+    """The old name of a member renamed to the upper-case convention resolves.
+
+    Args:
+        module_name: The name of the module defining the enumeration.
+        path: The dotted path of the enumeration in the module.
+        old_name: The old name of the member.
+        new_name: The new name of the member.
+    """
+    enumeration = _get_enumeration(module_name, path)
+
+    with pytest.warns(DeprecationWarning, match=f"use '{new_name}' instead"):
+        old_member = getattr(enumeration, old_name)
+
+    assert old_member is enumeration[new_name]
+
+
+@pytest.mark.parametrize(
+    ("module_name", "path", "old_name", "new_name"),
+    [
+        *_upper_cased_member_cases,
+        # The old name is not aliased as an attribute, which would shadow the method
+        # `str.center` of the members.
+        pytest.param(
+            "gemseo.doe.pydoe.settings.pydoe_lhs",
+            "Criterion",
+            "center",
+            "CENTER",
+            id="Criterion.center",
+        ),
+    ],
+)
+def test_upper_cased_member_resolves_by_name(module_name, path, old_name, new_name):
+    """The old name of a member renamed to the upper-case convention resolves by name.
+
+    Args:
+        module_name: The name of the module defining the enumeration.
+        path: The dotted path of the enumeration in the module.
+        old_name: The old name of the member.
+        new_name: The new name of the member.
+    """
+    enumeration = _get_enumeration(module_name, path)
+
+    with pytest.warns(DeprecationWarning, match=f"use '{new_name}' instead"):
+        old_member = enumeration[old_name]
+
+    assert old_member is enumeration[new_name]
+
+
+def test_unknown_member_name_of_an_aliased_enumeration_raises(snapshot):
+    """An unknown name of an enumeration with renamed members raises a `KeyError`.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo.space.variable import DataType
+
+    with assert_exception(KeyError, snapshot):
+        DataType["DOES_NOT_EXIST"]
+
+
+def test_nested_renames_of_a_shared_class_are_merged():
+    """The renames of a nested class held by several classes are all applied.
+
+    Each class holding it lists its own renames of it.
+    """
+    from gemseo._deprecation import _alias_class_and_nested_attributes
+
+    class Shared(StrEnum):
+        NEW_A = "a"
+        NEW_B = "b"
+
+    class First:
+        Enumeration = Shared
+
+    class Second:
+        Enumeration = Shared
+
+    _alias_class_and_nested_attributes(
+        First, {"Enumeration.OLD_A": "Enumeration.NEW_A"}
+    )
+    _alias_class_and_nested_attributes(
+        Second, {"Enumeration.OLD_B": "Enumeration.NEW_B"}
+    )
+
+    with pytest.warns(DeprecationWarning, match="'OLD_A'"):
+        member_a = Shared.OLD_A
+    with pytest.warns(DeprecationWarning, match="'OLD_B'"):
+        member_b = Shared["OLD_B"]
+
+    assert member_a is Shared.NEW_A
+    assert member_b is Shared.NEW_B
+
+
+def test_renames_added_later_apply_to_the_subclass_bodies():
+    """A rename added to a class already aliased applies to its subclass bodies."""
+    from gemseo._deprecation import _alias_class_attributes
+
+    class Base:
+        new_a = "a"
+        new_b = "b"
+
+    _alias_class_attributes(Base, {"OLD_A": "new_a"})
+    _alias_class_attributes(Base, {"OLD_B": "new_b"})
+
+    with pytest.warns(DeprecationWarning, match="'OLD_B'"):
+
+        class Sub(Base):
+            OLD_B = "other"
+
+    assert Sub.new_b == "other"
+
+
+def test_nested_rename_whose_path_leads_to_no_class_is_ignored():
+    """A dotted rename is ignored when its path does not lead to a class."""
+    from gemseo._deprecation import _alias_class_and_nested_attributes
+
+    class Holder:
+        not_a_class = 1
+
+    _alias_class_and_nested_attributes(
+        Holder, {"not_a_class.OLD": "not_a_class.NEW", "missing.OLD": "missing.NEW"}
+    )
+
+    assert "OLD" not in vars(Holder)
+
+
+def test_renamed_hook_of_a_formulation_subclass_body():
+    """A formulation implementing the old name of the input space hook still works.
+
+    The implementation is remapped to the new name, which then no longer is abstract.
+    """
+    from gemseo.formulation.core.base import BaseFormulation
+
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "The attribute '_update_design_space' of the class 'BaseFormulation' is "
+            "deprecated; use '_update_input_space' instead."
+        ),
+    ):
+
+        class Formulation(BaseFormulation):
+            def _update_design_space(self) -> None:
+                """Update the input space."""
+
+    assert Formulation._update_input_space is vars(Formulation)["_update_design_space"]
+    assert "_update_input_space" not in Formulation.__abstractmethods__
+
+
+def _create_module_renaming_an_attribute(
+    is_live: bool, new_name: str, monkeypatch: pytest.MonkeyPatch
+) -> ModuleType:
+    """Create a module whose attribute `Old` is renamed, and register it.
+
+    Args:
+        is_live: Whether the module kept its name, or else is the stand-in of a
+            renamed module.
+        new_name: The fully-qualified new name of `Old`.
+        monkeypatch: Fixture to patch the table of the renamed attributes and to
+            register the module.
+
+    Returns:
+        The module.
+    """
+    from gemseo import _deprecation
+
+    if is_live:
+        module = ModuleType("gemseo.fake_live_module")
+    else:
+        module = _deprecation._DeprecatedModule("gemseo.fake_old_module")
+        module.__dict__["_deprecation_target"] = ModuleType("gemseo.fake_new_module")
+    monkeypatch.setattr(
+        _deprecation, "attribute_renames", {module.__name__: {"Old": new_name}}
+    )
+    if is_live:
+        _deprecation._install_attribute_aliases(module)
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    return module
+
+
+_is_live_module: Final[pytest.MarkDecorator] = pytest.mark.parametrize(
+    "is_live", [True, False], ids=["live", "stand-in"]
+)
+"""Parametrize a test with a module that kept its name and with a stand-in."""
+
+
+@_is_live_module
+def test_attribute_renamed_to_a_plugin(is_live, monkeypatch):
+    """An attribute moved to a plugin resolves on a live module and on a stand-in.
+
+    Args:
+        is_live: Whether the module kept its name, or else is a stand-in.
+        monkeypatch: Fixture to patch the table of the renamed attributes.
+    """
+    new_module = ModuleType("gemseo_fake_plugin.module")
+    new_module.New = object()
+    monkeypatch.setitem(sys.modules, new_module.__name__, new_module)
+    new_name = "gemseo_fake_plugin.module.New"
+    module = _create_module_renaming_an_attribute(is_live, new_name, monkeypatch)
+
+    with pytest.warns(DeprecationWarning, match=f"use '{new_name}' instead"):
+        new_object = module.Old
+
+    assert new_object is new_module.New
+
+
+_missing_plugin_name: Final[str] = "gemseo_missing_plugin.module.New"
+"""The new name of an attribute moved to a plugin that is not installed."""
+
+
+@_is_live_module
+def test_attribute_renamed_to_a_missing_plugin_raises(is_live, monkeypatch, snapshot):
+    """An attribute moved to a plugin that is not installed raises an error naming it.
+
+    Args:
+        is_live: Whether the module kept its name, or else is a stand-in.
+        monkeypatch: Fixture to patch the table of the renamed attributes.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    module = _create_module_renaming_an_attribute(
+        is_live, _missing_plugin_name, monkeypatch
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(AttributeError, snapshot):
+            module.Old  # noqa: B018
+
+
+@_is_live_module
+def test_attribute_renamed_to_a_missing_plugin_is_probeable(is_live, monkeypatch):
+    """`hasattr` returns `False` for an attribute moved to a missing plugin.
+
+    Args:
+        is_live: Whether the module kept its name, or else is a stand-in.
+        monkeypatch: Fixture to patch the table of the renamed attributes.
+    """
+    module = _create_module_renaming_an_attribute(
+        is_live, _missing_plugin_name, monkeypatch
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        has_attribute = hasattr(module, "Old")
+
+    assert not has_attribute
+
+
+@_is_live_module
+def test_attribute_renamed_to_a_missing_plugin_raises_when_imported_from_its_module(
+    is_live, monkeypatch, snapshot
+):
+    """An attribute moved to a missing plugin raises when imported by a `from`.
+
+    Args:
+        is_live: Whether the module kept its name, or else is a stand-in.
+        monkeypatch: Fixture to patch the table of the renamed attributes.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    module = _create_module_renaming_an_attribute(
+        is_live, _missing_plugin_name, monkeypatch
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ImportError, snapshot):
+            exec(f"from {module.__name__} import Old", {})  # noqa: S102
+
+
+@_is_live_module
+def test_missing_dependency_of_a_plugin_is_reraised(is_live, monkeypatch):
+    """A dependency missing behind an attribute moved to a plugin is re-raised.
+
+    It is not mistaken for the plugin not being installed.
+
+    Args:
+        is_live: Whether the module kept its name, or else is a stand-in.
+        monkeypatch: Fixture to patch the table of the renamed attributes and the
+            import of the new module.
+    """
+    from gemseo import _deprecation
+
+    error = ModuleNotFoundError(
+        "No module named 'some_optional_dependency'", name="some_optional_dependency"
+    )
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    module = _create_module_renaming_an_attribute(
+        is_live, "gemseo_fake_plugin.module.New", monkeypatch
+    )
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with pytest.raises(ModuleNotFoundError) as exc_info:
+            module.Old  # noqa: B018
+
+    assert exc_info.value is error
 
 
 def test_renamed_class_attribute_warns_and_resolves():
@@ -797,17 +1724,17 @@ def test_renamed_protected_class_attribute_warns_and_resolves():
     """A renamed protected (`_`-prefixed) class attribute also warns and resolves.
 
     The public renames above are exercised through `Dataset`, whose renamed
-    attributes are plain class constants; `TerminationCriterion._MESSAGE` plays the
-    same role here for a protected name, its new name `_message` being a plain
-    class attribute rather than one set only in `__init__`, so it resolves on the
-    class itself.
+    attributes are plain class constants; `Serializable._ATTR_NOT_TO_SERIALIZE`
+    plays the same role here for a protected name, its new name
+    `_attr_not_to_serialize` being a plain class attribute rather than one set only
+    in `__init__`, so it resolves on the class itself.
     """
-    from gemseo.core.problem.termination_criterion import TerminationCriterion
+    from gemseo.core.serializable import Serializable
 
-    with pytest.warns(DeprecationWarning, match="'_MESSAGE'"):
-        old_value = TerminationCriterion._MESSAGE
+    with pytest.warns(DeprecationWarning, match="'_ATTR_NOT_TO_SERIALIZE'"):
+        old_value = Serializable._ATTR_NOT_TO_SERIALIZE
 
-    assert old_value is TerminationCriterion._message
+    assert old_value is Serializable._attr_not_to_serialize
 
 
 def test_renamed_class_attribute_skips_an_unrelated_class_of_the_same_name():
@@ -965,12 +1892,17 @@ def test_every_class_attribute_rename_is_reachable():
             descriptor for `old_name`, or still exposes `old_name` live (a stale
             entry correctly left alone).
         """
+        # A dotted old name is that of an attribute of a nested class.
+        *path, old_name = old_name.split(".")
         for cls in classes:
-            if isinstance(cls.__dict__.get(old_name), _RenamedClassAttribute):
+            owner = cls
+            for name in path:
+                owner = getattr(owner, name)
+            if isinstance(owner.__dict__.get(old_name), _RenamedClassAttribute):
                 return True
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", DeprecationWarning)
-                if hasattr(cls, old_name):
+                if hasattr(owner, old_name):
                     # A stale entry correctly left alone: the old name is still live.
                     return True
         return False

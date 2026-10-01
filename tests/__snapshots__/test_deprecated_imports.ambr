@@ -1,4 +1,16 @@
 # serializer version: 1
+# name: test_attribute_renamed_to_a_missing_plugin_raises[live]
+  "The attribute 'Old' of the module 'gemseo.fake_live_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
+# ---
+# name: test_attribute_renamed_to_a_missing_plugin_raises[stand-in]
+  "The attribute 'Old' of the module 'gemseo.fake_old_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
+# ---
+# name: test_attribute_renamed_to_a_missing_plugin_raises_when_imported_from_its_module[live]
+  "The attribute 'Old' of the module 'gemseo.fake_live_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
+# ---
+# name: test_attribute_renamed_to_a_missing_plugin_raises_when_imported_from_its_module[stand-in]
+  "The attribute 'Old' of the module 'gemseo.fake_old_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
+# ---
 # name: test_dissolved_package_unknown_attribute
   "module 'gemseo.settings' has no attribute 'does_not_exist'"
 # ---
@@ -8,9 +20,51 @@
 # name: test_manual_migration_raises_for_dissolved_package
   "The attribute 'Animation' of the module 'gemseo.settings' was removed; use gemseo.post.Animation instead."
 # ---
+# name: test_module_moved_to_a_missing_plugin_raises
+  "The module 'gemseo.disciplines.wrappers.xls_discipline' moved to 'gemseo_excel.xls_discipline', of the gemseo-excel plugin, which is not installed."
+# ---
+# name: test_removed_attribute_of_dissolved_package_raises
+  "The attribute 'Gone' of the module 'gemseo.settings' was removed, with no replacement."
+# ---
+# name: test_removed_attribute_of_dissolved_package_raises_when_imported_from_it
+  "The attribute 'Gone' of the module 'gemseo.settings' was removed, with no replacement."
+# ---
+# name: test_removed_attribute_raises[gemseo.core.discipline.io-_GRAMMAR_FACTORY]
+  "The attribute '_GRAMMAR_FACTORY' of the module 'gemseo.core.discipline.io' was removed, with no replacement."
+# ---
+# name: test_removed_attribute_raises[gemseo.utils.study_analyses.study_analysis_cli-STUDY_ANALYSIS_TYPES]
+  "The attribute 'STUDY_ANALYSIS_TYPES' of the module 'gemseo.utils.study_analyses.study_analysis_cli' was removed, with no replacement."
+# ---
+# name: test_removed_attribute_raises_when_imported_from_its_module[gemseo.core.discipline.io-_GRAMMAR_FACTORY]
+  "The attribute '_GRAMMAR_FACTORY' of the module 'gemseo.core.discipline.io' was removed, with no replacement."
+# ---
+# name: test_removed_attribute_raises_when_imported_from_its_module[gemseo.utils.study_analyses.study_analysis_cli-STUDY_ANALYSIS_TYPES]
+  "The attribute 'STUDY_ANALYSIS_TYPES' of the module 'gemseo.utils.study_analyses.study_analysis_cli' was removed, with no replacement."
+# ---
+# name: test_removed_module_raises
+  "The module 'gemseo.utils.enumeration' was removed, with no replacement."
+# ---
+# name: test_removed_module_raises_when_imported_from_its_package[gemseo.core-_discipline_class_injector]
+  "The module 'gemseo.core._discipline_class_injector' was removed, with no replacement."
+# ---
+# name: test_removed_module_raises_when_imported_from_its_package[gemseo.utils-enumeration]
+  "The module 'gemseo.utils.enumeration' was removed, with no replacement."
+# ---
+# name: test_removed_module_raises_when_its_spec_is_found
+  "The module 'gemseo.utils.enumeration' was removed, with no replacement."
+# ---
+# name: test_renamed_attribute_to_a_missing_name_raises[gemseo.mda.core.does_not_exist]
+  "module 'gemseo.mda.core' has no attribute 'does_not_exist'"
+# ---
+# name: test_renamed_attribute_to_a_missing_name_raises[gemseo.util.string.does_not_exist]
+  "module 'gemseo.util.string' has no attribute 'does_not_exist'"
+# ---
 # name: test_unknown_attribute_of_an_aliased_class_raises
   "type object 'Dataset' has no attribute 'does_not_exist_at_all'"
 # ---
 # name: test_unknown_attribute_of_live_package_raises
   "module 'gemseo.post' has no attribute 'does_not_exist'"
+# ---
+# name: test_unknown_member_name_of_an_aliased_enumeration_raises
+  "'DOES_NOT_EXIST'"
 # ---

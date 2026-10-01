@@ -599,9 +599,10 @@ rename is announced by `1699.changed.md`.
 
 **Point 2 no longer applies as written.** It asked for a `classes:` entry mapping
 `PreprocessedFunction` to `TransformedInputFunction`. There is no such rename: one class
-became two, so the map points the old modules at `database_function` and puts
-`ProblemFunction` in `manual:`, which raises an `ImportError` naming both replacements
-instead of letting a codemod pick one.
+became two, so the map points the old modules at `database_function` and gives
+`ProblemFunction` a `TODO <text>` value in `attributes:`, which raises an `ImportError`
+naming both replacements and has the codemod mark its uses, instead of letting it
+pick one.
 
 **The plugin inventory, checked rather than recalled**, over every plugin checked out
 locally. The count in point 4 still holds and every change is mechanical:

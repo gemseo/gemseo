@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_build_rejects_a_relative_attribute_value
+  "The attributes: rule for 'gemseo.x.Old' has the value 'New'; it must be the complete new dotted path."
+# ---
+# name: test_build_rejects_a_value_that_is_no_manual_migration[module]
+  "The modules: rule for 'gemseo.x' has the value 'TODO use gemseo.y instead'; it must be the complete new dotted path, in GEMSEO or in a plugin."
+# ---
+# name: test_build_rejects_a_value_that_is_no_manual_migration[no-text]
+  "The attributes: rule for 'gemseo.x' has the value 'TODO'; it must be the complete new dotted path."
+# ---
+# name: test_check_attribute_value_rejects_a_relative_value[gemseo.a.Old]
+  "The attributes: rule for 'gemseo.a.Old' has the value 'New'; it must be the complete new dotted path."
+# ---
+# name: test_check_attribute_value_rejects_a_relative_value[strenum.StrEnum]
+  "The attributes: rule for 'strenum.StrEnum' has the value 'New'; it must be the complete new dotted path."
+# ---
+# name: test_check_module_value_rejects_a_relative_value
+  "The modules: rule for 'gemseo.a.b' has the value 'c'; it must be the complete new dotted path, in GEMSEO or in a plugin."
+# ---
+# name: test_check_module_value_rejects_a_third_party_value
+  "The modules: rule for 'gemseo.a.b' has the value 'scipy.sparse'; it must be the complete new dotted path, in GEMSEO or in a plugin."
+# ---

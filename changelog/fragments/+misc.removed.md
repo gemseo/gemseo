@@ -1,0 +1,62 @@
+- The classes `SobieskiMDAJacobi` and `SobieskiMDAGaussSeidel` were removed.
+- `gemseo.utils.xdsm` was removed; use `gemseo.util.xdsm.xdsm` instead.
+- `gemseo.utils.xdsmizer` was removed; use `gemseo.util.xdsm.xdsmizer` instead.
+- `gemseo.utils.xdsm_to_pdf` was removed; use `gemseo.util.xdsm.xdsm_to_pdf` instead.
+- `gemseo.utils.logging_tools` was removed; use `gemseo.util.logging` instead.
+- The `STUDY_ANALYSIS_TYPES` constant of `gemseo.utils.study_analyses.study_analysis_cli` was removed; it has no public replacement.
+- The `CMAPS`, `MAGMA_DATA`, `INFERNO_DATA`, `PLASMA_DATA`, `VIRIDIS_DATA` and `PARULA_DATA` constants of `gemseo.post.core.colormaps` were removed; they have no public replacement.
+- `gemseo.uncertainty.statistics.parametric_statistics` was removed; use `gemseo.uncertainty.statistic.ot_parametric` instead.
+- `gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics` was removed; use `gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics` instead.
+- `gemseo.uncertainty.distributions.openturns.fitting` was removed; use `gemseo.uncertainty.distribution.openturns.distribution_fitter` instead.
+- `gemseo.uncertainty.distributions.base_settings.beta_settings.BaseBetaDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.beta.BaseBetaDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.exponential_settings.BaseExponentialDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.exponential.BaseExponentialDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.log_normal_settings.BaseLogNormalDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.log_normal.BaseLogNormalDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.normal_settings.BaseNormalDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.normal.BaseNormalDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.triangular_settings.BaseTriangularDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.triangular.BaseTriangularDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.uniform_settings.BaseUniformDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.uniform.BaseUniformDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_univariate_settings.weibull.BaseWeibullDistributionSettings` instead.
+- `gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings` was removed; use `gemseo.uncertainty.distribution.core.base_settings.BaseDistributionSettings` instead.
+- `gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings` was removed; use `gemseo.optimization.augmented_lagrangian.settings.order_0.Augmented_Lagrangian_Order_0_Settings` instead.
+- `gemseo.core.grammars.defaults` was removed; use `gemseo.core.grammar.properties` instead.
+- `gemseo.core.grammars.defaults.Defaults` was removed; use `gemseo.core.grammar.properties.GrammarProperties` instead.
+- `gemseo.disciplines.utils` was removed; use `gemseo.util.discipline` instead.
+- `gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings` was removed; use `gemseo.formulation.bilevel_bcd_settings.BiLevelBCD_Settings` instead.
+- `gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings` was removed; use `gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings.BaseLinearModelFitterSettings` instead.
+- `gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings` was removed; use `gemseo.machine_learning.regression.core.base_fce_settings.BaseFCERegressorSettings` instead.
+- `gemseo.mlearning.regression.algos.moe_settings.MOE_Settings` was removed; use `gemseo.machine_learning.regression.model.moe_settings.MOERegressor_Settings` instead.
+- `gemseo.mlearning.regression.algos.rbf_settings.Function` was removed; use `gemseo.machine_learning.regression.model.rbf_settings.RBF` instead.
+- The `**parallel_differentiation_options` arguments of `EvaluationProblem` were removed; use the `parallel_differentiation_options` attribute instead.
+- The `**parallel_differentiation_options` arguments of `OptimizationProblem` were removed; use the `parallel_differentiation_options` attribute instead.
+- The `is_linear` argument of `OptimizationProblem` has been removed because it was useless. The `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
+- The `**kwargs` arguments of `EvaluationProblem.get_functions` were removed.
+- The deprecated `**dataset_options` arguments of `EvaluationProblem.to_dataset` were removed.
+- The `DisciplineJacApprox.generator_class` class attribute was removed.
+- The `FunctionFromDiscipline.generator_class` class attribute was removed.
+- The `CacheEntry.inputs` field was removed; caches are dictionaries whose keys are the inputs and values are the cache entries.
+- The `BaseCache.get_all_entries` method was removed; use `BaseCache.items`.
+- The `OptimizationDataset.FUNCTION_GROUP` class attribute was removed; use `objective_group`, `equality_constraint_group`, `inequality_constraint_group`, or `observable_group` instead.
+- The `OptimizationDataset.CONSTRAINT_GROUP` class attribute was removed; use `equality_constraint_group` and/or `inequality_constraint_group` instead.
+- The `OptimizationDataset.add_constraint_variable` method was removed; use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
+- The `OptimizationDataset.add_constraint_group` method was removed; use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
+- The `OptimizationDataset.constraint_names` method was removed; use `inequality_constraint_names` or `equality_constraint_names` instead.
+- The `OptimizationDataset.constraint_dataset` method was removed; use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
+- The `group_functions` argument of `OptimizationProblem.to_dataset` was removed; functions are now always grouped by category.
+- The `use_standardized_objective` field of `OptimizationMetadata` was removed; use the `use_standardized_objective` field of the post-processor settings (via `UseStandardizedObjectiveMixin`).
+- `JSONGrammar.__init__`, `SimpleGrammar.__init__` and `PydanticGrammar.__init__` no longer accept and silently discard arbitrary keyword arguments.
+- The `design_space` argument of `OptimizationHistory` was removed; the history stored it without ever using it.
+- The class `ParameterSpace`, which mixed deterministic and uncertain variables, was removed, as was the factory `ParameterSpaceFactory`; use `RandomSpace` for a space of uncertain variables and `random_space_factory` for its factory.
+- A space of variables is now either a `DesignSpace`, defined by bounds and used for optimization, or a `RandomSpace`, defined by probability distributions and used for sampling; a single space can no longer mix both kinds of variables.
+- `ParameterSpace.add_random_variable` and `ParameterSpace.add_random_vector` were replaced by `RandomSpace.add_variable(name, *settings)`.
+- Unpickling a `ParameterSpace`, or an object holding one, raises a `TypeError`: the removed name resolves to `RandomSpace`, which stores its probability distributions differently, so the space cannot be restored. Rebuild it from the settings of the marginal probability distributions of its random variables.
+- `ParameterSpace.get_tabular_view`, which tabulated per-variable statistics (distribution, transformation, support, mean, standard deviation and range), was removed; `RandomSpace.get_pretty_table` renders a table with a name column and a distribution column only, and the statistics are read from the distribution of a variable, e.g. `space.variables[name].distribution.mean`.
+- The `add_uncertain_variables` argument of `ScalableDesignSpace` was removed, as a design space no longer holds uncertain variables.
+- The bounds of a random variable, which are the limits of the support of its probability distribution, are descriptive only: the membership test of `EvaluationProblem.evaluate_functions` (`check_bounds`) is performed for a `DesignSpace` only, and the perturbations of a finite-difference approximation are no longer bounded when the input space is a `RandomSpace`. A `ParameterSpace` carried these limits as design bounds, so both used to apply to an uncertain space.
+- A random space is no longer serializable: `to_file`, `from_file`, `to_hdf`, `from_hdf`, `to_csv` and `from_csv` belong to `DesignSpace` only, where a `ParameterSpace` inherited them (without ever storing the probabilistic information). Rebuild a `RandomSpace` from the settings of its marginal probability distributions instead.
+- When the input space of a `Database` is not a `DesignSpace`, writing the database to an HDF file logs a warning once and omits the input space from the file: the evaluations themselves are written and re-read as usual, but the reloaded database describes its input values with a plain `DesignSpace` instead of the original random space.
+- The `simplify` argument of `DesignSpace.get_pretty_table` was removed, together with the `ParameterSpace` implementation honoring it, which dropped the bound, value and type columns from the tabular view of a space of uncertain variables only; the tabular view of a `RandomSpace` has a name column and a distribution column, so there is nothing left to simplify.
+- The following names were removed with no replacement; importing one raises an error saying so:
+    - the type aliases `MNBIOptionsType` of `gemseo.algos.opt.mnbi.mnbi`, `DisciplineIOMapping` of `gemseo.core.derivatives.chain_rule`, `Operand1T` and `Operand2T` of `gemseo.core.derivatives.jacobian_operator`, `OperatorType` of `gemseo.core.mdo_functions.mdo_function`, `DOEAlgorithmName` of `gemseo.mlearning.regression.algos.ot_gpr_settings`, `SavedObjectType` of `gemseo.mlearning.regression.algos.rbf`, `ScatterMatrixOption` of `gemseo.post.dataset.scatter_plot_matrix`, `DatasetPlotOption` of `gemseo.post.mlearning.ml_regressor_quality_viewer`, `ScenarioInputDataType` of `gemseo.scenarios.base_scenario`, and `ParametersType` and `StandardParametersType` of `gemseo.uncertainty.distributions.base_distribution` and `gemseo.uncertainty.distributions.scalar_distribution_mixin`;
+    - the helper `copy_field_opt` of `gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings`, `gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings`, `gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings` and `gemseo.formulations.bilevel_bcd_settings`;
+    - the version flags `OT_1_23`, `PEARSON_METHOD_NAME` and the function `create_trend_basis` of `gemseo.utils.compatibility.openturns`, and `SCIPY_GREATER_THAN_1_14`, `SCIPY_LOWER_THAN_1_12` and `TOL_OPTION` of `gemseo.utils.compatibility.scipy`;
+    - `DummyBaseDiscipline` of `gemseo.utils.discipline` and `synchronized_hashes` of `gemseo.utils.locks`;
+    - the pytest helpers `baseline_images`, `disable_fault_handler`, `import_or_skip_xlwings`, `is_xlwings_usable`, `original_image_directories`, `skip_if_xlwings_is_not_usable` and `skip_if_xlwings_is_usable` of `gemseo.utils.testing.pytest_conftest`.

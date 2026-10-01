@@ -1,0 +1,2 @@
+- `gemseo.create_parameter_space` is deprecated; use `gemseo.create_random_space` instead. It creates an empty `RandomSpace`, so the space it returns can no longer be given deterministic variables.
+- `GEMSEO_LOGGER` of `gemseo.utils.logging` and `gemseo.utils.logging_tools` is deprecated; use `gemseo.logger` instead, which is the same logger.
