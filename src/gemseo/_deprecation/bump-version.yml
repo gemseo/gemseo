@@ -2611,6 +2611,12 @@ functions:
   # See VariableRenamer in classes:.
   rename_discipline_variables:
     translators: TODO the translators are now a mapping from the discipline name to a pair (input_name_to_new_input_name, output_name_to_new_output_name)
+  # The loose settings go to settings_model=<the MDA class>_Settings(...), which gives
+  # them the rules of its fields, e.g. inner_mda_name of MDAChain_Settings.
+  create_mda:
+    settings: settings_model={mda_name}_Settings(**{settings})
+    # An argument of MDASequential, not a setting: kept in the call.
+    mda_sequence: mda_sequence
   # See DistributionFactory in classes:.
   create_distribution:
     options: settings={distribution_name}_Settings(**{options})
