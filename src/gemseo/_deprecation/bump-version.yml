@@ -1953,7 +1953,12 @@ classes:
     # set_algorithm and post_process, which MDOScenario, DOEScenario and
     # OptAsMDOScenario inherit, and create_scenario returns a BaseScenario: a rule on
     # a subclass would miss the scenario it returns.
-    save_optimization_history: to_hdf
+    # It was split into to_hdf and to_ggobi (changelog 1666), which the codemod cannot
+    # choose between from a file format given as a variable: the argument is kept, and
+    # the call marked.
+    save_optimization_history:
+      __name__: to_hdf
+      file_format: TODO use to_hdf(file_path) for the HDF5 format and to_ggobi(file_path) for the ggobi format
     set_optimization_history_backup: set_backup_settings
     clear_history_before_execute: clear_database_before_execute
     __init__:
