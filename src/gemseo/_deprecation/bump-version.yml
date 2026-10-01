@@ -1967,7 +1967,7 @@ classes:
     # The post-processor name and the keywords **settings catches go to
     # settings=<post_name>_Settings(...), when the name is a string literal.
     # BasePost.execute and BaseAlgorithmLibrary.execute take no post_name, hence
-    # their own settings_model block (&settings-model).
+    # their own settings_model rule.
     post_process:
       settings_model: settings
       post_name: settings={post_name}_Settings(**{settings})
@@ -1997,8 +1997,12 @@ classes:
       # settings=<algo_name>_Settings(...), when the name is a string literal.
       algo_name: settings={algo_name}_Settings(**{settings})
   BaseAlgorithmLibrary:
-    execute: &settings-model
+    execute:
       settings_model: settings
+      # The loose settings go to settings=<the algorithm>_Settings(...), the algorithm
+      # being the one the library was created with, e.g. a factory's
+      # create("OT_LHS"), when it is known.
+      settings: settings={receiver.algo_name}_Settings(**{settings})
     # The settings to exclude are now the class attributes _settings_class_to_exclude
     # and _additional_settings_classes_to_exclude. Their defaults are what the 6.3.2
     # calls of the optimization, linear solver, ODE and pyDOE libraries excluded;
@@ -2022,6 +2026,10 @@ classes:
       # evaluates non-integral points instead.
       skip_int_check: null
       settings_model: settings
+      # The loose settings, with these two, go to settings=<the algorithm>_Settings(...),
+      # the algorithm being the one the library was created with, e.g.
+      # OpenTURNS("OT_LHS") or a factory's create("OT_LHS"), when it is known.
+      settings: settings={receiver.algo_name}_Settings(**{settings}, eval_obs_jac={eval_obs_jac}, max_design_space_dimension_to_log={max_design_space_dimension_to_log})
   BaseDriverSettings:
     round_ints: null
     # the rounding at every evaluation no longer exists.
@@ -2081,7 +2089,8 @@ classes:
   # Post-processors
   BasePost:
     Settings: settings_class
-    execute: *settings-model
+    execute:
+      settings_model: settings
     _USE_JACOBIAN_DATA: _use_jacobian_data
   PostFactory:
     execute:
