@@ -2256,6 +2256,11 @@ classes:
   # Jacobian checkers (changelog 747)
   Discipline:
     check_jacobian: TODO use gemseo.check_jacobian instead
+    # The hybrid modes moved from ApproximationMode to HybridApproximationMode
+    # (changelog 1812).
+    ApproximationMode.HYBRID_COMPLEX_STEP: HybridApproximationMode.HYBRID_COMPLEX_STEP
+    ApproximationMode.HYBRID_FINITE_DIFFERENCES: HybridApproximationMode.HYBRID_FINITE_DIFFERENCES
+    ApproximationMode.HYBRID_CENTERED_DIFFERENCES: HybridApproximationMode.HYBRID_CENTERED_DIFFERENCES
 
   MDOLinearFunction:
     normalize: null
