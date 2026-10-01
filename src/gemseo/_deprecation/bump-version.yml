@@ -1114,25 +1114,22 @@ classes:
     classif_cands: classification_candidates
     regress_cands: regression_candidates
     regress_models: regressors
-    add_classifier_candidate:
-      name: settings
+    # The name of a candidate becomes its Settings instance, the loose keywords
+    # remaining its catalogs, and the calibration algorithm, a mapping whose
+    # algo_name entry names it, its Settings instance (changelog 1696).
+    add_classifier_candidate: &ml-candidate
+      name: settings={name}_Settings()
       calib_space: calibration_space
-    #      calib_algo: calibration_settings
-    add_clusterer_candidate:
-      name: settings
-      calib_space: calibration_space
-    #      calib_algo: calibration_settings
-    add_regressor_candidate:
-      name: settings
-      calib_space: calibration_space
-    #      calib_algo: calibration_settings
-  #      calib_algo: calibration_settings
-  #    set_classifier:
-  #      classif_algo: settings
-  #    set_clusterer:
-  #      cluster_algo: settings
-  #    set_regressor:
-  #      regress_algo: settings
+      calib_algo: calibration_settings={calib_algo[algo_name]}_Settings(**{calib_algo})
+    add_clusterer_candidate: *ml-candidate
+    add_regressor_candidate: *ml-candidate
+    # The name of a sub-model and its loose settings go to its Settings instance.
+    set_classifier:
+      classif_algo: settings={classif_algo}_Settings(**{classif_params})
+    set_clusterer:
+      cluster_algo: settings={cluster_algo}_Settings(**{cluster_params})
+    set_regressor:
+      regress_algo: settings={regress_algo}_Settings(**{regress_params})
   RegressorChain:
     add_algo: add_regressor
   RBF:
@@ -1206,10 +1203,8 @@ classes:
   MLAlgoSelection:
     #    __init__:
     #      calibration_algorithm: calibration_settings
-    add_candidate:
-      #      calib_algo: calibration_settings
-      calib_space: calibration_space
-  #      name: settings
+    # As MOERegressor.add_regressor_candidate.
+    add_candidate: *ml-candidate
   DatasetMetric:
     __init__:
       composed_metric: metric
