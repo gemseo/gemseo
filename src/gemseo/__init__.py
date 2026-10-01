@@ -1113,8 +1113,8 @@ def check_jacobian(
     input_value: StrKeyMapping = read_only_empty_dict,
     atol: float = 1e-8,
     rtol: float = 1e-8,
-    inputs: Iterable[str] = (),
-    outputs: Iterable[str] = (),
+    input_names: Iterable[str] = (),
+    output_names: Iterable[str] = (),
     reference_jacobian_path: StrPath = "",
     save_reference_jacobian: bool = False,
     approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
@@ -1140,8 +1140,8 @@ def check_jacobian(
             If empty, use the default input data of the discipline.
         atol: The absolute tolerance.
         rtol: The relative tolerance.
-        inputs: The names of the inputs wrt which to differentiate the outputs.
-        outputs: The names of the outputs to be differentiated.
+        input_names: The names of the inputs wrt which to differentiate the outputs.
+        output_names: The names of the outputs to be differentiated.
         reference_jacobian_path: The path of the reference Jacobian file.
             If empty, compute the reference Jacobian numerically.
         save_reference_jacobian: Whether to save the reference Jacobian
@@ -1182,7 +1182,8 @@ def check_jacobian(
             the ellipsis symbol (`...`)
             or `None`, which is the same as ellipsis.
             If a variable name is missing, consider all its components.
-            If empty, consider all the components of all the `inputs` and `outputs`.
+            If empty, consider all the components
+            of all the `input_names` and `output_names`.
 
     Returns:
         Whether the analytical Jacobian is correct
@@ -1194,8 +1195,8 @@ def check_jacobian(
         input_value,
         atol=atol,
         rtol=rtol,
-        inputs=inputs,
-        outputs=outputs,
+        inputs=input_names,
+        outputs=output_names,
         reference_jacobian_path=reference_jacobian_path,
         save_reference_jacobian=save_reference_jacobian,
         approximation_mode=approximation_mode,

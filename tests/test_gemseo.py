@@ -318,8 +318,8 @@ def test_check_jacobian() -> None:
     # The check can be restricted to a subset of inputs/outputs and forwards settings.
     assert check_jacobian(
         AnalyticDiscipline({"y": "2*x", "z": "3*w"}),
-        inputs=["x"],
-        outputs=["y"],
+        input_names=["x"],
+        output_names=["y"],
         approximation_mode=ApproximationMode.COMPLEX_STEP,
         step=1e-30,
     )
