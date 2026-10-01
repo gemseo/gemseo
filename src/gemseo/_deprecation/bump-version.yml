@@ -1193,8 +1193,7 @@ classes:
     Settings: settings_class
     NORMALIZED_RESIDUAL_NORM: normalized_residual_norm_name
     normed_residual: normalized_residual_norm
-    check_jacobian: null
-    # TODO: use gemseo.util.derivative.check.mda.MDAJacobianChecker instead.
+    check_jacobian: TODO use gemseo.util.derivative.check.mda.MDAJacobianChecker instead
     # The keywords **settings catches go to settings=<the MDA class>_Settings(...).
     # Every MDA class redefines __init__, which stops the lookup of its base classes'
     # rules at a constructor call, so each one repeats them.
@@ -1270,28 +1269,20 @@ classes:
   #### DesignSpace
   DesignSpace:
     VARIABLE_TYPES_TO_DTYPES: variable_types_to_dtypes
-    DesignVariableType: null
-    # TODO: use gemseo.enum.VariableType instead.
+    DesignVariableType: TODO use gemseo.enum.VariableType instead
     # The shortcuts to the variables of the space were removed; a design space
-    # is read through its variables view, like a random space.
-    variable_names: null
-    # TODO: use list(space.variables) instead.
-    variable_sizes: null
-    # TODO: use {n: v.size for n, v in space.variables.items()} instead.
-    variable_types: null
-    # TODO: use {n: v.type for n, v in space.variables.items()} instead.
-    names_to_indices: null
-    # TODO: use space.variables.name_to_indices instead.
-    get_size: null
-    # TODO: use space.variables[name].size instead.
-    get_type: null
-    # TODO: use space.variables[name].type instead.
-    get_lower_bound: null
-    # TODO: use space.variables[name].lower_bound instead.
-    get_upper_bound: null
-    # TODO: use space.variables[name].upper_bound instead.
-    has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead.
+    # is read through its variables view, like a random space. A `{name}` stands
+    # for the argument of the call of the method.
+    variable_names: list({receiver}.variables)
+    variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
+    variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
+    names_to_indices: "{receiver}.variables.name_to_indices"
+    get_size: "{receiver}.variables[{name}].size"
+    get_type: "{receiver}.variables[{name}].type"
+    get_lower_bound: "{receiver}.variables[{name}].lower_bound"
+    get_upper_bound: "{receiver}.variables[{name}].upper_bound"
+    # VariableType is a StrEnum: its value spares the migrated code an import of it.
+    has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
     to_csv:
       header_char: null
     get_variables_indexes:
@@ -1324,22 +1315,14 @@ classes:
       size: null
       interfaced_distribution: null
       interfaced_distribution_parameters: null
-    distribution: null
-    # TODO: use space.variables.distribution instead.
-    distributions: null
-    # TODO: use space.variables[name].distribution instead.
-    uncertain_variables: null
-    # TODO: use list(space.variables) instead.
-    get_range: null
-    # TODO: use space.variables[name].distribution.range instead.
-    get_support: null
-    # TODO: use space.variables[name].distribution.support instead.
-    get_tabular_view: null
-    # TODO: use get_pretty_table instead.
-    build_joint_distribution: null
-    # TODO: use add_copula, and read the joint distribution from space.variables.
-    evaluate_cdf: null
-    # TODO: use transform_vect and untransform_vect instead.
+    distribution: "{receiver}.variables.distribution"
+    distributions: TODO use space.variables[name].distribution instead
+    uncertain_variables: list({receiver}.variables)
+    get_range: "{receiver}.variables[{variable}].distribution.range"
+    get_support: "{receiver}.variables[{variable}].distribution.support"
+    get_tabular_view: TODO use get_pretty_table instead
+    build_joint_distribution: TODO use add_copula, and read the joint distribution from space.variables
+    evaluate_cdf: TODO use transform_vect and untransform_vect instead
     normalize_vect: null
     unnormalize_vect: null
     add_variables_from: null
@@ -1367,31 +1350,22 @@ classes:
     from_csv: null
     # a random space has no file persistence; rebuild it from the settings of
     # the marginal probability distributions of its random variables.
-    variable_names: null
-    # TODO: use list(space.variables) instead.
-    variable_sizes: null
-    # TODO: use {n: v.size for n, v in space.variables.items()} instead.
-    variable_types: null
-    # TODO: use {n: v.type for n, v in space.variables.items()} instead;
-    # a random variable is of random type, where it was of type "float".
-    names_to_indices: null
-    # TODO: use space.variables.name_to_indices instead.
-    get_size: null
-    # TODO: use space.variables[name].size instead.
-    get_type: null
-    # TODO: use space.variables[name].type instead;
-    # a random variable is of random type, where it was of type "float".
-    has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead;
-    # it is always False, as a random variable is of random type.
-    has_current_value: null
-    get_current_value: null
-    set_current_value: null
-    set_current_variable: null
-    initialize_missing_current_values: null
-    to_complex: null
-    # TODO: a current value is a DesignSpace notion; use nominal_value to read the
-    # reference point of a space, which is the mean of the distributions here.
+    variable_names: list({receiver}.variables)
+    variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
+    # A random variable is of random type, where it was of type "float".
+    variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
+    names_to_indices: "{receiver}.variables.name_to_indices"
+    get_size: "{receiver}.variables[{name}].size"
+    # A random variable is of random type, where it was of type "float".
+    get_type: "{receiver}.variables[{name}].type"
+    # It is always False, as a random variable is of random type.
+    has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
+    has_current_value: &current-value TODO a current value is a DesignSpace notion; use nominal_value to read the reference point of a space, which is the mean of the distributions here
+    get_current_value: *current-value
+    set_current_value: *current-value
+    set_current_variable: *current-value
+    initialize_missing_current_values: *current-value
+    to_complex: *current-value
     get_lower_bound: null
     get_upper_bound: null
     get_lower_bounds: null
@@ -1438,18 +1412,16 @@ classes:
     DEFAULT_DRIVER: default_driver
 
   IshigamiProblem:
-    objective: null
     # the problem is an EvaluationProblem defined over the IshigamiSpace, which
-    # is a RandomSpace, so the Ishigami function is an observable of the problem;
-    # TODO: use problem.observables[0] instead.
+    # is a RandomSpace, so the Ishigami function is an observable of the problem.
+    objective: "{receiver}.observables[0]"
 
   #### Distributions
   # TODO
 
   #### Global configuration
-  # TODO: fast is removed; use the methods enable_fast_mode and disable_fast_mode.
   GlobalConfiguration:
-    fast: null
+    fast: TODO use the methods enable_fast_mode and disable_fast_mode instead
     __init__:
       fast: null
 
@@ -2175,18 +2147,17 @@ classes:
     INEQUALITY_CONSTRAINT_GROUP: inequality_constraint_group
     EQUALITY_CONSTRAINT_GROUP: equality_constraint_group
     OBSERVABLE_GROUP: observable_group
-    FUNCTION_GROUP: null
-    # TODO: use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
-    CONSTRAINT_GROUP: null
-    # TODO: use `EQUALITY_CONSTRAINT_GROUP` and/or `INEQUALITY_CONSTRAINT_GROUP` instead.
-    add_constraint_variable: null
-    # TODO: use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
-    add_constraint_group: null
-    # TODO: use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
-    constraint_names: null
-    # TODO: use `inequality_constraint_names` or `equality_constraint_names` instead.
-    constraint_dataset: null
-    # TODO: use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
+    # The generic groups of the functions and of the constraints were removed, in
+    # favour of OBJECTIVE_GROUP, EQUALITY_CONSTRAINT_GROUP,
+    # INEQUALITY_CONSTRAINT_GROUP and OBSERVABLE_GROUP. As a dataset accepts any
+    # group name, the code using them keeps their names, and thus its behavior;
+    # OptimizationProblem.to_dataset no longer writes these groups, though.
+    FUNCTION_GROUP: '"functions"'
+    CONSTRAINT_GROUP: '"constraints"'
+    add_constraint_variable: '{receiver}.add_variable({variable_name}, {data}, group_name="constraints", components={components})'
+    add_constraint_group: '{receiver}.add_group("constraints", {data}, {variable_names}, {variable_names_to_n_components})'
+    constraint_names: '{receiver}.get_variable_names("constraints")'
+    constraint_dataset: '{receiver}.get_view(group_names="constraints")'
 
   OptimizationHistory:
     __init__:
@@ -2203,8 +2174,7 @@ classes:
 
   # Jacobian checkers (changelog 747)
   Discipline:
-    check_jacobian: null
-    # TODO: use gemseo.check_jacobian instead.
+    check_jacobian: TODO use gemseo.check_jacobian instead
 
   MDOLinearFunction:
     normalize: null
@@ -2306,8 +2276,7 @@ classes:
     DEFAULT_BASE_INPUT_NAME: default_base_input_name
     COEFF_FORMAT_1D: coeff_format_1d
     COEFF_FORMAT_ND: coeff_format_nd
-    check_grad: null
-    # TODO: use gemseo.util.derivative.check.function.FunctionJacobianChecker instead.
+    check_grad: TODO use gemseo.util.derivative.check.function.FunctionJacobianChecker instead
     rel_err: null
     filt_0: null
   MLPRegressor:
