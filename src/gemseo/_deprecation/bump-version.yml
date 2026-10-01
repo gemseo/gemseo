@@ -1498,7 +1498,12 @@ classes:
       options: matplotlib_options
 
   #### Distributions
-  # TODO
+  # A distribution takes its parameters from a settings model (changelog 1716): the
+  # keywords passed to the factory go to settings=<the distribution class>_Settings(...),
+  # the name of the class being kept.
+  DistributionFactory:
+    create:
+      kwargs: settings={class_name}_Settings(**{kwargs})
 
   #### Global configuration
   GlobalConfiguration:
@@ -2571,6 +2576,9 @@ classes:
 #   old_arg_name: new_arg_name={old_arg}_Settings  # rename and wrap value in a Settings instance
 
 functions:
+  # See DistributionFactory in classes:.
+  create_distribution:
+    options: settings={distribution_name}_Settings(**{options})
   write_design_space:
     header_char: null
   create_surrogate:
