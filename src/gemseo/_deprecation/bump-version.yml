@@ -2479,6 +2479,10 @@ classes:
   BaseDistributionFitter:
     _CRITERIA_TO_WRAPPED_OBJECTS: _criteria_to_wrapped_objects
     _FITTING_CRITERIA_TO_MINIMIZE: _fitting_criteria_to_minimize
+    # A fitter no longer takes the name of its variable, which it did not use.
+    variable: null
+    __init__:
+      variable: null
   BaseExecutionSequence:
     _PREFIX: _prefix
     _SUFFIX: _suffix
