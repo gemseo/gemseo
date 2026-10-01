@@ -1080,8 +1080,12 @@ classes:
     SHORT_ALGO_NAME: short_name
     LIBRARY: library
     DEFAULT_TRANSFORMER: default_transformer
-    __init__:
+    # The keywords **settings catches go to settings=<the model class>_Settings(...)
+    # (changelog 1696). The classes redefining __init__, which stops the lookup of
+    # the rules of their base classes at a constructor call, repeat them.
+    __init__: &ml-model-init
       settings_model: settings
+      settings: settings={__class__}_Settings
 
   #### Surrogate model
   SurrogateDiscipline:
@@ -1170,16 +1174,13 @@ classes:
       norm: null
   BaseFCERegressor:
     Settings: settings_class
-    __init__:
-      settings_model: settings
+    __init__: *ml-model-init
   FCERegressor:
     LIBRARY: library
-    __init__:
-      settings_model: settings
+    __init__: *ml-model-init
   PCERegressor:
     LIBRARY: library
-    __init__:
-      settings_model: settings
+    __init__: *ml-model-init
 
   #### Model calibration
   MLAlgoAssessor:
