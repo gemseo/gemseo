@@ -367,7 +367,7 @@ class Constraints(Functions):
 
         Note:
             If the value of a constraint is absent from this point,
-            then this constraint will be considered satisfied.
+            then this constraint will be considered unsatisfied.
 
         Args:
             point: An optimization point defined by variable values.

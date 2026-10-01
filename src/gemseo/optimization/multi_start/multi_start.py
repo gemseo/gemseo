@@ -16,17 +16,17 @@
 
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
-from itertools import chain
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from gemseo.core.problem.database import Database
 from gemseo.doe.factory import doe_library_factory
 from gemseo.optimization.core.base_optimization_library import BaseOptimizationLibrary
 from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
 )
-from gemseo.optimization.factory import OptimizationLibraryFactory
 from gemseo.optimization.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
 )
@@ -34,7 +34,11 @@ from gemseo.optimization.problem import OptimizationProblem
 from gemseo.util.multiprocessing.execution import execute
 
 if TYPE_CHECKING:
+    from gemseo.core.problem.database import DatabaseValueType
+    from gemseo.core.problem.database import FunctionOutputValueType
     from gemseo.util.typing import RealArray
+
+logger = logging.getLogger(__name__)
 
 
 class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
@@ -127,43 +131,144 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             design_space, settings=self._settings.doe_algo_settings
         )
 
-        problems = execute(
+        skip_failed = self._settings.skip_failed_starting_points
+        store_jacobian = self._settings.store_jacobian
+        # Re-raise the errors of the sub-optimizations when they are not
+        # skipped, so that the parallel mode surfaces the same error as the
+        # serial mode.
+        exceptions_to_re_raise = () if skip_failed else (Exception,)
+        results = execute(
             self._optimize,
             (),
             n_processes,
             list(zip(samples, opt_algo_max_iter, strict=False)),
+            exceptions_to_re_raise=exceptions_to_re_raise,
         )
+        objective_name = self._problem.objective.name
+        sub_problems = []
+        # The reason of the last failure, reported if all the starting points fail.
+        # It is a message and not an exception
+        # because the workers of the parallel mode return messages.
+        last_error = ""
+        for index, (starting_point, result) in enumerate(
+            zip(samples, results, strict=False)
+        ):
+            if skip_failed:
+                if result is None:
+                    sub_problem, error = None, "no sub-optimization problem"
+                else:
+                    sub_problem, error = result
 
-        function_names = [
-            self._problem.objective.name,
-            *(
-                f.name
-                for f in chain(self._problem.constraints, self._problem.observables)
-            ),
-        ]
-        for problem in problems:
-            self._problem.database.merge_function_histories(
-                problem.database, function_names
+                if sub_problem is None:
+                    # There is no partial history to merge.
+                    has_objective = False
+                else:
+                    has_objective = (
+                        objective_name in sub_problem.database.get_function_names()
+                    )
+                    if not error and not has_objective:
+                        error = f"no evaluation of the objective {objective_name!r}"
+
+                if error:
+                    last_error = error
+                    logger.warning(
+                        "Multi-start optimization: "
+                        "skipping the starting point %s (%s) "
+                        "because the sub-optimization failed (%s).",
+                        index + 1,
+                        starting_point,
+                        error,
+                    )
+                    if not has_objective:
+                        # Nothing was evaluated before the failure: skip entirely.
+                        continue
+                    # The sub-optimization failed but evaluated the objective
+                    # at least once: merge its entries below,
+                    # without counting it as a survivor.
+                else:
+                    sub_problems.append(sub_problem)
+            else:
+                sub_problem, _ = result
+                sub_problems.append(sub_problem)
+
+                if objective_name not in sub_problem.database.get_function_names():
+                    msg = (
+                        "Multi-start optimization: "
+                        "the sub-optimization from the starting point "
+                        f"{index + 1} ({starting_point}) evaluated no value "
+                        f"of the objective {objective_name!r}; "
+                        "set skip_failed_starting_points back to its default value "
+                        "True to skip it."
+                    )
+                    raise ValueError(msg)
+
+            for x_vect, outputs in sub_problem.database.items():
+                self._problem.database.store(
+                    x_vect.wrapped_array,
+                    self.__copy_outputs(outputs, store_jacobian),
+                )
+
+            self._problem.database.relaxed_variable_names.update(
+                sub_problem.database.relaxed_variable_names
+                & set(self._problem.database.input_space)
             )
+
+        if skip_failed and not sub_problems:
+            msg = (
+                "Multi-start optimization: "
+                f"all the {len(results)} starting points failed; "
+                f"the last one failed with: {last_error}"
+            )
+            raise ValueError(msg)
 
         file_path = self._settings.multistart_file_path
         if file_path:
-            problem = OptimizationProblem(design_space)
-            problem.objective = self._problem.objective
-            problem.constraints = self._problem.constraints
-            for sub_problem in problems:
+            local_optima_problem = OptimizationProblem(design_space)
+            local_optima_problem.objective = self._problem.objective
+            local_optima_problem.constraints = self._problem.constraints
+            for sub_problem in sub_problems:
                 x_opt = self._get_result(sub_problem, None, None).x_opt
-                problem.database.store(x_opt, sub_problem.database[x_opt])
-            problem.to_hdf(file_path)
+                outputs = sub_problem.database[x_opt]
+                local_optima_problem.database.store(
+                    x_opt, self.__copy_outputs(outputs, store_jacobian)
+                )
+            local_optima_problem.to_hdf(file_path)
 
-    def _optimize(self, data: tuple[RealArray, int]) -> OptimizationProblem:
+    @staticmethod
+    def __copy_outputs(
+        outputs: DatabaseValueType, store_jacobian: bool
+    ) -> dict[str, FunctionOutputValueType]:
+        """Copy the output values of a database entry, optionally dropping Jacobians.
+
+        Args:
+            outputs: The output values of a database entry,
+                possibly including Jacobian entries
+                whose names start with `Database.GRAD_TAG`.
+            store_jacobian: Whether to keep the Jacobian entries in the copy.
+
+        Returns:
+            A new mapping with the output values,
+            excluding the Jacobian entries when `store_jacobian` is `False`.
+        """
+        if store_jacobian:
+            return dict(outputs)
+
+        return {
+            name: value
+            for name, value in outputs.items()
+            if not name.startswith(Database.GRAD_TAG)
+        }
+
+    def _optimize(self, data: tuple[RealArray, int]) -> tuple[OptimizationProblem, str]:
         """Solve the sub-optimization problem from an initial design value.
 
         Args:
             data: The initial design value and the maximum number of iterations.
 
         Returns:
-            The sub-optimization problem.
+            The sub-optimization problem,
+            and the reason why the sub-optimization failed,
+            or an empty string in the case of success.
         """
         initial_point, max_iter = data
 
@@ -176,8 +281,17 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         problem.constraints = (c.original for c in self._problem.constraints)
         problem.observables = (o.original for o in self._problem.observables)
 
+        # Imported here because instantiating this factory imports this module.
+        from gemseo.optimization.factory import optimization_library_factory
+
         self._settings.opt_algo_settings.max_iter = max_iter
-        OptimizationLibraryFactory().execute(
-            problem, settings=self._settings.opt_algo_settings
-        )
-        return problem
+        try:
+            optimization_library_factory.execute(
+                problem, settings=self._settings.opt_algo_settings
+            )
+        except Exception as error:  # noqa: BLE001
+            if not self._settings.skip_failed_starting_points:
+                raise
+            return problem, f"{type(error).__name__}: {error}"
+
+        return problem, ""
