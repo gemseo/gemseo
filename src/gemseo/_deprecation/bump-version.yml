@@ -2371,6 +2371,16 @@ classes:
   ODEDiscipline:
     __init__:
       ode_solver_name: ode_solver_settings={ode_solver_name}_Settings(**{ode_solver_settings})
+  # The loose options of the ODE solver, the name of the solver among them, RK45 by
+  # default, are now one settings model.
+  SpringODEDiscipline:
+    __init__:
+      ode_solver_options: &ode-solver-options TODO pass ode_solver_settings=<the solver>_Settings(...) instead, e.g. RK45_Settings(rtol=1e-6)
+  CoupledSpringsGenerator:
+    create_coupled_ode_disciplines:
+      ode_solver_options: *ode-solver-options
+    create_discipline_with_coupled_dynamics:
+      ode_solver_options: *ode-solver-options
 
   # Lowercased class constants (the ALL_CAPS class-attribute campaign)
   BaseDiscipline:
