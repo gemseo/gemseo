@@ -2173,7 +2173,10 @@ classes:
       names_to_sizes: name_to_size
   OptimizationMetadata:
     output_names_to_constraint_names: output_name_to_constraint_names
-    use_standardized_objective: null # TODO: use `use_standardized_objective` field of the post-processor settings instead.
+    use_standardized_objective: &use-standardized-objective TODO use the use_standardized_objective field of the post-processor settings instead
+    __init__:
+      output_names_to_constraint_names: output_name_to_constraint_names
+      use_standardized_objective: *use-standardized-objective
   ScalableDesignSpace:
     __init__:
       names_to_default_values: name_to_default_value
