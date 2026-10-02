@@ -29,10 +29,13 @@ You can create an [MDAChain][gemseo.mda.chain.MDAChain], which will automaticall
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_mda
+from gemseo.mda import MDAChain
 from gemseo.mda import MDAChain_Settings
 from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 
 # %%
 # ### Prerequisites
@@ -43,12 +46,12 @@ from gemseo.mda import MDAGaussSeidel_Settings
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are highly coupled.
 # The *Mission* discipline is weakly couple with the others.
 
-disciplines = create_discipline([
-    "SobieskiStructure",
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-])
+disciplines = [
+    SobieskiStructure(),
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+]
 
 # %%
 # ### 1. Create the MDA chain
@@ -56,10 +59,9 @@ disciplines = create_discipline([
 # You can specify which MDA algorithm you want to use inside the chain.
 # Here, you set the Gauss-Seidel algorithm.
 # Other settings can be provided.
-mda = create_mda(
-    "MDAChain",
+mda = MDAChain(
     disciplines,
-    settings_model=MDAChain_Settings(inner_mda_settings=MDAGaussSeidel_Settings()),
+    settings=MDAChain_Settings(inner_mda_settings=MDAGaussSeidel_Settings()),
 )
 
 # %%

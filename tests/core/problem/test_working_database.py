@@ -176,7 +176,7 @@ def test_the_store_records_without_the_shared_one() -> None:
 def test_the_store_holds_the_jacobians_of_the_algorithm() -> None:
     """Check that a Jacobian is recorded in the coordinates it is asked in."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(
         ArrayFunction(lambda x: 2.0 * x, name="f", jac=lambda x: array([[2.0]]))

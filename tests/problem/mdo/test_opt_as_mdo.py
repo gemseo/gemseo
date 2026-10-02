@@ -61,9 +61,9 @@ def discipline() -> AnalyticDiscipline:
 def test_basic(discipline, initial_point):
     """Check the scenario OptAsMDOScenario."""
     design_space = DesignSpace()
-    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("z_0", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_1", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_2", lower_bound=-1.0, upper_bound=1.0)
     if initial_point is not None:
         # This is the initial design
         # used in the example plot_opt_as_mdo of the documentation.
@@ -87,9 +87,9 @@ def test_basic(discipline, initial_point):
 def test_design_space_renamed_in_place(discipline):
     """Check that the design space passed as argument is renamed in place."""
     design_space = DesignSpace()
-    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("z_0", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_1", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_2", lower_bound=-1.0, upper_bound=1.0)
     initial_point = array([-0.25, 0.75, -0.9])
     design_space.set_current_value(initial_point)
 
@@ -109,9 +109,9 @@ def test_design_space_renamed_in_place(discipline):
 def test_renaming_with_a_variable_named_after_another_one():
     """Check the renaming when a variable name is another one prefixed with '_'."""
     design_space = DesignSpace()
-    design_space.add_variable("_a", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("a", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("b", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("_a", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("a", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("b", lower_bound=-1.0, upper_bound=1.0)
 
     scenario = OptAsMDOScenario(
         AnalyticDiscipline({"f": "_a+a+b"}),
@@ -126,9 +126,9 @@ def test_renaming_with_a_variable_named_after_another_one():
 def test_renaming_with_a_name_of_the_mdo_problem(discipline):
     """Check the renaming when a variable is named after one of the MDO problem."""
     design_space = DesignSpace()
-    design_space.add_variable("a", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("b", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("x_1", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("a", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("b", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x_1", lower_bound=-1.0, upper_bound=1.0)
 
     link_discipline = create_disciplines(discipline, design_space)[1]
 
@@ -141,7 +141,7 @@ def test_less_than_3_design_variables(discipline, n_variables, snapshot):
     """Check the error raised when the design space has less than 3 design variables."""
     design_space = DesignSpace()
     for i in range(n_variables):
-        design_space.add_variable(f"z_{i}", lower_bound=-1, upper_bound=1)
+        design_space.add_real_variable(f"z_{i}", lower_bound=-1.0, upper_bound=1.0)
 
     with assert_exception(ValueError, snapshot):
         OptAsMDOScenario(discipline, design_space)
@@ -150,9 +150,9 @@ def test_less_than_3_design_variables(discipline, n_variables, snapshot):
 def test_non_differentiable_link_discipline(discipline, snapshot):
     """Check the error raised when the link discipline is not differentiable."""
     design_space = DesignSpace()
-    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("z_0", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_1", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_2", lower_bound=-1.0, upper_bound=1.0)
     with patch(
         "gemseo.problem.mdo.scalable.parametric.scalable_problem.ScalableProblem.differentiate_y",
         new_callable=PropertyMock,
@@ -170,9 +170,9 @@ def test_non_differentiable_link_discipline(discipline, snapshot):
 def test_coupling_equations(discipline):
     """Check the use of coupling_equations and link_discipline argument."""
     design_space = DesignSpace()
-    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
-    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+    design_space.add_real_variable("z_0", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_1", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("z_2", lower_bound=-1.0, upper_bound=1.0)
 
     scalable_problem = ScalableProblem()
     coupling_equations = (
@@ -210,7 +210,7 @@ def test_more_than_two_disciplines():
 
     design_space = DesignSpace()
     for j in range(d):
-        design_space.add_variable(f"z_{j}", lower_bound=-2, upper_bound=2)
+        design_space.add_real_variable(f"z_{j}", lower_bound=-2.0, upper_bound=2.0)
 
     mdo_scenario = OptAsMDOScenario(
         discipline, design_space, formulation_settings=MDF_Settings()
@@ -257,9 +257,9 @@ class Rosenbrock(Discipline):
 def test_vectorial_design_variables():
     """Check that OptAsMDOScenario supports vectorial design variables."""
     design_space = DesignSpace()
-    design_space.add_variable("z_0", size=2, lower_bound=-2, upper_bound=2)
-    design_space.add_variable("z_1", size=3, lower_bound=-2, upper_bound=2)
-    design_space.add_variable("z_2", size=2, lower_bound=-2, upper_bound=2)
+    design_space.add_real_variable("z_0", size=2, lower_bound=-2.0, upper_bound=2.0)
+    design_space.add_real_variable("z_1", size=3, lower_bound=-2.0, upper_bound=2.0)
+    design_space.add_real_variable("z_2", size=2, lower_bound=-2.0, upper_bound=2.0)
 
     mdo_scenario = OptAsMDOScenario(
         Rosenbrock(),

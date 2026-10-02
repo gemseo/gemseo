@@ -74,10 +74,10 @@ class BinhKorn(OptimizationProblem):
             initial_values: Initial value of the design variables.
         """  # noqa: D205 D212
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x", lower_bound=0.0, upper_bound=5.0, value=initial_values[0]
         )
-        design_space.add_variable(
+        design_space.add_real_variable(
             "y", lower_bound=0.0, upper_bound=3.0, value=initial_values[1]
         )
 

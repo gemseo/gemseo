@@ -52,14 +52,14 @@ from gemseo.space import DesignSpace
 #
 # This how-to needs a scenario.
 #
-# Here, an `AnalyticDiscipline` is used, with the `DisciplinaryOpt` formulation.
+# Here, an `AnalyticDiscipline` is used, with the default formulation.
 # An [MDOScenario][gemseo.scenario.mdo.MDOScenario] is generated,
 # but it would also work with an
 # [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 discipline = AnalyticDiscipline({"y": "x1+x2"})
 design_space = DesignSpace()
-design_space.add_variable("x1", lower_bound=-5, upper_bound=5)
-design_space.add_variable("x2", lower_bound=-5, upper_bound=5)
+design_space.add_real_variable("x1", lower_bound=-5.0, upper_bound=5.0)
+design_space.add_real_variable("x2", lower_bound=-5.0, upper_bound=5.0)
 
 scenario = MDOScenario((discipline,), design_space)
 
@@ -90,10 +90,7 @@ scenario.execute(settings)
 #
 # Here, define your settings.
 default_settings = NLOPT_COBYLA_Settings(
-    max_iter=10,
-    ftol_rel=1e-10,
-    ineq_tolerance=2e-3,
-    normalize_design_space=True,
+    max_iter=10, ftol_rel=1e-10, ineq_tolerance=2e-3
 )
 default_settings
 

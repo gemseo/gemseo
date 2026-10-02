@@ -27,25 +27,24 @@ for the scalable diagonal discipline.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_scalable
-from gemseo import create_scenario
-from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.doe import DiagonalDOE_Settings
+from gemseo.problem.mdo.scalable.data_driven import DataDrivenScalableDiscipline
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Training dataset
 #
-# The first step is to build a [BaseFullCache][gemseo.core.cache.base_full.BaseFullCache] dataset
+# The first step is to build a [Dataset][gemseo.dataset.dataset.Dataset]
 # from a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 
 # %%
 # ### Instantiate the discipline
 #
 # For that, we instantiate the
-# [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics] discipline
-# and set it up to cache all evaluations.
-discipline = create_discipline("SobieskiAerodynamics")
+# [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics] discipline.
+discipline = SobieskiAerodynamics()
 
 # %%
 # ### Get the input space
@@ -62,12 +61,8 @@ input_space.filter(input_names)
 # relying on both discipline and input space.
 # In order to build a diagonal scalable discipline,
 # a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE] must be used.
-scenario = create_scenario(
-    [discipline],
-    "y_2",
-    input_space,
-    formulation_name="DisciplinaryOpt",
-)
+scenario = MDOScenario([discipline], input_space)
+scenario.add_objective("y_2")
 for output_name in discipline.io.output_grammar.names:
     if output_name != "y_2":
         scenario.add_observable(output_name)
@@ -82,7 +77,7 @@ scenario.execute(DiagonalDOE_Settings(n_samples=20))
 # using a [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel] and the database
 # converted to a [Dataset][gemseo.dataset.dataset.Dataset].
 dataset = scenario.to_dataset(opt_naming=False)
-scalable = create_scalable("ScalableDiagonalModel", dataset)
+scalable = DataDrivenScalableDiscipline("ScalableDiagonalModel", dataset)
 
 # %%
 # ### Visualize the input-output dependencies
@@ -116,7 +111,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=True)
 #
 # For example, we can increase the size of each input by a factor of 2.
 sizes = {name: dataset.variable_name_to_n_components[name] * 2 for name in input_names}
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable = DataDrivenScalableDiscipline("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
@@ -127,7 +122,7 @@ sizes = {
     name: discipline.cache.name_to_size[name] * 2
     for name in discipline.io.output_grammar.names
 }
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable = DataDrivenScalableDiscipline("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
@@ -136,7 +131,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # Or we can increase the size of each input and each output by a factor of 2.
 names = input_names + list(discipline.io.output_grammar.names)
 sizes = {name: dataset.variable_name_to_n_components[name] * 2 for name in names}
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable = DataDrivenScalableDiscipline("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
@@ -157,25 +152,31 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # %%
 # ### Fill factor = 0.2
 #
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.2)
+scalable = DataDrivenScalableDiscipline(
+    "ScalableDiagonalModel", dataset, sizes, fill_factor=0.2
+)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
 # ### Fill factor = 0.5
 #
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.5)
+scalable = DataDrivenScalableDiscipline(
+    "ScalableDiagonalModel", dataset, sizes, fill_factor=0.5
+)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
 # ### Fill factor = 0.8
 #
-scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.8)
+scalable = DataDrivenScalableDiscipline(
+    "ScalableDiagonalModel", dataset, sizes, fill_factor=0.8
+)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
 # %%
 # ## Heterogeneous dependencies
 #
-scalable = create_scalable(
+scalable = DataDrivenScalableDiscipline(
     "ScalableDiagonalModel", dataset, sizes, fill_factor={"y_2": 0.2}
 )
 scalable.scalable_model.plot_dependency(save=False, show=True)
@@ -183,7 +184,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # %%
 # ## Group dependencies
 #
-scalable = create_scalable(
+scalable = DataDrivenScalableDiscipline(
     "ScalableDiagonalModel", dataset, sizes, group_dep={"y_2": ["x_shared"]}
 )
 scalable.scalable_model.plot_dependency(save=False, show=True)

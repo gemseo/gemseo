@@ -42,11 +42,14 @@ methods when the execution is finished.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_scenario
 from gemseo.optimization import OptimizationProblem
 from gemseo.optimization import SLSQP_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
+from gemseo.scenario import MDOScenario
 
 # %%
 # ### Prerequisites
@@ -54,20 +57,15 @@ from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 # This how-to needs a scenario.
 #
 # Here, the Sobieski test case is used, with the MDF formulation.
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 design_space = SobieskiDesignSpace()
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    maximize_objective=True,
-    formulation_name="MDF",
-)
+scenario = MDOScenario(disciplines, design_space)
+scenario.add_objective("y_4", minimize=False)
 
 # %%
 # ### 1. Set an history backup
@@ -93,14 +91,7 @@ scenario.set_backup_settings(
 
 # %%
 # ### 2. Save after execution
-scenario.execute(
-    SLSQP_Settings(
-        max_iter=10,
-        ftol_rel=1e-10,
-        ineq_tolerance=2e-3,
-        normalize_design_space=True,
-    )
-)
+scenario.execute(SLSQP_Settings(max_iter=10, ftol_rel=1e-10, ineq_tolerance=2e-3))
 scenario.to_hdf("mdf_history.h5")
 
 # %%

@@ -54,7 +54,6 @@ dataset = sample_disciplines(
     [discipline],
     random_space,
     "Ww",
-    formulation_name="DisciplinaryOpt",
     algo_name="OT_MONTE_CARLO",
     n_samples=100,
 )

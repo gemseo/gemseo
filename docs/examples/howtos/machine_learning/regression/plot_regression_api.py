@@ -59,5 +59,5 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 # %%
 # use the [create_regression_model()][gemseo.machine_learning.create_regression_model] function
 # to create a clustering model from its class name and settings:
-model = create_regression_model("RBFRegressor", data=dataset)
+model = create_regression_model("RBFRegressor", dataset)
 model.learn()

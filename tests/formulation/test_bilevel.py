@@ -353,8 +353,8 @@ def test_scenario_log_level(
 ) -> None:
     """Check scenario_log_level."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         design_space.filter(["y"], copy=True),
@@ -511,10 +511,10 @@ def test_system_variables_not_in_variables_to_warm_start(
     "see" the replaced value.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("b", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("baz", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("b", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("baz", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario_1 = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2", "b": "c+y"}, "foo")],
         design_space.filter(["y"], copy=True),
@@ -640,8 +640,8 @@ def test_get_top_level_disciplines(scenario, request, include_sub_formulations) 
 def test_main_mda_settings(main_mda):
     """Tests that BiLevel supports main_mda_settings as dict and Pydantic model."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})], design_space.filter(["y"], copy=True)
     )
@@ -845,10 +845,10 @@ def test_bilevel_no_mda2():
     discipline_1, discipline_2 = create_disciplines_from_desc(disc_expressions)
 
     system_design_space = DesignSpace()
-    system_design_space.add_variable("x_1")
+    system_design_space.add_real_variable("x_1")
 
     sub_design_space_1 = DesignSpace()
-    sub_design_space_1.add_variable("x_2")
+    sub_design_space_1.add_real_variable("x_2")
     sub_scenario_1 = MDOScenario([discipline_2], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
@@ -902,10 +902,10 @@ def test_bilevel_custom_mda1_and_custom_mda2():
     )
 
     system_design_space = DesignSpace()
-    system_design_space.add_variable("x_1")
+    system_design_space.add_real_variable("x_1")
 
     sub_design_space_1 = DesignSpace()
-    sub_design_space_1.add_variable("x_2")
+    sub_design_space_1.add_real_variable("x_2")
     sub_scenario_1 = MDOScenario([discipline_2, discipline_3], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
@@ -948,10 +948,10 @@ def test_bilevel_custom_mda1_with_mda2():
     )
 
     system_design_space = DesignSpace()
-    system_design_space.add_variable("x_1")
+    system_design_space.add_real_variable("x_1")
 
     sub_design_space_1 = DesignSpace()
-    sub_design_space_1.add_variable("x_2")
+    sub_design_space_1.add_real_variable("x_2")
     sub_scenario_1 = MDOScenario([discipline_2, discipline_3], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
@@ -1084,10 +1084,10 @@ def test_custom_mda2_with_mda1(generate_sobieski_bilevel_scenario, caplog):
     )
 
     system_design_space = DesignSpace()
-    system_design_space.add_variable("x_1")
+    system_design_space.add_real_variable("x_1")
 
     sub_design_space_1 = DesignSpace()
-    sub_design_space_1.add_variable("x_2")
+    sub_design_space_1.add_real_variable("x_2")
     sub_scenario_1 = MDOScenario(
         [discipline_1, discipline_2, discipline_3], sub_design_space_1
     )
@@ -1125,12 +1125,12 @@ def test_bilevel_shared_variables_of_a_random_space():
     })
 
     sub_design_space_1 = DesignSpace()
-    sub_design_space_1.add_variable("x_1")
+    sub_design_space_1.add_real_variable("x_1")
     sub_scenario_1 = MDOScenario([discipline_1, discipline_3], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
     sub_design_space_2 = DesignSpace()
-    sub_design_space_2.add_variable("x_2")
+    sub_design_space_2.add_real_variable("x_2")
     sub_scenario_2 = MDOScenario([discipline_2, discipline_3], sub_design_space_2)
     sub_scenario_2.add_objective("obj")
 

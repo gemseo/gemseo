@@ -325,7 +325,7 @@ def test_directory_manager_with_spawn_multiprocessing(dm_settings, monkeypatch):
     )
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -528,7 +528,7 @@ def test_scenario_discipline_with_files(dm_settings):
     """Test the execution of a scenario with a discipline that writes files."""
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -551,7 +551,7 @@ def build_disciplinary_doe_scenario() -> EvaluationScenario:
         The scenario.
     """
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     return create_scenario(
         DisciplineWithFiles(),
         "y",
@@ -590,7 +590,7 @@ def test_worker_thread_nested_directories(dm_settings):
     root_path = dm_settings.execution_root_path
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -625,7 +625,7 @@ def test_clean_up_preserves_unmanaged_directories(dm_settings, clean_up_policy):
     dm_settings.clean_up_policy = clean_up_policy
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -671,7 +671,7 @@ def test_save_history_backup_with_evaluation_scenario(dm_settings):
     dm_settings.save_history_backup = True
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
 
     sample_disciplines(
         [discipline],
@@ -702,9 +702,9 @@ def test_executable_discipline(dm_settings):
     file_path = Path(__file__).parent.parent.parent / "discipline" / "wrapper"
     disc = create_disc_from_exe(file_path)
     design_space = create_design_space()
-    design_space.add_variable("a", lower_bound=0.0, upper_bound=10.0, value=1.0)
-    design_space.add_variable("b", lower_bound=0.0, upper_bound=10.0, value=1.0)
-    design_space.add_variable("c", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("a", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("b", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("c", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         disc,
         "out",
@@ -774,7 +774,7 @@ def test_scenario_with_non_ascii_name(dm_settings, snapshot):
     """Verify an error is raised when the sanitized name is empty."""
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -797,7 +797,7 @@ def test_scenario_named_after_the_trace_registry_directory(dm_settings):
     """
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -877,7 +877,7 @@ def test_failing_scenario_with_solution_policy(dm_settings, snapshot):
             raise RuntimeError(msg)
 
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         CrashingDiscipline(),
         "y",
@@ -900,7 +900,7 @@ def test_failing_scenario_with_keep_last_policy(dm_settings):
     dm_settings.clean_up_policy = CleanUpPolicy.KEEP_LAST_ONLY
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -929,7 +929,7 @@ def test_solution_policy_with_non_iteration_managed_directory(dm_settings):
     discipline = DisciplineWithFiles()
     callback_discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",
@@ -999,7 +999,7 @@ def test_history_view_skipped_for_short_history(dm_settings):
     dm_settings.backup_settings.plot = True
     discipline = DisciplineWithFiles()
     design_space = create_design_space()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     scenario = create_scenario(
         discipline,
         "y",

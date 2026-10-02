@@ -169,17 +169,17 @@ class TestScipy(TestCase):
         """Runs a problem with one variable to be normalized and three not to be
         normalized."""
         design_space = DesignSpace()
-        design_space.add_variable(
-            "x1", 1, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
+        design_space.add_real_variable(
+            "x1", lower_bound=-1.0, upper_bound=1.0, value=0.0
         )
-        design_space.add_variable(
-            "x2", 1, DesignSpace.DesignVariableType.REAL, -inf, 1.0, 0.0
+        design_space.add_real_variable(
+            "x2", lower_bound=-inf, upper_bound=1.0, value=0.0
         )
-        design_space.add_variable(
-            "x3", 1, DesignSpace.DesignVariableType.REAL, -1.0, inf, 0.0
+        design_space.add_real_variable(
+            "x3", lower_bound=-1.0, upper_bound=inf, value=0.0
         )
-        design_space.add_variable(
-            "x4", 1, DesignSpace.DesignVariableType.REAL, -inf, inf, 0.0
+        design_space.add_real_variable(
+            "x4", lower_bound=-inf, upper_bound=inf, value=0.0
         )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(
@@ -195,9 +195,7 @@ class TestScipy(TestCase):
     def test_xtol_ftol_activation(self) -> None:
         def run_pb(algo_options):
             design_space = DesignSpace()
-            design_space.add_variable(
-                "x1", 2, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
-            )
+            design_space.add_real_variable("x1", 2, -1.0, 1.0, 0.0)
             problem = OptimizationProblem(design_space)
             problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
@@ -242,9 +240,9 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
         The linear optimization problem.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=5)
-    design_space.add_variable("z", lower_bound=0.0, upper_bound=5.0, value=0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=5.0, value=5.0)
+    design_space.add_real_variable("z", lower_bound=0.0, upper_bound=5.0, value=0.0)
 
     problem = OptimizationProblem(design_space)
 

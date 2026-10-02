@@ -43,12 +43,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import exp
-from numpy import full
 from numpy import sqrt
 from numpy import square
 from numpy import sum as np_sum
 from numpy import vstack
-from numpy import zeros
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.problem import OptimizationProblem
@@ -71,12 +69,12 @@ class FonsecaFleming(OptimizationProblem):
         """  # noqa: D205 D212
         self.__a = 1 / sqrt(dimension)
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x",
             size=dimension,
-            lower_bound=full(dimension, -4.0),
-            upper_bound=full(dimension, 4.0),
-            value=zeros(dimension),
+            lower_bound=-4.0,
+            upper_bound=4.0,
+            value=0.0,
         )
         super().__init__(design_space)
         self.objective = ArrayFunction(

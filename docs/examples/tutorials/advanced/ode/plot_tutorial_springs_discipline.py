@@ -88,8 +88,8 @@ from scipy.interpolate import interp1d
 
 from gemseo.core.discipline import Discipline
 from gemseo.discipline import AutoPyDiscipline
+from gemseo.discipline import DisciplineChain
 from gemseo.discipline import ODEDiscipline
-from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.mda import MDAGaussSeidel
 from gemseo.ode import RK45_Settings
 
@@ -197,15 +197,12 @@ rhs_disciplines = [RHSMassDisciplineLeft(), RHSMassDisciplineRight()]
 
 ode_disciplines = [
     ODEDiscipline(
-        rhs_discipline=rhs_discipline,
-        times=times,
+        rhs_discipline,
+        times,
         state_names=(f"position_{i}", f"velocity_{i}"),
-        time_name="time",
         return_trajectories=True,
-        ode_solver_settings=RK45_Settings(
-            rtol=1e-6,
-            atol=1e-6,
-        ),
+        # atol is the default, shown to compare with the second strategy.
+        ode_solver_settings=RK45_Settings(rtol=1e-6, atol=1e-6),
     )
     for i, rhs_discipline in enumerate(rhs_disciplines, start=1)
 ]
@@ -259,7 +256,7 @@ def compute_mass_2_rhs(
 
 
 rhs_disciplines = [
-    AutoPyDiscipline(py_func=compute_rhs)
+    AutoPyDiscipline(compute_rhs)
     for compute_rhs in [compute_mass_1_rhs, compute_mass_2_rhs]
 ]
 rhs_disciplines[0].add_differentiated_inputs(["time", "position_1", "velocity_1"])
@@ -268,7 +265,8 @@ rhs_disciplines[1].add_differentiated_inputs(["time", "position_2", "velocity_2"
 mda_chain = DisciplineChain(rhs_disciplines)
 
 ode_discipline = ODEDiscipline(
-    rhs_discipline=mda_chain,
+    mda_chain,
+    times,
     state_names={
         "position_1": "position_1_dot",
         "velocity_1": "velocity_1_dot",
@@ -276,11 +274,7 @@ ode_discipline = ODEDiscipline(
         "velocity_2": "velocity_2_dot",
     },
     return_trajectories=True,
-    times=times,
-    ode_solver_settings=RK45_Settings(
-        rtol=1e-12,
-        atol=1e-12,
-    ),
+    ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
 )
 result_strategy_2 = ode_discipline.execute()
 

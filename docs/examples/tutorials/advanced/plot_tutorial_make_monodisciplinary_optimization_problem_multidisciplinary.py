@@ -56,9 +56,9 @@ discipline = AnalyticDiscipline(
 )
 
 design_space = DesignSpace()
-design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
-design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
-design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+design_space.add_real_variable("z_0", lower_bound=-1.0, upper_bound=1.0)
+design_space.add_real_variable("z_1", lower_bound=-1.0, upper_bound=1.0)
+design_space.add_real_variable("z_2", lower_bound=-1.0, upper_bound=1.0)
 # %%
 # The starting point for the optimizers is
 # $x^{(0)}=(-0.25, 0.75, -0.9)$.

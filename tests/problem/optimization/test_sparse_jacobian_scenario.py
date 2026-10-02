@@ -36,13 +36,13 @@ if TYPE_CHECKING:
 def scenario(request) -> MDOScenario:
     """Optimization scenario involving mdo_functions with sparse Jacobians."""
     design_space = DesignSpace()
-    design_space.add_variable(
+    design_space.add_real_variable(
         "alpha", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "beta", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "gamma", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
     )
 

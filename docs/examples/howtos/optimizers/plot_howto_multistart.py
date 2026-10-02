@@ -35,10 +35,8 @@ from __future__ import annotations
 from gemseo import execute_post
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.optimization import MultiStart_Settings
 from gemseo.optimization import SLSQP_Settings
-from gemseo.optimization.multi_start.settings.multi_start_settings import (
-    MultiStart_Settings,
-)
 from gemseo.post import BasicHistory_Settings
 from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
@@ -53,7 +51,7 @@ objective = AnalyticDiscipline({"obj": "x**3-x+1"})
 constraint = AnalyticDiscipline({"cstr": "x**2+obj**2-1.5"})
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=-1.5, upper_bound=1.5, value=1.5)
+design_space.add_real_variable("x", lower_bound=-1.5, upper_bound=1.5, value=1.5)
 
 scenario = MDOScenario([objective, constraint], design_space)
 scenario.add_objective("obj")

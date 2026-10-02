@@ -99,7 +99,9 @@ def test_discipline(dataset) -> None:
 def calibration_space() -> DesignSpace:
     """The space of the parameters to be calibrated."""
     calibration_space = DesignSpace()
-    calibration_space.add_variable("penalty_level", 1, "real", 0.0, 1.0, 0.5)
+    calibration_space.add_real_variable(
+        "penalty_level", lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
     return calibration_space
 
 

@@ -113,13 +113,10 @@ generate_n2_plot([d1, d2], save=False, show=True)
 # and an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 
 design_space = DesignSpace()
-design_space.add_variable("x")
-design_space.add_variable("z")
+design_space.add_real_variable("x")
+design_space.add_real_variable("z")
 
-scenario = EvaluationScenario(
-    [d1, d2],
-    design_space,
-)
+scenario = EvaluationScenario([d1, d2], design_space)
 scenario.add_observable("c")
 scenario.add_observable("f")
 # %%

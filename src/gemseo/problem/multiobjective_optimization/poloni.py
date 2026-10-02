@@ -55,9 +55,9 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 
-from gemseo import create_design_space
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.problem import OptimizationProblem
+from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
@@ -67,9 +67,9 @@ class Poloni(OptimizationProblem):
     """Poloni multi-objective, bound constrained optimization problem."""
 
     def __init__(self) -> None:  # noqa: D205 D212 D107
-        design_space = create_design_space()
-        design_space.add_variable("x", lower_bound=-pi, upper_bound=pi, value=0)
-        design_space.add_variable("y", lower_bound=-pi, upper_bound=pi, value=0)
+        design_space = DesignSpace()
+        design_space.add_real_variable("x", lower_bound=-pi, upper_bound=pi, value=0.0)
+        design_space.add_real_variable("y", lower_bound=-pi, upper_bound=pi, value=0.0)
         super().__init__(design_space)
         self.objective = ArrayFunction(
             self._compute_output,

@@ -150,8 +150,8 @@ def test_function_from_discipline_input_names(input_names, expected_output_value
     """Check the input_names argument of FunctionFromDiscipline."""
     discipline = AnalyticDiscipline({"y": "2*a+3*b"})
     design_space = DesignSpace()
-    design_space.add_variable("a")
-    design_space.add_variable("b")
+    design_space.add_real_variable("a")
+    design_space.add_real_variable("b")
     evaluation_problem = OptimizationProblem(design_space)
     formulation = DisciplinaryOpt(evaluation_problem, [discipline])
     evaluation_problem.objective = formulation.create_objective(["y"])

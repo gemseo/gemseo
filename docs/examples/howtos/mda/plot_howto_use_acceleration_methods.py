@@ -30,10 +30,13 @@ may decrease the number of needed iterations.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_mda
+from gemseo.enum import AccelerationMethod
+from gemseo.mda import MDAGaussSeidel
 from gemseo.mda import MDAGaussSeidel_Settings
-from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 
 # %%
 # ### Prerequisites
@@ -42,19 +45,18 @@ from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 #
 # Start creating the well-known Sobieski disciplines.
 
-disciplines = create_discipline([
-    "SobieskiStructure",
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-])
+disciplines = [
+    SobieskiStructure(),
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+]
 
 # %%
 # ### 1. Default Gauss-Seidel MDA
-gauss_seidel_mda = create_mda(
-    "MDAGaussSeidel",
+gauss_seidel_mda = MDAGaussSeidel(
     disciplines,
-    settings_model=MDAGaussSeidel_Settings(max_mda_iter=15),
+    settings=MDAGaussSeidel_Settings(max_mda_iter=15),
 )
 gauss_seidel_mda.execute()
 gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=True)
@@ -63,10 +65,9 @@ gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=T
 # The MDA has converged in 8 iterations.
 #
 # ### 2. Accelerated Gauss-Seidel MDA
-accelerated_gauss_seidel_mda = create_mda(
-    "MDAGaussSeidel",
+accelerated_gauss_seidel_mda = MDAGaussSeidel(
     disciplines,
-    settings_model=MDAGaussSeidel_Settings(
+    settings=MDAGaussSeidel_Settings(
         max_mda_iter=15, acceleration_method=AccelerationMethod.MINIMUM_POLYNOMIAL
     ),
 )

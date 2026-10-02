@@ -59,9 +59,9 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy import zeros
 
+from gemseo.ode import ODEProblem
 from gemseo.ode import RK45_Settings
-from gemseo.ode.factory import ODESolverLibraryFactory
-from gemseo.ode.problem import ODEProblem
+from gemseo.ode.factory import ode_solver_library_factory
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
@@ -97,9 +97,9 @@ initial_time = 0.0
 final_time = 50.0
 
 ode_problem = ODEProblem(
-    func=evaluate_f,
-    initial_state=initial_state,
-    times=(initial_time, final_time),
+    evaluate_f,
+    initial_state,
+    (initial_time, final_time),
     solve_at_algorithm_times=True,
 )
 
@@ -137,11 +137,11 @@ ode_problem_with_jacobian = ODEProblem(
 # %%
 # ## Step 4 — Solve the ODE problem
 #
-# Use [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory]
-# to solve the problem.
+# Use the [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory]
+# singleton `ode_solver_library_factory` to solve the problem.
 # Here you use the Runge-Kutta RK45 method:
-ODESolverLibraryFactory().execute(ode_problem, RK45_Settings())
-ODESolverLibraryFactory().execute(ode_problem_with_jacobian, RK45_Settings())
+ode_solver_library_factory.execute(ode_problem, RK45_Settings())
+ode_solver_library_factory.execute(ode_problem_with_jacobian, RK45_Settings())
 
 # %%
 # ## Step 5 — Inspect the results

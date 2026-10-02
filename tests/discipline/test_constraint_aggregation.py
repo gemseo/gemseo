@@ -22,7 +22,6 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
-from numpy import ones
 from numpy import ones_like
 from numpy import vstack
 from numpy.testing import assert_equal
@@ -68,8 +67,8 @@ def test_aggregation_discipline(disc_constr) -> None:
     )
     disciplines = [disc_constr, obj_disc]
     design_space = create_design_space()
-    design_space.add_variable(
-        "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
+    design_space.add_real_variable(
+        "x", 3, lower_bound=-10.0, upper_bound=10.0, value=2.0
     )
     scenario = create_scenario(
         disciplines, "obj_f", design_space, formulation_name="DisciplinaryOpt"
@@ -91,8 +90,8 @@ def test_aggregation_discipline(disc_constr) -> None:
 
     disciplines = [disc_constr, disc_agg, obj_disc]
     design_space = create_design_space()
-    design_space.add_variable(
-        "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
+    design_space.add_real_variable(
+        "x", 3, lower_bound=-10.0, upper_bound=10.0, value=2.0
     )
     scenario_agg = create_scenario(
         disciplines, "obj_f", design_space, formulation_name="DisciplinaryOpt"

@@ -161,8 +161,8 @@ def const(x: ndarray, y: ndarray) -> ndarray:
     return g
 
 
-objective = AutoPyDiscipline(name="f(x,y)", py_func=obj)
-constraint = AutoPyDiscipline(name="g(x,y)", py_func=const)
+objective = AutoPyDiscipline(obj, name="f(x,y)")
+constraint = AutoPyDiscipline(const, name="g(x,y)")
 
 # %%
 # ## Step 2 - Create the design space for the entire problem
@@ -171,9 +171,9 @@ constraint = AutoPyDiscipline(name="g(x,y)", py_func=const)
 # for the whole problem
 # and then filter either the continuous variables or the discrete ones.
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0, upper_bound=1, value=1.0, size=2)
-design_space.add_variable(
-    "y", lower_bound=[0, 0], upper_bound=[1, 2], value=1, size=2, type_="integer"
+design_space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=1.0, value=1.0)
+design_space.add_integer_variable(
+    "y", size=2, lower_bound=(0, 0), upper_bound=(1, 2), value=1
 )
 design_space
 # %%

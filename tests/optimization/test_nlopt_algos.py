@@ -82,17 +82,17 @@ class TestNLOPT(TestCase):
     def test_normalization(self) -> None:
         """Runs a problem with one variable to be normalized and three not to be."""
         design_space = DesignSpace()
-        design_space.add_variable(
-            "x1", 1, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
+        design_space.add_real_variable(
+            "x1", lower_bound=-1.0, upper_bound=1.0, value=0.0
         )
-        design_space.add_variable(
-            "x2", 1, DesignSpace.DesignVariableType.REAL, -inf, 1.0, 0.0
+        design_space.add_real_variable(
+            "x2", lower_bound=-inf, upper_bound=1.0, value=0.0
         )
-        design_space.add_variable(
-            "x3", 1, DesignSpace.DesignVariableType.REAL, -1.0, inf, 0.0
+        design_space.add_real_variable(
+            "x3", lower_bound=-1.0, upper_bound=inf, value=0.0
         )
-        design_space.add_variable(
-            "x4", 1, DesignSpace.DesignVariableType.REAL, -inf, inf, 0.0
+        design_space.add_real_variable(
+            "x4", lower_bound=-inf, upper_bound=inf, value=0.0
         )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(
@@ -103,9 +103,7 @@ class TestNLOPT(TestCase):
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
             design_space = DesignSpace()
-            design_space.add_variable(
-                "x1", 2, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
-            )
+            design_space.add_real_variable("x1", 2, -1.0, 1.0, 0.0)
             problem = OptimizationProblem(design_space)
             problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
@@ -138,7 +136,7 @@ class TestNLOPT(TestCase):
 def test_cast_to_float() -> None:
     """Test that the NLopt library handles functions that return an `ndarray`."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(
         lambda x: x, name="my_function", jac=lambda x: array([[1.0]])

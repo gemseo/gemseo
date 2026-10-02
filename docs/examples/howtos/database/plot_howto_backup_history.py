@@ -58,8 +58,8 @@ backup_file = Path("backup.hdf5")
 discipline = AnalyticDiscipline({"obj": "x**2 + y**2"})
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=-5.0, upper_bound=5.0, value=4.0)
-design_space.add_variable("y", lower_bound=-5.0, upper_bound=5.0, value=4.0)
+design_space.add_real_variable("x", lower_bound=-5.0, upper_bound=5.0, value=4.0)
+design_space.add_real_variable("y", lower_bound=-5.0, upper_bound=5.0, value=4.0)
 
 scenario = MDOScenario([discipline], design_space)
 scenario.add_objective("obj")

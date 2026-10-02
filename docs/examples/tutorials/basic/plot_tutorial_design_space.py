@@ -49,23 +49,24 @@ from gemseo.space import DesignSpace
 # - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1).
 #
 # You can create this design space from scratch.
-# Use the [add_variable()][gemseo.space.design.DesignSpace.add_variable] method
-# of the [DesignSpace][gemseo.space.design.DesignSpace] class to add variables:
+# Use the
+# [add_real_variable()][gemseo.space.design.DesignSpace.add_real_variable] and
+# [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
+# methods of the [DesignSpace][gemseo.space.design.DesignSpace] class to add variables:
 
 design_space = DesignSpace()
-design_space.add_variable("x1", value=array([1.0]))
-design_space.add_variable("x2", value=array([1]), type_="integer")
-design_space.add_variable("x3", size=2, value=ones(2))
-design_space.add_variable("x4", lower_bound=ones(1), value=ones(1))
-design_space.add_variable("x5", upper_bound=ones(1), value=ones(1))
-design_space.add_variable("x6", value=ones(1))
-design_space.add_variable(
+design_space.add_real_variable("x1", value=1.0)
+design_space.add_integer_variable("x2", value=1)
+design_space.add_real_variable("x3", size=2, value=1.0)
+design_space.add_real_variable("x4", lower_bound=1.0, value=1.0)
+design_space.add_real_variable("x5", upper_bound=1.0, value=1.0)
+design_space.add_real_variable("x6", value=1.0)
+design_space.add_integer_variable(
     "x7",
     size=2,
-    type_="integer",
-    value=array([0, 1]),
-    lower_bound=-ones(2),
-    upper_bound=ones(2),
+    value=(0, 1),
+    lower_bound=-1,
+    upper_bound=1,
 )
 design_space
 
@@ -198,8 +199,11 @@ design_space
 #
 # In this tutorial, you've learned to:
 #
-# - create a design space from scratch by means of the [create_design_space()][gemseo.create_design_space] high-level function;
-# - add variables with the [add_variable()][gemseo.space.design.DesignSpace.add_variable] method;
+# - create a design space from scratch by instantiating a [DesignSpace][gemseo.space.design.DesignSpace];
+# - add variables with the
+#   [add_real_variable()][gemseo.space.design.DesignSpace.add_real_variable] and
+#   [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
+#   methods;
 # - get information about a given design space by using different getters / attributes;
 # - modify the value and the boundaries of design variables.
 #

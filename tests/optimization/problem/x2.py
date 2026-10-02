@@ -53,22 +53,22 @@ class X2(OptimizationProblem):
             initial_value: The initial design value of the problem.
         """
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x", lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
         # The latter design variables are not used in the function
         # This is done on purpose to check that they do not trigger an early
         # termination of the tested optimization algorithm.
-        design_space.add_variable(
+        design_space.add_real_variable(
             "a", lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
-        design_space.add_variable(
+        design_space.add_real_variable(
             "b", lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
-        design_space.add_variable(
+        design_space.add_real_variable(
             "c", lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
-        design_space.add_variable(
+        design_space.add_real_variable(
             "d", lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
 

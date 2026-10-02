@@ -27,12 +27,12 @@ from ast import literal_eval
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
 from gemseo.mda import *  # noqa: F401, F403
 from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 from gemseo.util.study_analysis.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.util.study_analysis.xls_study_parser import XLSStudyParser
 
@@ -164,7 +164,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         Returns:
             An MDO scenario.
         """
-        design_space = create_design_space()
+        design_space = DesignSpace()
         real_disciplines = tuple(
             disc for disc in disciplines if isinstance(disc, Discipline)
         )
@@ -175,7 +175,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             # as this scenario is only used to draw diagrams and is never executed,
             # but they must be finite,
             # as a formulation such as IDF requires a finite bound range.
-            design_space.add_variable(name, lower_bound=0.0, upper_bound=1.0)
+            design_space.add_real_variable(name, lower_bound=0.0, upper_bound=1.0)
 
         option_names = scenario_description[XLSStudyParser.options]
         options = {}

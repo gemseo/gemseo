@@ -37,16 +37,12 @@ which can be solved using an optimization algorithm or sampled with a DOE algori
 ## Setting up an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 
 The [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] class is composed of at least a
-[DesignSpace][gemseo.space.design.DesignSpace] created from [create_design_space()][gemseo.create_design_space] which describes the design variables:
+[DesignSpace][gemseo.space.design.DesignSpace] which describes the design variables:
 
 ``` python
-from gemseo import create_design_space
-from numpy import ones
-
-design_space = create_design_space()
-design_space.add_variable(
-    "x", size=1, lower_bound=-2.0, upper_bound=2.0, value=-0.5 * ones(1)
-)
+from gemseo.space import DesignSpace
+design_space = DesignSpace()
+design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5)
 ```
 
 and an objective function, of type [ArrayFunction][gemseo.core.function.array_function.ArrayFunction]. The [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] is callable and requires at least
@@ -89,17 +85,18 @@ The [f_type][gemseo.core.function.array_function.ArrayFunction.f_type] attribute
 ## Solving the problem by optimization
 
 Once the optimization problem created, it can be solved using one of the available
-optimization algorithms from the [OptimizationLibraryFactory][gemseo.optimization.factory.OptimizationLibraryFactory],
-by means of the method [BaseOptimizationLibrary.execute()][gemseo.optimization.core.base_optimization_library.BaseOptimizationLibrary.execute]
+optimization algorithms from the [OptimizationLibraryFactory][gemseo.optimization.factory.OptimizationLibraryFactory]
+singleton `optimization_library_factory`,
+by means of the method [BaseAlgorithmFactory.execute()][gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory.execute]
 whose mandatory arguments are the [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
-and the optimization algorithm name. For example, in the case of the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS)
+and a settings object dedicated to the optimization algorithm. For example, in the case of the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS)
 with normalized design space, we have:
 
 ``` python
-from gemseo.optimization.factory import OptimizationLibraryFactory
 from gemseo.optimization import L_BFGS_B_Settings
+from gemseo.optimization.factory import optimization_library_factory
 
-opt = OptimizationLibraryFactory().execute(
+opt = optimization_library_factory.execute(
     problem, L_BFGS_B_Settings(normalize_design_space=True)
 )
 print(f"Optimum = {opt.f_opt}")
@@ -113,7 +110,7 @@ The list of available algorithms depend on the local setup of GEMSEO, and the in
 optimization libraries. It can be obtained using :
 
 ``` python
-algo_list = OptimizationLibraryFactory().algorithms
+algo_list = optimization_library_factory.algorithms
 print(f"Available algorithms: {algo_list}")
 ```
 
@@ -128,14 +125,18 @@ problem.to_hdf("simple_opt.hdf5")
 ## Solving the problem by DOE
 
 DOE algorithms can also be used to sample the design space and observe the
-value of the objective and constraints
+value of the objective and constraints, using the same
+[BaseAlgorithmFactory.execute()][gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory.execute]
+method, from the [DOELibraryFactory][gemseo.doe.factory.DOELibraryFactory]
+singleton `doe_library_factory`, with a settings object dedicated to the DOE
+algorithm:
 
 ``` python
-from gemseo.doe.factory import DOELibraryFactory
+from gemseo.doe import PYDOE_LHS_Settings
+from gemseo.doe.factory import doe_library_factory
 
-# And solve it with GEMSEO interface
-opt = DOELibraryFactory().execute(
-    problem, algo_name="PYDOE_LHS", n_samples=10, normalize_design_space=True
+opt = doe_library_factory.execute(
+    problem, PYDOE_LHS_Settings(n_samples=10, normalize_design_space=True)
 )
 ```
 

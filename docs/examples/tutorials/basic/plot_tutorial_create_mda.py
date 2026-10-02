@@ -36,18 +36,20 @@ and display the decrease of the coupling residuals.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_mda
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
+from gemseo.mda import MDAGaussSeidel
 from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 
 # %%
 # ## Step 1 - Create Sobieski disciplines
 #
 # Sobieski disciplines are already implemented in GEMSEO so to be used as examples.
-# Therefore, you just need to use the
-# [create_discipline][gemseo.create_discipline] high level API function.
+# Therefore, you just need to instantiate their classes.
 #
 # !!! warning
 #     Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to
@@ -56,12 +58,12 @@ from gemseo.mda import MDAGaussSeidel_Settings
 #     [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 #     Otherwise, the execution will fail.
 
-disciplines = create_discipline([
-    "SobieskiStructure",
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-])
+disciplines = [
+    SobieskiStructure(),
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+]
 
 # %%
 # ## Step 2 - Visualize the couplings
@@ -119,10 +121,9 @@ generate_n2_plot(disciplines, save=False, show=True)
 #
 # !!! note
 #     Different options can be passed to the algorithm by using the dedicated settings.
-gauss_seidel_mda = create_mda(
-    "MDAGaussSeidel",
+gauss_seidel_mda = MDAGaussSeidel(
     disciplines,
-    settings_model=MDAGaussSeidel_Settings(max_mda_iter=15),
+    settings=MDAGaussSeidel_Settings(max_mda_iter=15),
 )
 
 # %%
@@ -200,8 +201,8 @@ name, output_data[name]
 # - generate graphes to show the couplings, either with
 # [generate_coupling_graph()][gemseo.generate_coupling_graph] or
 # [generate_n2_plot()][gemseo.generate_n2_plot];
-# - create an MDA from highly coupled discipline by means of the
-# [create_mda()][gemseo.create_mda] high-level function;
+# - create an MDA from highly coupled discipline by instantiating an
+# [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel] (or another MDA class);
 # - execute the MDA just like you would execute a discipline;
 # - visualize the algorithm convergence thourgh the residuals.
 # You can plot the residual history with the

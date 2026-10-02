@@ -63,7 +63,7 @@ def discipline_c() -> AnalyticDiscipline:
 def design_space() -> DesignSpace:
     """The design space."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     return space
 
 
@@ -341,7 +341,7 @@ def test_default_input_data(cls, method):
     assert disciplines[1].io.input_grammar.defaults["offset"] == 0.0
 
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
 
     scenario = cls(
         disciplines,

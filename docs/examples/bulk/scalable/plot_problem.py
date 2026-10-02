@@ -23,14 +23,16 @@ For that, we use the [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.p
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.doe import DiagonalDOE_Settings
 from gemseo.formulation import MDF_Settings
 from gemseo.optimization import NLOPT_SLSQP_Settings
 from gemseo.post import OptHistoryView_Settings
+from gemseo.problem.mdo.aerostructure import Aerodynamics
 from gemseo.problem.mdo.aerostructure import AerostructureDesignSpace
+from gemseo.problem.mdo.aerostructure import Mission
+from gemseo.problem.mdo.aerostructure import Structure
 from gemseo.problem.mdo.scalable.data_driven import ScalableProblem
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Define the design problem
@@ -48,20 +50,16 @@ maximize_objective = True
 # %%
 # ## Create the disciplinary datasets
 #
-# Then, we create the disciplinary [BaseFullCache][gemseo.core.cache.base_full.BaseFullCache] datasets
+# Then, we create the disciplinary [datasets][gemseo.dataset.dataset.Dataset]
 # based on a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
-disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
+disciplines = [Aerodynamics(), Structure(), Mission()]
 datasets = []
 for discipline in disciplines:
     design_space = AerostructureDesignSpace()
     design_space.filter(discipline.io.input_grammar.names)
     output_names = iter(discipline.io.output_grammar.names)
-    scenario = create_scenario(
-        discipline,
-        next(output_names),
-        design_space,
-        formulation_name="DisciplinaryOpt",
-    )
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective(next(output_names))
     for output_name in output_names:
         scenario.add_observable(output_name)
     scenario.execute(DiagonalDOE_Settings(n_samples=10))

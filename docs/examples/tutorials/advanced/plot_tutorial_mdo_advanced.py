@@ -31,14 +31,17 @@ from __future__ import annotations
 
 from logging import WARNING
 
-from gemseo import create_discipline
 from gemseo.formulation import BiLevel_Settings
 from gemseo.linear import LGMRES_Settings
 from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.optimization import SLSQP_Settings
 from gemseo.post import OptHistoryView_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 from gemseo.scenario import MDOScenario
 
 # %%
@@ -49,12 +52,12 @@ from gemseo.scenario import MDOScenario
 # [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics],
 # [SobieskiMission][gemseo.problem.mdo.sobieski.discipline.SobieskiMission]
 # and [SobieskiStructure][gemseo.problem.mdo.sobieski.discipline.SobieskiStructure].
-propulsion, aerodynamics, mission, structure = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+propulsion, aerodynamics, mission, structure = (
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+)
 
 # %%
 # Then, you build the design space.
@@ -74,7 +77,6 @@ slsqp_settings = SLSQP_Settings(
     xtol_abs=1e-7,
     ftol_rel=1e-7,
     ftol_abs=1e-7,
-    ineq_tolerance=1e-4,
 )
 
 
@@ -117,7 +119,7 @@ sc_str.set_algorithm(slsqp_settings)
 # Mission and aims to maximize the range (Breguet).
 #
 # The `disciplines` argument of the
-# [create_scenario()][gemseo.create_scenario] function gathers both
+# [MDOScenario][gemseo.scenario.mdo.MDOScenario] constructor gathers both
 # [disciplines][gemseo.core.discipline.discipline.Discipline] and
 # [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 # The [BiLevel formulation][concept-the-bi-level-formulation] will automatically transform the scenarios into disciplines.
@@ -133,8 +135,6 @@ system_scenario = MDOScenario(
     design_space.filter("x_shared", copy=True),
     formulation_settings=BiLevel_Settings(
         apply_constraints_to_sub_scenarios=False,
-        parallel_scenarios=False,
-        multithread_scenarios=True,
         main_mda_settings=MDAGaussSeidel_Settings(
             tolerance=1e-14,
             max_mda_iter=50,
@@ -182,7 +182,6 @@ system_scenario.execute(
         xtol_abs=1e-7,
         ftol_rel=1e-7,
         ftol_abs=1e-7,
-        ineq_tolerance=1e-4,
     )
 )
 

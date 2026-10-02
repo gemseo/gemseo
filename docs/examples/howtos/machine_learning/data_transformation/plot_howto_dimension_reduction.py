@@ -70,7 +70,7 @@ def f(x):
 
 discipline = AutoPyDiscipline(f)
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=2 * pi)
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2 * pi)
 
 # %%
 # You generate 20 training samples

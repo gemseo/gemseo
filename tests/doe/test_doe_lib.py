@@ -149,7 +149,7 @@ def test_evaluate_samples_multiproc_with_observables(
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=3.0, value=2.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=3.0, value=2.0)
 
     scenario = create_scenario(
         [disc],
@@ -187,8 +187,8 @@ def test_evaluate_samples_multiproc_with_observables(
 def variables_space():
     """A mock design space."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
-    design_space.add_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
+    design_space.add_real_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     return design_space
 
 
@@ -222,7 +222,7 @@ def doe_database(request) -> Database:
         problem.add_observable(ArrayFunction(lambda x: x, name="func"))
     else:
         space = DesignSpace()
-        space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
+        space.add_real_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
         problem = OptimizationProblem(space)
         problem.objective = ArrayFunction(lambda x: x, name="func")
 
@@ -380,7 +380,7 @@ def test_full_factorial_on_an_integer_variable_records_integral_samples() -> Non
     so `relax_integer_variables`, on by default, relaxes none of them.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="f")
@@ -411,9 +411,7 @@ def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline() -> Non
             return {"y": array([float(input_data["x"])])}
 
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=0, upper_bound=10, value=5
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
 
     scenario = create_scenario(
         [_IntegerDisc()],
@@ -430,9 +428,9 @@ def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline() -> Non
 def test_uunormalized_components(mc, l_b, u_b, snapshot) -> None:
     """Check that an error is raised when the design space is unbounded."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 2, lower_bound=1, upper_bound=3)
-    design_space.add_variable("y", 3, lower_bound=l_b, upper_bound=u_b)
-    design_space.add_variable("z", lower_bound=0, upper_bound=1)
+    design_space.add_real_variable("x", 2, lower_bound=1.0, upper_bound=3.0)
+    design_space.add_real_variable("y", 3, lower_bound=l_b, upper_bound=u_b)
+    design_space.add_real_variable("z", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(sum, name="f")
@@ -472,7 +470,7 @@ class Counter:
 def problem():
     """A problem."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(f, name="f")
@@ -528,7 +526,9 @@ def test_parallel_samples_are_recorded_in_the_declared_coordinates(custom_doe):
         design_space = DesignSpace()
         # A range straddling neither 0 nor 1,
         # so that a normalized point differs from the declared one.
-        design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+        design_space.add_real_variable(
+            "x", lower_bound=10.0, upper_bound=20.0, value=12.0
+        )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(f, name="f")
         custom_doe.execute(
@@ -569,7 +569,9 @@ def test_parallel_jacobians_are_recorded_in_the_declared_coordinates(custom_doe)
         # A range of width 10,
         # so that a normalized point differs from the declared one,
         # and the Jacobian is scaled by 10 between the two spaces.
-        design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+        design_space.add_real_variable(
+            "x", lower_bound=0.0, upper_bound=10.0, value=1.0
+        )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(f_squared, jac=f_squared_jac, name="f")
         custom_doe.execute(
@@ -633,7 +635,7 @@ def test_parallel_doe_db(tmp_wd):
 
     def _create_scn() -> MDOScenario:
         design_space = DesignSpace()
-        design_space.add_variable("x", lower_bound=0, upper_bound=1, size=2)
+        design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, size=2)
 
         scenario = create_scenario(
             [_DummyDisc()],
@@ -711,7 +713,7 @@ def test_value_error_filtering(formulation, caplog):
     """Test that the DOELibrary can skip a sample that raises a `ValueError`."""
     caplog.set_level("ERROR")
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
 
     scenario = create_scenario(
         [_DummyDiscValueError()],

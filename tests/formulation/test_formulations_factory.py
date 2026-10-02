@@ -55,7 +55,7 @@ def test_create_with_wrong_formulation_name(snapshot) -> None:
 def test_create() -> None:
     """Check the creation of a BaseMDOFormulation."""
     design_space = DesignSpace()
-    design_space.add_variable("x_shared", 3)
+    design_space.add_real_variable("x_shared", 3)
     problem = OptimizationProblem(design_space)
     formulation = mdo_formulation_factory.create(
         "MDF", problem, [Sellar1(), Sellar2(), SellarSystem()]

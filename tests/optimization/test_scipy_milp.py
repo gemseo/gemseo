@@ -52,21 +52,9 @@ def milp_problem(
     array_ = csr_array if jacobians_are_sparse else array
 
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
-    design_space.add_variable(
-        "y",
-        lower_bound=0.0,
-        upper_bound=5.0,
-        value=5,
-        type_=design_space.DesignVariableType.INTEGER,
-    )
-    design_space.add_variable(
-        "z",
-        lower_bound=0.0,
-        upper_bound=5.0,
-        value=0,
-        type_=design_space.DesignVariableType.INTEGER,
-    )
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    design_space.add_integer_variable("y", lower_bound=0, upper_bound=5, value=5)
+    design_space.add_integer_variable("z", lower_bound=0, upper_bound=5, value=0)
 
     args = ["x", "y", "z"]
     problem = OptimizationProblem(design_space)
@@ -146,10 +134,8 @@ def test_design_space_that_is_not_the_unit_box() -> None:
     A design space that is already the unit box hides a mismatch between them.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2.0, upper_bound=6.0, value=0.0)
-    design_space.add_variable(
-        "i", type_="integer", lower_bound=-3, upper_bound=7, value=0
-    )
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=6.0, value=0.0)
+    design_space.add_integer_variable("i", lower_bound=-3, upper_bound=7, value=0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = LinearFunction(array([[1.0, 2.0]]), "obj", value_at_zero=0.0)

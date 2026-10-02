@@ -52,7 +52,6 @@ from numpy import ones
 
 from gemseo import set_data_converters
 from gemseo.core.discipline import Discipline
-from gemseo.formulation import MDF_Settings
 from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
@@ -191,16 +190,16 @@ set_data_converters(to_array, from_array, to_size)
 disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=ones(1))
-design_space.add_variable(
-    "z", 2, lower_bound=(-10, 0.0), upper_bound=(10.0, 10.0), value=array([4.0, 3.0])
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+design_space.add_real_variable(
+    "z",
+    size=2,
+    lower_bound=(-10.0, 0.0),
+    upper_bound=(10.0, 10.0),
+    value=(4.0, 3.0),
 )
 
-scenario = MDOScenario(
-    disciplines,
-    design_space,
-    formulation_settings=MDF_Settings(),
-)
+scenario = MDOScenario(disciplines, design_space)
 scenario.add_objective("obj")
 
 scenario.add_constraint("c_1", constraint_type="ineq")

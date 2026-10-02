@@ -181,7 +181,7 @@ def test_use_custom_doe_directly():
 def test_compute_doe():
     """Check that CustomDOE.sample_space works."""
     variables_space = DesignSpace()
-    variables_space.add_variable("x", size=2)
+    variables_space.add_real_variable("x", size=2)
     assert_equal(
         CustomDOE().sample_space(
             variables_space, CustomDOE_Settings(samples=array([[1.0, 2.0]]))

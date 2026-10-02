@@ -25,5 +25,5 @@ from gemseo.space.design import DesignSpace
 def problem() -> OptimizationProblem:
     """An optimization problem."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     return OptimizationProblem(design_space)

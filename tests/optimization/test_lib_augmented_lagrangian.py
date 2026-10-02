@@ -325,7 +325,7 @@ def problem_over_a_shifted_range() -> OptimizationProblem:
     so an evaluation made in the wrong coordinates stands out in the history.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+    design_space.add_real_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 16.0) ** 2]),
@@ -410,7 +410,7 @@ def test_relaxed_integer_variable():
     writing it into a space accepting integral values only.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 3.4) ** 2]),

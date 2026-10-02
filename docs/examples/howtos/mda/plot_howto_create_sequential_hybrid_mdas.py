@@ -31,9 +31,14 @@ You need to create an [MDASequential][gemseo.mda.sequential.MDASequential].
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_mda
+from gemseo.mda import MDAGaussSeidel
+from gemseo.mda import MDAJacobi
 from gemseo.mda import MDAJacobi_Settings
+from gemseo.mda import MDASequential
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 
 # %%
 # ### Prerequisites
@@ -44,30 +49,24 @@ from gemseo.mda import MDAJacobi_Settings
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are strongly coupled.
 # The *Mission* discipline is weakly coupled with the three others.
 
-disciplines = create_discipline([
-    "SobieskiStructure",
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-])
+disciplines = [
+    SobieskiStructure(),
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+]
 
 # %%
 # ### 1. Create the different MDAs
 #
 # You want at most 5 iterations of Jacobi,
 # and then use Gauss-Seidel.
-mda1 = create_mda(
-    "MDAJacobi", disciplines, settings_model=MDAJacobi_Settings(max_mda_iter=5)
-)
-mda2 = create_mda("MDAGaussSeidel", disciplines)
+mda1 = MDAJacobi(disciplines, settings=MDAJacobi_Settings(max_mda_iter=5))
+mda2 = MDAGaussSeidel(disciplines)
 
 # %%
 # ### 2. Create the sequential MDA, and execute it
-mda = create_mda(
-    "MDASequential",
-    disciplines,
-    mda_sequence=[mda1, mda2],
-)
+mda = MDASequential(disciplines, [mda1, mda2])
 res = mda.execute()
 
 # %%

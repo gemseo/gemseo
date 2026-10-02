@@ -63,8 +63,8 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
         sparse_jacobian: Whether the objective and constraints Jacobians are sparse.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     input_names = ["x", "y"]
     array_ = csr_array if sparse_jacobian else array
@@ -149,7 +149,9 @@ def test_design_space_that_is_not_the_unit_box(algo_name, library_cls) -> None:
     A design space that is already the unit box hides a mismatch between them.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=6.0, value=0.0)
+    design_space.add_real_variable(
+        "x", size=2, lower_bound=-2.0, upper_bound=6.0, value=0.0
+    )
 
     problem = OptimizationProblem(design_space)
     problem.objective = LinearFunction(array([[1.0, 2.0]]), "obj", value_at_zero=0.0)

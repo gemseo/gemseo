@@ -37,13 +37,9 @@ from numpy.random import default_rng
 
 from gemseo.dataset import IODataset
 from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning import LinearRegressor_Settings
+from gemseo.machine_learning import PolynomialRegressor_Settings
 from gemseo.machine_learning import RBFRegressor_Settings
-from gemseo.machine_learning.regression.model.linreg_settings import (
-    LinearRegressor_Settings,
-)
-from gemseo.machine_learning.regression.model.polyreg_settings import (
-    PolynomialRegressor_Settings,
-)
 from gemseo.machine_learning.regression.quality import MSEMeasure
 from gemseo.machine_learning.selection import MLModelSelection
 from gemseo.space import DesignSpace
@@ -95,7 +91,7 @@ selector.add_candidate(
 # %%
 # Possibly add a calibration algorithm for tuning an hyperparameter.
 rbf_space = DesignSpace()
-rbf_space.add_variable("epsilon", 1, "real", 1.0, 100.0, 10.0)
+rbf_space.add_real_variable("epsilon", lower_bound=1.0, upper_bound=100.0, value=10.0)
 selector.add_candidate(
     RBFRegressor_Settings(),
     calibration_space=rbf_space,

@@ -39,10 +39,7 @@ You will learn three different approaches to:
 
 from __future__ import annotations
 
-from numpy import array
-from numpy import ones
-
-from gemseo import create_design_space
+from gemseo.space import DesignSpace
 
 # %%
 # ### Prerequisites
@@ -53,20 +50,19 @@ from gemseo import create_design_space
 # create a design space with multiple variables of different types and sizes.
 # This will serve as your starting point for demonstrating the reduction methods.
 
-design_space = create_design_space()
-design_space.add_variable("x1", value=array([1.0]))
-design_space.add_variable("x2", value=array([1]), type_="integer")
-design_space.add_variable("x3", size=2, value=ones(2))
-design_space.add_variable("x4", lower_bound=ones(1), value=ones(1))
-design_space.add_variable("x5", upper_bound=ones(1), value=ones(1))
-design_space.add_variable("x6", value=ones(1))
-design_space.add_variable(
+design_space = DesignSpace()
+design_space.add_real_variable("x1", value=1.0)
+design_space.add_integer_variable("x2", value=1)
+design_space.add_real_variable("x3", size=2, value=1.0)
+design_space.add_real_variable("x4", lower_bound=1.0, value=1.0)
+design_space.add_real_variable("x5", upper_bound=1.0, value=1.0)
+design_space.add_real_variable("x6", value=1.0)
+design_space.add_integer_variable(
     "x7",
     size=2,
-    type_="integer",
-    value=array([0, 1]),
-    lower_bound=-ones(2),
-    upper_bound=ones(2),
+    value=(0, 1),
+    lower_bound=-1,
+    upper_bound=1,
 )
 
 print("Initial design space:")

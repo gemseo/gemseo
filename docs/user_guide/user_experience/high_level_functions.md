@@ -59,3 +59,15 @@ We could also mention:
 - [compute_doe()][gemseo.compute_doe] to create a design of experiments.
 
 Please visit the [gemseo][gemseo] page for a complete overview of the high-level functions.
+
+!!! tip
+
+    When a high-level function only creates an object,
+    prefer the class re-exported by the corresponding subpackage,
+    e.g. [DesignSpace][gemseo.space.design.DesignSpace] from `gemseo.space`
+    rather than [create_design_space()][gemseo.create_design_space],
+    [MDOScenario][gemseo.scenario.mdo.MDOScenario] from `gemseo.scenario`
+    rather than [create_scenario()][gemseo.create_scenario]
+    or [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel] from `gemseo.mda`
+    rather than [create_mda()][gemseo.create_mda].
+    The class gives direct access to its settings and its documentation.

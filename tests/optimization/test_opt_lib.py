@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import pytest
-from numpy import array
 
 from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
 from gemseo.core.function.array_function import ArrayFunction
@@ -67,7 +66,7 @@ def test_is_algorithm_suited() -> None:
     """Check is_algorithm_suited when True."""
     description = OptimizationAlgorithmDescription("foo", "bar")
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     assert BaseOptimizationLibrary.is_algorithm_suited(description, problem)
 
@@ -89,7 +88,7 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
         "foo", "bar", handle_equality_constraints=False
     )
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
         ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.EQ)
@@ -107,7 +106,7 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
         "foo", "bar", handle_inequality_constraints=False
     )
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
         ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.INEQ)
@@ -125,7 +124,7 @@ def test_is_algorithm_suited_pbm_type() -> None:
         "foo", "bar", for_linear_problems=True
     )
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, "f")
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
@@ -147,9 +146,7 @@ def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
     )
     design_space = DesignSpace()
     if kind == "integer":
-        design_space.add_variable(
-            "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
-        )
+        design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
     else:
         design_space.add_discrete_variable("x", [1, 2, 3], value=1)
 
@@ -174,9 +171,7 @@ def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
 def test_filter_adapted_algorithms_excludes_integer_unsuited() -> None:
     """Check that filter_adapted_algorithms excludes SLSQP for integer variables."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
-    )
+    design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, "f")
     assert "SLSQP" not in ScipyOpt.filter_adapted_algorithms(problem)
@@ -209,7 +204,7 @@ def test_optimization_algorithm() -> None:
 def test_execute_without_current_value() -> None:
     """Check that the driver can be executed when a current design value is missing."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: (x - 1) ** 2, name="obj")

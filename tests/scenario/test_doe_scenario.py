@@ -161,7 +161,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
 def unit_design_space():
     """A unit design space with x as variable."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return design_space
 
 
@@ -248,7 +248,7 @@ def test_other_exceptions_caught(caplog) -> None:
     """
     discipline = AnalyticDiscipline({"y": "1/x"}, name="func")
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario(
         [discipline],
         design_space,
@@ -268,7 +268,7 @@ def test_export_to_dataset_with_repeated_inputs() -> None:
     """Check the export of the database with repeated inputs."""
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
-    design_space.add_variable("dv")
+    design_space.add_real_variable("dv")
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("obj")
     samples = array([[1.0], [2.0], [1.0]])
@@ -282,7 +282,7 @@ def test_export_to_dataset_normalized_integers() -> None:
     """Check the export of the database with normalized integers."""
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
-    design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
+    design_space.add_integer_variable("dv", lower_bound=1, upper_bound=10)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("obj")
     samples = array([[1], [2], [10]])
@@ -369,7 +369,7 @@ def test_partial_execution_from_backup(
 def test_scenario_without_initial_design_value() -> None:
     """Check that a MDOScenario can work without initial design value."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.io.input_grammar.defaults = {}
     scenario = MDOScenario(

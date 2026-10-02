@@ -132,11 +132,11 @@ def initialize_design_space_and_discipline_to(
     initial_point[emptyelts] = 0
     initial_point[fullelts] = 1
     ds = DesignSpace()
-    ds.add_variable(
+    ds.add_real_variable(
         "x",
         size=n_x * n_y,
-        lower_bound=zeros((n_x * n_y,)),
-        upper_bound=ones((n_x * n_y,)),
+        lower_bound=0.0,
+        upper_bound=1.0,
         value=initial_point,
     )
     df = DensityFilter(n_x=n_x, n_y=n_y, min_member_size=min_member_size)

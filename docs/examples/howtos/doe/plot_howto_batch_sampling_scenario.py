@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline.discipline import Discipline
+from gemseo.core.discipline import Discipline
 from gemseo.doe import MC_Settings
 from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
@@ -96,8 +96,8 @@ class AreaIncreaser(Discipline):
 area_discipline = AreaDiscipline()
 
 design_space = DesignSpace()
-design_space.add_variable("length", lower_bound=0.0, upper_bound=10.0)
-design_space.add_variable("width", lower_bound=0.0, upper_bound=10.0)
+design_space.add_real_variable("length", lower_bound=0.0, upper_bound=10.0)
+design_space.add_real_variable("width", lower_bound=0.0, upper_bound=10.0)
 
 scenario = MDOScenario([area_discipline, AreaIncreaser()], design_space)
 scenario.add_objective("final_area")
@@ -110,21 +110,21 @@ scenario.execute(MC_Settings(n_samples=1000, vectorize=True))
 
 # %%
 # !!! note
-#     Batch sampling is not specific to the `DisciplinaryOpt` formulation.
-#     It works with any MDO formulation (e.g. `MDF`, `IDF`),
+#     Batch sampling is not specific to the `MDF` formulation used here.
+#     It works with any MDO formulation (e.g. `IDF`, `DisciplinaryOpt`),
 #     provided that all disciplines are vectorized.
 
 # %%
 # ### 3. Verify
 #
 # Each discipline received and returned 1D arrays of size 1000:
-area_discipline.io.data["length"].shape
+area_discipline.io.input_data["length"].shape
 
 # %%
-area_discipline.io.data["width"].shape
+area_discipline.io.input_data["width"].shape
 
 # %%
-area_discipline.io.data["area"].shape
+area_discipline.io.output_data["area"].shape
 
 # %%
 # The dataset contains 1000 samples:

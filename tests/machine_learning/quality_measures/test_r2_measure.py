@@ -56,7 +56,7 @@ def dataset() -> IODataset:
     """The dataset used to train the regression models."""
     model.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=20))
@@ -68,7 +68,7 @@ def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression models."""
     model.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=5))

@@ -134,8 +134,8 @@ def test_compute_samples_with_design_space() -> None:
         "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     )
     space = DesignSpace()
-    space.add_variable("x1", lower_bound=-1.0, upper_bound=1.0)
-    space.add_variable("x2", lower_bound=-1.0, upper_bound=1.0)
+    space.add_real_variable("x1", lower_bound=-1.0, upper_bound=1.0)
+    space.add_real_variable("x2", lower_bound=-1.0, upper_bound=1.0)
     analysis = CorrelationAnalysis()
     analysis.compute_samples([discipline], space, 100)
     indices = analysis.compute_indices()

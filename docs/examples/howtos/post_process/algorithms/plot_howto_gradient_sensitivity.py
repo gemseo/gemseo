@@ -33,12 +33,15 @@ By default, the gradients are evaluated at the optimum
 
 from __future__ import annotations
 
-from gemseo import create_discipline
 from gemseo.formulation import MDF_Settings
 from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.optimization import SLSQP_Settings
 from gemseo.post import GradientSensitivity_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 from gemseo.scenario import MDOScenario
 
 # %%
@@ -50,16 +53,16 @@ from gemseo.scenario import MDOScenario
 # rather than an HDF5 file.
 # This is because computing missing gradients requires access to the underlying
 # disciplines, which are not available when importing from an HDF5 file.
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 
 scenario = MDOScenario(
     disciplines,
-    design_space=SobieskiDesignSpace(),
+    SobieskiDesignSpace(),
     formulation_settings=MDF_Settings(
         main_mda_settings=MDAGaussSeidel_Settings(
             max_mda_iter=30,

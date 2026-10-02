@@ -88,9 +88,9 @@ def problem(problem_and_result) -> Rosenbrock:
 def simple_database_with_large_x_vect() -> Database:
     """A database with a single element."""
     design_space = DesignSpace()
-    design_space.add_variable("variable_1")
-    design_space.add_variable("foo_bar", size=3)
-    design_space.add_variable("tata", size=2)
+    design_space.add_real_variable("variable_1")
+    design_space.add_real_variable("foo_bar", size=3)
+    design_space.add_real_variable("tata", size=2)
     database = Database(input_space=design_space)
     database.store(
         array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0]),
@@ -909,7 +909,7 @@ def test_to_dataset_exports_a_relaxed_variable_as_float() -> None:
     variable.
     """
     space = DesignSpace()
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10)
     database = Database(input_space=space)
     database.store(array([2.0]), {"f": array([1.0])})
     database.store(array([3.0]), {"f": array([2.0])})
@@ -929,7 +929,7 @@ def test_to_dataset_exports_a_non_relaxed_integer_as_integer() -> None:
     export as an integer column.
     """
     space = DesignSpace()
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10)
     database = Database(input_space=space)
     database.store(array([2.0]), {"f": array([1.0])})
     database.store(array([3.0]), {"f": array([2.0])})
@@ -942,7 +942,7 @@ def test_to_dataset_exports_a_non_relaxed_integer_as_integer() -> None:
 def test_merge_function_histories_copies_matching_functions() -> None:
     """Check that the history of the named functions is copied over."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
     database = Database(input_space=space)
     other = Database(input_space=space)
     other.store(array([1.0]), {"f": array([1.0]), "g": array([2.0])})
@@ -959,7 +959,7 @@ def test_merge_function_histories_copies_matching_functions() -> None:
 def test_merge_function_histories_tolerates_a_function_absent_from_the_other() -> None:
     """Check that a function the other database never evaluated is skipped."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
     database = Database(input_space=space)
     other = Database(input_space=space)
     other.store(array([1.0]), {"f": array([1.0])})
@@ -972,12 +972,12 @@ def test_merge_function_histories_tolerates_a_function_absent_from_the_other() -
 def test_merge_function_histories_restricts_relaxed_names_to_own_inputs() -> None:
     """Check that only the relaxed names this database itself has are carried over."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
     database = Database(input_space=space)
 
     other_space = DesignSpace()
-    other_space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
-    other_space.add_variable("t", lower_bound=0.0, upper_bound=1.0)
+    other_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
+    other_space.add_real_variable("t", lower_bound=0.0, upper_bound=1.0)
     other = Database(input_space=other_space)
     other.relaxed_variable_names = {"x", "t"}
 
@@ -1000,7 +1000,7 @@ def test_relaxed_variable_names_default_empty() -> None:
 def test_relaxed_variable_names_hdf_round_trip(tmp_wd) -> None:
     """Check that `relaxed_variable_names` survives an HDF round trip."""
     space = DesignSpace()
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10)
     database = Database(input_space=space)
     database.store(array([2.0]), {"f": array([1.0])})
     database.relaxed_variable_names = {"i"}
@@ -1027,8 +1027,8 @@ def test_relaxed_variable_names_missing_attribute_reads_as_empty(tmp_wd) -> None
 def test_relaxed_variable_names_merged_on_append(tmp_wd) -> None:
     """Check that appending merges the relaxed names instead of overwriting them."""
     space = DesignSpace()
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
-    space.add_variable("j", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10)
+    space.add_integer_variable("j", lower_bound=0, upper_bound=10)
     database = Database(input_space=space)
     database.store(array([2.0, 3.0]), {"f": array([1.0])})
     database.relaxed_variable_names = {"i"}

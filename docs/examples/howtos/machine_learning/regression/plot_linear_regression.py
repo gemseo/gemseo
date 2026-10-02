@@ -29,10 +29,10 @@ from __future__ import annotations
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo import create_design_space
-from gemseo import create_discipline
 from gemseo import sample_disciplines
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.machine_learning import create_regression_model
+from gemseo.space import DesignSpace
 
 # %%
 # ## Problem
@@ -43,15 +43,14 @@ from gemseo.machine_learning import create_regression_model
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$ [@forrester2008]
 # by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
-discipline = create_discipline(
-    "AnalyticDiscipline",
+discipline = AnalyticDiscipline(
     {"y": "(6*x-2)**2*sin(12*x-4)"},
     name="f",
 )
 # %%
 # and you seek to approximate it over the input space
-input_space = create_design_space()
-input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+input_space = DesignSpace()
+input_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,

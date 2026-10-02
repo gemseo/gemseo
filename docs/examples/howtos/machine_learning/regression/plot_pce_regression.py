@@ -24,13 +24,11 @@ from __future__ import annotations
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo import create_discipline
-from gemseo import create_random_space
 from gemseo import sample_disciplines
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.machine_learning import create_regression_model
-from gemseo.uncertainty.distribution.openturns.uniform_settings import (
-    OTUniformDistribution_Settings,
-)
+from gemseo.space import RandomSpace
+from gemseo.uncertainty.distribution import OTUniformDistribution_Settings
 
 # %%
 # ## Problem
@@ -41,14 +39,13 @@ from gemseo.uncertainty.distribution.openturns.uniform_settings import (
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$ [@forrester2008]
 # by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
-discipline = create_discipline(
-    "AnalyticDiscipline",
+discipline = AnalyticDiscipline(
     {"y": "(6*x-2)**2*sin(12*x-4)"},
     name="f",
 )
 # %%
 # and you seek to approximate it over the random space
-random_space = create_random_space()
+random_space = RandomSpace()
 random_space.add_variable("x", OTUniformDistribution_Settings())
 
 # %%

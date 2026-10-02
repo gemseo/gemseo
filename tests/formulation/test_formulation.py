@@ -104,7 +104,7 @@ def test_jac_sign(patch_mdo_formulation) -> None:
     # TODO: this test should be removed as it does not check BaseMDOFormulation.
     sm = SobieskiMission()
     design_space = DesignSpace()
-    design_space.add_variable("x_shared")
+    design_space.add_real_variable("x_shared")
     problem = OptimizationProblem(design_space)
     f = NewMDOFormulation(problem, [sm])
     problem.objective = f.create_objective(["y_4"])
@@ -128,7 +128,7 @@ def test_jac_sign(patch_mdo_formulation) -> None:
 #     def test_add_user_defined_constraint(self):
 #         sm = SobieskiMission()
 #         design_space = DesignSpace()
-#         design_space.add_variable("x_shared", 1)
+#         design_space.add_real_variable("x_shared", 1)
 #
 #         f = BaseMDOFormulation([sm], "y_4", design_space)
 #         _, add_to = f.add_constraint(
@@ -150,8 +150,8 @@ def test_x_mask(patch_mdo_formulation) -> None:
     dvs = ["x_shared", "y_14"]
 
     design_space = DesignSpace()
-    design_space.add_variable("x_shared", 4)
-    design_space.add_variable("y_14", 4)
+    design_space.add_real_variable("x_shared", 4)
+    design_space.add_real_variable("y_14", 4)
 
     problem = OptimizationProblem(design_space)
     f = NewMDOFormulation(problem, [sm])
@@ -184,17 +184,17 @@ def test_x_mask(patch_mdo_formulation) -> None:
     assert (ff == np.zeros(4)).all()
 
     design_space.remove_variable("x_shared")
-    design_space.add_variable("x_shared", 10)
+    design_space.add_real_variable("x_shared", 10)
     with pytest.raises(IndexError):
         f.mask_x_swap_order(dvs, x)
 
 
 def test_remove_sub_scenario_dv_from_ds(patch_mdo_formulation) -> None:
     ds2 = DesignSpace()
-    ds2.add_variable("y_14")
-    ds2.add_variable("x")
+    ds2.add_real_variable("y_14")
+    ds2.add_real_variable("x")
     ds1 = DesignSpace()
-    ds1.add_variable("x")
+    ds1.add_real_variable("x")
     sm = SobieskiMission()
     s1 = MDOScenario([sm], ds1, formulation_settings=IDF_Settings())
     s1.add_objective("y_4")
@@ -216,10 +216,10 @@ def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
     y2 = AnalyticDiscipline({"y2": "x2+y1"})
     y3 = AnalyticDiscipline({"toto": "x3+y1+y2"})
     design_space = DesignSpace()
-    design_space.add_variable("x1")
-    design_space.add_variable("x2")
-    design_space.add_variable("y1")
-    design_space.add_variable("toto")
+    design_space.add_real_variable("x1")
+    design_space.add_real_variable("x2")
+    design_space.add_real_variable("y1")
+    design_space.add_real_variable("toto")
     problem = OptimizationProblem(design_space)
     formulation = MDF(problem, [y1, y2, y3])
     problem.objective = formulation.create_objective(["y2"])
@@ -301,7 +301,7 @@ def test_flatten_processes_evaluation_scenario() -> None:
     """Check that an evaluation scenario is flattened into its disciplines."""
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     scenario = EvaluationScenario([discipline], design_space)
 
     assert flatten_processes([scenario]) == [discipline]

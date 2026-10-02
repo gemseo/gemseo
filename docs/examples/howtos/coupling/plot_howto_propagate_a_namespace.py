@@ -35,10 +35,10 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import create_discipline
-from gemseo import create_mda
 from gemseo import generate_coupling_graph
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline import propagate_namespace
+from gemseo.mda import MDAGaussSeidel
 
 # %%
 # ### Prerequisites
@@ -51,9 +51,9 @@ from gemseo.discipline import propagate_namespace
 # `c` computes `w = z + y`.
 # `y` therefore couples `a` to both `b` and `c`,
 # and `z` couples `b` to `c`.
-a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"}, name="a")
-b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"}, name="b")
-c = create_discipline("AnalyticDiscipline", expressions={"w": "z + y"}, name="c")
+a = AnalyticDiscipline({"y": "x + 1"}, name="a")
+b = AnalyticDiscipline({"z": "y + 1"}, name="b")
+c = AnalyticDiscipline({"w": "z + y"}, name="c")
 disciplines = [a, b, c]
 
 # %%
@@ -109,9 +109,9 @@ generate_coupling_graph(disciplines, "")
 # ### 2. The same result with `propagate_namespace()`
 #
 # Start over with a fresh copy of the group, still bare:
-a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"}, name="a")
-b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"}, name="b")
-c = create_discipline("AnalyticDiscipline", expressions={"w": "z + y"}, name="c")
+a = AnalyticDiscipline({"y": "x + 1"}, name="a")
+b = AnalyticDiscipline({"z": "y + 1"}, name="b")
+c = AnalyticDiscipline({"w": "z + y"}, name="c")
 disciplines = [a, b, c]
 
 # %%
@@ -140,7 +140,7 @@ generate_coupling_graph(disciplines, "")
 # The couplings survived the renaming, so an
 # [MDA][gemseo.mda.core.base.BaseMDA] over the namespaced group still converges,
 # and its namespaced output can be read back with the `"left:"` prefix:
-mda = create_mda("MDAGaussSeidel", disciplines)
+mda = MDAGaussSeidel(disciplines)
 result = mda.execute({"left:x": array([1.0])})
 print(f"left:w = {result['left:w']}")
 # left:x=1 -> left:y=2 -> left:z=3 -> left:w=3+2=5
@@ -154,20 +154,14 @@ print(f"left:w = {result['left:w']}")
 #
 # To illustrate this point, we will create two fresh groups. The original one, without
 # namespaces and the copy, with the namespace `"left"`.
-a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"}, name="a")
-b = create_discipline("AnalyticDiscipline", expressions={"z": "y + 1"}, name="b")
-c = create_discipline("AnalyticDiscipline", expressions={"w": "z + y"}, name="c")
+a = AnalyticDiscipline({"y": "x + 1"}, name="a")
+b = AnalyticDiscipline({"z": "y + 1"}, name="b")
+c = AnalyticDiscipline({"w": "z + y"}, name="c")
 disciplines = [a, b, c]
 
-a_copy = create_discipline(
-    "AnalyticDiscipline", expressions={"y": "x + 1"}, name="a_copy"
-)
-b_copy = create_discipline(
-    "AnalyticDiscipline", expressions={"z": "y + 1"}, name="b_copy"
-)
-c_copy = create_discipline(
-    "AnalyticDiscipline", expressions={"w": "z + y"}, name="c_copy"
-)
+a_copy = AnalyticDiscipline({"y": "x + 1"}, name="a_copy")
+b_copy = AnalyticDiscipline({"z": "y + 1"}, name="b_copy")
+c_copy = AnalyticDiscipline({"w": "z + y"}, name="c_copy")
 disciplines_copy_group = [a_copy, b_copy, c_copy]
 
 # %%
@@ -214,9 +208,13 @@ generate_coupling_graph(combined_groups, "")
 #
 # Remember that the group of disciplines you pass must be self-contained:
 # references held by objects that are not disciplines — design space variable
-# names, objective and constraint names, couplings passed to
-# [create_mda()][gemseo.create_mda] — are not reachable from the disciplines and
-# so cannot be renamed nor checked automatically. See
+# names, objective and constraint names, an explicit `coupling_structure`
+# passed in the settings of a [BaseMDA][gemseo.mda.core.base.BaseMDA] — are
+# not reachable from the disciplines and so cannot be renamed nor checked
+# automatically. An MDA such as
+# [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel] built *after* the
+# propagation, as above, recomputes its couplings from the renamed
+# disciplines and is unaffected. See
 # [Propagating a namespace over a group of disciplines][concept-namespace-propagation]
 # for the details.
 

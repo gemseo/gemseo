@@ -45,8 +45,7 @@ from numpy import linspace
 from numpy import ndarray  # noqa: TC002
 from numpy import sin
 
-from gemseo import create_discipline
-from gemseo.core.discipline.discipline import Discipline
+from gemseo.discipline import AutoPyDiscipline
 from gemseo.discipline import ODEDiscipline
 
 # %%
@@ -75,11 +74,7 @@ def rhs_function(
     return position_dot, velocity_dot
 
 
-rhs_discipline = create_discipline(
-    "AutoPyDiscipline",
-    py_func=rhs_function,
-    grammar_type=Discipline.GrammarType.SIMPLE,
-)
+rhs_discipline = AutoPyDiscipline(rhs_function)
 
 
 # %%
@@ -99,11 +94,7 @@ def termination_function(
     return termination
 
 
-termination_discipline = create_discipline(
-    "AutoPyDiscipline",
-    py_func=termination_function,
-    grammar_type=Discipline.GrammarType.SIMPLE,
-)
+termination_discipline = AutoPyDiscipline(termination_function)
 
 # %%
 # ### 2. Create the ODEDiscipline with the termination condition
@@ -111,8 +102,8 @@ termination_discipline = create_discipline(
 # Pass the termination discipline as a tuple
 # to `termination_event_disciplines`:
 ode_discipline = ODEDiscipline(
-    rhs_discipline=rhs_discipline,
-    times=linspace(0.0, 10.0, 51),
+    rhs_discipline,
+    linspace(0.0, 10.0, 51),
     state_names=["position", "velocity"],
     termination_event_disciplines=(termination_discipline,),
     return_trajectories=True,

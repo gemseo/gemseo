@@ -133,7 +133,7 @@ class XDSMizer:
             self._is_scenario = False
             design_space = DesignSpace()
             for name in process.io.input_grammar:
-                design_space.add_variable(name)
+                design_space.add_real_variable(name)
             scenario = EvaluationScenario(
                 [process],
                 design_space,

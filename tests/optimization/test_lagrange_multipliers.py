@@ -355,7 +355,7 @@ def test_2d_mixed(
 def test_nnls_linalgerror():
     """Check that a case known to make SciPy's NNLS crash is handled correctly."""
     space = DesignSpace()
-    space.add_variable("x", 1, lower_bound=0, upper_bound=1)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(
         lambda x: 18 * x, name="f", jac=lambda _: array([18])
@@ -376,7 +376,7 @@ def test_nnls_linalgerror():
 def test_nnls_runtimeerror():
     """Check that a case known to make SciPy's NNLS crash is handled correctly."""
     space = DesignSpace()
-    space.add_variable("x", 3, lower_bound=-1, upper_bound=1)
+    space.add_real_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(
         lambda x: 18 * x, name="f", jac=lambda _: full(3, 18)

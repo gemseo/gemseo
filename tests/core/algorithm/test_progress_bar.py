@@ -186,14 +186,7 @@ def objective_and_problem_for_tests(constraints_before_obj):
         expr="g(x)",
     )
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x",
-        lower_bound=0.0,
-        upper_bound=10.0,
-        value=5.0,
-        size=1,
-        type_=DesignSpace.DesignVariableType.REAL,
-    )
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=5.0)
     problem = OptimizationProblem(design_space)
     problem.objective = f
     if constraints_before_obj:

@@ -183,7 +183,7 @@ class ScalableProblem(unittest.TestCase):
         design_space = DesignSpace()
         for name in dv_names:
             value = 0.5 * np.ones(ScalableProblem.sizes[name])
-            design_space.add_variable(
+            design_space.add_real_variable(
                 name,
                 ScalableProblem.sizes[name],
                 lower_bound=0.0,
@@ -197,7 +197,7 @@ class ScalableProblem(unittest.TestCase):
             # add an optimization variable for each coupling variable
             for coupling in coupling_structure.strong_couplings:
                 value = 0.5 * np.ones(ScalableProblem.sizes[coupling])
-                design_space.add_variable(
+                design_space.add_real_variable(
                     coupling,
                     ScalableProblem.sizes[coupling],
                     lower_bound=0.0,

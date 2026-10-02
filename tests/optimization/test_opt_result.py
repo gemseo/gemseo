@@ -77,8 +77,10 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
     """An optimization result."""
     configuration.enable_function_statistics = True
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable(
+        "z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
     disc = AnalyticDiscipline({
         "y": "x",
         "eq_1": "x",
@@ -223,7 +225,7 @@ def test_from_optimization_problem_with_an_empty_optimum() -> None:
     points at no iteration of that history.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: array([x[0] ** 2]), name="f", dim=1)
     problem.bind_functions()
@@ -253,7 +255,7 @@ def test_from_optimization_problem(
 ) -> None:
     """Check from_optimization_problem with empty database."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="f")
     problem.add_constraint(

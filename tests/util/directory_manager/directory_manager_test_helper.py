@@ -134,8 +134,8 @@ def create_scenario_with_inheriting_disciplines():
     disciplines = [discipline_a, discipline_b]
 
     ds = DesignSpace()
-    ds.add_variable("a", lower_bound=-1, upper_bound=1, value=0.0)
-    ds.add_variable("b", lower_bound=-1, upper_bound=1, value=0.0)
+    ds.add_real_variable("a", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    ds.add_real_variable("b", lower_bound=-1.0, upper_bound=1.0, value=0.0)
 
     scenario = MDOScenario(
         disciplines=disciplines, design_space=ds, formulation_settings=IDF_Settings()

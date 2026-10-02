@@ -65,7 +65,7 @@ def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None
     ):
         del library._settings.centered
     variables_space = DesignSpace()
-    variables_space.add_variable("x", size=dimension)
+    variables_space.add_real_variable("x", size=dimension)
     samples = library._generate_unit_samples(variables_space)
     scipy_doe.scipy_version = scipy_version
 

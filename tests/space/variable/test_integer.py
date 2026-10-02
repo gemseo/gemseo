@@ -89,7 +89,7 @@ def test_bound_outside_the_range_of_an_integer(side, bound, snapshot) -> None:
 
 def test_bound_at_the_edge_of_the_range_of_an_integer() -> None:
     """Check that the smallest 64-bit integer is an acceptable bound."""
-    variable = IntegerVariable(lower_bound=array([-(2.0**63)]))
+    variable = IntegerVariable(lower_bound=-(2.0**63))
     assert variable.lower_bound.dtype == int64
     assert_array_equal(variable.lower_bound, array([-(2**63)]))
     assert_array_equal(variable.get_default_value(), array([-(2**63)]))

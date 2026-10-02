@@ -173,7 +173,7 @@ def driver_library() -> BaseDriverLibrary:
     """A driver library."""
     driver_library = ScipyOpt("SLSQP")
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, "real", -2, 3, 1)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=3.0, value=1.0)
     driver_library._problem = OptimizationProblem(design_space)
     return driver_library
 
@@ -368,7 +368,7 @@ def test_reset_releases_the_state_of_a_run_that_raises(snapshot) -> None:
         raise RuntimeError(msg)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(raise_an_error, name="f")
     driver = ScipyOpt("SLSQP")
@@ -398,7 +398,7 @@ def test_the_hooks_of_a_run_that_raises_are_released(snapshot) -> None:
         raise RuntimeError(msg)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(raise_an_error, name="f")
     problem.add_observable(ArrayFunction(sum, name="o"), new_iter=True)
@@ -483,7 +483,7 @@ def _milp_problem() -> OptimizationProblem:
         The problem.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = LinearFunction(
         array([1.0]), "f", ArrayFunction.FunctionType.OBJ, ["x"]
@@ -501,7 +501,7 @@ def test_projected_optimum_evaluation_is_not_recorded() -> None:
     history plot or after a round trip through HDF.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: array([(x[0] - 3.0) ** 2]), name="f")
     problem.add_constraint(
@@ -533,9 +533,7 @@ def test_projected_optimum_of_a_maximization_problem() -> None:
     the one branch of `__set_projected_optimum` no other test covers.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=0, upper_bound=10, value=5
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([-((x[0] - 3.4) ** 2)]),
@@ -567,9 +565,7 @@ def test_projected_optimum_with_a_failing_observable() -> None:
     `is_feasible_projected` from being set.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=0, upper_bound=3, value=3
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=3, value=3)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 1.4) ** 2]),

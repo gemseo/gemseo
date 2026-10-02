@@ -48,8 +48,8 @@ if TYPE_CHECKING:
 def design_space() -> DesignSpace:
     """A design space with a float variable and an integer one."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=2.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=4)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=2.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=4)
     return space
 
 
@@ -121,9 +121,7 @@ def test_relaxation_working_space(mixed_space) -> None:
     Two variables with the same bounds share their relaxed variable.
     The original space is left untouched.
     """
-    mixed_space.add_variable(
-        "j", type_="integer", lower_bound=0, upper_bound=10, value=5
-    )
+    mixed_space.add_integer_variable("j", lower_bound=0, upper_bound=10, value=5)
     working_space = SpaceRelaxation(mixed_space).working_space
 
     assert list(working_space) == ["x", "i", "d", "j"]
@@ -210,7 +208,7 @@ def test_relaxation_names(mixed_space) -> None:
 
 def test_relaxation_keeps_a_variable_without_a_value(design_space) -> None:
     """Check that a relaxed variable without a value keeps none."""
-    design_space.add_variable("j", type_="integer", lower_bound=0, upper_bound=3)
+    design_space.add_integer_variable("j", lower_bound=0, upper_bound=3)
 
     working_space = SpaceRelaxation(design_space).working_space
 
@@ -247,7 +245,7 @@ def test_relaxation_projects_without_mutating_the_input() -> None:
     snapped into the caller's own array.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
     space.add_discrete_variable("d", [1, 3, 8])
     transformation = SpaceRelaxation(space, relax_discrete=True)
     value = array([2.5, 5.4])
@@ -303,7 +301,7 @@ def test_relaxation_keeps_the_integer_variables_when_asked(mixed_space) -> None:
 def test_relaxation_of_a_space_with_nothing_to_relax() -> None:
     """Check that a space without integer or discrete variables is kept as it is."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
 
     assert SpaceRelaxation(space).working_space is space
 
@@ -362,7 +360,7 @@ def test_create_for_each_combination(design_space) -> None:
 def test_create_for_skips_relaxation_with_nothing_to_relax() -> None:
     """Check that a space without integer or discrete variables takes no relaxation."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
 
     composition = create_working_transformation(
         space, normalize=True, relax_integer=True, relax_discrete=True
@@ -457,8 +455,8 @@ def test_normalization_transform_space(design_space) -> None:
 def test_normalization_keeps_unbounded_variables() -> None:
     """Check that a component without finite bounds is left alone."""
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
-    space.add_variable("y")
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("y")
     transformation = SpaceNormalization(space)
 
     assert not transformation.requires_finite_bounds
@@ -1033,12 +1031,12 @@ def test_requires_finite_bounds_is_checked_at_construction(snapshot) -> None:
         requires_finite_bounds = True
 
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    space.add_variable("y")
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
+    space.add_real_variable("y")
 
     with assert_exception(ValueError, snapshot):
         _BoundedTransformation(space)
 
     bounded_space = DesignSpace()
-    bounded_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    bounded_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     _BoundedTransformation(bounded_space)

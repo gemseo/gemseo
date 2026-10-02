@@ -78,7 +78,7 @@ def test_opt_hist_from_database(
 def test_diag_with_nan(snapshot) -> None:
     """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: 2 * x, name="obj", jac=lambda x: array([[2.0]])
@@ -120,9 +120,11 @@ def test_461(case, snapshot_matplotlib) -> None:
     2. Design space of dimension > 1 and vector output.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2, upper_bound=2.0, value=-2.0)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-2.0)
     if case == 2:
-        design_space.add_variable("y", lower_bound=-2, upper_bound=2.0, value=-2.0)
+        design_space.add_real_variable(
+            "y", lower_bound=-2.0, upper_bound=2.0, value=-2.0
+        )
 
     problem = OptimizationProblem(design_space)
     if case == 1:
@@ -150,7 +152,7 @@ def test_variable_names(snapshot_matplotlib) -> None:
 def test_no_gradient_history(snapshot) -> None:
     """Check that HessianHistory cannot work without gradient history."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
