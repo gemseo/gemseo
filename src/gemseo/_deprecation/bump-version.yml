@@ -2732,10 +2732,14 @@ factories:
   create_cache: cache_type
   create_classification_model: name
   create_clustering_model: name
+  # A member of DatasetClassName, named after the class, the default being Dataset.
+  create_dataset: class_name
   create_discipline: discipline_name
   create_distribution: distribution_name
   create_mda: mda_name
   create_mlearning_model: name
   create_regression_model: name
+  # MDOScenario or DOEScenario, MDO by default.
+  create_scenario: "{scenario_type}Scenario"
   BaseFactory.create: class_name
   DisciplineFactory.create: discipline_name
