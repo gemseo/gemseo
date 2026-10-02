@@ -1178,6 +1178,15 @@ classes:
       smooth: smoothing
       der_function: null
       norm: null
+  # The DOE algorithm of the multi-start and its settings, the number of samples among
+  # them, are now one settings model.
+  OTGaussianProcessRegressor_Settings:
+    multi_start_algo_name: null
+    multi_start_n_samples: null
+    __init__:
+      multi_start_algo_name: multi_start_algo_settings={multi_start_algo_name}_Settings(**{multi_start_algo_settings}, n_samples={multi_start_n_samples})
+      # When no string literal names the DOE algorithm, e.g. the default one.
+      multi_start_n_samples: TODO use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start
   BaseFCERegressor:
     Settings: settings_class
     __init__: *ml-model-init
@@ -2083,6 +2092,14 @@ classes:
     __init__:
       opt_algo_name: opt_algo_settings={opt_algo_name}_Settings(**{opt_algo_settings}, max_iter={opt_algo_max_iter})
       doe_algo_name: doe_algo_settings={doe_algo_name}_Settings(**{doe_algo_settings}, n_samples={n_start})
+  MorrisDOE_Settings:
+    doe_algo_name: null
+    __init__:
+      doe_algo_name: doe_algo_settings={doe_algo_name}_Settings(**{doe_algo_settings})
+  BaseAugmentedLagragianSettings:
+    sub_algorithm_name: null
+    __init__:
+      sub_algorithm_name: sub_algorithm_settings={sub_algorithm_name}_Settings(**{sub_algorithm_settings})
   EvaluationProblem:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
