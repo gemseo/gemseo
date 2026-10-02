@@ -2594,6 +2594,10 @@ classes:
   Power:
     _TRANSFORMER_NAME: _transformer_name
   ScalableProblem:
+    create_scenario:
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      scenario_type: TODO remove it, as the scenario is an MDOScenario
+      use_optimizer: TODO remove it, as the scenario is an MDOScenario
     _DESIGN_SPACE_CLASS: _design_space_class
     _MAIN_DISCIPLINE_CLASS: _main_discipline_class
     _SCALABLE_DISCIPLINE_CLASS: _scalable_discipline_class
