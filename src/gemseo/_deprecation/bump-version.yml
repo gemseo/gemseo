@@ -2348,7 +2348,7 @@ classes:
 
   # Jacobian checkers (changelog 747)
   Discipline:
-    check_jacobian: TODO use gemseo.check_jacobian instead
+    check_jacobian: TODO use gemseo.check_jacobian(discipline, ...) instead, with atol for threshold, approximation_mode for derr_approx and input_value for input_data
     # The hybrid modes moved from ApproximationMode to HybridApproximationMode
     # (changelog 1812).
     ApproximationMode.HYBRID_COMPLEX_STEP: HybridApproximationMode.HYBRID_COMPLEX_STEP
