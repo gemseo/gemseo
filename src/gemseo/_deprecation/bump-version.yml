@@ -2312,6 +2312,9 @@ classes:
   ODEProblem:
     check_jacobian:
       error_max: atol
+  ODEDiscipline:
+    __init__:
+      ode_solver_name: ode_solver_settings={ode_solver_name}_Settings(**{ode_solver_settings})
 
   # Lowercased class constants (the ALL_CAPS class-attribute campaign)
   BaseDiscipline:
