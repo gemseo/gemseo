@@ -182,8 +182,7 @@ def test_renamed_attribute_of_renamed_module_warns_about_the_attribute():
     messages = [str(record.message) for record in records]
     assert (
         "The attribute 'RadarChart' of the module 'gemseo.post.radar_chart' is "
-        "deprecated; use 'gemseo.post.constraint_radar.ConstraintRadar' instead."
-        in messages
+        "deprecated; use 'gemseo.post.ConstraintRadar' instead." in messages
     )
 
 
@@ -475,10 +474,10 @@ def test_star_import_from_dissolved_package(monkeypatch):
 
 def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
     """A dependency missing behind an alias is not masked by an `AttributeError`."""
-    old = importlib.import_module("gemseo.mda.gs_newton")
+    old = importlib.import_module("gemseo.mda.base_parallel_mda_solver")
 
     class _Boom:
-        __name__ = "gemseo.mda.gauss_seidel_newton_raphson"
+        __name__ = "gemseo.mda.core.base_parallel_solver"
 
         def __getattr__(self, name: str) -> object:
             msg = "No module named 'some_optional_dependency'"
@@ -486,7 +485,7 @@ def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
 
     monkeypatch.setitem(old.__dict__, "_deprecation_target", _Boom())
     with pytest.raises(ModuleNotFoundError, match="some_optional_dependency"):
-        old.MDAGSNewton  # noqa: B018
+        old.BaseParallelMDASolver  # noqa: B018
 
 
 @pytest.mark.parametrize(

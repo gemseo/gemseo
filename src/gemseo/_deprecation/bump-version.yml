@@ -408,18 +408,18 @@ attributes:
   gemseo.base_parallel_mda_settings: gemseo.mda.core.base_parallel_solver_settings
 
   gemseo.algos.base_algorithm_settings.BaseAlgorithmSettings: gemseo.util.pydantic.BaseSettings
-  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings: gemseo.optimization.augmented_lagrangian.settings.order_0.Augmented_Lagrangian_Order_0_Settings
-  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings.Augmented_Lagrangian_order_1_Settings: gemseo.optimization.augmented_lagrangian.settings.order_1.Augmented_Lagrangian_Order_1_Settings
+  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings: gemseo.optimization.Augmented_Lagrangian_Order_0_Settings
+  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings.Augmented_Lagrangian_order_1_Settings: gemseo.optimization.Augmented_Lagrangian_Order_1_Settings
   gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings.BaseAugmentedLagragianSettings: gemseo.optimization.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings
   gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings.PenaltyHeuristicSettings: gemseo.optimization.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings
   gemseo.algos.opt.augmented_lagrangian.penalty_heuristic.AugmentedLagrangianPenaltyHeuristic: gemseo.optimization.augmented_lagrangian.base_penalty_heuristic.BaseAugmentedLagrangianPenaltyHeuristic
-  gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings.SciPyMILP_Settings: gemseo.optimization.scipy_milp.settings.scipy_milp_settings.MILP_Settings
+  gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings.SciPyMILP_Settings: gemseo.optimization.MILP_Settings
   gemseo.algos.opt.scipy_milp.SciPyMILP_Settings: gemseo.optimization.scipy_milp.MILP_Settings
-  gemseo.algos.parameter_space.ParameterSpace: gemseo.space.random.RandomSpace
+  gemseo.algos.parameter_space.ParameterSpace: gemseo.space.RandomSpace
   # gemseo.space.random, which replaces gemseo.algos.parameter_space, defines no logger.
   gemseo.algos.parameter_space.LOGGER: TODO use logging.getLogger("gemseo.space.random") instead
   gemseo.algos.parameter_space_factory.ParameterSpaceFactory: gemseo.space.factory.RandomSpaceFactory
-  gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: gemseo.problem.uncertainty.wing_weight.random_space.WingWeightRandomSpace
+  gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: gemseo.problem.uncertainty.wing_weight.WingWeightRandomSpace
   # One class became two, and which one replaces a given use depends on what
   # that use needed, so the codemod cannot choose.
   gemseo.algos.problem_function.ProblemFunction: TODO replace it with EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its argument to the coordinates an algorithm works on, or both stacked as EvaluationProblem.bind_functions and EvaluationProblem.create_working_problem do
@@ -432,12 +432,12 @@ attributes:
   gemseo.algos.stop_criteria.XtolReached: gemseo.core.problem.termination_criterion.XtolReached
   gemseo.algos.progress_bar_data.factory.PROGRESS_BAR_DATA_FACTORY: gemseo.core.algorithm.progress_bar_data.factory.progress_bar_data_factory
 
-  gemseo.core.chains.additive_chain.MDOAdditiveChain: gemseo.discipline.chain.additive_chain.AdditiveDisciplineChain
-  gemseo.core.chains.chain.MDOChain: gemseo.discipline.chain.chain.DisciplineChain
+  gemseo.core.chains.additive_chain.MDOAdditiveChain: gemseo.discipline.AdditiveDisciplineChain
+  gemseo.core.chains.chain.MDOChain: gemseo.discipline.DisciplineChain
   gemseo.core.chains.chain.traverse_add_diff_io: gemseo.core.derivative.graph_traversal.set_differentiated_ios
-  gemseo.core.chains.initialization_chain.MDOInitializationChain: gemseo.discipline.chain.initialization_chain.InitializationDisciplineChain
-  gemseo.core.chains.parallel_chain.MDOParallelChain: gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain
-  gemseo.core.chains.warm_started_chain.MDOWarmStartedChain: gemseo.discipline.chain.warm_started_chain.WarmStartedDisciplineChain
+  gemseo.core.chains.initialization_chain.MDOInitializationChain: gemseo.discipline.InitializationDisciplineChain
+  gemseo.core.chains.parallel_chain.MDOParallelChain: gemseo.discipline.ParallelDisciplineChain
+  gemseo.core.chains.warm_started_chain.MDOWarmStartedChain: gemseo.discipline.WarmStartedDisciplineChain
 
   gemseo.core.grammars.defaults.Defaults: gemseo.core.grammar.properties.GrammarProperties
 
@@ -452,13 +452,13 @@ attributes:
   gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper: gemseo.discipline.wrapper.job_scheduler.discipline.JobSchedulerDiscipline
   gemseo.disciplines.wrappers.job_schedulers.factory.JobSchedulerDisciplineWrapperFactory: gemseo.discipline.wrapper.job_scheduler.factory.JobSchedulerDisciplineFactory
 
-  gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: gemseo.formulation.bilevel_bcd_settings.BiLevelBCD_Settings
+  gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: gemseo.formulation.BiLevelBCD_Settings
   gemseo.formulations.factory.MDO_FORMULATION_FACTORY: gemseo.formulation.factory.mdo_formulation_factory
 
   gemseo.mda.base_parallel_mda_solver.BaseParallelMDASolver: gemseo.mda.core.base_parallel_solver.BaseMDAParallelSolver
   gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings: gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings
-  gemseo.mda.gs_newton.MDAGSNewton: gemseo.mda.gauss_seidel_newton_raphson.MDAGaussSeidelNewtonRaphson
-  gemseo.mda.gs_newton_settings.MDAGSNewton_Settings: gemseo.mda.gauss_seidel_newton_raphson_settings.MDAGaussSeidelNewtonRaphson_Settings
+  gemseo.mda.gs_newton.MDAGSNewton: gemseo.mda.MDAGaussSeidelNewtonRaphson
+  gemseo.mda.gs_newton_settings.MDAGSNewton_Settings: gemseo.mda.MDAGaussSeidelNewtonRaphson_Settings
 
   gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
 
@@ -481,30 +481,30 @@ attributes:
   gemseo.mlearning.core.calibration.MLAlgoCalibration: gemseo.machine_learning.calibration.MLModelCalibration
   gemseo.mlearning.core.selection.MLAlgoSelection: gemseo.machine_learning.selection.MLModelSelection
   gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings: gemseo.machine_learning.regression.core.base_fce_settings.BaseFCERegressorSettings
-  gemseo.mlearning.regression.algos.moe_settings.MOE_Settings: gemseo.machine_learning.regression.model.moe_settings.MOERegressor_Settings
-  gemseo.mlearning.regression.algos.rbf_settings.Function: gemseo.machine_learning.regression.model.rbf_settings.RBF
+  gemseo.mlearning.regression.algos.moe_settings.MOE_Settings: gemseo.machine_learning.MOERegressor_Settings
+  gemseo.mlearning.regression.algos.rbf_settings.Function: gemseo.enum.RBF
   gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings: gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings.BaseLinearModelFitterSettings
   gemseo.mlearning.BaseMLSupervisedAlgo: gemseo.machine_learning.BaseMLSupervisedModel
   gemseo.mlearning.BaseMLAlgo: gemseo.machine_learning.core.model.base_ml_model.BaseMLModel
   gemseo.mlearning.BaseClassifier: gemseo.machine_learning.classification.core.base_classifier.BaseClassifier
   gemseo.mlearning.Dataset: gemseo.dataset.dataset.Dataset
 
-  gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix: gemseo.post.dataset.pair_plot.PairPlot
+  gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix: gemseo.post.dataset.PairPlot
   gemseo.post.dataset.plot_settings.PlotSettings: gemseo.post.dataset.base_settings.BaseDatasetPlotSettings
   gemseo.post.dataset.dataset_plot.DatasetPlot: gemseo.post.dataset.base.BaseDatasetPlot
-  gemseo.post.dataset.color_evolution.ColorEvolution: gemseo.post.dataset.heatmap.Heatmap
-  gemseo.post.dataset.radviz.Radar: gemseo.post.dataset.radviz.RadViz
+  gemseo.post.dataset.color_evolution.ColorEvolution: gemseo.post.dataset.Heatmap
+  gemseo.post.dataset.radviz.Radar: gemseo.post.dataset.RadViz
   gemseo.post.dataset.plots._matplotlib.radviz.Radar: gemseo.post.dataset.plot._matplotlib.radviz.RadViz
   gemseo.post.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings
-  gemseo.post.radar_chart.RadarChart: gemseo.post.constraint_radar.ConstraintRadar
-  gemseo.post.radar_chart_settings.RadarChart_Settings: gemseo.post.constraint_radar_settings.ConstraintRadar_Settings
+  gemseo.post.radar_chart.RadarChart: gemseo.post.ConstraintRadar
+  gemseo.post.radar_chart_settings.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings
 
-  gemseo.scenarios.doe_scenario.DOEScenario: gemseo.scenario.mdo.MDOScenario
-  gemseo.scenarios.base_scenario.BaseScenario: gemseo.scenario.evaluation.EvaluationScenario
+  gemseo.scenarios.doe_scenario.DOEScenario: gemseo.scenario.MDOScenario
+  gemseo.scenarios.base_scenario.BaseScenario: gemseo.scenario.EvaluationScenario
 
   gemseo.settings.base_settings.BaseSettings: gemseo.util.pydantic.BaseSettings
 
-  gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics: gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics
+  gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
   # The mixin became a base class deriving from BaseDistribution, which a class
   # deriving from both keeps a valid method resolution order with.
   gemseo.uncertainty.distributions.scalar_distribution_mixin.ScalarDistributionMixin: gemseo.uncertainty.distribution.core.base_univariate.BaseUnivariateDistribution
@@ -886,8 +886,8 @@ attributes:
   # The enumeration of the variable types, whose FLOAT member became REAL (see classes:).
   gemseo.algos._variable.DataType: gemseo.enum.VariableType
   gemseo.algos.design_space.DataType: gemseo.enum.VariableType
-  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULTSettings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
-  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULT_Settings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULTSettings: gemseo.linear.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULT_Settings: gemseo.linear.LGMRES_Settings
   gemseo.mlearning.core.algos.ml_algo.MLAlgoSettingsType: gemseo.machine_learning.core.model.base_ml_model.MLModelSettingsType
   gemseo.mlearning.regression.algos.moe.MLAlgoType: gemseo.machine_learning.regression.model.moe.MLModelType
   gemseo.post.core.colormaps.CMAPS: gemseo.post._engine.colormap._cmaps
@@ -896,7 +896,7 @@ attributes:
   gemseo.post.core.colormaps.PARULA_DATA: gemseo.post._engine.colormap._parula_data
   gemseo.post.core.colormaps.PLASMA_DATA: gemseo.post._engine.colormap._plasma_data
   gemseo.post.core.colormaps.VIRIDIS_DATA: gemseo.post._engine.colormap._viridis_data
-  gemseo.post.dataset.scatter_plot_matrix.ColormapName: gemseo.post.dataset.pair_plot_settings.ColormapName
+  gemseo.post.dataset.scatter_plot_matrix.ColormapName: gemseo.enum.ColormapName
   gemseo.utils.string_tools.VariableType: gemseo.util.string.VariableOrComponent
   gemseo.utils.logging.DEFAULT_DATE_FORMAT: gemseo.util.constant._logging_date_format
   gemseo.utils.logging.DEFAULT_MESSAGE_FORMAT: gemseo.util.constant._logging_message_format
@@ -1072,6 +1072,302 @@ attributes:
   gemseo.post.dataset.surfaces.Surfaces_Settings: gemseo.post.dataset.surfaces_settings.Surfaces_Settings
   gemseo.post.dataset.yvsx.YvsX_Settings: gemseo.post.dataset.yvsx_settings.YvsX_Settings
   gemseo.post.dataset.zvsxy.ZvsXY_Settings: gemseo.post.dataset.zvsxy_settings.ZvsXY_Settings
+  # The names that a GEMSEO 7 package re-exports, imported from that package, e.g.
+  # gemseo.formulation.MDF_Settings rather than gemseo.formulation.mdf_settings.MDF_Settings.
+  # The modules rules above would otherwise move them to the module defining them.
+  gemseo.algos.design_space.DesignSpace: gemseo.space.DesignSpace
+  gemseo.algos.doe.custom_doe.settings.custom_doe_settings.CustomDOE_Settings: gemseo.doe.CustomDOE_Settings
+  gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings.DiagonalDOE_Settings: gemseo.doe.DiagonalDOE_Settings
+  gemseo.algos.doe.morris_doe.settings.morris_doe_settings.MorrisDOE_Settings: gemseo.doe.MorrisDOE_Settings
+  gemseo.algos.doe.oat_doe.settings.oat_doe_settings.OATDOE_Settings: gemseo.doe.OATDOE_Settings
+  gemseo.algos.doe.openturns.settings.ot_axial.OT_AXIAL_Settings: gemseo.doe.OT_AXIAL_Settings
+  gemseo.algos.doe.openturns.settings.ot_composite.OT_COMPOSITE_Settings: gemseo.doe.OT_COMPOSITE_Settings
+  gemseo.algos.doe.openturns.settings.ot_factorial.OT_FACTORIAL_Settings: gemseo.doe.OT_FACTORIAL_Settings
+  gemseo.algos.doe.openturns.settings.ot_faure.OT_FAURE_Settings: gemseo.doe.OT_FAURE_Settings
+  gemseo.algos.doe.openturns.settings.ot_fullfact.OT_FULLFACT_Settings: gemseo.doe.OT_FULLFACT_Settings
+  gemseo.algos.doe.openturns.settings.ot_halton.OT_HALTON_Settings: gemseo.doe.OT_HALTON_Settings
+  gemseo.algos.doe.openturns.settings.ot_haselgrove.OT_HASELGROVE_Settings: gemseo.doe.OT_HASELGROVE_Settings
+  gemseo.algos.doe.openturns.settings.ot_lhs.OT_LHS_Settings: gemseo.doe.OT_LHS_Settings
+  gemseo.algos.doe.openturns.settings.ot_lhsc.OT_LHSC_Settings: gemseo.doe.OT_LHSC_Settings
+  gemseo.algos.doe.openturns.settings.ot_monte_carlo.OT_MONTE_CARLO_Settings: gemseo.doe.OT_MONTE_CARLO_Settings
+  gemseo.algos.doe.openturns.settings.ot_opt_lhs.OT_OPT_LHS_Settings: gemseo.doe.OT_OPT_LHS_Settings
+  gemseo.algos.doe.openturns.settings.ot_random.OT_RANDOM_Settings: gemseo.doe.OT_RANDOM_Settings
+  gemseo.algos.doe.openturns.settings.ot_reverse_halton.OT_REVERSE_HALTON_Settings: gemseo.doe.OT_REVERSE_HALTON_Settings
+  gemseo.algos.doe.openturns.settings.ot_sobol.OT_SOBOL_Settings: gemseo.doe.OT_SOBOL_Settings
+  gemseo.algos.doe.openturns.settings.ot_sobol_indices.OT_SOBOL_INDICES_Settings: gemseo.doe.OT_SOBOL_INDICES_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_bbdesign.PYDOE_BBDESIGN_Settings: gemseo.doe.PYDOE_BBDESIGN_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.Alpha: gemseo.enum.Alpha
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.Face: gemseo.enum.Face
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.PYDOE_CCDESIGN_Settings: gemseo.doe.PYDOE_CCDESIGN_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_ff2n.PYDOE_FF2N_Settings: gemseo.doe.PYDOE_FF2N_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_fullfact.PYDOE_FULLFACT_Settings: gemseo.doe.PYDOE_FULLFACT_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_lhs.Criterion: gemseo.enum.Criterion
+  gemseo.algos.doe.pydoe.settings.pydoe_lhs.PYDOE_LHS_Settings: gemseo.doe.PYDOE_LHS_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_pbdesign.PYDOE_PBDESIGN_Settings: gemseo.doe.PYDOE_PBDESIGN_Settings
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Hypersphere: gemseo.enum.Hypersphere
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Optimizer: gemseo.enum.Optimizer
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Strength: gemseo.enum.Strength
+  gemseo.algos.doe.scipy.settings.halton.Halton_Settings: gemseo.doe.Halton_Settings
+  gemseo.algos.doe.scipy.settings.lhs.LHS_Settings: gemseo.doe.LHS_Settings
+  gemseo.algos.doe.scipy.settings.mc.MC_Settings: gemseo.doe.MC_Settings
+  gemseo.algos.doe.scipy.settings.poisson_disk.PoissonDisk_Settings: gemseo.doe.PoissonDisk_Settings
+  gemseo.algos.doe.scipy.settings.sobol.Sobol_Settings: gemseo.doe.Sobol_Settings
+  gemseo.algos.evaluation_problem.EvaluationProblem: gemseo.doe.EvaluationProblem
+  gemseo.algos.linear_solvers.linear_problem.LinearProblem: gemseo.linear.LinearProblem
+  gemseo.algos.linear_solvers.scipy_linalg.settings.bicg.BICG_Settings: gemseo.linear.BICG_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab.BICGSTAB_Settings: gemseo.linear.BICGSTAB_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.cg.CG_Settings: gemseo.linear.CG_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.cgs.CGS_Settings: gemseo.linear.CGS_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot.GCROT_Settings: gemseo.linear.GCROT_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.gmres.GMRES_Settings: gemseo.linear.GMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.LGMRES_Settings: gemseo.linear.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.tfqmr.TFQMR_Settings: gemseo.linear.TFQMR_Settings
+  gemseo.algos.ode.ode_problem.ODEProblem: gemseo.ode.ODEProblem
+  gemseo.algos.ode.scipy_ode.settings.bdf.BDF_Settings: gemseo.ode.BDF_Settings
+  gemseo.algos.ode.scipy_ode.settings.dop853.DOP853_Settings: gemseo.ode.DOP853_Settings
+  gemseo.algos.ode.scipy_ode.settings.lsoda.LSODA_Settings: gemseo.ode.LSODA_Settings
+  gemseo.algos.ode.scipy_ode.settings.radau.Radau_Settings: gemseo.ode.Radau_Settings
+  gemseo.algos.ode.scipy_ode.settings.rk23.RK23_Settings: gemseo.ode.RK23_Settings
+  gemseo.algos.ode.scipy_ode.settings.rk45.RK45_Settings: gemseo.ode.RK45_Settings
+  gemseo.algos.opt.mnbi.settings.mnbi_settings.MNBI_Settings: gemseo.optimization.MNBI_Settings
+  gemseo.algos.opt.multi_start.settings.multi_start_settings.MultiStart_Settings: gemseo.optimization.MultiStart_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_bfgs_settings.NLOPT_BFGS_Settings: gemseo.optimization.NLOPT_BFGS_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_bobyqa_settings.NLOPT_BOBYQA_Settings: gemseo.optimization.NLOPT_BOBYQA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings.NLOPT_COBYLA_Settings: gemseo.optimization.NLOPT_COBYLA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_mma_settings.NLOPT_MMA_Settings: gemseo.optimization.NLOPT_MMA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_newuoa_settings.NLOPT_NEWUOA_Settings: gemseo.optimization.NLOPT_NEWUOA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings.NLOPT_SLSQP_Settings: gemseo.optimization.NLOPT_SLSQP_Settings
+  gemseo.algos.opt.scipy_global.settings.differential_evolution.DIFFERENTIAL_EVOLUTION_Settings: gemseo.optimization.DIFFERENTIAL_EVOLUTION_Settings
+  gemseo.algos.opt.scipy_global.settings.dual_annealing.DUAL_ANNEALING_Settings: gemseo.optimization.DUAL_ANNEALING_Settings
+  gemseo.algos.opt.scipy_global.settings.shgo.SHGO_Settings: gemseo.optimization.SHGO_Settings
+  gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex.DUAL_SIMPLEX_Settings: gemseo.optimization.DUAL_SIMPLEX_Settings
+  gemseo.algos.opt.scipy_linprog.settings.highs_interior_point.INTERIOR_POINT_Settings: gemseo.optimization.INTERIOR_POINT_Settings
+  gemseo.algos.opt.scipy_local.settings.cobyqa.COBYQA_Settings: gemseo.optimization.COBYQA_Settings
+  gemseo.algos.opt.scipy_local.settings.lbfgsb.L_BFGS_B_Settings: gemseo.optimization.L_BFGS_B_Settings
+  gemseo.algos.opt.scipy_local.settings.nelder_mead.NELDER_MEAD_Settings: gemseo.optimization.NELDER_MEAD_Settings
+  gemseo.algos.opt.scipy_local.settings.slsqp.SLSQP_Settings: gemseo.optimization.SLSQP_Settings
+  gemseo.algos.opt.scipy_local.settings.tnc.TNC_Settings: gemseo.optimization.TNC_Settings
+  gemseo.algos.optimization_problem.OptimizationProblem: gemseo.optimization.OptimizationProblem
+  gemseo.algos.progress_bar_data.factory.ProgressBarDataName: gemseo.enum.ProgressBarDataName
+  gemseo.algos.sequence_transformer.acceleration.AccelerationMethod: gemseo.enum.AccelerationMethod
+  gemseo.core.derivatives.derivation_modes.DerivationMode: gemseo.enum.DerivationMode
+  gemseo.core.discipline.base_discipline.CacheType: gemseo.enum.CacheType
+  gemseo.core.discipline.discipline.Discipline: gemseo.discipline.Discipline
+  gemseo.core.grammars.factory.GrammarType: gemseo.enum.GrammarType
+  gemseo.datasets.DatasetClassName: gemseo.enum.DatasetClassName
+  gemseo.datasets.dataset.Dataset: gemseo.dataset.Dataset
+  gemseo.datasets.io_dataset.IODataset: gemseo.dataset.IODataset
+  gemseo.datasets.optimization_dataset.OptimizationDataset: gemseo.dataset.OptimizationDataset
+  gemseo.disciplines.analytic.AnalyticDiscipline: gemseo.discipline.AnalyticDiscipline
+  gemseo.disciplines.array_based_function.ArrayBasedFunctionDiscipline: gemseo.discipline.ArrayBasedFunctionDiscipline
+  gemseo.disciplines.auto_py.AutoPyDiscipline: gemseo.discipline.AutoPyDiscipline
+  gemseo.disciplines.concatenater.Concatenater: gemseo.discipline.Concatenater
+  gemseo.disciplines.constraint_aggregation.ConstraintAggregation: gemseo.discipline.ConstraintAggregation
+  gemseo.disciplines.linear_combination.LinearCombination: gemseo.discipline.LinearCombination
+  gemseo.disciplines.ode.ode_discipline.ODEDiscipline: gemseo.discipline.ODEDiscipline
+  gemseo.disciplines.remapping.RemappingDiscipline: gemseo.discipline.RemappingDiscipline
+  gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter: gemseo.scenario.MDOScenarioAdapter
+  gemseo.disciplines.splitter.Splitter: gemseo.discipline.Splitter
+  gemseo.disciplines.surrogate.SurrogateDiscipline: gemseo.discipline.SurrogateDiscipline
+  gemseo.disciplines.taylor.TaylorDiscipline: gemseo.discipline.TaylorDiscipline
+  gemseo.disciplines.wrappers.disc_from_exe.DiscFromExe: gemseo.discipline.DiscFromExe
+  gemseo.disciplines.wrappers.disc_from_exe.Parser: gemseo.enum.Parser
+  gemseo.disciplines.wrappers.filtering_discipline.FilteringDiscipline: gemseo.discipline.FilteringDiscipline
+  gemseo.disciplines.wrappers.job_schedulers.lsf.LSF: gemseo.discipline.LSF
+  gemseo.disciplines.wrappers.job_schedulers.slurm.SLURM: gemseo.discipline.SLURM
+  gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline: gemseo.discipline.RetryDiscipline
+  gemseo.formulations.bilevel_settings.BiLevel_Settings: gemseo.formulation.BiLevel_Settings
+  gemseo.formulations.disciplinary_opt_settings.DisciplinaryOpt_Settings: gemseo.formulation.DisciplinaryOpt_Settings
+  gemseo.formulations.idf_settings.IDF_Settings: gemseo.formulation.IDF_Settings
+  gemseo.formulations.mdf_settings.MDF_Settings: gemseo.formulation.MDF_Settings
+  gemseo.mda.gauss_seidel.MDAGaussSeidel: gemseo.mda.MDAGaussSeidel
+  gemseo.mda.gauss_seidel_settings.MDAGaussSeidel_Settings: gemseo.mda.MDAGaussSeidel_Settings
+  gemseo.mda.jacobi.MDAJacobi: gemseo.mda.MDAJacobi
+  gemseo.mda.jacobi_settings.MDAJacobi_Settings: gemseo.mda.MDAJacobi_Settings
+  gemseo.mda.mda_chain.MDAChain: gemseo.mda.MDAChain
+  gemseo.mda.mda_chain_settings.MDAChain_Settings: gemseo.mda.MDAChain_Settings
+  gemseo.mda.newton_raphson.MDANewtonRaphson: gemseo.mda.MDANewtonRaphson
+  gemseo.mda.newton_raphson_settings.MDANewtonRaphson_Settings: gemseo.mda.MDANewtonRaphson_Settings
+  gemseo.mda.quasi_newton.MDAQuasiNewton: gemseo.mda.MDAQuasiNewton
+  gemseo.mda.quasi_newton_settings.MDAQuasiNewton_Settings: gemseo.mda.MDAQuasiNewton_Settings
+  gemseo.mda.quasi_newton_settings.QuasiNewtonMethod: gemseo.enum.QuasiNewtonMethod
+  gemseo.mda.sequential_mda.MDASequential: gemseo.mda.MDASequential
+  gemseo.mda.sequential_mda_settings.MDASequential_Settings: gemseo.mda.MDASequential_Settings
+  gemseo.mlearning.classification.algos.knn.KNNClassifier: gemseo.machine_learning.classification.model.KNNClassifier
+  gemseo.mlearning.classification.algos.knn_settings.KNNClassifier_Settings: gemseo.machine_learning.KNNClassifier_Settings
+  gemseo.mlearning.classification.algos.random_forest.RandomForestClassifier: gemseo.machine_learning.classification.model.RandomForestClassifier
+  gemseo.mlearning.classification.algos.random_forest_settings.RandomForestClassifier_Settings: gemseo.machine_learning.RandomForestClassifier_Settings
+  gemseo.mlearning.classification.algos.svm.SVMClassifier: gemseo.machine_learning.classification.model.SVMClassifier
+  gemseo.mlearning.classification.algos.svm_settings.SVMClassifier_Settings: gemseo.machine_learning.SVMClassifier_Settings
+  gemseo.mlearning.classification.quality.f1_measure.F1Measure: gemseo.machine_learning.classification.quality.F1Measure
+  gemseo.mlearning.clustering.algos.gaussian_mixture.GaussianMixture: gemseo.machine_learning.clustering.model.GaussianMixture
+  gemseo.mlearning.clustering.algos.gaussian_mixture_settings.GaussianMixture_Settings: gemseo.machine_learning.GaussianMixture_Settings
+  gemseo.mlearning.clustering.algos.kmeans.KMeans: gemseo.machine_learning.clustering.model.KMeans
+  gemseo.mlearning.clustering.algos.kmeans_settings.KMeans_Settings: gemseo.machine_learning.KMeans_Settings
+  gemseo.mlearning.clustering.quality.silhouette_measure.SilhouetteMeasure: gemseo.machine_learning.clustering.quality.SilhouetteMeasure
+  gemseo.mlearning.linear_model_fitting.ridge_cv_settings.GCVMode: gemseo.enum.GCVMode
+  gemseo.mlearning.linear_model_fitting.ridge_settings.Solver: gemseo.enum.Solver
+  gemseo.mlearning.regression.algos.fce.FCERegressor: gemseo.machine_learning.regression.model.FCERegressor
+  gemseo.mlearning.regression.algos.fce_settings.FCERegressor_Settings: gemseo.machine_learning.FCERegressor_Settings
+  gemseo.mlearning.regression.algos.fce_settings.OrthonormalFunctionBasis: gemseo.enum.OrthonormalFunctionBasis
+  gemseo.mlearning.regression.algos.gpr.GaussianProcessRegressor: gemseo.machine_learning.regression.model.GaussianProcessRegressor
+  gemseo.mlearning.regression.algos.gpr_settings.GaussianProcessRegressor_Settings: gemseo.machine_learning.GaussianProcessRegressor_Settings
+  gemseo.mlearning.regression.algos.gradient_boosting.GradientBoostingRegressor: gemseo.machine_learning.regression.model.GradientBoostingRegressor
+  gemseo.mlearning.regression.algos.gradient_boosting_settings.GradientBoostingRegressor_Settings: gemseo.machine_learning.GradientBoostingRegressor_Settings
+  gemseo.mlearning.regression.algos.linreg.LinearRegressor: gemseo.machine_learning.regression.model.LinearRegressor
+  gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings: gemseo.machine_learning.LinearRegressor_Settings
+  gemseo.mlearning.regression.algos.mlp.MLPRegressor: gemseo.machine_learning.regression.model.MLPRegressor
+  gemseo.mlearning.regression.algos.mlp_settings.MLPRegressor_Settings: gemseo.machine_learning.MLPRegressor_Settings
+  gemseo.mlearning.regression.algos.moe.MOERegressor: gemseo.machine_learning.regression.model.MOERegressor
+  gemseo.mlearning.regression.algos.moe_settings.MOERegressor_Settings: gemseo.machine_learning.MOERegressor_Settings
+  gemseo.mlearning.regression.algos.ot_gpr.OTGaussianProcessRegressor: gemseo.machine_learning.regression.model.OTGaussianProcessRegressor
+  gemseo.mlearning.regression.algos.ot_gpr_settings.OTGaussianProcessRegressor_Settings: gemseo.machine_learning.OTGaussianProcessRegressor_Settings
+  gemseo.mlearning.regression.algos.pce.PCERegressor: gemseo.machine_learning.regression.model.PCERegressor
+  gemseo.mlearning.regression.algos.pce_settings.PCERegressor_Settings: gemseo.machine_learning.PCERegressor_Settings
+  gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor: gemseo.machine_learning.regression.model.PolynomialRegressor
+  gemseo.mlearning.regression.algos.polyreg_settings.PolynomialRegressor_Settings: gemseo.machine_learning.PolynomialRegressor_Settings
+  gemseo.mlearning.regression.algos.random_forest.RandomForestRegressor: gemseo.machine_learning.regression.model.RandomForestRegressor
+  gemseo.mlearning.regression.algos.random_forest_settings.RandomForestRegressor_Settings: gemseo.machine_learning.RandomForestRegressor_Settings
+  gemseo.mlearning.regression.algos.rbf.RBFRegressor: gemseo.machine_learning.regression.model.RBFRegressor
+  gemseo.mlearning.regression.algos.rbf_settings.RBF: gemseo.enum.RBF
+  gemseo.mlearning.regression.algos.rbf_settings.RBFRegressor_Settings: gemseo.machine_learning.RBFRegressor_Settings
+  gemseo.mlearning.regression.algos.regressor_chain.RegressorChain: gemseo.machine_learning.regression.model.RegressorChain
+  gemseo.mlearning.regression.algos.regressor_chain_settings.RegressorChain_Settings: gemseo.machine_learning.RegressorChain_Settings
+  gemseo.mlearning.regression.algos.svm.SVMRegressor: gemseo.machine_learning.regression.model.SVMRegressor
+  gemseo.mlearning.regression.algos.svm_settings.SVMRegressor_Settings: gemseo.machine_learning.SVMRegressor_Settings
+  gemseo.mlearning.regression.algos.thin_plate_spline.TPSRegressor: gemseo.machine_learning.regression.model.TPSRegressor
+  gemseo.mlearning.regression.algos.thin_plate_spline_settings.TPSRegressor_Settings: gemseo.machine_learning.TPSRegressor_Settings
+  gemseo.mlearning.regression.quality.mae_measure.MAEMeasure: gemseo.machine_learning.regression.quality.MAEMeasure
+  gemseo.mlearning.regression.quality.me_measure.MEMeasure: gemseo.machine_learning.regression.quality.MEMeasure
+  gemseo.mlearning.regression.quality.mse_measure.MSEMeasure: gemseo.machine_learning.regression.quality.MSEMeasure
+  gemseo.mlearning.regression.quality.r2_measure.R2Measure: gemseo.machine_learning.regression.quality.R2Measure
+  gemseo.mlearning.regression.quality.rmse_measure.RMSEMeasure: gemseo.machine_learning.regression.quality.RMSEMeasure
+  gemseo.post.animation.Animation: gemseo.post.Animation
+  gemseo.post.animation_settings.Animation_Settings: gemseo.post.Animation_Settings
+  gemseo.post.basic_history.BasicHistory: gemseo.post.BasicHistory
+  gemseo.post.basic_history_settings.BasicHistory_Settings: gemseo.post.BasicHistory_Settings
+  gemseo.post.constraints_history.ConstraintsHistory: gemseo.post.ConstraintsHistory
+  gemseo.post.constraints_history_settings.ConstraintsHistory_Settings: gemseo.post.ConstraintsHistory_Settings
+  gemseo.post.correlations.Correlations: gemseo.post.Correlations
+  gemseo.post.correlations_settings.Correlations_Settings: gemseo.post.Correlations_Settings
+  gemseo.post.dataset.andrews_curves.AndrewsCurves: gemseo.post.dataset.AndrewsCurves
+  gemseo.post.dataset.bars.BarPlot: gemseo.post.dataset.BarPlot
+  gemseo.post.dataset.boxplot.Boxplot: gemseo.post.dataset.Boxplot
+  gemseo.post.dataset.curves.Curves: gemseo.post.dataset.Curves
+  gemseo.post.dataset.lines.Lines: gemseo.post.dataset.Lines
+  gemseo.post.dataset.parallel_coordinates.ParallelCoordinates: gemseo.post.dataset.ParallelCoordinates
+  gemseo.post.dataset.radar_chart.RadarChart: gemseo.post.dataset.RadarChart
+  gemseo.post.dataset.scatter.Scatter: gemseo.post.dataset.Scatter
+  gemseo.post.dataset.surfaces.Surfaces: gemseo.post.dataset.Surfaces
+  gemseo.post.dataset.yvsx.YvsX: gemseo.post.dataset.YvsX
+  gemseo.post.dataset.zvsxy.ZvsXY: gemseo.post.dataset.ZvsXY
+  gemseo.post.gradient_sensitivity.GradientSensitivity: gemseo.post.GradientSensitivity
+  gemseo.post.gradient_sensitivity_settings.GradientSensitivity_Settings: gemseo.post.GradientSensitivity_Settings
+  gemseo.post.hessian_history.HessianHistory: gemseo.post.HessianHistory
+  gemseo.post.hessian_history_settings.HessianHistory_Settings: gemseo.post.HessianHistory_Settings
+  gemseo.post.mlearning.ml_regressor_quality_viewer.MLRegressorQualityViewer: gemseo.post.machine_learning.MLRegressorQualityViewer
+  gemseo.post.obj_constr_hist.ObjConstrHist: gemseo.post.ObjConstrHist
+  gemseo.post.obj_constr_hist_settings.ObjConstrHist_Settings: gemseo.post.ObjConstrHist_Settings
+  gemseo.post.opt_history_view.OptHistoryView: gemseo.post.OptHistoryView
+  gemseo.post.opt_history_view_settings.OptHistoryView_Settings: gemseo.post.OptHistoryView_Settings
+  gemseo.post.parallel_coordinates.ParallelCoordinates: gemseo.post.ParallelCoordinates
+  gemseo.post.parallel_coordinates_settings.ParallelCoordinates_Settings: gemseo.post.ParallelCoordinates_Settings
+  gemseo.post.pareto_front.ParetoFront: gemseo.post.ParetoFront
+  gemseo.post.pareto_front_settings.ParetoFront_Settings: gemseo.post.ParetoFront_Settings
+  gemseo.post.quad_approx.QuadApprox: gemseo.post.QuadApprox
+  gemseo.post.quad_approx_settings.QuadApprox_Settings: gemseo.post.QuadApprox_Settings
+  gemseo.post.robustness.Robustness: gemseo.post.Robustness
+  gemseo.post.robustness_settings.Robustness_Settings: gemseo.post.Robustness_Settings
+  gemseo.post.scatter_plot_matrix.ScatterPlotMatrix: gemseo.post.ScatterPlotMatrix
+  gemseo.post.scatter_plot_matrix_settings.ScatterPlotMatrix_Settings: gemseo.post.ScatterPlotMatrix_Settings
+  gemseo.post.som.SOM: gemseo.post.SOM
+  gemseo.post.som_settings.SOM_Settings: gemseo.post.SOM_Settings
+  gemseo.post.topology_view.TopologyView: gemseo.post.TopologyView
+  gemseo.post.topology_view_settings.TopologyView_Settings: gemseo.post.TopologyView_Settings
+  gemseo.post.variable_influence.VariableInfluence: gemseo.post.VariableInfluence
+  gemseo.post.variable_influence_settings.VariableInfluence_Settings: gemseo.post.VariableInfluence_Settings
+  gemseo.problems.dataset.DatasetType: gemseo.enum.DatasetType
+  gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics: gemseo.problem.mdo.aerostructure.Aerodynamics
+  gemseo.problems.mdo.aerostructure.aerostructure.Mission: gemseo.problem.mdo.aerostructure.Mission
+  gemseo.problems.mdo.aerostructure.aerostructure.Structure: gemseo.problem.mdo.aerostructure.Structure
+  gemseo.problems.mdo.aerostructure.aerostructure_design_space.AerostructureDesignSpace: gemseo.problem.mdo.aerostructure.AerostructureDesignSpace
+  gemseo.problems.mdo.propane.propane.PropaneComb1: gemseo.problem.mdo.propane.PropaneComb1
+  gemseo.problems.mdo.propane.propane.PropaneComb2: gemseo.problem.mdo.propane.PropaneComb2
+  gemseo.problems.mdo.propane.propane.PropaneComb3: gemseo.problem.mdo.propane.PropaneComb3
+  gemseo.problems.mdo.propane.propane.PropaneReaction: gemseo.problem.mdo.propane.PropaneReaction
+  gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel: gemseo.problem.mdo.scalable.data_driven.ScalableDiagonalModel
+  gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline: gemseo.problem.mdo.scalable.data_driven.DataDrivenScalableDiscipline
+  gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem: gemseo.problem.mdo.scalable.data_driven.ScalableProblem
+  gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult: gemseo.problem.mdo.scalable.data_driven.ScalabilityResult
+  gemseo.problems.mdo.scalable.linear.linear_discipline.LinearDiscipline: gemseo.problem.mdo.scalable.linear.LinearDiscipline
+  gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline.MainDiscipline: gemseo.problem.mdo.scalable.parametric.MainDiscipline
+  gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline.ScalableDiscipline: gemseo.problem.mdo.scalable.parametric.ScalableDiscipline
+  gemseo.problems.mdo.scalable.parametric.scalable_design_space.ScalableDesignSpace: gemseo.problem.mdo.scalable.parametric.ScalableDesignSpace
+  gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem: gemseo.problem.mdo.scalable.parametric.ScalableProblem
+  gemseo.problems.mdo.sellar.sellar_1.Sellar1: gemseo.problem.mdo.sellar.Sellar1
+  gemseo.problems.mdo.sellar.sellar_2.Sellar2: gemseo.problem.mdo.sellar.Sellar2
+  gemseo.problems.mdo.sellar.sellar_design_space.SellarDesignSpace: gemseo.problem.mdo.sellar.SellarDesignSpace
+  gemseo.problems.mdo.sellar.sellar_system.SellarSystem: gemseo.problem.mdo.sellar.SellarSystem
+  gemseo.problems.mdo.sobieski.core.design_space.SobieskiDesignSpace: gemseo.problem.mdo.sobieski.SobieskiDesignSpace
+  gemseo.problems.mdo.sobieski.core.problem.SobieskiProblem: gemseo.problem.mdo.sobieski.SobieskiProblem
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics: gemseo.problem.mdo.sobieski.SobieskiAerodynamics
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiMission: gemseo.problem.mdo.sobieski.SobieskiMission
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion: gemseo.problem.mdo.sobieski.SobieskiPropulsion
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure: gemseo.problem.mdo.sobieski.SobieskiStructure
+  gemseo.problems.uncertainty.ishigami.ishigami_discipline.IshigamiDiscipline: gemseo.problem.uncertainty.ishigami.IshigamiDiscipline
+  gemseo.problems.uncertainty.ishigami.ishigami_function.IshigamiFunction: gemseo.problem.uncertainty.ishigami.IshigamiFunction
+  gemseo.problems.uncertainty.ishigami.ishigami_problem.IshigamiProblem: gemseo.problem.uncertainty.ishigami.IshigamiProblem
+  gemseo.problems.uncertainty.ishigami.ishigami_space.IshigamiSpace: gemseo.problem.uncertainty.ishigami.IshigamiSpace
+  gemseo.problems.uncertainty.utils.UniformDistribution: gemseo.enum.UniformDistribution
+  gemseo.problems.uncertainty.wing_weight.discipline.WingWeightDiscipline: gemseo.problem.uncertainty.wing_weight.WingWeightDiscipline
+  gemseo.scenarios.mdo_scenario.MDOScenario: gemseo.scenario.MDOScenario
+  gemseo.uncertainty.distributions.openturns.beta.OTBetaDistribution: gemseo.uncertainty.distribution.OTBetaDistribution
+  gemseo.uncertainty.distributions.openturns.beta_settings.OTBetaDistribution_Settings: gemseo.uncertainty.distribution.OTBetaDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.dirac.OTDiracDistribution: gemseo.uncertainty.distribution.OTDiracDistribution
+  gemseo.uncertainty.distributions.openturns.dirac_settings.OTDiracDistribution_Settings: gemseo.uncertainty.distribution.OTDiracDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.distribution.OTDistribution: gemseo.uncertainty.distribution.OTDistribution
+  gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter: gemseo.uncertainty.distribution.OTDistributionFitter
+  gemseo.uncertainty.distributions.openturns.distribution_settings.OTDistribution_Settings: gemseo.uncertainty.distribution.OTDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.exponential.OTExponentialDistribution: gemseo.uncertainty.distribution.OTExponentialDistribution
+  gemseo.uncertainty.distributions.openturns.exponential_settings.OTExponentialDistribution_Settings: gemseo.uncertainty.distribution.OTExponentialDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.joint.OTJointDistribution: gemseo.uncertainty.distribution.OTJointDistribution
+  gemseo.uncertainty.distributions.openturns.log_normal.OTLogNormalDistribution: gemseo.uncertainty.distribution.OTLogNormalDistribution
+  gemseo.uncertainty.distributions.openturns.log_normal_settings.OTLogNormalDistribution_Settings: gemseo.uncertainty.distribution.OTLogNormalDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.normal.OTNormalDistribution: gemseo.uncertainty.distribution.OTNormalDistribution
+  gemseo.uncertainty.distributions.openturns.normal_settings.OTNormalDistribution_Settings: gemseo.uncertainty.distribution.OTNormalDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.triangular.OTTriangularDistribution: gemseo.uncertainty.distribution.OTTriangularDistribution
+  gemseo.uncertainty.distributions.openturns.triangular_settings.OTTriangularDistribution_Settings: gemseo.uncertainty.distribution.OTTriangularDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution: gemseo.uncertainty.distribution.OTUniformDistribution
+  gemseo.uncertainty.distributions.openturns.uniform_settings.OTUniformDistribution_Settings: gemseo.uncertainty.distribution.OTUniformDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.weibull.OTWeibullDistribution: gemseo.uncertainty.distribution.OTWeibullDistribution
+  gemseo.uncertainty.distributions.openturns.weibull_settings.OTWeibullDistribution_Settings: gemseo.uncertainty.distribution.OTWeibullDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.beta.SPBetaDistribution: gemseo.uncertainty.distribution.SPBetaDistribution
+  gemseo.uncertainty.distributions.scipy.beta_settings.SPBetaDistribution_Settings: gemseo.uncertainty.distribution.SPBetaDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.distribution.SPDistribution: gemseo.uncertainty.distribution.SPDistribution
+  gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter: gemseo.uncertainty.distribution.SPDistributionFitter
+  gemseo.uncertainty.distributions.scipy.distribution_settings.SPDistribution_Settings: gemseo.uncertainty.distribution.SPDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.exponential.SPExponentialDistribution: gemseo.uncertainty.distribution.SPExponentialDistribution
+  gemseo.uncertainty.distributions.scipy.exponential_settings.SPExponentialDistribution_Settings: gemseo.uncertainty.distribution.SPExponentialDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution: gemseo.uncertainty.distribution.SPJointDistribution
+  gemseo.uncertainty.distributions.scipy.log_normal.SPLogNormalDistribution: gemseo.uncertainty.distribution.SPLogNormalDistribution
+  gemseo.uncertainty.distributions.scipy.log_normal_settings.SPLogNormalDistribution_Settings: gemseo.uncertainty.distribution.SPLogNormalDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution: gemseo.uncertainty.distribution.SPNormalDistribution
+  gemseo.uncertainty.distributions.scipy.normal_settings.SPNormalDistribution_Settings: gemseo.uncertainty.distribution.SPNormalDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.triangular.SPTriangularDistribution: gemseo.uncertainty.distribution.SPTriangularDistribution
+  gemseo.uncertainty.distributions.scipy.triangular_settings.SPTriangularDistribution_Settings: gemseo.uncertainty.distribution.SPTriangularDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.uniform.SPUniformDistribution: gemseo.uncertainty.distribution.SPUniformDistribution
+  gemseo.uncertainty.distributions.scipy.uniform_settings.SPUniformDistribution_Settings: gemseo.uncertainty.distribution.SPUniformDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.weibull.SPWeibullDistribution: gemseo.uncertainty.distribution.SPWeibullDistribution
+  gemseo.uncertainty.distributions.scipy.weibull_settings.SPWeibullDistribution_Settings: gemseo.uncertainty.distribution.SPWeibullDistribution_Settings
+  gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis: gemseo.uncertainty.sensitivity.CorrelationAnalysis
+  gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis: gemseo.uncertainty.sensitivity.HSICAnalysis
+  gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis: gemseo.uncertainty.sensitivity.MorrisAnalysis
+  gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis: gemseo.uncertainty.sensitivity.SobolAnalysis
+  gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics: gemseo.uncertainty.statistic.EmpiricalStatistics
+  gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
+  gemseo.uncertainty.statistics.sp_parametric_statistics.SPParametricStatistics: gemseo.uncertainty.statistic.SPParametricStatistics
+  gemseo.utils.derivatives.approximation_modes.ApproximationMode: gemseo.enum.ApproximationMode
+  gemseo.utils.derivatives.approximation_modes.HybridApproximationMode: gemseo.enum.HybridApproximationMode
 
 classes:
   #### Machine learning
