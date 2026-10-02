@@ -2100,6 +2100,7 @@ classes:
   PostFactory:
     execute:
       settings_model: settings
+      post_name: settings={post_name}_Settings(**{settings})
 
   # Sensitivity analysis
   BaseSensitivityAnalysis:
