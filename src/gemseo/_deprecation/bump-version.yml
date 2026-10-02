@@ -1245,9 +1245,11 @@ classes:
     __init__:
       # The name of a sub-algorithm and its settings are now one settings model, e.g.
       # linear_solver="GMRES", linear_solver_settings={"rtol": 1e-8} becomes
-      # linear_solver_settings=GMRES_Settings(rtol=1e-8). A settings class whose own
-      # __init__ rules shadow these ones repeats them.
-      linear_solver: &linear-solver-settings linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings})
+      # linear_solver_settings=GMRES_Settings(rtol=1e-8), the tolerance of the linear
+      # solver being its rtol field. A settings class whose own __init__ rules shadow
+      # these ones repeats them.
+      linear_solver: &linear-solver-settings linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings}, rtol={linear_solver_tolerance})
+      # When no string literal names the linear solver, e.g. the default one.
       linear_solver_tolerance: &linear-solver-tolerance TODO use the rtol field of the linear_solver_settings instead
       # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
       use_lu_fact: &use-lu-fact TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
