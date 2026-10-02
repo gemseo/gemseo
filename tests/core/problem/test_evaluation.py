@@ -45,7 +45,7 @@ from gemseo.util.testing.helper import assert_exception
 def test_default(caplog):
     """Check that a DOELibrary can handle an EvaluationProblem."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2)
+    design_space.add_real_variable("x", size=2)
 
     evaluation_problem = EvaluationProblem(design_space)
     evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
@@ -84,7 +84,7 @@ def test_check_desvars_bounds(snapshot):
         snapshot: The snapshot fixture.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     evaluation_problem = EvaluationProblem(design_space)
     evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
@@ -110,7 +110,7 @@ def test_check_desvars_bounds(snapshot):
 def test_set_database():
     """Test the setter `database`."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=1)
+    design_space.add_real_variable("x")
 
     evaluation_problem = EvaluationProblem(design_space)
     evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
@@ -190,7 +190,7 @@ def test_recording_a_function_expecting_normalized_inputs(
     """
     if space_is_a_design_space:
         space = DesignSpace()
-        space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+        space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     else:
         space = RandomSpace()
         space.add_variable("x", OTUniformDistribution_Settings())
@@ -237,8 +237,8 @@ def test_reset_on_partially_valued_design_space() -> None:
     so the partial current value is restored as it was.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x")
-    design_space.add_variable("y")
+    design_space.add_real_variable("x")
+    design_space.add_real_variable("y")
     design_space.set_current_variable("x", array([1.0]))
 
     problem = EvaluationProblem(design_space)
@@ -255,7 +255,7 @@ def test_reset_on_partially_valued_design_space() -> None:
 def test_reset_restores_the_current_value_of_the_design_space() -> None:
     """Check that EvaluationProblem.reset restores the initial current value."""
     design_space = DesignSpace()
-    design_space.add_variable("x", value=1.0)
+    design_space.add_real_variable("x", value=1.0)
 
     problem = EvaluationProblem(design_space)
     design_space.set_current_variable("x", array([2.0]))
@@ -289,7 +289,7 @@ def test_bind_functions_finite_differences_on_random_space() -> None:
 def test_wrapper_original_is_transitive() -> None:
     """Check that `original` reaches the raw function through stacked wrappers."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=1, lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = EvaluationProblem(design_space)
     raw_function = ArrayFunction(sum, name="sum")
@@ -401,7 +401,7 @@ def test_reset_function_calls_true_still_zeroes_the_counter_across_a_rebind(
 def test_wrapper_original_stops_at_algebraic_operations() -> None:
     """Check that `original` does not reach through an offset."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=1, lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = EvaluationProblem(design_space)
     offset_function = ArrayFunction(sum, name="sum") - 1.0
@@ -434,7 +434,7 @@ def test_finite_differences_step_of_a_component_without_a_range(
     and the run stopped at its starting point on a `NaN`.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=1.0)
     design_space.add_variable("y", **variable_settings)
 
     problem = OptimizationProblem(
@@ -470,7 +470,7 @@ def test_a_run_counts_the_evaluations_of_its_functions(
     so a parallel run is checked on the samples it records.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    design_space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(ArrayFunction(sum, name="sum"))
 

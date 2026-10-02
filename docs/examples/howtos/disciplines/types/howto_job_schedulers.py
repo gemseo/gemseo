@@ -36,11 +36,12 @@ to wrap a scenario.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
-from gemseo.formulation.mdf_settings import MDF_Settings
-from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.optimization import SLSQP_Settings
+from gemseo.problem.mdo.sellar import Sellar1
+from gemseo.problem.mdo.sellar import Sellar2
+from gemseo.problem.mdo.sellar import SellarDesignSpace
+from gemseo.problem.mdo.sellar import SellarSystem
 from gemseo.scenario import MDOScenario
 from gemseo.scenario import wrap_scenario_in_job_scheduler
 
@@ -49,7 +50,7 @@ from gemseo.scenario import wrap_scenario_in_job_scheduler
 #
 # This how-to needs a discipline.
 
-discipline = create_discipline("Sellar1")
+discipline = Sellar1()
 
 # %%
 # ### 1. Wrap your discipline
@@ -73,9 +74,9 @@ discipline_in_queue = wrap_discipline_in_job_scheduler(
 # The algorithm must be set on the scenario before wrapping it,
 # and the objective too when the scenario solves an optimization problem.
 
-disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 design_space = SellarDesignSpace(add_couplings=False)
-scenario = MDOScenario(disciplines, design_space, formulation_settings=MDF_Settings())
+scenario = MDOScenario(disciplines, design_space)
 scenario.add_objective("obj")
 scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")

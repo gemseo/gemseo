@@ -78,9 +78,9 @@ def test_constructor(io_dataset) -> None:
     assert ml_model.input_names == io_dataset.get_variable_names("inputs")
     assert ml_model.output_names == io_dataset.get_variable_names("outputs")
     design_space = DesignSpace()
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=54.0)
-    design_space.add_variable(
-        "x_2", size=2, lower_bound=array([1.0, 2.0]), upper_bound=array([55.0, 56.0])
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=54.0)
+    design_space.add_real_variable(
+        "x_2", size=2, lower_bound=(1.0, 2.0), upper_bound=(55.0, 56.0)
     )
     assert ml_model.validity_domain == design_space
 

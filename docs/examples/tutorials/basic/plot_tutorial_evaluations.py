@@ -50,11 +50,12 @@ discipline = AnalyticDiscipline({"y": "x1+x2"})
 # Here, you want to constraint your integer design variables
 # $(x1, x2) \in [-5, 5]\times[-5, 5]$
 # by using its
-# [add_variable()][gemseo.space.design.DesignSpace.add_variable] method.
+# [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
+# method.
 
 design_space = DesignSpace()
-design_space.add_variable("x1", lower_bound=-5, upper_bound=5, type_="integer")
-design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
+design_space.add_integer_variable("x1", lower_bound=-5, upper_bound=5)
+design_space.add_integer_variable("x2", lower_bound=-5, upper_bound=5)
 
 # %%
 # ## Step 3 - Define your DoE scenario
@@ -69,7 +70,8 @@ scenario = EvaluationScenario((discipline,), design_space, name="My evaluation")
 # %%
 # !!! note
 #     Here,
-#     you chose the `DisciplinaryOpt` formulation since you get only one discipline.
+#     you use the default formulation, `MDF`,
+#     which also handles a single discipline.
 #     Other formulations can be chosen for more complex evaluation workflows.
 #
 # You specify which variables to observe.

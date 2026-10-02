@@ -59,8 +59,6 @@ from __future__ import annotations
 from copy import deepcopy
 from logging import WARNING
 
-from numpy import array
-
 from gemseo import execute_post
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_FULLFACT_Settings
@@ -99,23 +97,16 @@ discipline_cstr_obj1 = AnalyticDiscipline(expr_cstr_obj1_target, name="Constr")
 # The lower-level design space contains the physical design variables
 # $x_1$ and $x_2$.
 design_space = DesignSpace()
-design_space.add_variable(
-    "x1", lower_bound=array([0.0]), upper_bound=array([5.0]), value=array([2.0])
-)
-design_space.add_variable(
-    "x2", lower_bound=array([-5.0]), upper_bound=array([3.0]), value=array([2.0])
-)
+design_space.add_real_variable("x1", lower_bound=0.0, upper_bound=5.0, value=2.0)
+design_space.add_real_variable("x2", lower_bound=-5.0, upper_bound=3.0, value=2.0)
 
 # %%
 # ## Step 3 - Create the lower-level scenario
 #
 # This scenario minimizes $f_2$ for a fixed value of `obj1_target`.
-# The `DisciplinaryOpt` formulation is used with NLOPT SLSQP as the solver.
+# The default MDF formulation is used with NLOPT SLSQP as the solver.
 disciplines = [discipline_binh_korn, discipline_cstr_obj1]
-sub_scenario = MDOScenario(
-    disciplines,
-    design_space,
-)
+sub_scenario = MDOScenario(disciplines, design_space)
 sub_scenario.add_objective("obj2")
 sub_scenario.set_algorithm(NLOPT_SLSQP_Settings(max_iter=50))
 
@@ -130,11 +121,8 @@ sub_scenario.add_constraint("cstr2", constraint_type="ineq")
 # At the system level, the only variable is `obj1_target`:
 # the value of $f_1$ swept by the DOE.
 system_design_space = DesignSpace()
-system_design_space.add_variable(
-    "obj1_target",
-    lower_bound=array([0.1]),
-    upper_bound=array([100.0]),
-    value=array([1.0]),
+system_design_space.add_real_variable(
+    "obj1_target", lower_bound=0.1, upper_bound=100.0, value=1.0
 )
 
 # %%

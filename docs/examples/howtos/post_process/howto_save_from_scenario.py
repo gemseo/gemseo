@@ -31,7 +31,6 @@ to export the results to an HDF5 file.
 from __future__ import annotations
 
 from gemseo.discipline import AnalyticDiscipline
-from gemseo.formulation import DisciplinaryOpt_Settings
 from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
@@ -40,14 +39,12 @@ from gemseo.space import DesignSpace
 # ### Prerequisites
 #
 # This how-to needs a scenario that has already been executed.
-discipline = AnalyticDiscipline(expressions={"y": "x**2"})
+discipline = AnalyticDiscipline({"y": "x**2"})
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
-scenario = MDOScenario(
-    [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-)
+scenario = MDOScenario([discipline], design_space)
 scenario.add_objective("y")
 scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 

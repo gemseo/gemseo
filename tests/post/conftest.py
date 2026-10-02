@@ -30,7 +30,9 @@ from gemseo.space.design import DesignSpace
 def __common_problem():  # noqa: PT005
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, lower_bound=0, upper_bound=1, value=0.5)
+    design_space.add_real_variable(
+        "x", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
     problem = OptimizationProblem(design_space)
     func = ArrayFunction(sum, name="obj")
     func.has_default_name = True

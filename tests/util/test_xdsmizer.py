@@ -309,7 +309,7 @@ def test_xdsmize_nested_chain(options) -> None:
     main_chain = [inter_chain, elementary_discipline(get_name(4), get_name(5))]
 
     design_space = DesignSpace()
-    design_space.add_variable(get_name(1))
+    design_space.add_real_variable(get_name(1))
 
     nested_chains = MDOScenario(main_chain, design_space)
     nested_chains.add_objective(get_name(5))
@@ -345,7 +345,7 @@ def test_xdsmize_nested_mda(options, mda_class) -> None:
     inner_mda = mda_class([disciplines[0], disciplines[1]])
 
     design_space = DesignSpace()
-    design_space.add_variable("x0")
+    design_space.add_real_variable("x0")
 
     scenario = MDOScenario(
         [disciplines[2], inner_mda], design_space, formulation_settings=MDF_Settings()
@@ -370,7 +370,7 @@ def test_xdsmize_nested_adapter(options) -> None:
 
     # -- level 3
     ds_depth3 = DesignSpace()
-    ds_depth3.add_variable("x4")
+    ds_depth3.add_real_variable("x4")
 
     sce_depth3 = create_scenario(
         [disciplines[3]],
@@ -381,7 +381,7 @@ def test_xdsmize_nested_adapter(options) -> None:
 
     # -- level 2
     ds_depth2 = DesignSpace()
-    ds_depth2.add_variable("x3")
+    ds_depth2.add_real_variable("x3")
 
     adapter_depth2 = MDOScenarioAdapter(
         sce_depth3, input_names=["x3"], output_names=["z4"]
@@ -396,7 +396,7 @@ def test_xdsmize_nested_adapter(options) -> None:
 
     # -- level 1
     ds_depth1 = DesignSpace()
-    ds_depth1.add_variable("x2")
+    ds_depth1.add_real_variable("x2")
 
     adapter_depth1 = MDOScenarioAdapter(
         sce_depth2, input_names=["y2"], output_names=["y3"]
@@ -411,7 +411,7 @@ def test_xdsmize_nested_adapter(options) -> None:
 
     # -- level 0
     ds_depth0 = DesignSpace()
-    ds_depth0.add_variable("x0")
+    ds_depth0.add_real_variable("x0")
 
     adapter_depth0 = MDOScenarioAdapter(
         sce_depth1, input_names=["x0", "y1"], output_names=["z2"]
@@ -432,7 +432,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
     is generated correctly."""
 
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0)
+    design_space.add_real_variable("x", lower_bound=0.0)
 
     disciplines = create_disciplines_from_desc([
         ("D1", ["x", "n"], ["y"]),
@@ -453,7 +453,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
     )
 
     design_space_discrete = DesignSpace()
-    design_space_discrete.add_variable("n", type_="integer")
+    design_space_discrete.add_integer_variable("n")
 
     top_scenario = create_scenario(
         [adapter],
@@ -487,7 +487,7 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
     ])
 
     design_space = DesignSpace()
-    design_space.add_variable(get_name(1))
+    design_space.add_real_variable(get_name(1))
 
     nested_chains = MDOScenario(
         [beg_chain, inter_chain],
@@ -524,7 +524,7 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
     ])
 
     design_space = DesignSpace()
-    design_space.add_variable(get_name(1))
+    design_space.add_real_variable(get_name(1))
 
     sce = MDOScenario([beg_chain, par_chain, end_chain], design_space)
     sce.add_objective(get_name(7))
@@ -555,7 +555,7 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
     ])
 
     design_space = DesignSpace()
-    design_space.add_variable(get_name(1))
+    design_space.add_real_variable(get_name(1))
 
     sce = MDOScenario(
         [par_chain, elementary_discipline(get_name(6), get_name(7))],
@@ -713,7 +713,7 @@ def test_xdsmize_mdf_parallel_discipline_chain(options) -> None:
         {"x2": "1.-0.3*y2"},
     ))
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     mdachain_parallel_settings = {"use_threading": True, "n_processes": 2}
     scenario = MDOScenario(
         disciplines,
@@ -740,7 +740,7 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     directory_path = tmp_wd / directory_path
 
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
@@ -773,7 +773,7 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
 def test_monitor_log_workflow_status(tmp_wd, caplog) -> None:
     """Check that XDSMizer.update() logs the workflow status when requested."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
@@ -805,7 +805,7 @@ def test_discipline(options) -> None:
 def test_initial_node_title(cls, expected):
     """Check the title of the initial node."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     if cls == EvaluationScenario:
         scenario = cls([discipline], design_space, name="foo")
@@ -855,7 +855,7 @@ def test_cleanup(tmp_wd, pdf_cleanup, pdf_build, monkeypatch):
 def test_evaluation_scenario(options):
     """Check XDSMization of an EvaluationScenario."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     scenario = EvaluationScenario([discipline], design_space)
     xdsm = scenario.xdsmize(save_html=False)

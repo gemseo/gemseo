@@ -54,11 +54,11 @@ class HockSchittkowski71(OptimizationProblem):
             initial_guess: The initial guess for the optimal solution.
         """
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x",
             size=4,
-            lower_bound=[1.0, 1.0, 1.0, 1.0],
-            upper_bound=[5.0, 5.0, 5.0, 5.0],
+            lower_bound=1.0,
+            upper_bound=5.0,
         )
 
         design_space.set_current_value(array(initial_guess))

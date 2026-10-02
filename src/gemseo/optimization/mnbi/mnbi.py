@@ -419,7 +419,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         w.r.t. the design variables `x` and the real variable `t`.
         """
         design_space = deepcopy(self._problem.input_space)
-        design_space.add_variable("t", value=0.0)
+        design_space.add_real_variable("t", value=0.0)
         self.__beta_sub_optim = OptimizationProblem(design_space)
         self.__beta_sub_optim.objective = ArrayFunction(
             self._t_extraction_func,
@@ -858,7 +858,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                 betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
             else:
                 beta_design_space = DesignSpace()
-                beta_design_space.add_variable(
+                beta_design_space.add_real_variable(
                     "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0
                 )
                 self._settings.doe_algo_settings.n_samples = n_samples

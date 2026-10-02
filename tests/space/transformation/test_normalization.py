@@ -32,20 +32,20 @@ from gemseo.space.variable import DataType
 def mixed_space() -> DesignSpace:
     """A space mixing what the normalization treats differently."""
     space = DesignSpace(name="mixed")
-    space.add_variable("continuous", lower_bound=-2.0, upper_bound=3.0, value=1.0)
-    space.add_variable("vector", size=3, lower_bound=0.0, upper_bound=10.0, value=5.0)
-    space.add_variable(
-        "integer", type_="integer", lower_bound=0, upper_bound=8, value=4
+    space.add_real_variable("continuous", lower_bound=-2.0, upper_bound=3.0, value=1.0)
+    space.add_real_variable(
+        "vector", size=3, lower_bound=0.0, upper_bound=10.0, value=5.0
     )
-    space.add_variable("unbounded", value=0.25)
-    space.add_variable(
+    space.add_integer_variable("integer", lower_bound=0, upper_bound=8, value=4)
+    space.add_real_variable("unbounded", value=0.25)
+    space.add_real_variable(
         "half",
         size=2,
-        lower_bound=array([-inf, 1.0]),
-        upper_bound=array([2.0, 4.0]),
-        value=array([0.5, 2.0]),
+        lower_bound=(-inf, 1.0),
+        upper_bound=(2.0, 4.0),
+        value=(0.5, 2.0),
     )
-    space.add_variable("without_value", lower_bound=0.0, upper_bound=1.0)
+    space.add_real_variable("without_value", lower_bound=0.0, upper_bound=1.0)
     return space
 
 

@@ -32,21 +32,16 @@ from __future__ import annotations
 
 from math import exp
 
-from numpy import array
-from numpy import ones
-
-from gemseo import create_design_space
-from gemseo import create_discipline
-from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.mda import MDAChain_Settings
-from gemseo.mda import MDAJacobi_Settings
+from gemseo.discipline import AutoPyDiscipline
 from gemseo.optimization import SLSQP_Settings
 from gemseo.post import OptHistoryView_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
-# These imports are needed to compute mathematical expressions and to
-# instantiate NumPy arrays. NumPy arrays are used to store numerical data in
+# These imports are needed to compute mathematical expressions.
+# NumPy arrays are used to store numerical data in
 # GEMSEO at a low level. If you are not comfortable using NumPy, please have a
 # look at the [Numpy Quickstart tutorial](https://numpy.org/doc/stable/user/quickstart.html).
 #
@@ -121,14 +116,13 @@ def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
 # GEMSEO
 # [Discipline][gemseo.core.discipline.discipline.Discipline] by only passing a reference to the function to be
 # wrapped. GEMSEO handles the wrapping and the grammar creation under the
-# hood. The [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] discipline can be instantiated using the
-# [create_discipline()][gemseo.create_discipline] function from the GEMSEO API:
+# hood. The [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] discipline can be instantiated directly:
 
-disc_sellar_system = create_discipline("AutoPyDiscipline", py_func=f_sellar_system)
+disc_sellar_system = AutoPyDiscipline(f_sellar_system)
 
-disc_sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
+disc_sellar_1 = AutoPyDiscipline(f_sellar_1)
 
-disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
+disc_sellar_2 = AutoPyDiscipline(f_sellar_2)
 
 # %%
 # Note that it is possible to define the Sellar disciplines by subclassing the
@@ -176,16 +170,16 @@ generate_n2_plot(disciplines, save=False, show=True)
 # a design space has to be defined by creating a [DesignSpace][gemseo.space.design.DesignSpace]
 # object. The design space definition reads:
 
-design_space = create_design_space()
-design_space.add_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=ones(1))
-design_space.add_variable(
-    "x_shared_1", lower_bound=-10, upper_bound=10.0, value=array([4.0])
+design_space = DesignSpace()
+design_space.add_real_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=1.0)
+design_space.add_real_variable(
+    "x_shared_1", lower_bound=-10.0, upper_bound=10.0, value=4.0
 )
-design_space.add_variable(
-    "x_shared_2", lower_bound=0.0, upper_bound=10.0, value=array([3.0])
+design_space.add_real_variable(
+    "x_shared_2", lower_bound=0.0, upper_bound=10.0, value=3.0
 )
-design_space.add_variable("y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
-design_space.add_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
+design_space.add_real_variable("y_1", lower_bound=-100.0, upper_bound=100.0, value=1.0)
+design_space.add_real_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=1.0)
 design_space
 
 # %%
@@ -193,19 +187,14 @@ design_space
 #
 # Once the disciplines and the design space have been defined,
 # you can create your MDO scenario
-# by using the high-level function [create_scenario()][gemseo.create_scenario].
+# by instantiating an [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 # In this simple example,
-# you are using a Multiple Disciplinary Feasible (MDF) strategy.
-# The Multiple Disciplinary Analyses (MDA) are carried out using the
-# Gauss-Seidel method. The scenario definition reads:
+# you are using the default formulation, Multiple Disciplinary Feasible (MDF),
+# whose MDA chain solves the couplings with the Jacobi method.
+# The scenario definition reads:
 
-scenario = create_scenario(
-    disciplines,
-    "obj",
-    design_space,
-    formulation_name="MDF",
-    main_mda_settings=MDAChain_Settings(inner_mda_settings=MDAJacobi_Settings()),
-)
+scenario = MDOScenario(disciplines, design_space)
+scenario.add_objective("obj")
 
 # %%
 # It can be noted that neither a workflow <work flow>

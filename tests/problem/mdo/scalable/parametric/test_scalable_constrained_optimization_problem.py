@@ -111,7 +111,7 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
     )
 
     ds = DesignSpace()
-    ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
+    ds.add_real_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
 
     scenario = create_scenario(
         [ScalableDiscipline(p)],

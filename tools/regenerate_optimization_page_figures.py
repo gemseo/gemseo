@@ -40,10 +40,8 @@ from pathlib import Path
 
 from numpy import cos
 from numpy import exp
-from numpy import ones
 from numpy import sin
 
-from gemseo import create_design_space
 from gemseo import execute_post
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.dataset.dataset import Dataset
@@ -61,13 +59,14 @@ from gemseo.doe import OT_SOBOL_Settings
 from gemseo.doe import PYDOE_BBDESIGN_Settings
 from gemseo.doe import PYDOE_FULLFACT_Settings
 from gemseo.doe import PYDOE_LHS_Settings
-from gemseo.doe.factory import DOELibraryFactory
+from gemseo.doe.factory import doe_library_factory
 from gemseo.optimization import L_BFGS_B_Settings
 from gemseo.optimization import OptimizationProblem
-from gemseo.optimization.factory import OptimizationLibraryFactory
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.post import OptHistoryView_Settings
 from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
+from gemseo.space import DesignSpace
 
 DEFAULT_DIRECTORY_PATH = Path("docs/assets/images/doe")
 """The directory where the page reads its figures."""
@@ -113,15 +112,13 @@ def create_optimization_history_figure(directory_path: Path) -> None:
     Args:
         directory_path: The directory where the figure is written.
     """
-    design_space = create_design_space()
-    design_space.add_variable(
-        "x", size=1, lower_bound=-2.0, upper_bound=2.0, value=-0.5 * ones(1)
-    )
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)") - (
         ArrayFunction(exp, name="f_2", jac=exp, expr="exp(x)")
     )
-    OptimizationLibraryFactory().execute(
+    optimization_library_factory.execute(
         problem, L_BFGS_B_Settings(normalize_design_space=True)
     )
     file_path = directory_path / "simple_opt"
@@ -142,13 +139,12 @@ def create_doe_figures(directory_path: Path) -> None:
     Args:
         directory_path: The directory where the figures are written.
     """
-    design_space = create_design_space()
-    design_space.add_variable("x_1", lower_bound=0.1, upper_bound=0.4)
-    design_space.add_variable("x_2", lower_bound=0.75, upper_bound=1.25)
-    design_space.add_variable("x_3", lower_bound=0.75, upper_bound=1.25)
-    factory = DOELibraryFactory()
+    design_space = DesignSpace()
+    design_space.add_real_variable("x_1", lower_bound=0.1, upper_bound=0.4)
+    design_space.add_real_variable("x_2", lower_bound=0.75, upper_bound=1.25)
+    design_space.add_real_variable("x_3", lower_bound=0.75, upper_bound=1.25)
     for file_name, settings in FILE_NAME_TO_DOE_SETTINGS.items():
-        library = factory.create(settings.target_class_name)
+        library = doe_library_factory.create(settings.target_class_name)
         samples = library.sample_space(design_space, settings=settings)
         dataset = Dataset.from_array(samples, variable_names=["x_1", "x_2", "x_3"])
         plot = PairPlot(dataset, PairPlot_Settings(use_kde=True))

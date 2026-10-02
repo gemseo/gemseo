@@ -159,7 +159,7 @@ observer_spec = ObservationSpec(
 
 ```python
 # User code is unchanged
-scenario = create_scenario(...)
+scenario = MDOScenario(...)
 scenario.execute()  # Observer automatically injected
 
 # Only configuration needed

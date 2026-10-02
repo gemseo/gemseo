@@ -368,7 +368,7 @@ class DesignSpace(
             raise
 
     def _add_default_variable(self, name: str, size: int) -> None:  # noqa: D102
-        self.add_variable(name, size=size)
+        self.add_real_variable(name, size=size)
 
     def add_real_variable(
         self,

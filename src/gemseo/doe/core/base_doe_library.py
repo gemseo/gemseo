@@ -527,7 +527,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         # Its name cannot be the name of a variable of the caller,
         # otherwise a setting referring to that name would match this variable.
         space = DesignSpace()
-        space.add_variable(
+        space.add_real_variable(
             self.__UNIT_HYPERCUBE_VARIABLE,
             size=dimension,
             lower_bound=0.0,

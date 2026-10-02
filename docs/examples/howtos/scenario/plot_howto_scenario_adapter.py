@@ -71,7 +71,6 @@ Lastly, a scenario merely sampling $y$ w.r.t $x$ is transformed the same way.
 from __future__ import annotations
 
 from numpy import array
-from numpy import ones
 
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_FULLFACT_Settings
@@ -92,7 +91,7 @@ from gemseo.space import DesignSpace
 discipline = AnalyticDiscipline({"y": "(x+1)**2 + n"})
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=-5, upper_bound=5.0, value=ones(1))
+design_space.add_real_variable("x", lower_bound=-5.0, upper_bound=5.0, value=1.0)
 
 inner_scenario = MDOScenario((discipline,), design_space)
 inner_scenario.add_objective("y")
@@ -127,13 +126,7 @@ scenario_adapter.execute({"n": array([4])})
 #
 # or use another scenario to create a bi-level scenario:
 upper_design_space = DesignSpace()
-upper_design_space.add_variable(
-    "n",
-    lower_bound=-3,
-    upper_bound=2.0,
-    value=ones(1, dtype=int),
-    type_=upper_design_space.DesignVariableType.INTEGER,
-)
+upper_design_space.add_integer_variable("n", lower_bound=-3, upper_bound=2, value=1)
 upper_scenario = MDOScenario((scenario_adapter,), upper_design_space)
 upper_scenario.add_objective("y")
 upper_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=6))
@@ -150,7 +143,9 @@ upper_scenario.to_dataset()
 # [EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter]
 # instead:
 sampling_design_space = DesignSpace()
-sampling_design_space.add_variable("x", lower_bound=-5, upper_bound=5.0, value=ones(1))
+sampling_design_space.add_real_variable(
+    "x", lower_bound=-5.0, upper_bound=5.0, value=1.0
+)
 sampling_scenario = EvaluationScenario(
     (AnalyticDiscipline({"y": "(x+1)**2 + n"}),), sampling_design_space
 )

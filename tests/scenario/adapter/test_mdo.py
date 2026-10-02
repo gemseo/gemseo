@@ -184,8 +184,8 @@ def test_adapter_set_bounds_and_x0_from_partial_inputs() -> None:
     projected into the new bounds.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.3)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.3)
     scenario = MDOScenario(
         [AnalyticDiscipline({"f": "(x-0.2)**2+(y-0.3)**2"})],
         design_space,
@@ -226,7 +226,7 @@ def test_adapter_set_and_reset_x0(scenario, snapshot) -> None:
 def test_adapter_miss_dvs(scenario) -> None:
     inputs = ["x_shared"]
     outputs = ["y_4", "missing_dv"]
-    scenario.design_space.add_variable("missing_dv")
+    scenario.design_space.add_real_variable("missing_dv")
     MDOScenarioAdapter(scenario, inputs, outputs)
 
 
@@ -555,7 +555,7 @@ def test_instantiation_before_add_objective() -> None:
     discipline = AnalyticDiscipline({"y": "x**2 + z"}, name="d")
     discipline.io.input_grammar.defaults["z"] = array([1.0])
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = MDOScenario([discipline], design_space)
     adapter = MDOScenarioAdapter(scenario, ["z"], ["y"], output_optimal_objective=True)
     scenario.add_objective("y")
@@ -574,7 +574,7 @@ def test_multi_objective_exception(snapshot) -> None:
     discipline = AnalyticDiscipline({"y": "x**2 + z", "w": "10*x + z"}, name="d")
     discipline.io.input_grammar.defaults["z"] = array([1.0])
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective(["y", "w"])
     with assert_exception(ValueError, snapshot):
@@ -767,7 +767,7 @@ def test_optimum_evaluated_after_doe(algorithm_settings) -> None:
         algorithm_settings: The settings of the DOE algorithm of the scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
     scenario = MDOScenario([SampleWiseDiscipline()], design_space)
     scenario.add_objective("y")
     scenario.set_algorithm(algorithm_settings)
@@ -814,7 +814,7 @@ def test_is_last_evaluation_unusable(algorithm_settings, expected) -> None:
             not to hold the data of the last design point evaluated by the scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
     scenario = MDOScenario([SampleWiseDiscipline()], design_space)
     scenario.add_objective("y")
     scenario.set_algorithm(algorithm_settings)
@@ -930,9 +930,7 @@ def scenario_fixture(disciplines_fixture):
     This discipline is linerarized in the _run.
     """
     design_space = create_design_space()
-    design_space.add_variable(
-        "x", lower_bound=-1.5, upper_bound=1.5, value=array([1.0]), size=1
-    )
+    design_space.add_real_variable("x", lower_bound=-1.5, upper_bound=1.5, value=1.0)
     scenario = create_scenario(
         disciplines_fixture,
         "f",
@@ -949,8 +947,8 @@ def scenario_fixture(disciplines_fixture):
 def test_scenario_adapter(scenario_fixture) -> None:
     """Test the scenario execution."""
     design_space = create_design_space()
-    design_space.add_variable(
-        "alpha", lower_bound=-1.5, upper_bound=1.5, value=array([1.0]), size=1
+    design_space.add_real_variable(
+        "alpha", lower_bound=-1.5, upper_bound=1.5, value=1.0
     )
     scenario = create_scenario(
         [scenario_fixture],

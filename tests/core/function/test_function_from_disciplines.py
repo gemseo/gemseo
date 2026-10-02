@@ -28,7 +28,7 @@ from gemseo.space.design import DesignSpace
 def test_design_space_copy(use_discipline):
     """Verify that FunctionFromDiscipline uses a copy of the variable sizes."""
     design_space = DesignSpace()
-    design_space.add_variable("a")
+    design_space.add_real_variable("a")
     evaluation_problem = OptimizationProblem(design_space)
     discipline = AnalyticDiscipline({"f": "2*a"})
     formulation = DisciplinaryOpt(evaluation_problem, [discipline])

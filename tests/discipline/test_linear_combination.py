@@ -72,8 +72,10 @@ def test_parallel_doe_execution(linear_combination) -> None:
     """Test parallel execution."""
     custom_doe = CustomDOE()
     design_space = DesignSpace()
-    design_space.add_variable("alpha", lower_bound=-1.0, upper_bound=1.0, value=0.0)
-    design_space.add_variable("beta", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable(
+        "alpha", lower_bound=-1.0, upper_bound=1.0, value=0.0
+    )
+    design_space.add_real_variable("beta", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     opt_problem = OptimizationProblem(design_space)
     opt_problem.objective = DisciplineAdapterGenerator(linear_combination).get_function(
         input_names=["alpha", "beta"],

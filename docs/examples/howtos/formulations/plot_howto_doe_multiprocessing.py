@@ -28,10 +28,12 @@ Multi-processing features are available when executing a DOE algorithm.
 
 from __future__ import annotations
 
-from gemseo import create_discipline
 from gemseo.doe import PYDOE_LHS_Settings
-from gemseo.formulation import MDF_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 from gemseo.scenario import EvaluationScenario
 from gemseo.util.platform import platform_is_windows
 
@@ -39,18 +41,14 @@ from gemseo.util.platform import platform_is_windows
 # ### Prerequisites
 #
 # This how-to needs a discipline, a design space and a DOE scenario.
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 design_space = SobieskiDesignSpace()
-scenario = EvaluationScenario(
-    disciplines,
-    design_space,
-    formulation_settings=MDF_Settings(),
-)
+scenario = EvaluationScenario(disciplines, design_space)
 scenario.add_observable("y_4")
 
 # %%

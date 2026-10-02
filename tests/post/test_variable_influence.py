@@ -135,7 +135,9 @@ def test_common_scenario(
 def test_visible_labels(size, snapshot_matplotlib) -> None:
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=size, lower_bound=0, upper_bound=1, value=0.5)
+    design_space.add_real_variable(
+        "x", size=size, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
     problem = OptimizationProblem(design_space)
     func = ArrayFunction(sum, name="obj", jac=lambda x: array([1.0] * size))
     problem.objective = func

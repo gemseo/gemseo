@@ -26,10 +26,10 @@
   lower_bound.list[union[int,float]].0.float
     Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
-  lower_bound.tuple[union[int,float]].0.int
+  lower_bound.`tuple[union[int,float], ...]`.0.int
     Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/int_type
-  lower_bound.tuple[union[int,float]].0.float
+  lower_bound.`tuple[union[int,float], ...]`.0.float
     Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   lower_bound.int
@@ -55,10 +55,10 @@
   upper_bound.list[union[int,float]].0.float
     Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
-  upper_bound.tuple[union[int,float]].0.int
+  upper_bound.`tuple[union[int,float], ...]`.0.int
     Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/int_type
-  upper_bound.tuple[union[int,float]].0.float
+  upper_bound.`tuple[union[int,float], ...]`.0.float
     Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   upper_bound.int
@@ -130,7 +130,7 @@
 # name: test_add_variable_with_upper_bounds_lower_than_lower_ones
   '''
   1 validation error for RealVariable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'lower_bound'...per_bound': [1, 0.0, 1]}, input_type=dict]
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'lower_bound'...per_bound': (1, 0.0, 1)}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

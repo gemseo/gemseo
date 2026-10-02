@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 def design_space() -> DesignSpace:
     """A design space with a single variable of two components."""
     space = DesignSpace()
-    space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
     return space
 
 

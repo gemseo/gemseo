@@ -22,9 +22,6 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from numpy import array
-from numpy import ones
-
 from gemseo.problem.mdo.sellar.variable import x_1
 from gemseo.problem.mdo.sellar.variable import x_2
 from gemseo.problem.mdo.sellar.variable import x_shared
@@ -64,27 +61,31 @@ class SellarDesignSpace(DesignSpace):
             add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212
         super().__init__()
-        self.add_variable(x_1, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
-        self.add_variable(x_2, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
-        self.add_variable(
+        self.add_real_variable(
+            x_1, lower_bound=0.0, upper_bound=10.0, value=1.0, size=n
+        )
+        self.add_real_variable(
+            x_2, lower_bound=0.0, upper_bound=10.0, value=1.0, size=n
+        )
+        self.add_real_variable(
             x_shared,
             2,
-            lower_bound=(-10, 0.0),
+            lower_bound=(-10.0, 0.0),
             upper_bound=(10.0, 10.0),
-            value=array([4.0, 3.0]),
+            value=(4.0, 3.0),
         )
         if add_couplings:
-            self.add_variable(
+            self.add_real_variable(
                 y_1,
                 lower_bound=-100.0,
                 upper_bound=100.0,
-                value=ones(n),
+                value=1.0,
                 size=n,
             )
-            self.add_variable(
+            self.add_real_variable(
                 y_2,
                 lower_bound=-100.0,
                 upper_bound=100.0,
-                value=ones(n),
+                value=1.0,
                 size=n,
             )

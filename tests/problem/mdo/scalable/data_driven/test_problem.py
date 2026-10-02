@@ -24,6 +24,8 @@ from pathlib import Path
 
 import pytest
 
+from gemseo.formulation import BiLevel_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
@@ -94,6 +96,43 @@ def test_plot_dependencies(scalable_problem, tmp_wd) -> None:
 def test_create_scenario(scalable_problem) -> None:
     """"""
     scalable_problem.create_scenario()
+
+
+@pytest.mark.parametrize(
+    ("sub_optimizer_settings", "expected_settings"),
+    [(None, SLSQP_Settings()), (NLOPT_COBYLA_Settings(), NLOPT_COBYLA_Settings())],
+)
+def test_create_bilevel_scenario(
+    scalable_problem, sub_optimizer_settings, expected_settings
+) -> None:
+    """Check the creation of a scenario using a bi-level formulation."""
+    scenario = scalable_problem.create_scenario(
+        formulation_settings=BiLevel_Settings(),
+        sub_optimizer_settings=sub_optimizer_settings,
+    )
+    assert list(scenario.design_space) == ["x_shared"]
+    adapters = scenario.formulation.scenario_adapters
+    assert [set(adapter.scenario.design_space) for adapter in adapters] == [
+        {"x_2"},
+        {"x_3"},
+        {"x_1"},
+    ]
+    output_names = [name for adapter in adapters for name in adapter.io.output_grammar]
+    assert len(output_names) == len(set(output_names))
+    for adapter in adapters:
+        assert adapter.scenario._algorithm_settings == expected_settings
+
+
+def test_execute_bilevel_scenario(scalable_problem) -> None:
+    """Check the execution of a scenario using a bi-level formulation."""
+    scenario = scalable_problem.create_scenario(
+        formulation_settings=BiLevel_Settings(),
+        sub_optimizer_settings=SLSQP_Settings(max_iter=2),
+    )
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
+    assert scenario.formulation.problem.database
+    for adapter in scenario.formulation.scenario_adapters:
+        assert adapter.scenario.formulation.problem.database
 
 
 def test_statistics(scalable_problem, enable_discipline_statistics) -> None:

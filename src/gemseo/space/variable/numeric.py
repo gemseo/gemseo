@@ -38,7 +38,7 @@ BoundType = (
     NDArrayPydantic[int]
     | NDArrayPydantic[float]
     | list[ScalarBoundType]
-    | tuple[ScalarBoundType]
+    | tuple[ScalarBoundType, ...]
     | ScalarBoundType
 )
 BoundArray = IntegerArray | RealArray

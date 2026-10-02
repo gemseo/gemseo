@@ -34,10 +34,10 @@ before executing the scenario.
 
 from __future__ import annotations
 
-from gemseo import create_scenario
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.enum import AggregationFunction
 from gemseo.optimization import NLOPT_MMA_Settings
+from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
@@ -58,30 +58,13 @@ disc = AnalyticDiscipline(
 # %%
 # Create your design space
 ds = DesignSpace()
-ds.add_variable(
-    "x",
-    lower_bound=0.0,
-    upper_bound=1,
-    value=1.0 / N / 2.0,
-    type_=DesignSpace.DesignVariableType.REAL,
-)
-ds.add_variable(
-    "y",
-    lower_bound=0.0,
-    upper_bound=1,
-    value=1,
-    type_=DesignSpace.DesignVariableType.REAL,
-)
+ds.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0 / N / 2.0)
+ds.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=1.0)
 
 # %%
 # And build the scenario with its 100 constraints
-scenario = create_scenario(
-    [disc],
-    "o",
-    ds,
-    maximize_objective=False,
-    formulation_name="DisciplinaryOpt",
-)
+scenario = MDOScenario([disc], ds)
+scenario.add_objective("o")
 scenario.add_constraint(constraint_names, constraint_type="ineq")
 
 # %%
@@ -100,18 +83,7 @@ scenario.formulation.problem.constraints.aggregate(
 # ### 2. Execute the scenario
 #
 # The scenario now contains only 1 constraint:
-scenario.execute(
-    NLOPT_MMA_Settings(
-        ineq_tolerance=1e-5,
-        eq_tolerance=1e-5,
-        xtol_rel=1e-8,
-        xtol_abs=1e-8,
-        ftol_rel=1e-8,
-        ftol_abs=1e-8,
-        normalize_design_space=True,
-        max_iter=1000,
-    )
-)
+scenario.execute(NLOPT_MMA_Settings(ineq_tolerance=1e-5, xtol_abs=1e-8, ftol_abs=1e-8))
 
 # %%
 # ## Summary

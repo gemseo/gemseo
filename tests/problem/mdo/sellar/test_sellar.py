@@ -251,7 +251,7 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
     n_samples = 3
 
     input_space = DesignSpace()
-    input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
+    input_space.add_real_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
 
     # Create the reference results without vectorization.
     scenario = MDOScenario([Sellar2(n=n)], input_space)
@@ -262,7 +262,7 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     input_space = DesignSpace()
-    input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
+    input_space.add_real_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
 
     # Create the results with vectorization.
     scenario = MDOScenario([Sellar2(n=n)], input_space)

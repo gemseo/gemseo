@@ -760,9 +760,7 @@ def test_create_random_space() -> None:
 def test_create_design_space() -> None:
     """Test the creation of a design space."""
     design_space = create_design_space()
-    design_space.add_variable(
-        "name", type_="real", lower_bound=-1, upper_bound=1, value=0
-    )
+    design_space.add_real_variable("name", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     design_space.check()
 
 
@@ -774,16 +772,9 @@ def test_read_write_design_space(tmp_wd, file_name) -> None:
         tmp_wd: Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable(
-        "name", type_="real", lower_bound=-1, upper_bound=1, value=0
-    )
-    design_space.add_variable(
-        "another_name",
-        type_="integer",
-        lower_bound=-1,
-        upper_bound=1,
-        value=[0, 0],
-        size=2,
+    design_space.add_real_variable("name", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_integer_variable(
+        "another_name", lower_bound=-1, upper_bound=1, value=(0, 0), size=2
     )
     write_design_space(design_space, file_name)
     assert Path(file_name).exists()
@@ -875,8 +866,8 @@ def test_print_configuration(capfd) -> None:
 def variables_space():
     """A mock design space."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
-    design_space.add_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
+    design_space.add_real_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     return design_space
 
 
@@ -1184,7 +1175,7 @@ def disciplines() -> list[AnalyticDiscipline]:
 def input_space() -> DesignSpace:
     """The input space on which to sample the discipline."""
     design_space = DesignSpace()
-    design_space.add_variable("inpt", lower_bound=1.0, upper_bound=2.0)
+    design_space.add_real_variable("inpt", lower_bound=1.0, upper_bound=2.0)
     return design_space
 
 

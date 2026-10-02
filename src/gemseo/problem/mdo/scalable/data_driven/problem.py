@@ -55,13 +55,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array
-from numpy import full
-from numpy import ones
 from numpy import where
-from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
@@ -343,7 +339,8 @@ class ScalableProblem:
         """
         cpl_structure = CouplingStructure(disciplines)
         st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines
-        wk_cpl_disciplines = cpl_structure.weakly_coupled_disciplines()
+        wk_cpl_disciplines = cpl_structure.weakly_coupled_disciplines
+        couplings = set(cpl_structure.all_couplings)
         obj = self.objective_function
         max_obj = self.maximize_objective
 
@@ -356,11 +353,15 @@ class ScalableProblem:
             design_space = DesignSpace()
             inputs = get_all_inputs([discipline])
             all_inputs = get_all_inputs(cplt_disciplines)
-            inputs = list(set(inputs) - set(all_inputs))
+            inputs = list(set(inputs) - set(all_inputs) - couplings)
             sub_inputs += inputs
             for name in inputs:
-                design_space.add_variable(
-                    name, self.scaled_sizes[name], "real", 0.0, 1.0, 0.5
+                design_space.add_real_variable(
+                    name,
+                    self.scaled_sizes[name],
+                    lower_bound=0.0,
+                    upper_bound=1.0,
+                    value=0.5,
                 )
             sub_scenarios.append(
                 create_scenario(
@@ -375,11 +376,15 @@ class ScalableProblem:
 
         # Construction of the system scenario
         all_inputs = get_all_inputs(disciplines)
-        inputs = list(set(all_inputs) - set(sub_inputs))
+        inputs = list(set(all_inputs) - set(sub_inputs) - couplings)
         design_space = DesignSpace()
         for name in inputs:
-            design_space.add_variable(
-                name, self.scaled_sizes[name], "real", 0.0, 1.0, 0.5
+            design_space.add_real_variable(
+                name,
+                self.scaled_sizes[name],
+                lower_bound=0.0,
+                upper_bound=1.0,
+                value=0.5,
             )
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
         return create_scenario(
@@ -404,16 +409,15 @@ class ScalableProblem:
         Returns:
             The design space.
         """
-        design_space = create_design_space()
+        design_space = DesignSpace()
         for name in self.design_variables:
             size = self.scaled_sizes[name]
-            design_space.add_variable(
+            design_space.add_real_variable(
                 name,
                 size=size,
-                type_="real",
-                lower_bound=zeros(size),
-                upper_bound=ones(size),
-                value=full(size, 0.5),
+                lower_bound=0.0,
+                upper_bound=1.0,
+                value=0.5,
             )
 
         if formulation_name == "IDF":
@@ -421,13 +425,12 @@ class ScalableProblem:
             all_couplings = set(coupling_structure.all_couplings)
             for name in all_couplings:
                 size = self.scaled_sizes[name]
-                design_space.add_variable(
+                design_space.add_real_variable(
                     name,
                     size=size,
-                    type_="real",
-                    lower_bound=zeros(size),
-                    upper_bound=ones(size),
-                    value=full(size, 0.5),
+                    lower_bound=0.0,
+                    upper_bound=1.0,
+                    value=0.5,
                 )
 
         return design_space

@@ -33,10 +33,8 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 
 from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning import PolynomialRegressor_Settings
 from gemseo.machine_learning.calibration import MLModelCalibration
-from gemseo.machine_learning.regression.model.polyreg_settings import (
-    PolynomialRegressor_Settings,
-)
 from gemseo.machine_learning.regression.quality import MSEMeasure
 from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.space import DesignSpace
@@ -57,7 +55,7 @@ test_dataset = create_rosenbrock_dataset(opt_naming=False)
 #
 # #### Create the calibration space
 calibration_space = DesignSpace()
-calibration_space.add_variable("degree", 1, "integer", 1, 10, 1)
+calibration_space.add_integer_variable("degree", lower_bound=1, upper_bound=10, value=1)
 
 # %%
 # #### Instantiate the calibration algorithm

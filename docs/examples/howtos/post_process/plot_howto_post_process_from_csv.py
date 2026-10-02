@@ -130,7 +130,7 @@ dataset.misc["optimization_metadata"] = OptimizationMetadata(
 # Some post-processors use the input space of the problem.
 # Attach it to the dataset via the `misc` attribute:
 input_space = DesignSpace()
-input_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0, value=1.0)
+input_space.add_real_variable("x", size=3, lower_bound=-1.0, upper_bound=1.0, value=1.0)
 dataset.misc["input_space"] = input_space
 
 # %%

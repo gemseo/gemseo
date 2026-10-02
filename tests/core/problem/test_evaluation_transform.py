@@ -53,8 +53,8 @@ if TYPE_CHECKING:
 def design_space() -> DesignSpace:
     """A design space with one variable of two components."""
     space = DesignSpace()
-    space.add_variable(
-        "x", size=2, lower_bound=0.0, upper_bound=10.0, value=array([1.0, 2.0])
+    space.add_real_variable(
+        "x", size=2, lower_bound=0.0, upper_bound=10.0, value=(1.0, 2.0)
     )
     return space
 
@@ -366,8 +366,8 @@ def test_transform_keeps_the_declared_value_of_a_partially_valued_space() -> Non
     so the run started from the center of the space instead.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=2.0)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=10.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=2.0)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=10.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
@@ -467,8 +467,8 @@ def test_approximated_jacobian_perturbs_a_relaxed_component() -> None:
     rounding them would zero the derivative with respect to that variable.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
     input_values = []
 
     def compute_output(input_value):
@@ -541,8 +541,8 @@ def test_driver_projects_a_relaxed_optimum_onto_the_declared_domain(
     the projection goes through the normalization of the composition too.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
     space.add_discrete_variable("d", [1, 2.75, 5, 8.5], value=1)
     relaxed_optimum = array([2.5, 3.4, relaxed_d])
 
@@ -590,7 +590,7 @@ def test_driver_result_without_relaxation_copies_the_optimum(monkeypatch) -> Non
     calls_on_the_original_problem = []
 
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(
         lambda x: array([(x - 3.0) @ (x - 3.0)]),
@@ -629,7 +629,7 @@ def test_driver_result_projection_evaluation_failure_leaves_fields_none(
     since the projection itself never fails.
     """
     space = DesignSpace()
-    space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
 
     def objective(x):
         """Return NaN at the point the relaxed optimum rounds to.
@@ -673,7 +673,7 @@ def test_driver_result_projection_arbitrary_exception_leaves_fields_none(
     converged.
     """
     space = DesignSpace()
-    space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
 
     def objective(x):
         """Raise at the point the relaxed optimum rounds to.
@@ -725,7 +725,7 @@ def test_driver_releases_the_perturbation_transformation_after_a_run() -> None:
     normalized step would give.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.differentiation_method = "finite_differences"
@@ -764,7 +764,7 @@ def test_driver_releases_the_perturbation_transformation_when_the_algorithm_rais
     monkeypatch.setattr(ScipyOpt, "_run", _raise)
 
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.differentiation_method = "finite_differences"
@@ -789,8 +789,8 @@ def test_approximated_jacobian_of_a_new_iter_observable_rounds() -> None:
     built on a space with an integer variable since nothing relaxes it.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
     input_values = []
 
     def compute_observable(input_value):
@@ -837,8 +837,8 @@ def test_approximated_jacobian_rounds_when_normalization_does() -> None:
     as soon as normalization is on.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=100.0, value=10.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=100.0, value=10.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
     input_values = []
 
     def compute_output(input_value):
@@ -895,8 +895,8 @@ def test_transform_refuses_a_transformation_built_for_another_space(
     with the bounds of that other one.
     """
     other_space = DesignSpace()
-    other_space.add_variable(
-        "x", size=2, lower_bound=0.0, upper_bound=10.0, value=array([1.0, 2.0])
+    other_space.add_real_variable(
+        "x", size=2, lower_bound=0.0, upper_bound=10.0, value=(1.0, 2.0)
     )
     composition = SpaceComposition(other_space)
     problem.bind_functions()
@@ -958,7 +958,7 @@ def test_approximated_jacobian_perturbs_in_the_working_coordinates() -> None:
     and return a Jacobian of zeros.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(lambda x: x**2, name="f"))
     problem.differentiation_method = "finite_differences"
@@ -1019,7 +1019,7 @@ def test_approximated_jacobian_follows_a_user_transformation() -> None:
     moves the working point the same way one of gemseo's does.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(lambda x: x**2, name="f"))
     problem.differentiation_method = "finite_differences"
@@ -1046,9 +1046,9 @@ def test_complex_step_perturbation_keeps_the_imaginary_part_through_the_backward
     or on the relaxed one an integer variable brings in.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=1e12, value=5e11)
     if with_integer:
-        space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+        space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
 
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(lambda x: array([x[0] ** 2]), name="f"))
@@ -1119,7 +1119,7 @@ def test_forward_differences_flip_at_the_working_upper_bound() -> None:
     the wrapped function within the original bound, `10.0`.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=10.0)
     input_values = []
 
     def compute_output(input_value):
@@ -1161,7 +1161,7 @@ def test_transform_stops_before_an_integer_normalization_hides_a_nan() -> None:
     before the map that can hide the NaN this way.
     """
     space = DesignSpace()
-    space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10, value=3)
+    space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=3)
     calls = []
     jac_calls = []
 
@@ -1215,8 +1215,8 @@ def test_relaxed_integer_perturbed_like_a_float() -> None:
     same amount, `1e-6`.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=5.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10, value=5)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=5.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
     input_values = []
 
     def compute_output(input_value):

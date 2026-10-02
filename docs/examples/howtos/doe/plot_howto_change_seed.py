@@ -46,7 +46,7 @@ from gemseo.space import DesignSpace
 discipline = AnalyticDiscipline({"y": "x**2"})
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
+design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
 
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")

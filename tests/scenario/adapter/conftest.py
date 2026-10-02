@@ -42,7 +42,7 @@ def evaluation_scenario(request) -> EvaluationScenario:
     discipline = AnalyticDiscipline({"y": "x**2 + z"}, name="d")
     discipline.io.input_grammar.defaults["z"] = array([1.0])
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = EvaluationScenario([discipline], design_space)
     scenario.add_observable("y")
     scenario.set_algorithm(

@@ -466,11 +466,11 @@ class OptimizationProblem(EvaluationProblem[DesignSpace]):
         # Add a slack variable to the copied design space for each
         # inequality constraint.
         for inequality_constraint in self.constraints.get_inequality_constraints():
-            problem.input_space.add_variable(
+            problem.input_space.add_real_variable(
                 name=self._slack_variable.format(inequality_constraint.name),
                 size=inequality_constraint.dim,
-                value=0,
-                upper_bound=0,
+                value=0.0,
+                upper_bound=0.0,
             )
 
         # Compute a restriction operator that goes from the new design space to the old

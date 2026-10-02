@@ -282,7 +282,7 @@ def test_parallel_execution(tmp_wd) -> None:
     )
 
     design_space = DesignSpace()
-    design_space.add_variable("a", 1, lower_bound=1, upper_bound=2, value=1.02)
+    design_space.add_real_variable("a", lower_bound=1.0, upper_bound=2.0, value=1.02)
 
     scenario = create_scenario(
         disc,

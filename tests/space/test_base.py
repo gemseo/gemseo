@@ -104,7 +104,7 @@ def build_bounded_design_space() -> DesignSpace:
         The design space.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0)
     return space
 
 
@@ -198,8 +198,8 @@ def test_reference_value_of_an_empty_space(cls) -> None:
 def test_reference_value_of_a_design_space() -> None:
     """Check that the reference value of a design space is its current value."""
     space = DesignSpace()
-    space.add_variable("x", size=2)
-    space.add_variable("y")
+    space.add_real_variable("x", size=2)
+    space.add_real_variable("y")
     space.set_current_variable("x", array([1.0, 2.0]))
 
     # The current value is partial, so the design space defines no reference value.
@@ -262,8 +262,8 @@ def test_current_value_of_a_design_space_covers_every_variable() -> None:
     so that writing the mapping back restores the current value exactly.
     """
     space = DesignSpace()
-    space.add_variable("x", size=2)
-    space.add_variable("y")
+    space.add_real_variable("x", size=2)
+    space.add_real_variable("y")
     assert space._current_value == {"x": None, "y": None}
 
     space.set_current_variable("x", array([1.0, 2.0]))
@@ -283,8 +283,8 @@ def test_set_current_value_of_a_partially_valued_design_space() -> None:
     and its writing back an error.
     """
     space = DesignSpace()
-    space.add_variable("x", size=2)
-    space.add_variable("y")
+    space.add_real_variable("x", size=2)
+    space.add_real_variable("y")
     space.set_current_variable("x", array([1.0, 2.0]))
     # The current value of a design space is a live view, not a copy.
     current_value = deepcopy(space._current_value)
@@ -305,7 +305,7 @@ def test_set_current_value_of_a_design_space_defining_none() -> None:
     so the write marks them all as having no value again.
     """
     space = DesignSpace()
-    space.add_variable("x")
+    space.add_real_variable("x")
     current_value = deepcopy(space._current_value)
 
     space.set_current_value({"x": array([0.0])})
@@ -322,8 +322,8 @@ def test_set_current_value_of_a_design_space_ignores_unknown_names() -> None:
     so the mapping can name variables that the space no longer has.
     """
     space = DesignSpace()
-    space.add_variable("x", value=1.0)
-    space.add_variable("y", value=2.0)
+    space.add_real_variable("x", value=1.0)
+    space.add_real_variable("y", value=2.0)
     current_value = deepcopy(space._current_value)
 
     space.filter(["x"])
@@ -394,7 +394,7 @@ def test_add_default_variable_of_a_design_space() -> None:
 def test_to_hdf_of_a_design_space(tmp_wd) -> None:
     """Check that a design space can be written to an HDF file."""
     space = DesignSpace()
-    space.add_variable("x", size=2)
+    space.add_real_variable("x", size=2)
     file_path = Path("ds.h5")
 
     space._to_hdf(file_path, append=False, hdf_node_path="")
@@ -420,7 +420,7 @@ def test_supports_normalization(cls, supports_normalization) -> None:
 def test_render_footer_is_empty_by_default() -> None:
     """Check that a space of variables has no footer by default."""
     space = DesignSpace()
-    space.add_variable("x")
+    space.add_real_variable("x")
     table = space.get_pretty_table(with_index=True, capitalize=True).get_string()
     assert space._render_footer() == ""
     assert str(space) == f"Design space:\n{table}"
@@ -484,7 +484,7 @@ def test_variables_view_has_integer_variables(space) -> None:
     assert not space.variables.has_variables_of_type(DataType.INTEGER)
 
     if isinstance(space, DesignSpace):
-        space.add_variable("n", type_=DesignSpace.DesignVariableType.INTEGER)
+        space.add_integer_variable("n")
         assert space.variables.has_variables_of_type(DataType.INTEGER)
 
 
@@ -573,7 +573,7 @@ def test_variables_view_replaces_a_changed_variable(bound_name, stale_bound) -> 
     the bounds of a random variable derive from its distribution.
     """
     space = DesignSpace()
-    space.add_variable("x")
+    space.add_real_variable("x")
     variable = space.variables["x"]
 
     getattr(space, f"set_{bound_name}")("x", 1.0)
@@ -603,7 +603,7 @@ def test_variables_view_gives_unfreezable_bounds(
 ) -> None:
     """Check that a bound read through the view cannot be unfrozen."""
     space = DesignSpace()
-    space.add_variable("x")
+    space.add_real_variable("x")
     bound = getattr(copy_space(space).variables["x"], bound_name)
 
     assert not bound.flags.writeable

@@ -83,7 +83,7 @@ class ScalableDesignSpace(DesignSpace):
             name_to_default_value=name_to_default_value,
         )
         for variable in design_space.variables:
-            self.add_variable(
+            self.add_real_variable(
                 name=variable.name,
                 size=variable.size,
                 lower_bound=variable.lower_bound,

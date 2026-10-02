@@ -53,8 +53,8 @@ if TYPE_CHECKING:
 #
 # This how-to needs a design space.
 design_space = DesignSpace()
-design_space.add_variable("length", lower_bound=0.0, upper_bound=10.0)
-design_space.add_variable("width", lower_bound=0.0, upper_bound=10.0)
+design_space.add_real_variable("length", lower_bound=0.0, upper_bound=10.0)
+design_space.add_real_variable("width", lower_bound=0.0, upper_bound=10.0)
 
 # %%
 # ### 1. Implement a vectorizable function

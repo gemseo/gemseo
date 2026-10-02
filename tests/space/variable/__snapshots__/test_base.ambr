@@ -164,7 +164,7 @@
   lower_bound.list[union[int,float]]
     Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/list_type
-  lower_bound.tuple[union[int,float]]
+  lower_bound.`tuple[union[int,float], ...]`
     Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
   lower_bound.int
@@ -187,7 +187,7 @@
   lower_bound.list[union[int,float]]
     Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/list_type
-  lower_bound.tuple[union[int,float]]
+  lower_bound.`tuple[union[int,float], ...]`
     Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
   lower_bound.int
@@ -210,7 +210,7 @@
   upper_bound.list[union[int,float]]
     Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/list_type
-  upper_bound.tuple[union[int,float]]
+  upper_bound.`tuple[union[int,float], ...]`
     Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
   upper_bound.int
@@ -233,7 +233,7 @@
   upper_bound.list[union[int,float]]
     Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/list_type
-  upper_bound.tuple[union[int,float]]
+  upper_bound.`tuple[union[int,float], ...]`
     Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
   upper_bound.int

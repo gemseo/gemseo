@@ -24,31 +24,28 @@ on one of the diagonals of its input space.
 
 from __future__ import annotations
 
-from gemseo import create_design_space
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import DiagonalDOE_Settings
 from gemseo.post.dataset import PairPlot
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ## Create the discipline
 #
 # First, we create an [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline]
-# implementing the function: $f(x)=2x-3\sin(2\pi y)$
-# and set its cache policy to `"MemoryFullCache"`.
+# implementing the function: $f(x)=2x-3\sin(2\pi y)$.
 
-discipline = create_discipline(
-    "AnalyticDiscipline", expressions={"z": "2*x-3*sin(2*pi*y)"}
-)
+discipline = AnalyticDiscipline({"z": "2*x-3*sin(2*pi*y)"})
 
 # %%
 # ## Create the design space
 #
 # Then, we create a [DesignSpace][gemseo.space.design.DesignSpace]
 # where $x$ and $y$ vary between 0 and 1.
-design_space = create_design_space()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
+design_space = DesignSpace()
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # ## Sample with the default mode
@@ -59,12 +56,8 @@ design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 # Note that we use the default configuration:
 # all the disciplinary inputs vary proportionally
 # from their lower bounds to their upper bounds.
-scenario = create_scenario(
-    discipline,
-    "z",
-    design_space,
-    formulation_name="DisciplinaryOpt",
-)
+scenario = MDOScenario([discipline], design_space)
+scenario.add_objective("z")
 scenario.execute(DiagonalDOE_Settings(n_samples=10))
 dataset = scenario.to_dataset(opt_naming=False)
 PairPlot(dataset).execute(save=False, show=True)
@@ -79,12 +72,8 @@ PairPlot(dataset).execute(save=False, show=True)
 # where the $(x,y)$ points follow the $t\mapsto -t$ line
 # while  the $(x,y)$ points follow the $t\mapsto t$ line
 # with the default configuration.
-scenario = create_scenario(
-    discipline,
-    "z",
-    design_space,
-    formulation_name="DisciplinaryOpt",
-)
+scenario = MDOScenario([discipline], design_space)
+scenario.add_objective("z")
 scenario.execute(DiagonalDOE_Settings(n_samples=10, reverse=["y"]))
 dataset = scenario.to_dataset(opt_naming=False)
 PairPlot(dataset).execute(save=False, show=True)

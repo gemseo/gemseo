@@ -50,7 +50,7 @@ def test_jac_wrt_dv_or_non_dv(options, expected_jac):
     discipline = AnalyticDiscipline({"f": "2*a+3*b", "c": "2*a+3*b", "o": "2*a+3*b"})
 
     design_space = DesignSpace()
-    design_space.add_variable("a")
+    design_space.add_real_variable("a")
 
     problem = OptimizationProblem(design_space)
 
@@ -78,7 +78,7 @@ def test_scenario_with_non_numeric_discipline_input() -> None:
     discipline = DisciplineWithNonNumericInput()
 
     design_space = DesignSpace()
-    design_space.add_variable("z", value=0.5, lower_bound=-100.0, upper_bound=50.0)
+    design_space.add_real_variable("z", value=0.5, lower_bound=-100.0, upper_bound=50.0)
 
     scenario = create_scenario(
         [discipline],

@@ -251,7 +251,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
                 self._settings.multi_start_algo_settings.target_class_name
             )
             design_space = DesignSpace()
-            design_space.add_variable(
+            design_space.add_real_variable(
                 "x",
                 size=self.__optimization_space.getDimension(),
                 lower_bound=self.__optimization_space.getLowerBound(),

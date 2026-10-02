@@ -60,7 +60,7 @@ class Power2(OptimizationProblem):
             initial_value: The initial design value of the problem.
         """  # noqa: D205 D212
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x", 3, lower_bound=-1.0, upper_bound=1.0, value=initial_value
         )
 

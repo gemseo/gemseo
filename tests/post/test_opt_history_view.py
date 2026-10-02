@@ -118,9 +118,11 @@ def test_461(case, snapshot_matplotlib) -> None:
     2. Design space of dimension > 1 and vector output.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2, upper_bound=2.0, value=-2.0)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-2.0)
     if case == 2:
-        design_space.add_variable("y", lower_bound=-2, upper_bound=2.0, value=-2.0)
+        design_space.add_real_variable(
+            "y", lower_bound=-2.0, upper_bound=2.0, value=-2.0
+        )
 
     problem = OptimizationProblem(design_space)
     if case == 1:
@@ -148,7 +150,7 @@ def test_variable_names(snapshot_matplotlib) -> None:
 def test_no_gradient_history(caplog) -> None:
     """Check that OptHistoryView works without gradient history."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
@@ -164,7 +166,7 @@ def test_no_gradient_history(caplog) -> None:
 def test_no_optimum() -> None:
     """Check that OptHistoryView does not mark a best design that does not exist."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
@@ -205,7 +207,7 @@ def test_get_history_design_variable_is_function():
     also a coupling variable.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1, upper_bound=1.5, value=0.5)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.5, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="x")

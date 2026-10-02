@@ -33,11 +33,11 @@ from gemseo.space.design import DesignSpace
 def default_design_space() -> DesignSpace:
     """The expected default design space."""
     design_space = DesignSpace()
-    design_space.add_variable("x_0", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y_1", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y_2", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x_0", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x_2", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y_1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y_2", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return design_space
 
 
@@ -45,23 +45,23 @@ def default_design_space() -> DesignSpace:
 def custom_design_space() -> DesignSpace:
     """The expected default design space."""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x_0", size=2, lower_bound=0.0, upper_bound=1.0, value=array([0.3, 0.7])
+    design_space.add_real_variable(
+        "x_0", size=2, lower_bound=0.0, upper_bound=1.0, value=(0.3, 0.7)
     )
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0, value=0.1)
-    design_space.add_variable(
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=1.0, value=0.1)
+    design_space.add_real_variable(
         "x_2", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "x_3", size=3, lower_bound=0.0, upper_bound=1.0, value=0.3
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "y_1", size=4, lower_bound=0.0, upper_bound=1.0, value=0.4
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "y_2", size=5, lower_bound=0.0, upper_bound=1.0, value=0.55
     )
-    design_space.add_variable(
+    design_space.add_real_variable(
         "y_3", size=6, lower_bound=0.0, upper_bound=1.0, value=0.5
     )
     return design_space

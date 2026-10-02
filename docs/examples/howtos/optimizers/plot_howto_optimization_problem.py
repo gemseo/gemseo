@@ -71,7 +71,7 @@ objective = f - g
 # sets the variable bounds and the initial point:
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5)
+design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5)
 
 # %%
 # ### 3. Assemble the optimization problem

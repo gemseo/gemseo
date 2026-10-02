@@ -218,7 +218,9 @@ def test_normalize_design_space():
         design_space = DesignSpace()
         # A range straddling neither 0 nor 1,
         # so that a point of the normalized space is outside the declared bounds.
-        design_space.add_variable("x", lower_bound=10.0, upper_bound=20.0, value=12.0)
+        design_space.add_real_variable(
+            "x", lower_bound=10.0, upper_bound=20.0, value=12.0
+        )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(
             lambda x: array([(x[0] - 16.0) ** 2]),
@@ -255,7 +257,7 @@ def test_relaxed_integer_variable():
     must nonetheless account for the relaxation the sub-optimizations did.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", type_="integer", lower_bound=0, upper_bound=10)
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 3.4) ** 2]),

@@ -122,8 +122,9 @@ tell where the integer variables are.
 
 ??? abstract "API"
 
+    - [add_real_variable()][gemseo.space.design.DesignSpace.add_real_variable]
     - [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
-    - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
+    - [add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
     - [variables][gemseo.space.design.DesignSpace.variables]
     - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]

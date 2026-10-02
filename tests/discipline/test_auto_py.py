@@ -25,7 +25,6 @@ from numpy import atleast_1d
 from numpy import ndarray
 from numpy import ones
 from numpy import sqrt
-from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
@@ -53,12 +52,12 @@ x_dim = 4
 @pytest.fixture
 def design_space():
     design_space = create_design_space()
-    design_space.add_variable(
+    design_space.add_real_variable(
         "x",
         x_dim,
-        lower_bound=-2 * ones(x_dim),
-        upper_bound=2 * ones(x_dim),
-        value=zeros(x_dim),
+        lower_bound=-2.0,
+        upper_bound=2.0,
+        value=0.0,
     )
     return design_space
 

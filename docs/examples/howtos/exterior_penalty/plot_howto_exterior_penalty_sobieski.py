@@ -30,10 +30,13 @@ into an unconstrained one by folding the constraints into the objective function
 
 from __future__ import annotations
 
-from gemseo import create_discipline
 from gemseo.optimization import L_BFGS_B_Settings
 from gemseo.post import BasicHistory_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 from gemseo.scenario import MDOScenario
 
 # %%
@@ -43,12 +46,12 @@ from gemseo.scenario import MDOScenario
 #
 # You use the Sobieski SSBJ test case.
 # See [the benchmark problems][concept-mdo-problems] for a full description.
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 
 design_space = SobieskiDesignSpace()
 

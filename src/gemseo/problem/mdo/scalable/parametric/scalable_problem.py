@@ -162,7 +162,7 @@ class ScalableProblem(_ScalableProblem):
         dg = lambda x: A  # noqa: E731
 
         design_space = DesignSpace()
-        design_space.add_variable(
+        design_space.add_real_variable(
             "x", size=Q.shape[0], lower_bound=0.0, upper_bound=1.0, value=0.5
         )
 

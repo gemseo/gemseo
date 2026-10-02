@@ -109,8 +109,16 @@ being a seed is what matters, not the variable's role.
     - the variable names of a [DesignSpace][gemseo.space.design.DesignSpace],
     - the objective, constraint and observable names
       passed to a formulation or to a scenario,
-    - the coupling names passed to [create_mda()][gemseo.create_mda]
-      and any variable name stored in settings.
+    - an explicit `coupling_structure` passed in the settings of a
+      [BaseMDA][gemseo.mda.core.base.BaseMDA]: built before the renaming,
+      it is not recomputed from the disciplines and so keeps the bare
+      coupling names,
+    - any variable name stored in settings,
+      whenever these settings are built,
+    - and any variable name cached by an object built before the propagation,
+      an MDA included;
+      an MDA built afterwards without an explicit `coupling_structure`
+      computes its couplings from the renamed disciplines.
 
     None of these are reachable from the disciplines,
     so no diagnostic can be emitted for them:

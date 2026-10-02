@@ -65,7 +65,7 @@ def disciplines_and_scenario() -> list[MyDiscipline]:
         AnalyticDiscipline({"yb": "xb"}, name="fb"),
     ]
     design_space = DesignSpace()
-    design_space.add_variable("xa")
+    design_space.add_real_variable("xa")
     scenario = MDOScenario(sub_disciplines, design_space)
     scenario.add_objective("ya")
     return [*disciplines, scenario]

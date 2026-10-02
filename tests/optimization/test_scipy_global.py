@@ -159,7 +159,7 @@ def test_differential_evolution_parallel():
 def unconstrained_problem() -> OptimizationProblem:
     """An unconstrained optimization problem"""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=array([-1.0]), upper_bound=array([1.0]))
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
     return problem
@@ -180,10 +180,8 @@ def _create_integer_problem() -> OptimizationProblem:
         The problem.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=-5, upper_bound=5, value=0
-    )
-    design_space.add_variable("y", lower_bound=-5.0, upper_bound=5.0, value=0.0)
+    design_space.add_integer_variable("x", lower_bound=-5, upper_bound=5, value=0)
+    design_space.add_real_variable("y", lower_bound=-5.0, upper_bound=5.0, value=0.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 2.0) ** 2 + (x[1] - 3.3) ** 2]),

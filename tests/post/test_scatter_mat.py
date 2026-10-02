@@ -22,7 +22,6 @@ from pathlib import Path
 
 import pytest
 from numpy import array
-from numpy import ones
 from numpy import power
 
 from gemseo import create_design_space
@@ -135,19 +134,19 @@ def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> Non
         tmp_wd : Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
-    design_space.add_variable(
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable(
         "x_shared",
         2,
-        lower_bound=(-10, 0.0),
+        lower_bound=(-10.0, 0.0),
         upper_bound=(10.0, 10.0),
-        value=array([4.0, 3.0]),
+        value=(4.0, 3.0),
     )
-    design_space.add_variable(
-        "y_0", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    design_space.add_real_variable(
+        "y_0", lower_bound=-100.0, upper_bound=100.0, value=1.0
     )
-    design_space.add_variable(
-        "y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    design_space.add_real_variable(
+        "y_1", lower_bound=-100.0, upper_bound=100.0, value=1.0
     )
     scenario = create_scenario(
         sellar_disciplines,

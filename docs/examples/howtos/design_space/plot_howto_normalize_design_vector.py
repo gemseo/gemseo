@@ -32,9 +32,8 @@ The design space has two methods to normalize variables:
 from __future__ import annotations
 
 from numpy import array
-from numpy import ones
 
-from gemseo import create_design_space
+from gemseo.space import DesignSpace
 
 # %%
 # ### Prerequisites
@@ -42,11 +41,11 @@ from gemseo import create_design_space
 # This how-to needs a design space.
 #
 # First, create a design space.
-design_space = create_design_space()
-design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
-design_space.add_variable("x2", lower_bound=-10, upper_bound=10)
-design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
-design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
+design_space = DesignSpace()
+design_space.add_real_variable("x1", lower_bound=-10.0, upper_bound=10.0)
+design_space.add_real_variable("x2", lower_bound=-10.0, upper_bound=10.0)
+design_space.add_real_variable("x3", lower_bound=-10.0, upper_bound=10.0)
+design_space.add_real_variable("x4", value=1.0, lower_bound=-10.0, upper_bound=10.0)
 
 # %%
 # ### 1. Normalize a given array

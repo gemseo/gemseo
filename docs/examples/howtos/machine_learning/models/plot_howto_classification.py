@@ -32,9 +32,6 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo.machine_learning.classification.model import KNNClassifier
-from gemseo.machine_learning.classification.model.knn_settings import (
-    KNNClassifier_Settings,
-)
 from gemseo.machine_learning.classification.quality import F1Measure
 from gemseo.problem.dataset.iris import create_iris_dataset
 
@@ -49,10 +46,7 @@ training_dataset = create_iris_dataset(as_io=True)
 
 # %%
 # ### 1. Create a classification model
-model = KNNClassifier(
-    training_dataset,
-    settings=KNNClassifier_Settings(),
-)
+model = KNNClassifier(training_dataset)
 model.learn()
 model
 

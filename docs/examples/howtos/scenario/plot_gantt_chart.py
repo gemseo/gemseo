@@ -33,18 +33,21 @@ on the Sobieski's SSBJ problem.
 
 from __future__ import annotations
 
-from gemseo import configure
-from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import configuration
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.optimization import SLSQP_Settings
 from gemseo.post.gantt_chart import create_gantt_chart
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Enable the recording of statistics
 #
-configure(enable_discipline_statistics=True)
+configuration.enable_discipline_statistics = True
 
 # %%
 # ## Create the scenario
@@ -53,12 +56,12 @@ configure(enable_discipline_statistics=True)
 #
 # For this,
 # you instantiate the disciplines:
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiStructure(),
+    SobieskiMission(),
+]
 
 # %%
 # as well as the design space:
@@ -69,13 +72,8 @@ design_space = SobieskiDesignSpace()
 # given these disciplines and design space,
 # you build an MDO scenario using the MDF formulation
 # in order to maximize the range `"y_4"` with respect to the design variables:
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
-)
+scenario = MDOScenario(disciplines, design_space)
+scenario.add_objective("y_4", minimize=False)
 
 # %%
 # and satisfy the inequality constraints

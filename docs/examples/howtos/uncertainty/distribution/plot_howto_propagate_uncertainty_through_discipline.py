@@ -37,11 +37,11 @@ so the samples follow the probability distributions of the random variables.
 
 from __future__ import annotations
 
-from gemseo import create_random_space
 from gemseo import sample_disciplines
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_LHS_Settings
 from gemseo.post.dataset import PairPlot
+from gemseo.space import RandomSpace
 from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
 from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
 
@@ -55,7 +55,7 @@ discipline = AnalyticDiscipline({"z": "x+y"})
 
 # %%
 # Build a random space with two random variables:
-random_space = create_random_space()
+random_space = RandomSpace()
 random_space.add_variable(
     "x", SPUniformDistribution_Settings(minimum=-2.0, maximum=2.0)
 )

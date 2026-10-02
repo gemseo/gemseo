@@ -35,6 +35,7 @@ from __future__ import annotations
 
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.optimization import OptimizationProblem
 from gemseo.space import DesignSpace
 
@@ -51,12 +52,12 @@ objective = ArrayFunction(
 )
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 optimization_problem = OptimizationProblem(design_space)
 optimization_problem.objective = objective
 
-execute_algo(optimization_problem, "NLOPT_COBYLA", max_iter=10)
+execute_algo(optimization_problem, settings_model=NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
 # ### 1. Save the results to an HDF5 file

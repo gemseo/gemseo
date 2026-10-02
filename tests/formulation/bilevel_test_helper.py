@@ -229,10 +229,10 @@ def create_dummy_bilevel_scenario(formulation_name: str) -> MDOScenario:
     )
 
     system_design_space = create_design_space()
-    system_design_space.add_variable("x_3")
+    system_design_space.add_real_variable("x_3")
 
     sub_design_space_1 = create_design_space()
-    sub_design_space_1.add_variable("x_1")
+    sub_design_space_1.add_real_variable("x_1")
     sub_scenario_1 = create_scenario(
         [discipline_1, discipline_3]
         + ([discipline_2] if formulation_name == "BiLevelBCD" else []),
@@ -242,7 +242,7 @@ def create_dummy_bilevel_scenario(formulation_name: str) -> MDOScenario:
     )
 
     sub_design_space_2 = create_design_space()
-    sub_design_space_2.add_variable("x_2")
+    sub_design_space_2.add_real_variable("x_2")
     sub_scenario_2 = create_scenario(
         [discipline_2, discipline_3]
         + ([discipline_1] if formulation_name == "BiLevelBCD" else []),

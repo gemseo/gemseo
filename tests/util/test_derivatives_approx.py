@@ -436,7 +436,7 @@ def test_derivatives_on_design_boundaries(
 ) -> None:
     """Check that finite differences on the design boundaries use a backward step."""
     design_space = DesignSpace()
-    design_space.add_variable(
+    design_space.add_real_variable(
         "x", lower_bound=lower_bound, upper_bound=upper_bound, value=2.0
     )
 
@@ -480,7 +480,7 @@ def test_derivatives_on_boundaries_without_design_space(
     input_value = array([2.0])
 
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=2.0)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=2.0)
 
     def square(x: ndarray) -> ndarray:
         return x**2
@@ -526,7 +526,7 @@ def test_f_gradient(use_design_space, parallel, cls):
     """Check the BaseGradientApproximator.f_gradient method."""
     if use_design_space:
         design_space = DesignSpace()
-        design_space.add_variable("x", size=2)
+        design_space.add_real_variable("x", size=2)
     else:
         design_space = None
 

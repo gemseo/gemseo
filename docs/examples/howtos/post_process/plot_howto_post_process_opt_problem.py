@@ -54,14 +54,12 @@ objective = ArrayFunction(
 )
 
 design_space = DesignSpace()
-design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 optimization_problem = OptimizationProblem(design_space)
 optimization_problem.objective = objective
 
-execute_algo(
-    optimization_problem, "opt", settings_model=NLOPT_COBYLA_Settings(max_iter=10)
-)
+execute_algo(optimization_problem, settings_model=NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
 # ### 1. Post-process the optimization problem

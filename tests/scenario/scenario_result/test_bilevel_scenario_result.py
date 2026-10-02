@@ -73,8 +73,8 @@ def create_scenario_with_one_sub_scenario(
         The bi-level MDO scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": expression})],
         design_space.filter(["y"], copy=True),
@@ -414,9 +414,9 @@ def create_scenario_with_skipped_execution(samples: ndarray) -> MDOScenario:
         The bi-level MDO scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("w", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("w", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x+y"})],
         design_space.filter(["y"], copy=True),
@@ -548,9 +548,9 @@ def create_scenario_with_coupling(samples: ndarray) -> MDOScenario:
         The bi-level MDO scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("x2", lower_bound=0.0, upper_bound=5.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x2", lower_bound=0.0, upper_bound=5.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"zA": "(y-x1)**2 + c"})],
         design_space.filter(["y"], copy=True),
@@ -606,10 +606,10 @@ def test_get_sub_optimization_result_with_cache_hit_and_other_coupling() -> None
     must be identified neither positionally nor by the last execution matching `x1`.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("x2", lower_bound=0.0, upper_bound=5.0, value=0.5)
-    design_space.add_variable("w", lower_bound=0.0, upper_bound=5.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x2", lower_bound=0.0, upper_bound=5.0, value=0.5)
+    design_space.add_real_variable("w", lower_bound=0.0, upper_bound=5.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"zA": "(y-x1)**2 + c"})],
         design_space.filter(["y"], copy=True),
@@ -654,8 +654,8 @@ def test_get_sub_optimization_result_with_coupling_only_input() -> None:
     is still the one recorded when the optimum was stored.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"zA": "(y-c)**2 + c"})],
         design_space.filter(["y"], copy=True),
@@ -718,8 +718,8 @@ def test_get_sub_optimization_result_with_save_opt_history_only(tmp_wd) -> None:
 def scenario_without_adapter_inputs() -> MDOScenario:
     """An executed bi-level scenario whose sub-scenario adapter has no inputs."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"w": "y**2"})],
         design_space.filter(["y"], copy=True),
@@ -817,9 +817,9 @@ def test_get_sub_scenario_history_dataset_sorted_upper_level_designs() -> None:
     sorting makes the layout of the group deterministic.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("x2", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x2", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x1+x2+y"})],
         design_space.filter(["y"], copy=True),
@@ -859,9 +859,9 @@ def test_get_sub_scenario_history_dataset_with_homonymous_sub_scenarios(
     would be that of another sub-scenario.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("v", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("v", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenarios = []
     for local_name, output_name in [("y", "z1"), ("v", "z2")]:
         sub_scenario = MDOScenario(
@@ -968,8 +968,8 @@ def test_get_sub_scenario_history_dataset_non_numeric_upper_level_value(
     produced by the upper level.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [StringConsumer()],
         design_space.filter(["y"], copy=True),
@@ -1051,9 +1051,9 @@ def test_get_sub_optimization_result_with_adapter_cache(
     and so no sub-optimization result is returned.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.9)
-    design_space.add_variable("w", lower_bound=0.0, upper_bound=1.0, value=0.0)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.9)
+    design_space.add_real_variable("w", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(y-x)**2 + x"})],
         design_space.filter(["y"], copy=True),
@@ -1083,8 +1083,8 @@ def test_get_sub_optimization_result_with_adapter_cache(
 def scenario_with_discipline_as_sub_scenario() -> MDOScenario:
     """A scenario whose second sub-scenario is a discipline."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.9)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.9)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(y-x)**2 + x"})],
         design_space.filter(["y"], copy=True),
@@ -1161,8 +1161,8 @@ def test_sub_optimization_result_n_obj_call(enable_function_statistics) -> None:
     so the matched execution of the sub-scenario is not the last one.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(y-x)**2 + x"})],
         design_space.filter(["y"], copy=True),

@@ -50,7 +50,7 @@ from gemseo.util.testing.helper import assert_exception
 def design_space() -> DesignSpace:
     """A design space with a single variable."""
     space = DesignSpace()
-    space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
     return space
 
 
@@ -684,7 +684,7 @@ def test_approximated_jacobian_with_a_transformation_can_be_pickled() -> None:
     so that a worker perturbs the working point the same way.
     """
     space = DesignSpace()
-    space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
     recorded = EvaluationFunction(
         ArrayFunction(compute_squared_norm, name="f", dim=1),
         None,
@@ -714,7 +714,7 @@ def test_approximated_jacobian_already_built_can_be_pickled() -> None:
     which pickles one before it is ever built.
     """
     space = DesignSpace()
-    space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
     recorded = EvaluationFunction(
         ArrayFunction(compute_squared_norm, name="f", dim=1),
         None,

@@ -31,7 +31,7 @@ def test_project_onto_declared_domain_with_nothing_to_relax() -> None:
     built and the value is handed back untouched, the same object.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
     value = array([2.5])
 
     assert project_onto_declared_domain(space, value) is value
@@ -45,8 +45,8 @@ def test_project_onto_declared_domain_rounds_and_snaps() -> None:
     modified in place.
     """
     space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=10.0)
-    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=10)
+    space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
+    space.add_integer_variable("i", lower_bound=0, upper_bound=10)
     space.add_discrete_variable("d", [1, 3, 8])
     value = array([2.5, 4.6, 2.0])
 

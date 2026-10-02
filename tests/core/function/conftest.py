@@ -27,7 +27,7 @@ from gemseo.space.design import DesignSpace
 def problem_with_identity() -> OptimizationProblem:
     """An optimization problem whose objective is the identity function."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="f", special_repr="Identity")
     return problem

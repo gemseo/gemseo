@@ -32,28 +32,34 @@ Here, you will create and exploit the
 
 from __future__ import annotations
 
-from gemseo import create_discipline
 from gemseo import generate_n2_plot
 from gemseo.formulation import MDF_Settings
 from gemseo.linear import LGMRES_Settings
 from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.optimization import SLSQP_Settings
 from gemseo.post import OptHistoryView_Settings
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
 from gemseo.scenario import MDOScenario
 
 # %%
 # ## Step 1 — The disciplines
 #
-# The Sobieski test case is implemented in GEMSEO
-# so that the disciplines can be fetched.
-# Here, you can simply create the disciplines using their names:
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+# The Sobieski test case is implemented in GEMSEO,
+# so you can simply instantiate its four disciplines:
+# [SobieskiPropulsion][gemseo.problem.mdo.sobieski.discipline.SobieskiPropulsion],
+# [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics],
+# [SobieskiMission][gemseo.problem.mdo.sobieski.discipline.SobieskiMission]
+# and [SobieskiStructure][gemseo.problem.mdo.sobieski.discipline.SobieskiStructure].
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 # %%
 # You can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with Python's `print()` function.

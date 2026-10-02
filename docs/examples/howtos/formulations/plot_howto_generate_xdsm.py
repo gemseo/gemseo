@@ -30,9 +30,12 @@ GEMSEO can generate the XDSM of your scenario with the
 
 from __future__ import annotations
 
-from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo.problem.mdo.sobieski import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiMission
+from gemseo.problem.mdo.sobieski import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski import SobieskiStructure
+from gemseo.scenario import MDOScenario
 
 # %%
 # ### Prerequisites
@@ -41,20 +44,15 @@ from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 #
 # Here, the Sobieski test case is used, with the MDF formulation.
 
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiMission",
-    "SobieskiStructure",
-])
+disciplines = [
+    SobieskiPropulsion(),
+    SobieskiAerodynamics(),
+    SobieskiMission(),
+    SobieskiStructure(),
+]
 design_space = SobieskiDesignSpace()
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    maximize_objective=True,
-    formulation_name="MDF",
-)
+scenario = MDOScenario(disciplines, design_space)
+scenario.add_objective("y_4", minimize=False)
 
 # %%
 # ### 1. Generate your XDSM

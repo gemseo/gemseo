@@ -44,9 +44,9 @@ from gemseo.space import DesignSpace
 discipline = AnalyticDiscipline({"y": "a*b + c"})
 
 design_space = DesignSpace()
-design_space.add_variable("a", lower_bound=1.0, upper_bound=10.0)
-design_space.add_variable("b", lower_bound=1.0, upper_bound=10.0)
-design_space.add_variable("c", lower_bound=1.0, upper_bound=10.0)
+design_space.add_real_variable("a", lower_bound=1.0, upper_bound=10.0)
+design_space.add_real_variable("b", lower_bound=1.0, upper_bound=10.0)
+design_space.add_real_variable("c", lower_bound=1.0, upper_bound=10.0)
 
 # %%
 # ### 1. Define the samples

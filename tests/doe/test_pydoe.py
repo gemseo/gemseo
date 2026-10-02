@@ -114,9 +114,7 @@ def test_integer_lhs(relax_integer_variables) -> None:
     whatever `relax_integer_variables` asks for.
     """
     problem = Rosenbrock()
-    problem.input_space.add_variable(
-        "y", type_="integer", lower_bound=10.0, upper_bound=15.0
-    )
+    problem.input_space.add_integer_variable("y", lower_bound=10, upper_bound=15)
     doe_library_factory.execute(
         problem,
         settings=PYDOE_LHS_Settings(

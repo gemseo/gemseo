@@ -23,9 +23,7 @@ without any deterministic variable.
 
 ## Solution
 
-Use a [RandomSpace][gemseo.space.random.RandomSpace],
-which can be created with
-[create_random_space()][gemseo.create_random_space].
+Use a [RandomSpace][gemseo.space.random.RandomSpace].
 Pass distribution settings objects (importable from
 [gemseo.uncertainty.distribution][gemseo.uncertainty.distribution])
 to describe each variable.
@@ -41,7 +39,7 @@ from __future__ import annotations
 from openturns import CorrelationMatrix
 from openturns import NormalCopula
 
-from gemseo import create_random_space
+from gemseo.space import RandomSpace
 from gemseo.uncertainty.distribution import OTNormalDistribution_Settings
 from gemseo.uncertainty.distribution import OTUniformDistribution_Settings
 from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
@@ -52,7 +50,7 @@ from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
 #
 # A [RandomSpace][gemseo.space.random.RandomSpace]
 # requires no mandatory arguments:
-random_space = create_random_space()
+random_space = RandomSpace()
 
 # %%
 # ### 2. Add uncertain variables
@@ -143,7 +141,7 @@ random_space.compute_samples(n_samples=5, as_dict=True)
 #     `SPJointDistribution does not support dependent variables.`
 #     The space below is therefore defined with `OT` settings.
 #
-correlated_space = create_random_space()
+correlated_space = RandomSpace()
 correlated_space.add_variable(
     "x", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
 )
@@ -185,8 +183,7 @@ correlated_space.compute_samples(n_samples=5, as_dict=True)
 # %%
 # ## Summary
 #
-# - [RandomSpace][gemseo.space.random.RandomSpace],
-#   created with [create_random_space()][gemseo.create_random_space],
+# - [RandomSpace][gemseo.space.random.RandomSpace]
 #   defines a space containing only random variables;
 #   it has neither bounds setters, nor current value, nor normalization,
 #   unlike a [DesignSpace][gemseo.space.design.DesignSpace];

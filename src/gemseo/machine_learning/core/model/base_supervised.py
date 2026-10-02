@@ -217,7 +217,7 @@ class BaseMLSupervisedModel(BaseMLModel):
             data = self.learning_set.get_view(
                 variable_names=input_name, group_names=self.learning_set.input_group
             ).to_numpy()
-            self.validity_domain.add_variable(
+            self.validity_domain.add_real_variable(
                 input_name,
                 size=data.shape[1],
                 lower_bound=data.min(axis=0),

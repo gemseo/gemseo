@@ -82,7 +82,7 @@ def eval_jac(request) -> bool:
 def design_space() -> DesignSpace:
     """The design space."""
     ds = DesignSpace()
-    ds.add_variable("in", size=2, lower_bound=0.0, upper_bound=2.0)
+    ds.add_real_variable("in", size=2, lower_bound=0.0, upper_bound=2.0)
     return ds
 
 
@@ -414,13 +414,8 @@ def test_doe_vectorize_with_normalization_and_integers(vectorize):
     callbacks = []
     for vectorized in (False, vectorize):
         design_space = DesignSpace()
-        design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
-        design_space.add_variable(
-            "i",
-            lower_bound=0,
-            upper_bound=4,
-            type_=DesignSpace.DesignVariableType.INTEGER,
-        )
+        design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0)
+        design_space.add_integer_variable("i", lower_bound=0, upper_bound=4)
         problem = EvaluationProblem(design_space)
         problem.add_observable(
             ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized)
@@ -460,7 +455,7 @@ def test_doe_normalization_of_a_densified_sparse_jacobian(caplog):
     and the DOE logged the failure and skipped the sample.
     """
     design_space = DesignSpace()
-    design_space.add_variable("in", size=2, lower_bound=0.0, upper_bound=2.0)
+    design_space.add_real_variable("in", size=2, lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
 

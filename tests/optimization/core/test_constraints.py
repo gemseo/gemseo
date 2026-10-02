@@ -28,7 +28,7 @@ from gemseo.space.design import DesignSpace
 def constraints(problem) -> Constraints:
     """A set of constraints."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
     constraints = Constraints(design_space, ConstraintTolerances())
     constraints.append(
         ArrayFunction(lambda x: x, name="c1", f_type=ArrayFunction.FunctionType.EQ)

@@ -340,13 +340,13 @@ def test_custom_optimization_space(dataset, optimization_space_type):
     if optimization_space_type is None:
         optimization_space = None
     elif optimization_space_type == "full":
-        lower_bound = [1e-2, 1e-3, 1e-2, 1e-3]
-        upper_bound = [1e1, 1e2, 1e1, 1e2]
-        optimization_space.add_variable(
+        lower_bound = (1e-2, 1e-3, 1e-2, 1e-3)
+        upper_bound = (1e1, 1e2, 1e1, 1e2)
+        optimization_space.add_real_variable(
             "x",
             size=4,
-            lower_bound=array(lower_bound),
-            upper_bound=array(upper_bound),
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
         )
 
     model = OTGaussianProcessRegressor(
@@ -400,7 +400,7 @@ def test_multi_start_optimization(dataset):
     doe = array(optimizer.getStartingSample())
     ot_interval = model._OTGaussianProcessRegressor__optimization_space
     design_space = DesignSpace()
-    design_space.add_variable(
+    design_space.add_real_variable(
         "x",
         ot_interval.getDimension(),
         lower_bound=ot_interval.getLowerBound(),

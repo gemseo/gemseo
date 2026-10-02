@@ -111,7 +111,7 @@ def _enable_function_statistics(
 def problem_executed_twice() -> OptimizationProblem:
     """A problem executed twice."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="obj")
@@ -135,7 +135,7 @@ def problem_executed_twice() -> OptimizationProblem:
 @pytest.fixture
 def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
     x_0 = np.ones(3)
     design_space.set_current_value(x_0)
 
@@ -181,7 +181,7 @@ def test_checks() -> None:
     with pytest.raises(ValueError):
         problem.check()
 
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem.check()
 
 
@@ -189,7 +189,7 @@ def test_listener() -> None:
     """Test the execution of a listener."""
     n = 3
     design_space = DesignSpace()
-    design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
@@ -249,7 +249,7 @@ def test_add_constraints(pow2_problem: OptimizationProblem, snapshot) -> None:
 def test_linear_problem_type_switch() -> None:
     n = 3
     design_space = DesignSpace()
-    design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
     f = ArrayFunction(Power2.ineq_constraint1, name="f")
@@ -271,7 +271,7 @@ def test_is_linear_through_a_reused_bound_function() -> None:
     see through it.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.0)
 
     parent = OptimizationProblem(design_space)
     parent.objective = LinearFunction(
@@ -454,7 +454,7 @@ def test_constraints_dim(pow2_problem, snapshot) -> None:
 def test_check() -> None:
     # Objective is missing!
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
+    design_space.add_real_variable("x", 3, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.array([1.0, 1.0, 1.0]))
     problem = OptimizationProblem(design_space)
     with pytest.raises(ValueError):
@@ -690,7 +690,7 @@ def test_normalize_linear_function() -> None:
     lower_bounds = array([-5.0, -7.0])
     upper_bounds = array([11.0, 13.0])
     x_0 = 0.2 * lower_bounds + 0.8 * upper_bounds
-    design_space.add_variable(
+    design_space.add_real_variable(
         "x", 2, lower_bound=lower_bounds, upper_bound=upper_bounds, value=x_0
     )
     objective = LinearFunction(
@@ -1204,7 +1204,7 @@ def test_gradient_with_random_variables() -> None:
 def test_is_mono_objective() -> None:
     """Check the boolean OptimizationProblem.is_mono_objective."""
     design_space = DesignSpace()
-    design_space.add_variable("")
+    design_space.add_real_variable("")
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([1.0, 2.0]),
@@ -1226,7 +1226,7 @@ def test_is_mono_objective() -> None:
 def problem() -> OptimizationProblem:
     """A simple optimization problem :math:`max_x x`."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0, upper_bound=1, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     opt_problem = OptimizationProblem(design_space)
     opt_problem.objective = ArrayFunction(lambda x: x, name="func", f_type="obj")
     return opt_problem
@@ -1306,9 +1306,7 @@ def test_int_opt_problem(
     """
     f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
-    )
+    design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1347,9 +1345,7 @@ def test_int_opt_problem_discrete_check_independent(snapshot) -> None:
     """
     f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
-    )
+    design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1448,9 +1444,7 @@ def _create_integer_and_discrete_problem() -> OptimizationProblem:
         The problem.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=0, upper_bound=10, value=5
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
     design_space.add_discrete_variable("y", [1, 2, 5], value=2)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
@@ -1513,9 +1507,7 @@ def test_relaxed_run_records_the_relaxed_variable_names() -> None:
     """
     f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
-    )
+    design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
 
@@ -1541,9 +1533,7 @@ def test_relaxed_variable_names_reflects_only_the_current_run() -> None:
     first, relaxed, run left as a float one.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", lower_bound=0, upper_bound=3, value=array([1]), type_="integer"
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=3, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 2.0) ** 2]),
@@ -1572,7 +1562,7 @@ def test_relaxed_variable_names_reflects_only_the_current_run() -> None:
 def constrained_problem() -> OptimizationProblem:
     """A constrained optimisation problem with multidimensional constraints."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 2, value=1.0)
+    design_space.add_real_variable("x", 2, value=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x.sum(), name="f", jac=lambda x: [1, 1])
     problem.add_constraint(
@@ -1751,7 +1741,7 @@ def test_reset_functions(rosenbrock_lhs) -> None:
 def test_reset_wo_current_value() -> None:
     """Check OptimizationProblem.reset when the default design value is missing."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="obj")
     problem.input_space.set_current_value({"x": array([0.0])})
@@ -1797,8 +1787,8 @@ def test_function_string_representation_from_hdf() -> None:
     The commented code is the one used for creating the HDF5 file.
     """
     # design_space = DesignSpace()
-    # design_space.add_variable("x0", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    # design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    # design_space.add_real_variable("x0", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    # design_space.add_real_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
     # problem = OptimizationProblem(design_space)
     # problem.objective = ArrayFunction(
     #     lambda x: x[0] + x[1], name="f", input_names=["x0", "x1"]
@@ -1963,7 +1953,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
 def problem_for_evaluate_observable_jacobian() -> OptimizationProblem:
     """An optimization problem to check the setting evaluate_observable_jacobian."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
@@ -2051,7 +2041,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
 def test_export_to_dataset(input_values, expected) -> None:
     """Check the export of the database."""
     design_space = DesignSpace()
-    design_space.add_variable("dv")
+    design_space.add_real_variable("dv")
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x * 2, name="obj")
@@ -2110,8 +2100,8 @@ def test_export_to_dataset_with_grouped_functions():
 def test_export_to_dataset_input_names_order(name) -> None:
     """Check that the order of the input names is not changed in the dataset."""
     design_space = DesignSpace()
-    design_space.add_variable("b")
-    design_space.add_variable(name)
+    design_space.add_real_variable("b")
+    design_space.add_real_variable(name)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x[0] + x[1], name="obj")
@@ -2127,7 +2117,7 @@ def test_export_to_dataset_input_names_order(name) -> None:
 def problem_with_complex_value() -> OptimizationProblem:
     """A problem using a design space with a real variable whose value is complex."""
     design_space = DesignSpace()
-    design_space.add_variable("x")
+    design_space.add_real_variable("x")
     design_space.set_current_value({"x": array([1.0 + 0j])})
     return OptimizationProblem(design_space)
 
@@ -2231,13 +2221,13 @@ def test_original_to_current_names_with_aggregation() -> None:
 def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
-    design_space.add_variable(
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable(
         "x_shared",
         2,
-        lower_bound=(-10, 0.0),
+        lower_bound=(-10.0, 0.0),
         upper_bound=(10.0, 10.0),
-        value=array([4.0, 3.0]),
+        value=(4.0, 3.0),
     )
     scenario = create_scenario(
         sellar_disciplines,
@@ -2268,7 +2258,7 @@ def test_observable_cannot_be_added_twice(caplog) -> None:
 def test_repr_constraint_linear_lower_ineq() -> None:
     """Check the representation of a linear lower inequality-constraint."""
     design_space = DesignSpace()
-    design_space.add_variable("x", 2)
+    design_space.add_real_variable("x", 2)
     problem = OptimizationProblem(design_space)
     problem.objective = LinearFunction(array([1, 2]), "f")
     problem.add_constraint(
@@ -2324,7 +2314,7 @@ def test_execute_twice(problem_executed_twice, name) -> None:
 def test_avoid_complex_in_dataset() -> None:
     """Check that exporting database to dataset casts complex numbers to real."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
@@ -2361,7 +2351,7 @@ def test_check_design_point_is_feasible(
 ) -> None:
     """Test check_design_point_is_feasible."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.tolerances.inequality = 1
@@ -2386,7 +2376,7 @@ def test_is_mono_objective_without_objective(snapshot) -> None:
         snapshot: Fixture to compare the error message with a snapshot.
     """
     design_space = create_design_space()
-    design_space.add_variable("x", 1)
+    design_space.add_real_variable("x")
     with assert_exception(ValueError, snapshot):
         OptimizationProblem(design_space).is_mono_objective  # noqa: B018
 
@@ -2422,7 +2412,7 @@ def test_is_multi_objective(snapshot) -> None:
     assert not BinhKorn().is_mono_objective
 
     design_space = create_design_space()
-    design_space.add_variable("x", 1)
+    design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: array([x, x]), name="two")
     with assert_exception(ValueError, snapshot):
@@ -2459,9 +2449,7 @@ def test_projected_optimum_save_and_read(tmp_wd) -> None:
     `from_hdf` must restore the latter too.
     """
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", type_="integer", lower_bound=0, upper_bound=10, value=1
-    )
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=1)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
         lambda x: array([(x[0] - 3.4) ** 2]),
@@ -2490,7 +2478,7 @@ def test_projected_optimum_does_not_overwrite_x_opt(tmp_wd) -> None:
     relaxed value, and only `x_opt_projected` holds a choice.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-10.0, upper_bound=10.0, value=1.0)
+    design_space.add_real_variable("x", lower_bound=-10.0, upper_bound=10.0, value=1.0)
     design_space.add_discrete_variable("d", [1, 3, 8], value=3)
     problem = OptimizationProblem(design_space)
     # `6.5` sits closer to the choice `8` than to `3`, and is not a choice itself.
@@ -2656,8 +2644,8 @@ def test_reformulate_with_slack_variables_substring_design_variable_name() -> No
     equality constraint g(x) - slack_variable_g spuriously varied with "s".
     """
     design_space = DesignSpace()
-    design_space.add_variable("s", value=0.0)
-    design_space.add_variable("x", value=1.0)
+    design_space.add_real_variable("s", value=0.0)
+    design_space.add_real_variable("x", value=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda v: v.sum(), name="f", jac=lambda v: [1, 1])
     problem.add_constraint(
@@ -2691,7 +2679,7 @@ def test_reformulate_with_slack_variables_substring_design_variable_name() -> No
 def test_no_initial_value_with_approximated_gradient(value, differentiation_method):
     """Check that gradient approximation works with and without current value."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=value)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=value)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.differentiation_method = differentiation_method
@@ -2749,7 +2737,7 @@ def test_observables_setters():
 def test_evaluation_problem_to_dataset(output_name):
     """Check EvaluationProblem.to_dataset."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(ArrayFunction(lambda x: 2 * x, name=output_name))
     problem.bind_functions()
@@ -2787,7 +2775,7 @@ def test_evaluation_problem_to_dataset(output_name):
 def evaluation_problem() -> EvaluationProblem:
     """An evaluation problem."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(
         ArrayFunction(lambda x: 2 * x, name="f", jac=lambda x: array([2.0]))

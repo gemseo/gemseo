@@ -33,13 +33,11 @@ you can add observables using the
 
 from __future__ import annotations
 
-from numpy import array
-from numpy import ones
-
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.formulation import MDF_Settings
 from gemseo.optimization import SLSQP_Settings
+from gemseo.problem.mdo.sellar import Sellar1
+from gemseo.problem.mdo.sellar import Sellar2
+from gemseo.problem.mdo.sellar import SellarSystem
+from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
@@ -48,20 +46,19 @@ from gemseo.space import DesignSpace
 # This how-to needs a scenario.
 #
 # Consider the Sellar's problem, defined with two constraints.
-disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
 design_space = DesignSpace()
-design_space.add_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=ones(1))
-design_space.add_variable(
+design_space.add_real_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=1.0)
+design_space.add_real_variable(
     "x_shared",
-    2,
-    lower_bound=(-10, 0.0),
+    size=2,
+    lower_bound=(-10.0, 0.0),
     upper_bound=(10.0, 10.0),
-    value=array([4.0, 3.0]),
+    value=(4.0, 3.0),
 )
-scenario = create_scenario(
-    disciplines, "obj", design_space, formulation_settings_model=MDF_Settings()
-)
+scenario = MDOScenario(disciplines, design_space)
+scenario.add_objective("obj")
 scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")
 

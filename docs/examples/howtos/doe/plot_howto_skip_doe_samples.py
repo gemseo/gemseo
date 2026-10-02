@@ -78,7 +78,7 @@ discipline = ValueErrorDiscipline()
 # ### 1. Create an EvaluationScenario
 #
 design_space = DesignSpace()
-design_space.add_variable("a", lower_bound=-1.0, upper_bound=10.0)
+design_space.add_real_variable("a", lower_bound=-1.0, upper_bound=10.0)
 
 # %%
 # For that, you can create a scenario and execute it with a [CustomDOE][gemseo.doe.custom_doe.custom_doe.CustomDOE]

@@ -61,8 +61,7 @@ from numpy import ndarray  # noqa: TC002
 from numpy import pi
 from numpy import sin
 
-from gemseo import create_discipline
-from gemseo.core.discipline.discipline import Discipline
+from gemseo.discipline import AutoPyDiscipline
 from gemseo.discipline import ODEDiscipline
 
 # %%
@@ -93,11 +92,7 @@ def rhs_function(
     return position_dot, velocity_dot
 
 
-rhs_discipline = create_discipline(
-    "AutoPyDiscipline",
-    py_func=rhs_function,
-    grammar_type=Discipline.GrammarType.SIMPLE,
-)
+rhs_discipline = AutoPyDiscipline(rhs_function)
 
 # %%
 # ## Step 2 — Create the ODEDiscipline
@@ -112,8 +107,8 @@ rhs_discipline = create_discipline(
 # - `return_trajectories=True`: if `True`, the full state trajectory is returned in the output,
 #   not just the final state.
 ode_discipline = ODEDiscipline(
-    rhs_discipline=rhs_discipline,
-    times=linspace(0.0, 10.0, 51),
+    rhs_discipline,
+    linspace(0.0, 10.0, 51),
     state_names=["position", "velocity"],
     return_trajectories=True,
 )
