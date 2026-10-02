@@ -2239,7 +2239,7 @@ classes:
       # the statement creating it (or marked with a TODO when the scenario is not
       # assigned to a name). The rule also takes maximize_objective out of the call,
       # since its template names it, and carries it into add_objective.
-      objective_name: add_objective(output_names={objective_name}, minimize=not {maximize_objective})
+      objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   DOEScenario: *scenario-class
