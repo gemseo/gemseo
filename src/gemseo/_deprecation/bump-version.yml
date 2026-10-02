@@ -1241,12 +1241,16 @@ classes:
   BaseMDASettings:
     linear_solver: null
     linear_solver_tolerance: null
+    use_lu_fact: null
     __init__:
       # The name of a sub-algorithm and its settings are now one settings model, e.g.
       # linear_solver="GMRES", linear_solver_settings={"rtol": 1e-8} becomes
       # linear_solver_settings=GMRES_Settings(rtol=1e-8). A settings class whose own
       # __init__ rules shadow these ones repeats them.
       linear_solver: &linear-solver-settings linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings})
+      linear_solver_tolerance: &linear-solver-tolerance TODO use the rtol field of the linear_solver_settings instead
+      # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
+      use_lu_fact: &use-lu-fact TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
   BaseMDASolver:
     Settings: settings_class
     add_iteration_callback:
@@ -1266,6 +1270,8 @@ classes:
     inner_mda_name: null
     __init__:
       linear_solver: *linear-solver-settings
+      linear_solver_tolerance: *linear-solver-tolerance
+      use_lu_fact: *use-lu-fact
       inner_mda_name: inner_mda_settings={inner_mda_name}_Settings(**{inner_mda_settings})
   MDAGSNewton_Settings:
     newton_settings: newton_raphson_settings
@@ -1274,10 +1280,14 @@ classes:
       # gauss_seidel_settings needs no rule.
       newton_settings: newton_raphson_settings
       linear_solver: *linear-solver-settings
+      linear_solver_tolerance: *linear-solver-tolerance
+      use_lu_fact: *use-lu-fact
   MDANewtonRaphson_Settings:
     newton_linear_solver_name: null
     __init__:
       linear_solver: *linear-solver-settings
+      linear_solver_tolerance: *linear-solver-tolerance
+      use_lu_fact: *use-lu-fact
       newton_linear_solver_name: newton_linear_solver_settings={newton_linear_solver_name}_Settings(**{newton_linear_solver_settings})
   MDAQuasiNewton:
     __init__: *mda-init
@@ -2051,6 +2061,24 @@ classes:
       variables_space: space
       unit_sampling: use_unit_samples
       settings_model: settings
+  # The name of a sub-algorithm, its settings and the scalar settings set next to
+  # them are now one settings model, e.g. sub_optim_algo="SLSQP",
+  # sub_optim_max_iter=200 becomes sub_optim_algo_settings=SLSQP_Settings(max_iter=200).
+  MNBI_Settings:
+    sub_optim_algo: null
+    sub_optim_max_iter: null
+    doe_algo: null
+    __init__:
+      sub_optim_algo: sub_optim_algo_settings={sub_optim_algo}_Settings(**{sub_optim_algo_settings}, max_iter={sub_optim_max_iter})
+      doe_algo: doe_algo_settings={doe_algo}_Settings(**{doe_algo_settings})
+  MultiStart_Settings:
+    opt_algo_name: null
+    opt_algo_max_iter: null
+    doe_algo_name: null
+    n_start: null
+    __init__:
+      opt_algo_name: opt_algo_settings={opt_algo_name}_Settings(**{opt_algo_settings}, max_iter={opt_algo_max_iter})
+      doe_algo_name: doe_algo_settings={doe_algo_name}_Settings(**{doe_algo_settings}, n_samples={n_start})
   EvaluationProblem:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
@@ -2086,6 +2114,9 @@ classes:
   BiLevel_Settings:
     apply_cstr_tosub_scenarios: apply_constraints_to_sub_scenarios
     apply_cstr_to_system: apply_constraints_to_system
+    __init__:
+      apply_cstr_tosub_scenarios: apply_constraints_to_sub_scenarios
+      apply_cstr_to_system: apply_constraints_to_system
   MDF_Settings:
     main_mda_name: null
     __init__:
