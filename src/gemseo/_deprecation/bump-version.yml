@@ -1426,6 +1426,9 @@ classes:
       name: settings={name}_Settings()
       calib_space: calibration_space
       calib_algo: calibration_settings={calib_algo[algo_name]}_Settings(**{calib_algo})
+      # The loose keywords are catalogs of the fields of the Settings class of the
+      # candidate, which get the rules of these fields, e.g. smooth -> smoothing.
+      option_lists: "{name}_Settings"
     add_clusterer_candidate: *ml-candidate
     add_regressor_candidate: *ml-candidate
     # The name of a sub-model and its loose settings go to its Settings instance.
