@@ -2006,6 +2006,8 @@ classes:
     algo_names_to_libraries: algo_name_to_library
     _CLASS: _class
     _PACKAGE_NAMES: _package_names
+    create:
+      algo_name: name
     execute:
       settings_model: settings
       # The algorithm name and the keywords **settings catches go to
