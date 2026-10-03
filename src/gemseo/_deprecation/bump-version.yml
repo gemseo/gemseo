@@ -760,6 +760,7 @@ attributes:
   gemseo.disciplines.utils.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
   gemseo.mda.base_mda.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.base_parallel_mda_settings.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.mda.base_parallel_mda_settings._ENABLE_PARALLEL_EXECUTION: gemseo.util.constant._enable_parallel_execution
   gemseo.mda.base_parallel_mda_solver.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.gauss_seidel.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.mda_chain.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
