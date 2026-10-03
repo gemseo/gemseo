@@ -2844,11 +2844,11 @@ classes:
 # never needed to remove or locate an argument. Only give a position when the
 # argument actually moves; drop it once the argument no longer needs repositioning.
 # old_func_name:
-#   old_arg_name: new_arg_name             # rename argument
-#   old_arg_name: new_arg_name N           # rename and reposition to index N
-#   old_arg_name: N                        # reposition only to index N (integer value)
-#   old_arg_name: null                     # remove argument
-#   old_arg_name: new_arg_name={old_arg}_Settings  # rename and wrap value in a Settings instance
+#   old_arg_name: new_arg_name                   # rename argument
+#   old_arg_name: new_arg_name N                 # rename and reposition to index N
+#   old_arg_name: N                              # reposition only to index N (integer value)
+#   old_arg_name: null                           # remove argument
+#   name: new_name={name}_Settings(**{mapping})  # merge both arguments into a Settings instance
 
 functions:
   # See VariableRenamer in classes:.
