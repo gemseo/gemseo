@@ -1444,14 +1444,12 @@ classes:
   RBF:
     THIN_PLATE: THIN_PLATE_SPLINE
   RBFRegressor:
-    LIBRARY: library
     function: kernel
     y_average: null
     der_function: null
     EUCLIDEAN: null
     RBFDerivatives: null
   TPSRegressor:
-    function: kernel
     y_average: null
     der_function: null
     EUCLIDEAN: null
@@ -1488,13 +1486,10 @@ classes:
       # When no string literal names the DOE algorithm, e.g. the default one.
       multi_start_n_samples: TODO use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start
   BaseFCERegressor:
-    Settings: settings_class
     __init__: *ml-model-init
   FCERegressor:
-    LIBRARY: library
     __init__: *ml-model-init
   PCERegressor:
-    LIBRARY: library
     __init__: *ml-model-init
 
   #### Model calibration
@@ -1563,15 +1558,12 @@ classes:
       # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
       use_lu_fact: &use-lu-fact TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
   BaseMDASolver:
-    Settings: settings_class
     add_iteration_callback:
       __name__: add_iteration_listener
       iteration_callback: iteration_listener
     clear_iteration_callbacks: clear_iteration_listeners
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
-  BaseParallelMDASolver:
-    Settings: settings_class
   MDAChain:
     __init__: *mda-init
     mdo_chain: discipline_chain
@@ -1602,9 +1594,6 @@ classes:
       newton_linear_solver_name: newton_linear_solver_settings={newton_linear_solver_name}_Settings(**{newton_linear_solver_settings})
   MDAQuasiNewton:
     __init__: *mda-init
-    add_iteration_callback:
-      __name__: add_iteration_listener
-      iteration_callback: iteration_listener
 
   #  Monitoring:
   #    __init__:
@@ -1739,31 +1728,6 @@ classes:
     extend: null
     to_scalar_variables: null
     # normalization, integer rounding and extension are DesignSpace notions.
-    get_variables_indexes:
-      use_design_space_order: use_space_order
-    convert_dict_to_array:
-      design_values: variable_values
-
-  # The argument parameter_space of the sampling methods of the sensitivity
-  # analyses is renamed random_space, as these spaces are purely made of random variables.
-  # The DOE algorithm and its settings, and the formulation and its settings, are now
-  # two settings models. These are the rules of BaseSensitivityAnalysis.compute_samples,
-  # repeated on each analysis, whose own compute_samples rules would shadow them.
-  CorrelationAnalysis:
-    compute_samples: &sensitivity-compute-samples
-      parameter_space: random_space
-      algo: algo_settings={algo}_Settings(**{algo_settings})
-      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-    DEFAULT_DRIVER: default_driver
-  HSICAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
-  MorrisAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
-  SobolAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
 
   IshigamiProblem:
     # the problem is an EvaluationProblem defined over the IshigamiSpace, which
@@ -2245,7 +2209,7 @@ classes:
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   DOEScenario: *scenario-class
   OptAsMDOScenario: *scenario-class
-  MDOScenarioAdapter: &scenario-adapter-class
+  MDOScenarioAdapter:
     keep_opt_history: keep_databases
     save_opt_history: save_databases
     LOWER_BND_SUFFIX: lower_bnd_suffix
@@ -2259,7 +2223,6 @@ classes:
       keep_opt_history: keep_databases
       save_opt_history: save_databases
       opt_history_file_prefix: database_file_prefix
-  MDOObjectiveScenarioAdapter: *scenario-adapter-class
   # Only the classes that may hold a RandomSpace rename design_space to
   # input_space. MDOScenario and OptimizationProblem keep design_space, typed
   # DesignSpace: the codemod applies the rules of a class to its subclasses, so
@@ -2303,16 +2266,6 @@ classes:
     Settings: settings_class
     __init__:
       Settings: settings_class
-  DriverDescription:
-    Settings: settings_class
-  DOEAlgorithmDescription:
-    Settings: settings_class
-  OptimizationAlgorithmDescription:
-    Settings: settings_class
-  LinearSolverDescription:
-    Settings: settings_class
-  ODESolverDescription:
-    Settings: settings_class
   BaseAlgoFactory:
     algo_names_to_libraries: algo_name_to_library
     _CLASS: _class
@@ -2459,7 +2412,16 @@ classes:
     DEFAULT_DRIVER: default_driver
     _DEFAULT_MAIN_METHOD: _default_main_method
     _INTERACTION_METHODS: _interaction_methods
-    compute_samples: *sensitivity-compute-samples
+    # The argument parameter_space of the sampling methods of the sensitivity analyses
+    # is renamed random_space, as these spaces are purely made of random variables.
+    # The DOE algorithm and its settings, and the formulation and its settings, are
+    # now two settings models. These rules apply to every analysis, even one
+    # redefining compute_samples: only a class redefining __init__ stops the lookup of
+    # the rules of its base classes, at a constructor call.
+    compute_samples:
+      parameter_space: random_space
+      algo: algo_settings={algo}_Settings(**{algo_settings})
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
 
   LinearDiscipline:
     DEFAULT_MATRIX_DENSITY: default_matrix_density
@@ -2495,9 +2457,6 @@ classes:
     __init__: *mda-init
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
-  BiLevelScenarioResult:
-    optimization_problems_to_results: optimization_problem_to_result
-    design_variable_names_to_values: design_variable_name_to_value
   Database:
     DEFAULT_INPUT_NAME: default_input_name
     MISSING_VALUE_TAG: missing_value_tag
@@ -2546,7 +2505,6 @@ classes:
     optimization_problems_to_results: optimization_problem_to_result
     design_variable_names_to_values: design_variable_name_to_value
   SimpleGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
     __init__:
       names_to_types: name_to_type
   Splitter:
@@ -2709,24 +2667,11 @@ classes:
     _CLASS: _class
     _PACKAGE_NAMES: _package_names
     PLUGIN_ENTRY_POINT: plugin_entry_point
-  BaseMLSupervisedAlgo:
-    Settings: settings_class
-    DEFAULT_TRANSFORMER: default_transformer
-  BaseMLUnsupervisedAlgo:
-    Settings: settings_class
-  BaseClassifier:
-    Settings: settings_class
-  BaseClusterer:
-    Settings: settings_class
-  BaseRegressor:
-    Settings: settings_class
-    DEFAULT_TRANSFORMER: default_transformer
   BaseStatistics:
     SYMBOLS: symbols
   BaseTransformer:
     CROSSED: crossed
   BiLevel:
-    DEFAULT_SCENARIO_RESULT_CLASS_NAME: default_scenario_result_class_name
     CHAIN_NAME: chain_name
     MDA1_RESIDUAL_NAMESPACE: mda1_residual_namespace
     MDA2_RESIDUAL_NAMESPACE: mda2_residual_namespace
@@ -2764,31 +2709,15 @@ classes:
     fig_size_y: TODO use settings.fig_size, the pair of the width and the height, instead
   DependencyGraph:
     IO: io
-  F1Measure:
-    SMALLER_IS_BETTER: smaller_is_better
-  GaussianMixture:
-    LIBRARY: library
-  GaussianProcessRegressor:
-    LIBRARY: library
-  GradientBoostingRegressor:
-    LIBRARY: library
   IODataset:
     INPUT_GROUP: input_group
     OUTPUT_GROUP: output_group
-  JSONGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
-  KMeans:
-    LIBRARY: library
-  KNNClassifier:
-    LIBRARY: library
   LagrangeMultipliers:
     LOWER_BOUNDS: lower_bounds
     UPPER_BOUNDS: upper_bounds
     INEQUALITY: inequality
     EQUALITY: equality
     CSTR_LABELS: cstr_labels
-  LinearRegressor:
-    LIBRARY: library
   MDOFunction:
     DICT_REPR_ATTR: dict_repr_attr
     DEFAULT_BASE_INPUT_NAME: default_base_input_name
@@ -2797,50 +2726,27 @@ classes:
     check_grad: TODO use gemseo.util.derivative.check.function.FunctionJacobianChecker instead
     rel_err: null
     filt_0: null
-  MLPRegressor:
-    LIBRARY: library
   MultiLineString:
     INDENTATION: indentation
     DEFAULT_LEVEL: default_level
   OTDistribution:
-    Settings: settings_class
     JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   OTGaussianProcessRegressor:
-    LIBRARY: library
     MAX_SIZE_FOR_LAPACK: max_size_for_lapack
     HMATRIX_ASSEMBLY_EPSILON: hmatrix_assembly_epsilon
     HMATRIX_RECOMPRESSION_EPSILON: hmatrix_recompression_epsilon
-  PLS:
-    CROSSED: crossed
   PostOptimalAnalysis:
     MULT_DOT_CONSTR_JAC: mult_dot_constr_jac
   PostScalabilityStudy:
     NOMENCLATURE: nomenclature
-  PydanticGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
-  R2Measure:
-    SMALLER_IS_BETTER: smaller_is_better
-  RandomForestClassifier:
-    LIBRARY: library
-  RandomForestRegressor:
-    LIBRARY: library
   Robustness:
     SR1_APPROX: sr1_approx
   SPDistribution:
-    Settings: settings_class
     JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   SR1Approx:
     EPSILON: epsilon
-  SVMClassifier:
-    LIBRARY: library
-  SVMRegressor:
-    LIBRARY: library
-  ScalableDiagonalModel:
-    ABBR: abbr
   ScalableModel:
     ABBR: abbr
-  SilhouetteMeasure:
-    SMALLER_IS_BETTER: smaller_is_better
   SobieskiAerodynamics:
     PRESSURE_GRADIENT_LIMIT: pressure_gradient_limit
   SobieskiProblem:
