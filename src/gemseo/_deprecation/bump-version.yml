@@ -148,7 +148,6 @@ modules:
   gemseo.algos.opt.augmented_lagrangian.augmented_lagrangian_order_0: gemseo.optimization.augmented_lagrangian.order_0
   gemseo.algos.opt.augmented_lagrangian.augmented_lagrangian_order_1: gemseo.optimization.augmented_lagrangian.order_1
   gemseo.algos.opt.augmented_lagrangian.penalty_heuristic: gemseo.optimization.augmented_lagrangian.base_penalty_heuristic
-  gemseo.algos.aggregation.aggregation_func: gemseo.optimization.aggregation.aggregation_func
   gemseo.algos.aggregation.core: gemseo.optimization.aggregation._functions
   gemseo.algos.aggregation: gemseo.optimization.aggregation
   gemseo.algos.base_problem: gemseo.core.problem.base
@@ -165,8 +164,6 @@ modules:
   gemseo.algos.optimization_problem: gemseo.optimization.problem
   gemseo.algos.optimization_result: gemseo.optimization.result
   gemseo.algos.optimization_history: gemseo.optimization.history
-  gemseo.algos.pareto.pareto_front: gemseo.optimization.pareto.pareto_front
-  gemseo.algos.pareto.pareto_plot_biobjective: gemseo.optimization.pareto.pareto_plot_biobjective
   gemseo.algos.pareto.utils: gemseo.optimization.pareto.util
   gemseo.algos.pareto: gemseo.optimization.pareto
   # ProblemFunction was removed; the recording half of what it did is
