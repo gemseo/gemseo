@@ -1820,8 +1820,8 @@ classes:
   # DistributionName are generated from the colormaps of matplotlib and the
   # continuous distributions of SciPy: only the names of the oldest supported
   # versions are listed, as a name the installed version lacks is not aliased.
-  # The OpenTURNS enumerations of OTDistributionFitter are listed in its block
-  # below, with its protected class attributes.
+  # The OpenTURNS enumerations of OTDistributionFitter, which OTParametricStatistics
+  # shares, are listed in its block below, with its protected class attributes.
   # N.B. Criterion.center is not aliased as an attribute, as it would shadow the
   # str.center method of the members; Criterion["center"] is aliased all the same.
   Alpha:
@@ -2039,42 +2039,6 @@ classes:
   Strength:
     one: ONE
     two: TWO
-  OTParametricStatistics:
-    DistributionName.Arcsine: DistributionName.ARCSINE
-    DistributionName.Beta: DistributionName.BETA
-    DistributionName.Burr: DistributionName.BURR
-    DistributionName.Chi: DistributionName.CHI
-    DistributionName.ChiSquare: DistributionName.CHI_SQUARE
-    DistributionName.Dirichlet: DistributionName.DIRICHLET
-    DistributionName.Exponential: DistributionName.EXPONENTIAL
-    DistributionName.FisherSnedecor: DistributionName.FISHER_SNEDECOR
-    DistributionName.Frechet: DistributionName.FRECHET
-    DistributionName.Gamma: DistributionName.GAMMA
-    DistributionName.GeneralizedPareto: DistributionName.GENERALIZED_PARETO
-    DistributionName.Gumbel: DistributionName.GUMBEL
-    DistributionName.Histogram: DistributionName.HISTOGRAM
-    DistributionName.InverseNormal: DistributionName.INVERSE_NORMAL
-    DistributionName.Laplace: DistributionName.LAPLACE
-    DistributionName.LogNormal: DistributionName.LOG_NORMAL
-    DistributionName.LogUniform: DistributionName.LOG_UNIFORM
-    DistributionName.Logistic: DistributionName.LOGISTIC
-    DistributionName.MeixnerDistribution: DistributionName.MEIXNER_DISTRIBUTION
-    DistributionName.Normal: DistributionName.NORMAL
-    DistributionName.Pareto: DistributionName.PARETO
-    DistributionName.Rayleigh: DistributionName.RAYLEIGH
-    DistributionName.Rice: DistributionName.RICE
-    DistributionName.Student: DistributionName.STUDENT
-    DistributionName.Trapezoidal: DistributionName.TRAPEZOIDAL
-    DistributionName.Triangular: DistributionName.TRIANGULAR
-    DistributionName.TruncatedNormal: DistributionName.TRUNCATED_NORMAL
-    DistributionName.Uniform: DistributionName.UNIFORM
-    DistributionName.VonMises: DistributionName.VON_MISES
-    DistributionName.WeibullMax: DistributionName.WEIBULL_MAX
-    DistributionName.WeibullMin: DistributionName.WEIBULL_MIN
-    FittingCriterion.ChiSquared: FittingCriterion.CHI_SQUARED
-    FittingCriterion.Kolmogorov: FittingCriterion.KOLMOGOROV
-    SignificanceTest.ChiSquared: SignificanceTest.CHI_SQUARED
-    SignificanceTest.Kolmogorov: SignificanceTest.KOLMOGOROV
   SPDistributionFitter: &sp-distribution-name
     DistributionName.ksone: DistributionName.KSONE
     DistributionName.kstwo: DistributionName.KSTWO
@@ -2823,7 +2787,7 @@ classes:
     _HAS_SCENARIO: _has_scenario
   Functions:
     _F_TYPES: _f_types
-  OTDistributionFitter:
+  OTDistributionFitter: &ot-distribution-fitter
     _OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES: _ot_distribution_names_to_ot_factories
     DistributionName.Arcsine: DistributionName.ARCSINE
     DistributionName.Beta: DistributionName.BETA
@@ -2860,6 +2824,8 @@ classes:
     FittingCriterion.Kolmogorov: FittingCriterion.KOLMOGOROV
     SignificanceTest.ChiSquared: SignificanceTest.CHI_SQUARED
     SignificanceTest.Kolmogorov: SignificanceTest.KOLMOGOROV
+  # It shares the enumerations of OTDistributionFitter, not its protected attribute.
+  OTParametricStatistics: *ot-distribution-fitter
   Power:
     _TRANSFORMER_NAME: _transformer_name
   ScalableProblem:
