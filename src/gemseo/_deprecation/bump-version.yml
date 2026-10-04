@@ -1054,8 +1054,8 @@ attributes:
   # Settings classes new in 7, which the old API has no counterpart of: NOT 6.3.2
   # names. Each is keyed on a would-be old path, the module of the old class it is the
   # settings of, so that the codemod, building such a Settings class (see the
-  # `={__class__}_Settings` rules of the dataset plots in `classes:`), imports it from
-  # there, and this entry then moves it to its new path, renaming it if needed.
+  # `={__class__}_Settings(**{...})` rules of the dataset plots in `classes:`), imports
+  # it from there, and this entry then moves it to its new path, renaming it if needed.
   gemseo.post.dataset.andrews_curves.AndrewsCurves_Settings: gemseo.post.dataset.andrews_curves_settings.AndrewsCurves_Settings
   gemseo.post.dataset.bars.BarPlot_Settings: gemseo.post.dataset.bar_plot_settings.BarPlot_Settings
   gemseo.post.dataset.boxplot.Boxplot_Settings: gemseo.post.dataset.boxplot_settings.Boxplot_Settings
@@ -1379,7 +1379,7 @@ classes:
     # the rules of their base classes at a constructor call, repeat them.
     __init__: &ml-model-init
       settings_model: settings
-      settings: settings={__class__}_Settings
+      settings: settings={__class__}_Settings(**{settings})
 
   #### Surrogate model
   SurrogateDiscipline:
@@ -1530,7 +1530,7 @@ classes:
     # rules at a constructor call, so each one repeats them.
     __init__: &mda-init
       settings_model: settings
-      settings: settings={__class__}_Settings
+      settings: settings={__class__}_Settings(**{settings})
   MDAGaussSeidel:
     __init__: *mda-init
   MDAJacobi:
@@ -1741,46 +1741,46 @@ classes:
   # its own.
   AndrewsCurves:
     __init__:
-      classifier: settings={__class__}_Settings
+      classifier: settings={__class__}_Settings(**{classifier})
   BarPlot:
     __init__:
-      n_digits: settings={__class__}_Settings
+      n_digits: settings={__class__}_Settings(**{n_digits})
   Boxplot:
     __init__:
-      datasets: settings={__class__}_Settings
+      datasets: settings={__class__}_Settings(**{datasets})
   ColorEvolution:
     __init__:
-      variables: settings={__class__}_Settings
+      variables: settings={__class__}_Settings(**{variables})
   Curves:
     __init__:
-      mesh: settings={__class__}_Settings
+      mesh: settings={__class__}_Settings(**{mesh})
   Lines:
     __init__:
-      variables: settings={__class__}_Settings
+      variables: settings={__class__}_Settings(**{variables})
   ParallelCoordinates:
     __init__:
-      classifier: settings={__class__}_Settings
+      classifier: settings={__class__}_Settings(**{classifier})
   RadarChart:
     __init__:
-      display_zero: settings={__class__}_Settings
+      display_zero: settings={__class__}_Settings(**{display_zero})
   Radar:
     __init__:
-      classifier: settings={__class__}_Settings
+      classifier: settings={__class__}_Settings(**{classifier})
   ScatterMatrix:
     __init__:
-      variable_names: settings={__class__}_Settings
+      variable_names: settings={__class__}_Settings(**{variable_names})
   Scatter:
     __init__:
-      x: settings={__class__}_Settings
+      x: settings={__class__}_Settings(**{x})
   Surfaces:
     __init__:
-      mesh: settings={__class__}_Settings
+      mesh: settings={__class__}_Settings(**{mesh})
   YvsX:
     __init__:
-      x: settings={__class__}_Settings
+      x: settings={__class__}_Settings(**{x})
   ZvsXY:
     __init__:
-      x: settings={__class__}_Settings
+      x: settings={__class__}_Settings(**{x})
   # The fields renamed in the Settings classes gathering the arguments.
   ScatterMatrix_Settings:
     __init__:
