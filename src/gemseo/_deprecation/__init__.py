@@ -53,6 +53,11 @@ gives an empty stand-in that warns and lists the new locations of its former
 submodules; it resolves no name of its own, as the old package defined none, while its
 submodules are redirected as any renamed module.
 
+The old name under which a package re-exported a module, e.g.
+`gemseo.base_parallel_mda_settings`, gives the stand-in of the old path of the module,
+as in the previous release, so that the old names of the module resolve through the
+package too.
+
 `gemseo/__init__.py` calls [install][gemseo._deprecation.install] on import, so
 `from gemseo.old.path import OldName` keeps working even though the old module no longer
 exists on disk.
@@ -312,7 +317,11 @@ def _get_renamed_attribute(
     monkeypatched target), and re-importing by name would silently bypass that.
 
     `new_name` may also be that of a module, e.g. for a module re-exported by a
-    package, which is imported when its package does not hold it yet.
+    package, which is imported when its package does not hold it yet. The stand-in of
+    the old path of the re-exported module is returned instead, if any (see
+    [_find_reexported_old_module][gemseo._deprecation._find_reexported_old_module]),
+    as the old package re-exported the old module, whose old names the new module
+    does not resolve.
 
     Args:
         module: The module the attribute is looked up on when it stayed in its own
@@ -332,6 +341,68 @@ def _get_renamed_attribute(
         ImportError: When the new name is in a plugin that is not installed, under a
             `from module import name` statement (see
             [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+    """
+    new_object = _get_new_object(module, module_name, name, new_name)
+    if isinstance(new_object, ModuleType):
+        old_module_name = _find_reexported_old_module(name, new_object.__name__)
+        if old_module_name is not None:
+            with warnings.catch_warnings():
+                # The warning of the old name already points at the new module.
+                warnings.simplefilter("ignore", DeprecationWarning)
+                return import_module(old_module_name)
+    return new_object
+
+
+def _find_reexported_old_module(name: str, new_module_name: str) -> str | None:
+    """Return the old path of a module re-exported by a package under its own name.
+
+    E.g. `gemseo.mda.base_parallel_mda_settings` for
+    `gemseo.base_parallel_mda_settings`, whose rule gives the new module of the former.
+
+    Args:
+        name: The old name of the re-exported module in the package.
+        new_module_name: The new fully-qualified name of the re-exported module.
+
+    Returns:
+        The only old module with a rule that is named `name` and redirected to
+        `new_module_name`, or `None` if there is none or several.
+    """
+    suffix = f".{name}"
+    old_module_names = {
+        old_module_name
+        for old_module_name in (
+            *module_renames,
+            *attribute_renames,
+            *unmigrated_attributes,
+        )
+        if old_module_name.endswith(suffix)
+        and _resolve_new_name(old_module_name) == new_module_name
+    }
+    return old_module_names.pop() if len(old_module_names) == 1 else None
+
+
+def _get_new_object(
+    module: ModuleType, module_name: str, name: str, new_name: str
+) -> Any:
+    """Return the object a new name designates.
+
+    Args:
+        module: The module the attribute is looked up on when it stayed in its own
+            (possibly renamed) module; ignored when the attribute moved elsewhere.
+        module_name: The old fully-qualified name of the module defining the
+            attribute, for the error message only.
+        name: The old attribute name, for the error message only.
+        new_name: The fully-qualified new name.
+
+    Returns:
+        The object.
+
+    Raises:
+        AttributeError: When the new name does not exist, or when it is in a plugin
+            that is not installed, except under a `from module import name`
+            statement.
+        ImportError: When the new name is in a plugin that is not installed, under a
+            `from module import name` statement.
     """
     new_module_name, _, attribute_name = new_name.rpartition(".")
     if new_module_name == module.__name__:

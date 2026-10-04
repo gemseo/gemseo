@@ -23,6 +23,7 @@ import logging
 import os
 import pickle
 import pkgutil
+import re
 import subprocess
 import sys
 import warnings
@@ -306,25 +307,116 @@ _top_level_module_warning: Final[str] = (
 )
 """The warning of the module re-exported by the gemseo 6.3.2 package."""
 
+_reexported_module_name: Final[str] = "gemseo.mda.base_parallel_mda_settings"
+"""The old path of the module re-exported by the gemseo 6.3.2 package."""
+
+
+def _check_reexported_module(module: ModuleType) -> None:
+    """Check that a module re-exported by the gemseo 6.3.2 package is the old module.
+
+    As in gemseo 6.3.2, it is the module of its old path, which resolves the old names
+    of the module, unlike its new module.
+
+    Args:
+        module: The module re-exported by the gemseo 6.3.2 package.
+    """
+    from gemseo.mda.core import base_parallel_solver_settings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        old_module = importlib.import_module(_reexported_module_name)
+
+    assert module is old_module
+    assert (
+        module.BaseMDAParallelSolverSettings
+        is base_parallel_solver_settings.BaseMDAParallelSolverSettings
+    )
+
 
 def test_renamed_top_level_reexport_of_a_module():
     """A module re-exported by the gemseo 6.3.2 package is importable from it."""
-    from gemseo.mda.core import base_parallel_solver_settings
-
     with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
         from gemseo import base_parallel_mda_settings
 
-    assert base_parallel_mda_settings is base_parallel_solver_settings
+    _check_reexported_module(base_parallel_mda_settings)
 
 
 def test_renamed_top_level_reexport_of_a_module_as_an_attribute():
     """A module re-exported by the gemseo 6.3.2 package is an attribute of it."""
-    from gemseo.mda.core import base_parallel_solver_settings
-
     with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
         module = gemseo.base_parallel_mda_settings
 
-    assert module is base_parallel_solver_settings
+    _check_reexported_module(module)
+
+
+@pytest.mark.parametrize(
+    ("old_name", "new_name"),
+    [
+        (
+            "BaseParallelMDASettings",
+            (
+                "gemseo.mda.core.base_parallel_solver_settings."
+                "BaseMDAParallelSolverSettings"
+            ),
+        ),
+        ("N_CPUS", "gemseo.util.constant.n_cpus"),
+        (
+            "_ENABLE_PARALLEL_EXECUTION",
+            "gemseo.util.constant._enable_parallel_execution",
+        ),
+    ],
+)
+def test_renamed_attribute_of_a_top_level_reexport_of_a_module(old_name, new_name):
+    """An old name of a module re-exported by the gemseo 6.3.2 package resolves.
+
+    It resolves through the package as through the old path of the module, with the
+    same warning.
+    """
+    new_module_name, _, new_attribute_name = new_name.rpartition(".")
+    new_object = getattr(importlib.import_module(new_module_name), new_attribute_name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        module = gemseo.base_parallel_mda_settings
+
+    message = (
+        f"The attribute {old_name!r} of the module {_reexported_module_name!r} is "
+        f"deprecated; use {new_name!r} instead."
+    )
+
+    with pytest.warns(DeprecationWarning, match=re.escape(message)) as records:
+        old_object = getattr(module, old_name)
+
+    assert old_object is new_object
+    assert [str(record.message) for record in records] == [message]
+
+
+@pytest.mark.parametrize(
+    ("module_renames", "expected"),
+    [
+        ({"gemseo.old.module": "gemseo.new"}, "gemseo.old.module"),
+        ({"gemseo.old.other": "gemseo.new"}, None),
+        ({"gemseo.old.module": "gemseo.other"}, None),
+        (
+            {"gemseo.old.module": "gemseo.new", "gemseo.older.module": "gemseo.new"},
+            None,
+        ),
+    ],
+)
+def test_find_reexported_old_module(monkeypatch, module_renames, expected):
+    """The old path of a re-exported module is the only one named and redirected so.
+
+    Args:
+        monkeypatch: Fixture to patch the tables of the renames.
+        module_renames: The old module name -> new module name mapping.
+        expected: The expected old path.
+    """
+    from gemseo import _deprecation
+
+    monkeypatch.setattr(_deprecation, "module_renames", module_renames)
+    monkeypatch.setattr(_deprecation, "attribute_renames", {})
+    monkeypatch.setattr(_deprecation, "unmigrated_attributes", {})
+
+    assert _deprecation._find_reexported_old_module("module", "gemseo.new") == expected
 
 
 def test_renamed_attribute_to_a_module_not_imported_yet(monkeypatch):
