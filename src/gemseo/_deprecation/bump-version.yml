@@ -2540,8 +2540,10 @@ classes:
     DISC_INPUT_FILE_NAME: disc_input_file_name
     DISC_OUTPUT_FILE_NAME: disc_output_file_name
 
+  # The inputs of a CacheEntry were removed (changelog misc.removed), but a read of
+  # inputs is not marked: last_entry, renamed last_item above, now returns a CacheItem,
+  # which has inputs, and the codemod cannot tell it from a CacheEntry.
   CacheEntry:
-    inputs: null
     __init__:
       inputs: null
 
