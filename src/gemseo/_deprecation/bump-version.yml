@@ -2201,11 +2201,11 @@ classes:
     # OptAsMDOScenario inherit, and create_scenario returns a BaseScenario: a rule on
     # a subclass would miss the scenario it returns.
     # It was split into to_hdf and to_ggobi (changelog 1666), which the codemod cannot
-    # choose between from a file format given as a variable: the argument is kept, and
-    # the call marked.
+    # choose between from a file format given as a variable: the argument is removed,
+    # which is right for the HDF5 format, and the call marked.
     save_optimization_history:
       __name__: to_hdf
-      file_format: TODO use to_hdf(file_path) for the HDF5 format and to_ggobi(file_path) for the ggobi format
+      file_format: null TODO to_hdf(file_path) writes the HDF5 format; if the file format was ggobi, use to_ggobi(file_path) instead
     set_optimization_history_backup: set_backup_settings
     clear_history_before_execute: clear_database_before_execute
     __init__:
