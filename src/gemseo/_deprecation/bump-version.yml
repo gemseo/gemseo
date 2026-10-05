@@ -1650,19 +1650,24 @@ classes:
     add_variable: TODO a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead
     add_random_variable:
       __name__: add_variable
-      # There is one distribution settings model per component now, so a variable
-      # of size n is added with add_variable(name, *[settings] * n). The old
-      # arguments cannot be rewritten mechanically: distribution was the name of a
-      # distribution and its parameters were passed apart. They are kept, and the
-      # call is marked.
-      distribution: &random-variable-distribution TODO pass the distribution settings model, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), as the second positional argument, once per component; a distribution name with its parameters must be written as a settings model
+      # There is one distribution settings model per component now, passed by
+      # position, so a variable of size n is added with
+      # add_variable(name, *[settings] * n). The Settings class of a distribution
+      # bears its name and its parameters are fields of it: a distribution name is
+      # converted, with its parameters, into an instance of its Settings class,
+      # passed in its place, and a settings model is kept. A call that cannot be
+      # converted, e.g. naming the distribution by a variable, is marked.
+      distribution: "{distribution}_Settings(**{parameters}, interfaced_distribution={interfaced_distribution}, parameters={interfaced_distribution_parameters})"
       size: TODO repeat the settings model size times, i.e. add_variable(name, *[settings] * size)
       interfaced_distribution: &random-variable-interfaced-distribution TODO set interfaced_distribution in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
       interfaced_distribution_parameters: &random-variable-interfaced-distribution-parameters TODO set parameters in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
     add_random_vector:
       __name__: add_variable
-      # Same restructuring as add_random_variable.
-      distribution: *random-variable-distribution
+      # Same restructuring as add_random_variable, but the parameters of a vector
+      # give those of its components, which cannot be split mechanically into one
+      # settings model per component. The arguments are kept, and the call is
+      # marked.
+      distribution: TODO pass the distribution settings models, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), by position, one per component; a distribution name with its parameters must be written as settings models
       size: TODO pass one distribution settings model per component, i.e. add_variable(name, *settings)
       interfaced_distribution: *random-variable-interfaced-distribution
       interfaced_distribution_parameters: *random-variable-interfaced-distribution-parameters
