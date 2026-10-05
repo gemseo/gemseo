@@ -2414,6 +2414,10 @@ classes:
     DATA_CONVERTER_CLASS: data_converter_class
     update_from_types:
       names_to_types: name_to_type
+  # The mapping was split in two (input_mapping and output_mapping).
+  NameMapping:
+    __init__:
+      mapping: TODO split the mapping into input_mapping and output_mapping, two positional arguments
   # The algorithm and the formulation are given by their settings.
   ScalabilityStudy:
     add_optimization_strategy:
