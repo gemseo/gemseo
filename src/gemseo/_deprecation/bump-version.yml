@@ -2633,9 +2633,17 @@ classes:
     create_discipline_with_coupled_dynamics:
       ode_solver_name: *ode-solver-options
 
+  # The merged data are deprecated (changelog 1269): they are now a copy of the input
+  # and output data, so that an item set through them is lost, as is an output that
+  # a _run produces through them.
+  IO:
+    data: TODO IO.data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or update_output_data(data)), write the inputs to input_data, and read input_data, output_data, get(name) or get_merged_data()
+
   # Lowercased class constants (the ALL_CAPS class-attribute campaign)
   BaseDiscipline:
     GRAMMAR_DIRECTORY: grammar_directory
+    # Deprecated, as IO.data above.
+    local_data: TODO local_data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or io.update_output_data(data)), write the inputs to input_data, and read input_data, output_data, io.get(name) or io.get_merged_data()
     # Of the scalable parametric BaseDiscipline of the same name; the entry is
     # skipped on whichever of the two classes does not declare the new name.
     _CORE_DISCIPLINE_CLASS: _core_discipline_class
