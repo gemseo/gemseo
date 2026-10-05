@@ -2873,6 +2873,10 @@ functions:
     settings: "{post_name}_Settings"
   sample_disciplines:
     algo_settings: "{algo_name}_Settings"
+  # The algorithm name is a keyword caught by **settings, e.g. L-BFGS-B, which is
+  # now L_BFGS_B_Settings: the name of the algorithm is the one of its settings class.
+  execute_algo:
+    algo_name: settings_model={algo_name}_Settings(**{settings})
   create_mda:
     settings: settings_model={mda_name}_Settings(**{settings})
     # An argument of MDASequential, not a setting: kept in the call.
