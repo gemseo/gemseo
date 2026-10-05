@@ -2414,6 +2414,9 @@ classes:
     DATA_CONVERTER_CLASS: data_converter_class
     update_from_types:
       names_to_types: name_to_type
+  # The nested enumeration of JacobianAssembly was renamed.
+  JacobianAssembly:
+    DerivationMode: MDADerivationMode
   # The mapping was split in two (input_mapping and output_mapping).
   NameMapping:
     __init__:
