@@ -21,6 +21,9 @@ package; the rename map that also drives the external codemod):
   resolved (ancestor package renames applied), from the `modules:` section.
 - `attribute_renames`: old module fully-qualified name -> {old attribute: new
   attribute}, from the `attributes:` entries that rename a name.
+- `attribute_renames` and `module_renames` also hold the entries whose value is
+  `<new name> TODO <text>`: a rename to `<new name>`, like the plain one, which the
+  external codemod also marks with `<text>`; the runtime ignores the text.
 - `manual_migrations`: old module fully-qualified name -> {old attribute: how to
   migrate}, from the `attributes:` entries whose value is `TODO <text>`, for the names
   whose migration cannot be automated. The text is an instruction telling how to
@@ -156,6 +159,28 @@ def _get_todo_text(value: str) -> str:
     if value.startswith(_todo_prefix):
         return value.removeprefix(_todo_prefix).strip()
     return ""
+
+
+def _split_rename_todo(value: str) -> str:
+    """Return the new name of a rule value, without the `TODO <text>` of its tail.
+
+    A value `<new name> TODO <text>` is a rename to `<new name>`, which the external
+    codemod also marks with `<text>`, on the first ` TODO `. A value starting with
+    `TODO ` is a manual migration instead, and is returned as it is, like any value
+    with no ` TODO ` followed by a text.
+
+    Args:
+        value: The value of a rule.
+
+    Returns:
+        The new name, or `value` if it is not a `<new name> TODO <text>` value.
+    """
+    if _get_todo_text(value):
+        return value
+    head, separator, text = value.partition(f" {_todo_prefix}")
+    if separator and text.strip():
+        return head.strip()
+    return value
 
 
 def _check_rule_value(section: str, old_name: str, new_value: str) -> None:
@@ -554,7 +579,11 @@ def _build() -> tuple[
     removed_modules = frozenset(
         old for old, value in module_entries.items() if value == _removed
     )
-    raw = {old: value for old, value in module_entries.items() if value != _removed}
+    raw = {
+        old: _split_rename_todo(value)
+        for old, value in module_entries.items()
+        if value != _removed
+    }
     for old, value in raw.items():
         _check_rule_value("modules", old, value)
     module_renames: dict[str, str] = {}
@@ -571,7 +600,7 @@ def _build() -> tuple[
     }
     # Neither a removal nor a manual migration is a rename.
     attribute_entries = {
-        old: value
+        old: _split_rename_todo(value)
         for old, value in all_attribute_entries.items()
         if value != _removed and old not in manual_entries
     }

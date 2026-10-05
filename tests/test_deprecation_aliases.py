@@ -257,6 +257,90 @@ def test_build_rejects_a_value_that_is_no_manual_migration(
         aliases._build()
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("gemseo.x.New TODO check the values", "gemseo.x.New"),
+        ("enum.StrEnum TODO  a text with TODO inside, and a: colon ", "enum.StrEnum"),
+        # A value starting with `TODO ` is a manual migration, not a rename.
+        ("TODO use gemseo.x.New TODO again", "TODO use gemseo.x.New TODO again"),
+        # A plain value, and a `TODO` with no text, are returned as they are.
+        ("gemseo.x.New", "gemseo.x.New"),
+        ("gemseo.x.New TODO", "gemseo.x.New TODO"),
+    ],
+    ids=["rename", "text-with-todo", "manual", "plain", "no-text"],
+)
+def test_split_rename_todo(value, expected):
+    """The new name of a `<new name> TODO <text>` value is its head.
+
+    Args:
+        value: The rule value.
+        expected: The expected new name.
+    """
+    assert aliases._split_rename_todo(value) == expected
+
+
+def test_build_renames_a_rename_and_todo_value(tmp_path, monkeypatch):
+    """`_build` reads a `<new name> TODO <text>` value as a rename, in both sections.
+
+    Args:
+        tmp_path: Fixture giving a temporary directory for the configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_path / "bump-version.yml"
+    config.write_text(
+        "modules:\n"
+        "  gemseo.old_pkg: gemseo.new_pkg TODO check the module TODO twice\n"
+        "attributes:\n"
+        "  strenum.StrEnum: enum.StrEnum TODO the values of auto() differ\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    (
+        module_renames,
+        attribute_renames,
+        manual_migrations,
+        _,
+        removed_modules,
+        removed_attributes,
+    ) = aliases._build()
+
+    assert module_renames == {"gemseo.old_pkg": "gemseo.new_pkg"}
+    assert attribute_renames == {"strenum": {"StrEnum": "enum.StrEnum"}}
+    assert not manual_migrations
+    assert not removed_modules
+    assert not removed_attributes
+
+
+@pytest.mark.parametrize(
+    ("section", "value"),
+    [
+        ("modules", "c TODO check it"),
+        ("modules", "scipy.sparse TODO check it"),
+        ("attributes", "New TODO check it"),
+    ],
+    ids=["module-relative", "module-third-party", "attribute-relative"],
+)
+def test_build_checks_the_head_of_a_rename_and_todo_value(
+    section, value, tmp_path, monkeypatch
+):
+    """`_build` rejects a `<new name> TODO <text>` value whose new name is invalid.
+
+    Args:
+        section: The name of the section of the rule.
+        value: The rule value.
+        tmp_path: Fixture giving a temporary directory for the configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_path / "bump-version.yml"
+    config.write_text(f"{section}:\n  gemseo.a.b: {value}\n", encoding="utf-8")
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    with pytest.raises(ValueError, match="must be the complete new dotted path"):
+        aliases._build()
+
+
 def test_build_does_not_rename_a_todo_value(tmp_path, monkeypatch):
     """`_build` reads a `TODO <text>` value of `attributes:` as a manual migration.
 
@@ -601,7 +685,8 @@ def test_module_and_attribute_values_are_absolute():
 
     A complete `modules:` value is in GEMSEO (`gemseo.*`) or in the package of a plugin
     (`gemseo_*.*`), while an `attributes:` value may be a dotted path in any package,
-    or, for a name whose migration cannot be automated, a `TODO <text>` instruction.
+    or, for a name whose migration cannot be automated, a `TODO <text>` instruction;
+    a `<new name> TODO <text>` value is checked on its new name.
 
     Values are never relative (a bare last segment): each rule is applied once, so
     the runtime and the external codemod never need to chain rules to reach the
@@ -616,7 +701,7 @@ def test_module_and_attribute_values_are_absolute():
         )
         for old, new in aliases._parse_section(text, section).items()
         if new != aliases._removed
-        and not is_complete(new)
+        and not is_complete(aliases._split_rename_todo(new))
         and not (section == "attributes" and aliases._get_todo_text(new))
     ]
     assert not relative

@@ -20,6 +20,14 @@
 # TODO comment (a later rule of its package still rewrites its path), and importing it
 # raises an error saying so.
 #
+# A `<new name> TODO <text>` value (split on the first ` TODO `) means that the old
+# name was renamed, as with `<new name>` alone, but that the new name does not behave
+# as the old one in some cases, which the codemod cannot fix: it renames the name as
+# usual and also marks the code referring to the old name with
+# `# TODO(bump-gemseo): <old name>: <text>`. The runtime reads it as the plain rename
+# to `<new name>`, in `modules:` and in `attributes:`, and ignores `<text>`, which
+# follows the same rules as below. `<new name>` is checked as in a plain rename.
+#
 # A `TODO <text>` value means that the old name was removed and that its migration
 # cannot be automated, e.g. because the new name alone does not preserve the behavior
 # of the old one, or because which name replaces it depends on the use. `<text>` is an
@@ -395,8 +403,9 @@ modules:
 
 attributes:
   # Python 3.10 support was dropped, and gemseo no longer requires strenum. Beware
-  # that the value of auto() differs: enum.StrEnum lowercases the member name.
-  strenum.StrEnum: enum.StrEnum
+  # that the value of auto() differs: enum.StrEnum lowercases the member name, hence
+  # the TODO the codemod adds to the code using strenum.StrEnum.
+  strenum.StrEnum: enum.StrEnum TODO enum.StrEnum gives auto() the lower-cased member name (MC = auto() was "MC", is now "mc"), so write MC = "MC" to keep the values, or keep strenum as a dependency of your own
   gemseo.create_parameter_space: gemseo.create_random_space
   gemseo.ScenarioFactory: gemseo.scenario.factory.ScenarioFactory
   gemseo.BaseScenario: gemseo.scenario.evaluation.EvaluationScenario
