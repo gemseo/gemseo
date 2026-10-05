@@ -2414,6 +2414,11 @@ classes:
     DATA_CONVERTER_CLASS: data_converter_class
     update_from_types:
       names_to_types: name_to_type
+  # The algorithm and the formulation are given by their settings.
+  ScalabilityStudy:
+    add_optimization_strategy:
+      algo_name: algo_settings={algo_name}_Settings(**{algo_settings}, max_iter={max_iter})
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   MDASequential:
     __init__: *mda-init
     set_bounds:
