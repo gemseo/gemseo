@@ -2191,7 +2191,16 @@ classes:
       objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-  DOEScenario: *scenario-class
+  # The rules of MDOScenario, plus a mark on the space: a DOEScenario over a
+  # ParameterSpace (now a RandomSpace) cannot become an MDOScenario, which takes a
+  # DesignSpace only. YAML merge keys do not merge nested mappings, hence the copy.
+  DOEScenario:
+    design_space: design_space
+    __init__:
+      objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
+      formulation_settings_model: formulation_settings
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      design_space: TODO[ParameterSpace] MDOScenario takes a DesignSpace only, and a ParameterSpace is now a RandomSpace, so use EvaluationScenario(disciplines, input_space, formulation_settings=...) and add the objective as an observable with add_observable
   OptAsMDOScenario: *scenario-class
   MDOScenarioAdapter:
     keep_opt_history: keep_databases
