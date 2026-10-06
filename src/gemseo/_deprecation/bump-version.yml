@@ -2612,7 +2612,7 @@ classes:
   # Jacobian checkers (changelog 747)
   Discipline:
     # The method became a function; parallel and auto_set_step have no equivalent.
-    check_jacobian: "gemseo.check_jacobian({receiver}, input_value={input_data}, approximation_mode={derr_approx}, step={step}, atol={threshold}, linearization_mode={linearization_mode}, input_names={input_names}, output_names={output_names}, n_processes={n_processes}, use_threading={use_threading}, wait_time_between_fork={wait_time_between_fork}, plot_result={plot_result}, file_path={file_path}, show={show}, fig_size_x={fig_size_x}, fig_size_y={fig_size_y}, reference_jacobian_path={reference_jacobian_path}, save_reference_jacobian={save_reference_jacobian}, indices={indices})"
+    check_jacobian: "gemseo.check_jacobian({receiver}, input_value={input_data}, approximation_mode={derr_approx}, step={step}, atol={threshold}, rtol={threshold}, linearization_mode={linearization_mode}, input_names={input_names}, output_names={output_names}, n_processes={n_processes}, use_threading={use_threading}, wait_time_between_fork={wait_time_between_fork}, plot_result={plot_result}, file_path={file_path}, show={show}, fig_size_x={fig_size_x}, fig_size_y={fig_size_y}, reference_jacobian_path={reference_jacobian_path}, save_reference_jacobian={save_reference_jacobian}, indices={indices})"
     # The hybrid modes moved from ApproximationMode to HybridApproximationMode
     # (changelog 1812).
     ApproximationMode.HYBRID_COMPLEX_STEP: HybridApproximationMode.HYBRID_COMPLEX_STEP
@@ -2626,8 +2626,8 @@ classes:
 
   DisciplineJacApprox:
     generator_class: null
-    check_jacobian:
-      threshold: atol
+    # In GEMSEO 6, threshold was both the absolute and the relative tolerance.
+    check_jacobian: "{receiver}.check_jacobian(output_names={output_names}, input_names={input_names}, analytic_jacobian={analytic_jacobian}, atol={threshold}, rtol={threshold}, plot_result={plot_result}, file_path={file_path}, show={show}, fig_size_x={fig_size_x}, fig_size_y={fig_size_y}, reference_jacobian_path={reference_jacobian_path}, save_reference_jacobian={save_reference_jacobian}, indices={indices}, input_data={input_data})"
 
   ODEProblem:
     check_jacobian:
