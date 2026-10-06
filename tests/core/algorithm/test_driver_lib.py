@@ -30,6 +30,7 @@ from unittest import mock
 
 import pytest
 from numpy import array
+from numpy import concatenate
 from numpy import full
 from numpy.testing import assert_allclose
 
@@ -412,40 +413,68 @@ def test_the_hooks_of_a_run_that_raises_are_released(snapshot) -> None:
         assert function.pre_compute_at_new_point is None
 
 
-def test_a_nested_run_on_the_working_problem_counts_each_evaluation_once() -> None:
+@pytest.mark.parametrize("reset_iteration_counters", [True, False])
+def test_a_nested_run_on_the_working_problem_counts_each_evaluation_once(
+    reset_iteration_counters,
+) -> None:
     """Check a driver run nested in another one on its working problem.
 
     The nested run hooks the evaluation layer of the working problem,
     which wraps the one of the enclosing run,
     and both layers share the database and the evaluation counter.
     Each new point is then seen as new by both layers:
-    the enclosing run suspends its hooks for the duration of the nested one,
+    the nested run suspends the hooks of the enclosing one for its duration,
     so that exactly one hook counts the evaluation.
+    The nested run also leaves the budget of the enclosing run as it was:
+    its evaluations are iterations of the enclosing run,
+    which has already evaluated its initial point
+    and must keep its own maximum.
     """
     n_samples = 10
-    # The first sample is the initial point,
-    # which the enclosing run has already evaluated:
-    # any other point would make the nested run count that evaluation
-    # as its first iteration, since both runs share the evaluation counter.
-    samples = array([[0.1 * i, 0.15 * i] for i in range(n_samples)])
+    max_iter = 50
+    # None of the samples is the initial point of the enclosing run,
+    # which has already been evaluated when the nested run starts.
+    samples = array([[0.1 * (i + 1), 0.15 * (i + 1)] for i in range(n_samples)])
+    counters = []
 
     def run(self, problem):
+        # The enclosing run evaluates its initial point,
+        # an iteration still open when the nested run starts.
+        problem.objective.evaluate(problem.design_space.get_current_value())
         CustomDOE().execute(
-            problem, CustomDOE_Settings(samples=samples, enable_progress_bar=False)
+            problem,
+            CustomDOE_Settings(
+                samples=samples,
+                enable_progress_bar=False,
+                reset_iteration_counters=reset_iteration_counters,
+            ),
         )
+        counter = problem.evaluation_counter
+        counters.append((counter.current, counter.enabled, counter.maximum))
         return "", None
 
     problem = Rosenbrock()
+    initial_point = problem.design_space.get_current_value()
     with mock.patch.object(ScipyOpt, "_run", run):
         ScipyOpt("SLSQP").execute(
             problem,
-            SLSQP_Settings(normalize_design_space=False, enable_progress_bar=False),
+            SLSQP_Settings(
+                normalize_design_space=False,
+                enable_progress_bar=False,
+                max_iter=max_iter,
+            ),
         )
 
     # Counted twice, only half of the samples would be evaluated
     # before the counter reaches its maximum, the number of samples.
-    assert_allclose(problem.database.get_x_vect_history(), samples)
-    assert problem.evaluation_counter.current == n_samples
+    # The open iteration of the enclosing run must not take a slot either.
+    assert_allclose(
+        problem.database.get_x_vect_history(),
+        concatenate([[initial_point], samples]),
+    )
+    # The initial point and the samples, each counted once,
+    # and the maximum of the enclosing run is back.
+    assert counters == [(n_samples + 1, False, max_iter)]
     for function in problem.functions:
         assert function.pre_compute_at_new_point is None
 

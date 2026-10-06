@@ -244,9 +244,24 @@ class BaseDriverLibrary(
         """
         from gemseo.util.global_configuration import _configuration
 
-        problem.evaluation_counter.maximum = max_iter
-        if self._settings.reset_iteration_counters:
-            problem.evaluation_counter.current = 0
+        counter = problem.evaluation_counter
+        if self._enclosing_maximum is None:
+            counter.maximum = max_iter
+            if self._settings.reset_iteration_counters:
+                counter.current = 0
+        elif max_iter:
+            # The evaluations of a nested run are iterations of the enclosing one,
+            # which share the counter:
+            # resetting it would make the enclosing run forget its iterations,
+            # whatever `reset_iteration_counters` says.
+            # The iteration of the enclosing run that is still open
+            # is closed by the first new point of this run,
+            # which would take a slot of the budget of this run;
+            # the budget is thus counted from the closing of that iteration.
+            max_iter += counter.current + int(counter.enabled)
+            counter.maximum = max_iter
+        # Otherwise, the budget of this run is unlimited
+        # and the enclosing run keeps its own maximum.
 
         if self.enable_progress_bar and _configuration.logging.enable:
             cls = ProgressBar if self._settings.log_problem else UnsuffixedProgressBar
@@ -613,8 +628,19 @@ class BaseDriverLibrary(
     and each sub-driver adapts its own sub-problem.
     """
 
+    _enclosing_maximum: int | None
+    """The maximum number of evaluations of the enclosing run, if any.
+
+    A run nested in another one on the working problem of the latter
+    shares its evaluation counter
+    and overwrites its maximum,
+    which is restored at the end of the nested run.
+    It is `None` when the run is not nested, and outside a run.
+    """
+
     def _reset(self) -> None:
         super()._reset()
+        self._enclosing_maximum = None
         # These two are the state of a run,
         # like the problem and the settings the base class clears.
         # Left as they are,
@@ -926,9 +952,15 @@ class BaseDriverLibrary(
         # so the hook is this driver's own
         # and the run it belongs to is the one releasing it.
         functions = self._original_problem.functions
-        suspended_hooks = []
+        enclosing_hooks = self.__find_enclosing_hooks()
+        counter = self._original_problem.evaluation_counter
+        if enclosing_hooks:
+            self._enclosing_maximum = counter.maximum
+
         if not self._evaluates_in_parallel:
-            suspended_hooks = self.__suspend_enclosing_hooks()
+            for function, _ in enclosing_hooks:
+                function.pre_compute_at_new_point = None
+
             for function in functions:
                 function.pre_compute_at_new_point = (
                     self._finalize_previous_iteration_using_database
@@ -951,13 +983,16 @@ class BaseDriverLibrary(
             for function in functions:
                 function.pre_compute_at_new_point = None
 
-            for function, hook in suspended_hooks:
+            for function, hook in enclosing_hooks:
                 function.pre_compute_at_new_point = hook
 
-    def __suspend_enclosing_hooks(
+            if self._enclosing_maximum is not None:
+                counter.maximum = self._enclosing_maximum
+
+    def __find_enclosing_hooks(
         self,
     ) -> list[tuple[EvaluationFunction, Callable[[], None]]]:
-        """Suspend the hooks of the run enclosing this one, if any.
+        """Find the hooks of the run enclosing this one, if any.
 
         A run nested in another one on the working problem of the latter
         hooks an evaluation layer wrapping the layer of the enclosing run.
@@ -966,12 +1001,12 @@ class BaseDriverLibrary(
         and counted twice.
 
         Returns:
-            The suspended hooks, as pairs of function and hook,
-            to restore at the end of the run.
+            The hooks of the enclosing run, as pairs of function and hook.
+            The list is empty when the run is not nested.
         """
         counter = self._original_problem.evaluation_counter
-        suspended_hooks = []
-        suspended_functions = set()
+        enclosing_hooks = []
+        enclosing_functions = set()
         for function in self._original_problem.functions:
             # The outermost function is the one hooked by this run.
             function = function._wrapped_function
@@ -984,16 +1019,15 @@ class BaseDriverLibrary(
                 # Only a shared counter means a double count.
                 if (
                     hook is not None
-                    and id(function) not in suspended_functions
+                    and id(function) not in enclosing_functions
                     and getattr(function._owner, "evaluation_counter", None) is counter
                 ):
-                    suspended_functions.add(id(function))
-                    suspended_hooks.append((function, hook))
-                    function.pre_compute_at_new_point = None
+                    enclosing_functions.add(id(function))
+                    enclosing_hooks.append((function, hook))
 
                 function = function._wrapped_function
 
-        return suspended_hooks
+        return enclosing_hooks
 
     def __run_algorithm(
         self,
