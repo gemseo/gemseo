@@ -1747,6 +1747,12 @@ classes:
     # the problem is an EvaluationProblem defined over the IshigamiSpace, which
     # is a RandomSpace, so the Ishigami function is an observable of the problem.
     objective: "{receiver}.observables[0]"
+    # The rule of OptimizationProblem keeps design_space; an EvaluationProblem has
+    # input_space only.
+    design_space: input_space
+    to_dataset:
+      # Not a parameter of EvaluationProblem.to_dataset.
+      opt_naming: null
 
   #### Dataset plots
   # The arguments of a plot, but its dataset, go to
@@ -2304,6 +2310,13 @@ classes:
       __name__: sample_space
       variables_space: space
       unit_sampling: use_unit_samples
+      settings_model: settings
+      # The loose settings go to the settings model of the algorithm of the library,
+      # named by the algo_name its constructor was given.
+      settings: "settings={receiver.algo_name}_Settings(**{settings})"
+  # The settings model of the regressor is passed to its constructor as settings.
+  RegressorFactory:
+    create:
       settings_model: settings
   # The name of a sub-algorithm, its settings and the scalar settings set next to
   # them are now one settings model, e.g. sub_optim_algo="SLSQP",
