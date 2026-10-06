@@ -2164,9 +2164,9 @@ classes:
 
   #### Misc
   BaseSettings:
-    _TARGET_CLASS_NAME: null
     # The target class name is now derived from the name of the settings class,
-    # X_Settings targeting X; see target_class_name.
+    # X_Settings targeting X, and read with the target_class_name property.
+    _TARGET_CLASS_NAME: TODO read it with the target_class_name property of a settings instance; in a settings class, remove the assignment, as the value is now derived from the name of the class (X_Settings targets X)
   PCERegressor_Settings:
     __init__:
       probability_space: null
