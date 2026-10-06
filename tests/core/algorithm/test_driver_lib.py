@@ -31,6 +31,7 @@ from unittest import mock
 import pytest
 from numpy import array
 from numpy import full
+from numpy.testing import assert_allclose
 
 from gemseo import configuration
 from gemseo import execute_algo
@@ -407,6 +408,44 @@ def test_the_hooks_of_a_run_that_raises_are_released(snapshot) -> None:
         driver.execute(problem, settings=SLSQP_Settings(enable_progress_bar=False))
 
     assert problem.database._Database__new_iter_listeners == []
+    for function in problem.functions:
+        assert function.pre_compute_at_new_point is None
+
+
+def test_a_nested_run_on_the_working_problem_counts_each_evaluation_once() -> None:
+    """Check a driver run nested in another one on its working problem.
+
+    The nested run hooks the evaluation layer of the working problem,
+    which wraps the one of the enclosing run,
+    and both layers share the database and the evaluation counter.
+    Each new point is then seen as new by both layers:
+    the enclosing run suspends its hooks for the duration of the nested one,
+    so that exactly one hook counts the evaluation.
+    """
+    n_samples = 10
+    # The first sample is the initial point,
+    # which the enclosing run has already evaluated:
+    # any other point would make the nested run count that evaluation
+    # as its first iteration, since both runs share the evaluation counter.
+    samples = array([[0.1 * i, 0.15 * i] for i in range(n_samples)])
+
+    def run(self, problem):
+        CustomDOE().execute(
+            problem, CustomDOE_Settings(samples=samples, enable_progress_bar=False)
+        )
+        return "", None
+
+    problem = Rosenbrock()
+    with mock.patch.object(ScipyOpt, "_run", run):
+        ScipyOpt("SLSQP").execute(
+            problem,
+            SLSQP_Settings(normalize_design_space=False, enable_progress_bar=False),
+        )
+
+    # Counted twice, only half of the samples would be evaluated
+    # before the counter reaches its maximum, the number of samples.
+    assert_allclose(problem.database.get_x_vect_history(), samples)
+    assert problem.evaluation_counter.current == n_samples
     for function in problem.functions:
         assert function.pre_compute_at_new_point is None
 

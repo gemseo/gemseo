@@ -42,6 +42,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterable
 from contextlib import contextmanager
@@ -65,6 +66,7 @@ from gemseo.core.algorithm.base_algorithm_library import AlgorithmDescription
 from gemseo.core.algorithm.base_algorithm_library import BaseAlgorithmLibrary
 from gemseo.core.algorithm.base_driver_settings import BaseDriverSettings
 from gemseo.core.algorithm.progress_bar_data.data import ProgressBarData
+from gemseo.core.function.base_problem_function import BaseProblemFunction
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.core.problem.termination_criterion import MaxIterReachedException
@@ -86,6 +88,7 @@ from gemseo.util.typing import StrKeyMapping
 if TYPE_CHECKING:
     from gemseo.core.algorithm._progress_bar.base import BaseProgressBar
     from gemseo.core.algorithm.progress_bar_data.factory import ProgressBarDataName
+    from gemseo.core.function.evaluation_function import EvaluationFunction
     from gemseo.optimization.problem import OptimizationProblem
     from gemseo.optimization.result import OptimizationResult
     from gemseo.space.base import BaseVariableSpace
@@ -923,7 +926,9 @@ class BaseDriverLibrary(
         # so the hook is this driver's own
         # and the run it belongs to is the one releasing it.
         functions = self._original_problem.functions
+        suspended_hooks = []
         if not self._evaluates_in_parallel:
+            suspended_hooks = self.__suspend_enclosing_hooks()
             for function in functions:
                 function.pre_compute_at_new_point = (
                     self._finalize_previous_iteration_using_database
@@ -945,6 +950,50 @@ class BaseDriverLibrary(
             )
             for function in functions:
                 function.pre_compute_at_new_point = None
+
+            for function, hook in suspended_hooks:
+                function.pre_compute_at_new_point = hook
+
+    def __suspend_enclosing_hooks(
+        self,
+    ) -> list[tuple[EvaluationFunction, Callable[[], None]]]:
+        """Suspend the hooks of the run enclosing this one, if any.
+
+        A run nested in another one on the working problem of the latter
+        hooks an evaluation layer wrapping the layer of the enclosing run.
+        When both share the evaluation counter,
+        a new point is seen as new by both layers
+        and counted twice.
+
+        Returns:
+            The suspended hooks, as pairs of function and hook,
+            to restore at the end of the run.
+        """
+        counter = self._original_problem.evaluation_counter
+        suspended_hooks = []
+        suspended_functions = set()
+        for function in self._original_problem.functions:
+            # The outermost function is the one hooked by this run.
+            function = function._wrapped_function
+            while isinstance(function, BaseProblemFunction):
+                hook = getattr(function, "pre_compute_at_new_point", None)
+                # Meta-algorithms (multi-start, augmented Lagrangian, MNBI)
+                # build sub-problems with their own counter
+                # whose functions wrap the ones of the parent:
+                # there both hooks must keep firing.
+                # Only a shared counter means a double count.
+                if (
+                    hook is not None
+                    and id(function) not in suspended_functions
+                    and getattr(function._owner, "evaluation_counter", None) is counter
+                ):
+                    suspended_functions.add(id(function))
+                    suspended_hooks.append((function, hook))
+                    function.pre_compute_at_new_point = None
+
+                function = function._wrapped_function
+
+        return suspended_hooks
 
     def __run_algorithm(
         self,
