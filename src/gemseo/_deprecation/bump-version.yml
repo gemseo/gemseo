@@ -943,8 +943,9 @@ attributes:
   gemseo.utils.compatibility.scipy.TOL_OPTION: null
   gemseo.utils.discipline.DummyBaseDiscipline: null
   gemseo.utils.locks.synchronized_hashes: null
-  gemseo.utils.testing.helpers.image_comparison: null
-  gemseo.utils.testing.pytest_conftest.baseline_images: null
+  # Replaced by the snapshot_matplotlib fixture of syrupy-matplotlib (changelog 1760).
+  gemseo.utils.testing.helpers.image_comparison: TODO use the snapshot_matplotlib fixture of syrupy-matplotlib instead; add syrupy-matplotlib to the test dependencies, set snapshot_matplotlib_tolerance = 0.01 in .pytest.ini, replace the @image_comparison([...]) decorator by a snapshot_matplotlib argument of the test, then run pytest --snapshot-update without -n (the baseline_images directories are no longer used)
+  gemseo.utils.testing.pytest_conftest.baseline_images: TODO the baseline_images fixture went with image_comparison; use the snapshot_matplotlib fixture of syrupy-matplotlib instead
   gemseo.utils.testing.pytest_conftest.disable_fault_handler: null
   gemseo.utils.testing.pytest_conftest.import_or_skip_xlwings: null
   gemseo.utils.testing.pytest_conftest.is_xlwings_usable: null
