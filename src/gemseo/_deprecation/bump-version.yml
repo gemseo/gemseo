@@ -1827,7 +1827,7 @@ classes:
   GlobalConfiguration:
     fast: TODO use the methods enable_fast_mode and disable_fast_mode instead
     __init__:
-      fast: null
+      fast: null TODO call configuration.enable_fast_mode() after creating it
 
   #### Constraint aggregation
   ConstraintAggregation:
