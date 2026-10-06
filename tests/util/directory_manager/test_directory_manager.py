@@ -60,9 +60,15 @@ from gemseo.util.testing.helper import assert_exception
 
 from ...formulation.bilevel_test_helper import create_sobieski_bilevel_bcd_scenario
 from ...formulation.bilevel_test_helper import create_sobieski_bilevel_scenario
+from .directory_manager_test_helper import _keep_all_references
+from .directory_manager_test_helper import _run_fresh
+from .directory_manager_test_helper import assert_policies_distinguishable
 from .directory_manager_test_helper import build_monolevel_scenario
+from .directory_manager_test_helper import build_reference_key
+from .directory_manager_test_helper import check_cleanup_policy
 from .directory_manager_test_helper import create_disc_from_exe
-from .directory_manager_test_helper import read_paths_from_txt
+from .directory_manager_test_helper import derive_policy_tree
+from .directory_manager_test_helper import get_directory_tree
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -70,66 +76,6 @@ if TYPE_CHECKING:
 
     from gemseo.scenario.evaluation import EvaluationScenario
     from gemseo.util.typing import StrKeyMapping
-
-ref_dir_root_path = Path(__file__).parent / "reference_directories"
-base_dir = Path("root")
-platform = "windows" if platform_is_windows else "linux"
-
-
-@pytest.fixture(autouse=True)
-def deterministic_slsqp(monkeypatch):
-    """Make SLSQP deterministic by replacing ScipyOpt._run with a simple loop.
-
-    This evaluates max_iter equally-spaced points, producing the same directory
-    structure regardless of SciPy/NumPy version.
-    """
-
-    def mock_run(self, problem):
-        from gemseo.space.util import get_value_and_bounds
-
-        _, l_b, u_b = get_value_and_bounds(problem.input_space)
-        max_iter = self._settings.max_iter
-        require_grad = self.ALGORITHM_INFOS[self._algo_name].require_gradient
-
-        constraints = self._get_right_sign_constraints(problem)
-
-        for i in range(max_iter):
-            t = (i + 1) / (max_iter + 1)
-            x = l_b + t * (u_b - l_b)
-            problem.objective.evaluate(x)
-            for constraint in constraints:
-                constraint.evaluate(x)
-            if require_grad:
-                problem.objective.jac(x)
-                for constraint in constraints:
-                    constraint.jac(x)
-
-        return "Deterministic mock", 0
-
-    monkeypatch.setattr(
-        "gemseo.optimization.scipy_local.scipy_local.ScipyOpt._run",
-        mock_run,
-    )
-
-
-def assert_directory_tree(ref_file_path: Path) -> None:
-    """Validate the tree against a reference one."""
-    root_path = _configuration.directory_manager.execution_root_path
-    ref_dir_paths = read_paths_from_txt(ref_file_path, root_path)
-    # The trace registry subtree, and the arrays directory a large traced
-    # value is written to (see `_NpyArrayStore`), are not part of the
-    # workflow-mirroring tree the reference files describe: both are excluded
-    # rather than added to every reference file.
-    actual_dir_paths = {
-        path
-        for path in root_path.rglob("*")
-        if path.is_dir()
-        and not path.is_relative_to(root_path / ".gemseo-traces")
-        and path.name != ".gemseo-trace.arrays"
-    }
-    assert ref_dir_paths == actual_dir_paths, (
-        f"Missing dirs: {ref_dir_paths - actual_dir_paths}"
-    )
 
 
 @pytest.fixture
@@ -168,154 +114,406 @@ parametrized_clean_up_policy = pytest.mark.parametrize(
     ],
 )
 
+parametrized_policy = pytest.mark.parametrize(
+    "policy", list(CleanUpPolicy), ids=lambda policy: policy.name
+)
+
+parametrized_mda_policy = pytest.mark.parametrize(
+    "mda_policy",
+    [MDACleanUpPolicy.KEEP_ALL, MDACleanUpPolicy.KEEP_LAST_ONLY],
+    ids=lambda mda_policy: mda_policy.name,
+)
+
+# A small hand-written KEEP_ALL tree used to check derive_policy_tree against
+# the cleanup policy definitions, independently of the manager:
+#   - 3 top-level scenario iterations, with the optimum at iteration 2 (the
+#     middle one), neither the first nor the last;
+#   - an MDA nested under iteration 1, with 2 solver iterations;
+#   - a nested sub-scenario under iteration 3, with 2 of its own iterations;
+#   - a managed, non-iteration child directly under the top-level scenario
+#     (e.g. a discipline executed once outside the solver loop), kept only
+#     by KEEP_ALL: every other policy keeps only the last / solution /
+#     baseline-and-solution iteration directories.
+_oracle_keep_all_tree = sorted([
+    "MDOScenario",
+    "MDOScenario/Foo_execution",
+    "MDOScenario/Optimizer_iteration_1",
+    "MDOScenario/Optimizer_iteration_1/MDAJacobi",
+    "MDOScenario/Optimizer_iteration_1/MDAJacobi/MDAJacobi_iteration_0",
+    "MDOScenario/Optimizer_iteration_1/MDAJacobi/MDAJacobi_iteration_1",
+    "MDOScenario/Optimizer_iteration_2",
+    "MDOScenario/Optimizer_iteration_3",
+    "MDOScenario/Optimizer_iteration_3/SubScenario",
+    "MDOScenario/Optimizer_iteration_3/SubScenario/Optimizer_iteration_1",
+    "MDOScenario/Optimizer_iteration_3/SubScenario/Optimizer_iteration_2",
+])
+_oracle_optimum_iteration = 2
+
+
+@pytest.mark.parametrize(
+    ("policy", "mda_policy", "expected_tree"),
+    [
+        (
+            CleanUpPolicy.KEEP_ALL,
+            MDACleanUpPolicy.KEEP_ALL,
+            _oracle_keep_all_tree,
+        ),
+        (
+            CleanUpPolicy.KEEP_ALL,
+            MDACleanUpPolicy.KEEP_LAST_ONLY,
+            [
+                "MDOScenario",
+                "MDOScenario/Foo_execution",
+                "MDOScenario/Optimizer_iteration_1",
+                "MDOScenario/Optimizer_iteration_1/MDAJacobi",
+                "MDOScenario/Optimizer_iteration_1/MDAJacobi/MDAJacobi_iteration_1",
+                "MDOScenario/Optimizer_iteration_2",
+                "MDOScenario/Optimizer_iteration_3",
+                "MDOScenario/Optimizer_iteration_3/SubScenario",
+                "MDOScenario/Optimizer_iteration_3/SubScenario/Optimizer_iteration_1",
+                "MDOScenario/Optimizer_iteration_3/SubScenario/Optimizer_iteration_2",
+            ],
+        ),
+        (
+            CleanUpPolicy.KEEP_LAST_ONLY,
+            MDACleanUpPolicy.KEEP_ALL,
+            [
+                "MDOScenario",
+                "MDOScenario/Optimizer_iteration_3",
+                "MDOScenario/Optimizer_iteration_3/SubScenario",
+                "MDOScenario/Optimizer_iteration_3/SubScenario/Optimizer_iteration_2",
+            ],
+        ),
+        (
+            CleanUpPolicy.KEEP_SOLUTION_ONLY,
+            MDACleanUpPolicy.KEEP_ALL,
+            [
+                "MDOScenario",
+                "MDOScenario/Optimizer_iteration_2",
+            ],
+        ),
+        (
+            CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION,
+            MDACleanUpPolicy.KEEP_ALL,
+            [
+                "MDOScenario",
+                "MDOScenario/Optimizer_iteration_1",
+                "MDOScenario/Optimizer_iteration_1/MDAJacobi",
+                "MDOScenario/Optimizer_iteration_1/MDAJacobi/MDAJacobi_iteration_0",
+                "MDOScenario/Optimizer_iteration_1/MDAJacobi/MDAJacobi_iteration_1",
+                "MDOScenario/Optimizer_iteration_2",
+            ],
+        ),
+    ],
+)
+def test_derive_policy_tree_oracle(policy, mda_policy, expected_tree):
+    """Verify derive_policy_tree against a small, hand-written KEEP_ALL tree.
+
+    The KEEP_LAST_ONLY and the solution-based cases are exact for the
+    top-level scenario (the optimum is at iteration 2 of 3); for the nested
+    sub-scenario (under iteration 3), only KEEP_LAST_ONLY is checked here, as
+    the solution-based policies for a nested scenario need an `actual_tree`
+    reflecting a real run, which the per-policy snapshots of the scenario
+    tests below provide (see `check_cleanup_policy`).
+    """
+    expected_tree = sorted(expected_tree)
+    assert (
+        derive_policy_tree(
+            _oracle_keep_all_tree,
+            policy,
+            _oracle_optimum_iteration,
+            expected_tree,
+            mda_policy=mda_policy,
+        )
+        == expected_tree
+    )
+
+
+def test_derive_policy_tree_oracle_with_homonym_mda_suffix():
+    """Verify that an MDA directory is recognized despite a homonym `#<n>` suffix.
+
+    The manager appends a `#<n>` suffix to a directory name (e.g.
+    `MDAJacobi#0`) when the same MDA is instantiated more than once under the
+    same parent; the suffix must be stripped both when classifying the
+    directory as an MDA directory and when matching its `_iteration_<n>`
+    children, or `MDACleanUpPolicy.KEEP_LAST_ONLY` would wrongly keep every
+    iteration instead of pruning all but the last.
+    """
+    keep_all_tree = sorted([
+        "MDOScenario",
+        "MDOScenario/MDAJacobi#0",
+        "MDOScenario/MDAJacobi#0/MDAJacobi_iteration_0",
+        "MDOScenario/MDAJacobi#0/MDAJacobi_iteration_1",
+    ])
+    expected_tree = sorted([
+        "MDOScenario",
+        "MDOScenario/MDAJacobi#0",
+        "MDOScenario/MDAJacobi#0/MDAJacobi_iteration_1",
+    ])
+    assert (
+        derive_policy_tree(
+            keep_all_tree,
+            CleanUpPolicy.KEEP_ALL,
+            1,
+            expected_tree,
+            mda_policy=MDACleanUpPolicy.KEEP_LAST_ONLY,
+        )
+        == expected_tree
+    )
+
+
+def test_get_directory_tree_structural_only_strips_homonym_suffix(tmp_wd):
+    """Verify that structural_only drops a leaf directory with a homonym suffix.
+
+    The manager appends a `#<n>` suffix to a directory name (e.g.
+    `Foo_execution#0`) when the same discipline is executed more than once
+    under the same parent; the suffix must be stripped before checking the
+    `_execution` / `_linearization` leaf-discipline suffix, or such a
+    directory would wrongly survive the `structural_only` filter.
+    """
+    (tmp_wd / "Foo_execution#0").mkdir()
+
+    assert get_directory_tree(tmp_wd, structural_only=True) == []
+
 
 @pytest.mark.parametrize(
     (
-        "scenario_type",
         "formulation_settings_model",
         "settings_model",
-        "reference_directories",
+        "require_feasible",
+        "start_at_lower_bounds",
     ),
     [
-        (
-            "MDO",
+        pytest.param(
             MDF_Settings(
                 main_mda_settings=MDAChain_Settings(
-                    inner_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=3)
+                    inner_mda_settings=MDAGaussSeidel_Settings(
+                        max_mda_iter=3, tolerance=0.0
+                    )
                 ),
             ),
-            SLSQP_Settings(max_iter=5),
-            "mdo_mdf_sobieski_slsqp_{}_paths_{}.txt",
+            # max_iter=8 (rather than a smaller value): with fewer sweep
+            # points, this configuration finds at most one feasible point,
+            # which leaves KEEP_SOLUTION_ONLY / KEEP_BASELINE_AND_SOLUTION
+            # untested against a genuine runner-up (assert_policies_
+            # distinguishable would fail).
+            SLSQP_Settings(max_iter=8),
+            True,
+            False,
+            id="mdf-gauss_seidel-slsqp",
         ),
-        (
-            "MDO",
+        pytest.param(
             IDF_Settings(),
-            SLSQP_Settings(max_iter=5),
-            "mdo_idf_sobieski_slsqp_{}_paths_{}.txt",
+            # max_iter=6 (rather than 5): with only 5, the sweep point
+            # closest to the optimum of the constraint-violation function is
+            # always the last one evaluated, which fails the interior-
+            # iteration check.
+            SLSQP_Settings(max_iter=6),
+            False,
+            # x0 moved to the lower bounds: the default point is close to the
+            # SSBJ equilibrium, less infeasible than any sweep point, so it
+            # would always be the (non-interior) optimum at iteration 1.
+            True,
+            id="idf-slsqp",
         ),
-        (
-            "MDO",
+        pytest.param(
             MDF_Settings(
                 main_mda_settings=MDAChain_Settings(
-                    inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3)
+                    inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3, tolerance=0.0)
                 )
             ),
-            NLOPT_COBYLA_Settings(max_iter=5),
-            "mdo_mdf_sobieski_cobyla_{}_paths_{}.txt",
+            NLOPT_COBYLA_Settings(max_iter=8),
+            True,
+            False,
+            id="mdf-jacobi-cobyla",
         ),
-        (
-            "MDO",
+        pytest.param(
             IDF_Settings(),
-            NLOPT_COBYLA_Settings(max_iter=5),
-            "mdo_idf_sobieski_cobyla_{}_paths_{}.txt",
+            # Same structural issue as the SLSQP IDF configuration above
+            # (COBYLA uses the same deterministic sweep).
+            NLOPT_COBYLA_Settings(max_iter=6),
+            False,
+            True,
+            id="idf-cobyla",
         ),
-        (
-            "DOE",
+        pytest.param(
             MDF_Settings(
                 main_mda_settings=MDAChain_Settings(
-                    inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3)
+                    inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3, tolerance=0.0)
                 )
             ),
-            LHS_Settings(n_samples=5),
-            "doe_mdf_sobieski_{}_paths_{}.txt",
+            # A much larger n_samples than the other configurations: the
+            # feasible region defined by g_1, g_2 and g_3 is small, and a
+            # handful of LHS samples almost never lands two points inside it.
+            LHS_Settings(n_samples=30),
+            True,
+            False,
+            id="mdf-jacobi-lhs",
         ),
-        (
-            "DOE",
+        pytest.param(
             IDF_Settings(),
-            LHS_Settings(n_samples=5),
-            "doe_idf_sobieski_{}_paths_{}.txt",
+            # n_samples=12: no sample raises a math domain error in the SSBJ
+            # disciplines (with 15, samples 10 and 14 do, and the DOE skips
+            # them, which shifts the `DOE_sample_<n>` suffixes away from the
+            # database iterations), and the optimum is interior (iteration 9).
+            LHS_Settings(n_samples=12),
+            # False (not None): unlike the two MDO configurations above, the
+            # LHS samples are not on the deterministic sweep, so an interior,
+            # well-separated optimum is reachable; only the feasibility
+            # itself is unreachable (the consistency constraints are
+            # essentially never satisfied by random sampling).
+            False,
+            False,
+            id="idf-lhs",
         ),
     ],
 )
-@parametrized_clean_up_policy
+@parametrized_policy
 def test_monolevel_scenarios_all_policies(
     dm_settings,
-    scenario_type,
+    tmp_wd,
+    snapshot,
+    request,
     formulation_settings_model,
     settings_model,
-    reference_directories,
-    clean_up_policy,
+    require_feasible,
+    start_at_lower_bounds,
+    policy,
 ):
-    """Test the creation of directories for the corresponding policy for a mono-level
-    scenario."""
-    dm_settings.clean_up_policy = clean_up_policy
+    """Test one cleanup policy for a mono-level scenario.
 
-    scenario = build_monolevel_scenario(formulation_settings_model)
-    scenario.execute(settings_model)
+    The `KEEP_ALL` tree of each configuration (MDF or IDF formulation, with a
+    gradient-based or a derivative-free optimizer, or a DOE) is checked
+    against a syrupy snapshot; the tree of every other policy is checked
+    against its own syrupy snapshot and against the oracle
+    (`derive_policy_tree`), fed with the `KEEP_ALL` tree and the optimum
+    iteration of this configuration's reference run (see
+    `check_cleanup_policy`).
 
-    ref_file_path = (
-        ref_dir_root_path
-        / formulation_settings_model.target_class_name
-        / scenario_type
-        / platform
-        / reference_directories.format(platform, clean_up_policy)
+    For IDF, the coupling variables are free design variables that the
+    deterministic sweep does not solve for, so the optimum found by MDO is
+    never feasible: `assert_policies_distinguishable` is called with
+    `require_feasible=False` for every IDF case (the interior-iteration and
+    the gap checks still run, over every database point rather than only the
+    feasible ones). `start_at_lower_bounds` moves the design space's current
+    value to its lower bounds before each fresh scenario is executed, for the
+    IDF MDO configurations (see the parametrization comments).
+    """
+
+    def build_scenario():
+        scenario = build_monolevel_scenario(
+            formulation_settings_model.model_copy(deep=True)
+        )
+        if start_at_lower_bounds:
+            design_space = scenario.design_space
+            design_space.set_current_value(design_space.get_lower_bounds())
+        return scenario
+
+    check_cleanup_policy(
+        build_scenario,
+        settings_model,
+        tmp_wd,
+        snapshot,
+        policy,
+        build_reference_key(request),
+        require_feasible=require_feasible,
     )
-    assert_directory_tree(ref_file_path)
 
 
-@pytest.mark.parametrize(
-    ("mda_clean_up_policy", "reference_directories"),
-    [
-        (
-            MDACleanUpPolicy.KEEP_ALL,
-            "mda_jacobi_sobieski_{}_paths_{}.txt",
-        ),
-        (
-            MDACleanUpPolicy.KEEP_LAST_ONLY,
-            "mda_jacobi_sobieski_{}_paths_{}.txt",
-        ),
-    ],
-)
+@parametrized_mda_policy
 def test_mda_clean_up_policies_for_mono_level_scenarios(
-    dm_settings, mda_clean_up_policy, reference_directories
+    dm_settings, tmp_wd, snapshot, request, mda_policy
 ):
-    """Test the clean policies for the MDAs with a mono-level scenario."""
-    dm_settings.clean_up_policy = CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION
-    dm_settings.mda_clean_up_policy = mda_clean_up_policy
+    """Test the KEEP_ALL and KEEP_LAST_ONLY policies for an inner MDA.
 
-    scenario = build_monolevel_scenario(
-        MDF_Settings(
-            main_mda_settings=MDAChain_Settings(
-                inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3)
-            )
-        ),
+    The scenario cleanup policy is fixed to KEEP_BASELINE_AND_SOLUTION, so
+    the top-level scenario directories are already pruned in both runs; only
+    the MDA cleanup policy varies. The `MDACleanUpPolicy.KEEP_ALL` reference
+    tree and optimum iteration of this configuration are fetched from
+    `_keep_all_references`, building and caching them first if this is the
+    first MDA policy of the configuration to run.
+
+    For `mda_policy == MDACleanUpPolicy.KEEP_ALL`, the reference tree itself
+    is compared to the syrupy snapshot and checked for policy distinguishability.
+    For `MDACleanUpPolicy.KEEP_LAST_ONLY`, a fresh scenario is built and
+    executed under its own execution root, checked for determinism against the
+    reference's optimum iteration, and its tree is compared to the oracle's
+    prediction.
+    """
+
+    def build_scenario():
+        return build_monolevel_scenario(
+            MDF_Settings(
+                main_mda_settings=MDAChain_Settings(
+                    inner_mda_settings=MDAJacobi_Settings(max_mda_iter=3, tolerance=0.0)
+                )
+            ),
+        )
+
+    algo_settings_model = SLSQP_Settings(max_iter=8)
+    reference_key = build_reference_key(request)
+
+    reference = _keep_all_references.get(reference_key)
+    if reference is None:
+        scenario, keep_all_tree, optimum_iteration = _run_fresh(
+            build_scenario,
+            algo_settings_model,
+            tmp_wd / "ref",
+            CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION,
+            MDACleanUpPolicy.KEEP_ALL,
+        )
+        assert_policies_distinguishable(scenario)
+        reference = keep_all_tree, optimum_iteration
+        _keep_all_references[reference_key] = reference
+
+    keep_all_tree, optimum_iteration = reference
+
+    if mda_policy == MDACleanUpPolicy.KEEP_ALL:
+        assert keep_all_tree == snapshot
+        return
+
+    _, actual_tree, fresh_optimum_iteration = _run_fresh(
+        build_scenario,
+        algo_settings_model,
+        tmp_wd / "run",
+        CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION,
+        mda_policy,
     )
-    scenario.execute(SLSQP_Settings(max_iter=3))
-
-    ref_file_path = (
-        ref_dir_root_path
-        / "mda"
-        / reference_directories.format(platform, mda_clean_up_policy)
+    assert fresh_optimum_iteration == optimum_iteration, (
+        "The scenario execution is not deterministic: the optimum "
+        f"iteration was {optimum_iteration} under MDACleanUpPolicy.KEEP_ALL and "
+        f"{fresh_optimum_iteration} under {mda_policy}."
     )
-    assert_directory_tree(ref_file_path)
+    assert actual_tree == derive_policy_tree(
+        keep_all_tree,
+        CleanUpPolicy.KEEP_ALL,
+        optimum_iteration,
+        actual_tree,
+        mda_policy=mda_policy,
+    )
 
 
-@parametrized_clean_up_policy
-@pytest.mark.skipif(
-    platform_is_windows,
-    reason="Currently fails on Windows with pytest, works without pytest",
-)
+@pytest.mark.skip_under_windows
+@parametrized_policy
 def test_directory_manager_with_multiprocessing(
-    dm_settings, generate_sobieski_bilevel_scenario, clean_up_policy
+    dm_settings, tmp_wd, snapshot, request, generate_sobieski_bilevel_scenario, policy
 ):
-    """Test the correct creation of directories when using multiprocessing."""
-    dm_settings.clean_up_policy = clean_up_policy
-
+    """Test one cleanup policy for a bilevel scenario run with multiprocessing."""
     settings_model = LHS_Settings(n_samples=4, n_processes=4)
-    scenario = generate_sobieski_bilevel_scenario(
-        main_mda_settings=MDAJacobi_Settings(max_mda_iter=2),
-    )
-    scenario.execute(settings_model)
 
-    reference_directories = "doe_bilevel_sobieski_parallel_{}_paths_{}.txt"
-    ref_file_path = (
-        ref_dir_root_path
-        / "bilevel"
-        / "DOE"
-        / platform
-        / reference_directories.format(platform, clean_up_policy)
+    def build_scenario():
+        return generate_sobieski_bilevel_scenario(
+            main_mda_settings=MDAJacobi_Settings(max_mda_iter=2, tolerance=0.0),
+        )
+
+    check_cleanup_policy(
+        build_scenario,
+        settings_model,
+        tmp_wd,
+        snapshot,
+        policy,
+        build_reference_key(request),
     )
-    assert_directory_tree(ref_file_path)
 
 
 def test_directory_manager_with_spawn_multiprocessing(dm_settings, monkeypatch):
@@ -342,142 +540,120 @@ def test_directory_manager_with_spawn_multiprocessing(dm_settings, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ("scenario_type", "settings_model", "reference_directories"),
+    ("scenario_type", "settings_model"),
     [
-        (
-            "MDO",
-            NLOPT_COBYLA_Settings(max_iter=5),
-            "mdo_bilevel_sobieski_{}_paths_{}.txt",
+        pytest.param("MDO", NLOPT_COBYLA_Settings(max_iter=5), id="mdo-cobyla"),
+        pytest.param(
+            "DOE",
+            # n_samples=15 (rather than a smaller value): with fewer LHS samples
+            # the optimum lands on the first database iteration, which fails
+            # assert_policies_distinguishable.
+            LHS_Settings(n_samples=15),
+            id="doe-lhs",
         ),
-        ("DOE", LHS_Settings(n_samples=5), "doe_bilevel_sobieski_{}_paths_{}.txt"),
     ],
 )
-@parametrized_clean_up_policy
+@parametrized_policy
 @pytest.mark.xfail(
     platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
 def test_all_policies_sobieski_bilevel(
     dm_settings,
+    tmp_wd,
+    snapshot,
+    request,
     generate_sobieski_bilevel_scenario,
     scenario_type,
     settings_model,
-    reference_directories,
-    clean_up_policy,
+    policy,
 ):
-    """Test the directory creation for the bilevel formulation."""
-    dm_settings.clean_up_policy = clean_up_policy
+    """Test one cleanup policy for the bilevel formulation.
 
-    scenario = generate_sobieski_bilevel_scenario(
-        main_mda_settings=MDAChain_Settings(max_mda_iter=2),
-    )
-    scenario.execute(settings_model)
+    The tree is compared structurally only (`structural_only=True`): the
+    leaf discipline execution/linearization directories are dropped, as their
+    number and nesting are a consequence of the differentiation method, not
+    of the cleanup policy under test.
+    """
 
-    ref_file_path = (
-        ref_dir_root_path
-        / "bilevel"
-        / scenario_type
-        / platform
-        / reference_directories.format(platform, clean_up_policy)
+    def build_scenario():
+        return generate_sobieski_bilevel_scenario(
+            main_mda_settings=MDAChain_Settings(
+                max_mda_iter=2, inner_mda_settings=MDAJacobi_Settings(tolerance=0.0)
+            ),
+        )
+
+    check_cleanup_policy(
+        build_scenario,
+        settings_model,
+        tmp_wd,
+        snapshot,
+        policy,
+        build_reference_key(request),
+        structural_only=True,
     )
-    assert_directory_tree(ref_file_path)
 
 
 @pytest.mark.parametrize(
-    ("scenario_type", "settings_model", "reference_directories"),
+    ("scenario_type", "settings_model"),
     [
-        (
-            "MDO",
-            NLOPT_COBYLA_Settings(max_iter=3),
-            "mdo_bilevel_bcd_sobieski_{}_paths_{}.txt",
-        ),
-        ("DOE", LHS_Settings(n_samples=3), "doe_bilevel_bcd_sobieski_{}_paths_{}.txt"),
+        pytest.param("MDO", NLOPT_COBYLA_Settings(max_iter=3), id="mdo-cobyla"),
+        pytest.param("DOE", LHS_Settings(n_samples=3), id="doe-lhs"),
     ],
 )
-@parametrized_clean_up_policy
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason=(
-        "The reference directory trees are stale. The assertion below used to "
-        "compare the reference set with itself, so it asserted nothing; once "
-        "corrected it fails, with exactly the same missing directories on "
-        "upstream/develop, hence the drift predates this branch. Deciding "
-        "which tree is the correct one, and regenerating the reference files "
-        "with their explanatory comments, is a task of its own. The mark is "
-        "strict and restricted to the assertion failure, so that a breakage of "
-        "the scenario run itself is still reported, and so that regenerating "
-        "the reference files reports an XPASS asking for the mark's removal."
-    ),
-)
-# Stacked below the mark above on purpose: pytest keeps the first xfail mark
-# whose condition holds, scanning from the one closest to the function, so this
-# one wins on Windows, where the failure is the long directory paths and not the
-# stale references, hence neither an `AssertionError` nor something to be strict
-# about.
+@parametrized_policy
 @pytest.mark.xfail(
     platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
 def test_all_policies_bilevel_bcd_sobieski(
     dm_settings,
+    tmp_wd,
+    snapshot,
+    request,
     generate_sobieski_bilevel_bcd_scenario,
     scenario_type,
     settings_model,
-    reference_directories,
-    clean_up_policy,
+    policy,
 ):
-    """Test the directory creation for the bilevel bcd formulation."""
-    dm_settings.clean_up_policy = clean_up_policy
+    """Test one cleanup policy for the bilevel BCD formulation.
 
-    short_names = platform == "windows"
+    `short_names=True` is used on every platform, not only on Windows: the
+    BCD formulation nests two levels of sub-scenarios inside the top-level
+    one, and the resulting paths are long enough to be worth shortening
+    everywhere, so that this test exercises the same directory names as it
+    would on Windows. The tree is compared structurally only, like the plain
+    bilevel formulation.
+    """
 
-    scenario = generate_sobieski_bilevel_bcd_scenario(
-        short_names=short_names,
-    )
-    scenario.formulation._mda1.inner_mdas[0].settings = MDAJacobi_Settings(
-        max_mda_iter=2
-    )
-    scenario.formulation._mda2.inner_mdas[0].settings = MDAJacobi_Settings(
-        max_mda_iter=2
-    )
-    scenario.formulation._bcd_mda.settings = MDAGaussSeidel_Settings(max_mda_iter=2)
-    for scenario_adapter in scenario.formulation._scenario_adapters:
-        scenario_adapter.scenario.set_algorithm(SLSQP_Settings(max_iter=3))
-        scenario_adapter.scenario.formulation.mda.settings = MDAGaussSeidel_Settings(
-            max_mda_iter=2
+    def build_scenario():
+        scenario = generate_sobieski_bilevel_bcd_scenario(short_names=True)
+        scenario.formulation._mda1.inner_mdas[0].settings = MDAJacobi_Settings(
+            max_mda_iter=2, tolerance=0.0
         )
-    if short_names:
+        scenario.formulation._mda2.inner_mdas[0].settings = MDAJacobi_Settings(
+            max_mda_iter=2, tolerance=0.0
+        )
+        scenario.formulation._bcd_mda.settings = MDAGaussSeidel_Settings(
+            max_mda_iter=2, tolerance=0.0
+        )
+        for scenario_adapter in scenario.formulation._scenario_adapters:
+            scenario_adapter.scenario.set_algorithm(SLSQP_Settings(max_iter=3))
+            scenario_adapter.scenario.formulation.mda.settings = (
+                MDAGaussSeidel_Settings(max_mda_iter=2, tolerance=0.0)
+            )
         scenario.formulation._mda1.inner_mdas[0].name = "MDA1"
         scenario.formulation._mda2.inner_mdas[0].name = "MDA2"
+        return scenario
 
-    scenario.execute(settings_model)
-
-    ref_file_path = (
-        ref_dir_root_path
-        / "bcd"
-        / scenario_type
-        / platform
-        / reference_directories.format(platform, clean_up_policy)
-    )
-    ref_dir_paths = read_paths_from_txt(ref_file_path, dm_settings.execution_root_path)
-    # The trace registry subtree is not part of the workflow-mirroring tree
-    # the reference files describe: it is excluded rather than added to
-    # every reference file.
-    actual_dir_paths = {
-        path
-        for path in dm_settings.execution_root_path.rglob("*")
-        if path.is_dir()
-        and not path.is_relative_to(dm_settings.execution_root_path / ".gemseo-traces")
-    }
-    # There can be legitimate variations in the execution of a BCD scenario when it is
-    # executed in different machines, mostly because of the gradient-based optimizer at
-    # the sub-scenario level. We test only that the generated directory tree
-    # includes at least the reference directories.
-    # In case of failure, check the generated directories and verify that the executed
-    # workflow is consistent with the directory tree, then update the reference file.
-    assert ref_dir_paths.issubset(actual_dir_paths), (
-        f"Missing dirs: {ref_dir_paths - actual_dir_paths}"
+    check_cleanup_policy(
+        build_scenario,
+        settings_model,
+        tmp_wd,
+        snapshot,
+        policy,
+        build_reference_key(request),
+        structural_only=True,
     )
 
 
