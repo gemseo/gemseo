@@ -1468,8 +1468,9 @@ classes:
     norm: null
     __init__:
       # kernel only accepts a member of the RBF enumeration (or its name) now: a
-      # Python callable is no longer accepted.
-      function: kernel TODO kernel only accepts a member of the RBF enumeration, e.g. RBF.CUBIC; a Python callable is no longer accepted
+      # Python callable is no longer accepted, so mark the calls unless they pass a
+      # string.
+      function: kernel TODO[!str] kernel only accepts a member of the RBF enumeration or its name, e.g. RBF.CUBIC or "cubic"; a Python callable is no longer accepted
       smooth: smoothing
       der_function: null
       norm: null
