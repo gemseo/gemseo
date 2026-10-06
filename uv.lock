@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11, <3.15"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -367,7 +367,7 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "numpy" },
+    { name = "numpy", marker = "python_full_version < '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/58/01/1253e6698a07380cd31a736d248a3f2a50a7c88779a1813da27503cadc2a/contourpy-1.3.3.tar.gz", hash = "sha256:083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880", size = 13466174, upload-time = "2025-07-26T12:03:12.549Z" }
 wheels = [
@@ -452,7 +452,7 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "numpy" },
+    { name = "numpy", marker = "python_full_version >= '3.12'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/5a/a55177dd22553a277388e8a1b3220e92de91bacb28356cdc73caa240121d/contourpy-1.4.0.tar.gz", hash = "sha256:20156f5a1ac4f8ce02656e39a61e82164a3d359796dc8026f75b062783d500e1", size = 13323726, upload-time = "2026-09-11T19:05:05.808Z" }
 wheels = [
@@ -984,23 +984,23 @@ wheels = [
 
 [[package]]
 name = "griffe-inherited-docstrings"
-version = "1.1.3"
+version = "1.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "griffelib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cb/da/fd002dc5f215cd896bfccaebe8b4aa1cdeed8ea1d9d60633685bd61ff933/griffe_inherited_docstrings-1.1.3.tar.gz", hash = "sha256:cd1f937ec9336a790e5425e7f9b92f5a5ab17f292ba86917f1c681c0704cb64e", size = 26738, upload-time = "2026-02-21T09:38:44.312Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/32/61/1dd4a7c59618c5e9ee0f61eb9fb934ba11163fa66932c8e2cc99d74f3d7b/griffe_inherited_docstrings-1.1.4.tar.gz", hash = "sha256:ac98890a4505d986254302325959de6c82716968ec499aca009cb91c1d75eecb", size = 32495, upload-time = "2026-10-06T09:07:03.147Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/20/4bc15f242181daad1c104e0a7d33be49e712461ea89e548152be0365b9ea/griffe_inherited_docstrings-1.1.3-py3-none-any.whl", hash = "sha256:aa7f6e624515c50d9325a5cfdf4b2acac547f1889aca89092d5da7278f739695", size = 6710, upload-time = "2026-02-20T11:06:38.75Z" },
+    { url = "https://files.pythonhosted.org/packages/34/35/364ed24b4cba404a6f02998b381c872f99480a26f0c57687537578d4b5ad/griffe_inherited_docstrings-1.1.4-py3-none-any.whl", hash = "sha256:6c813c567f6f7396d6e1a78575fb7ad0d5b472fc02c1b782f830fcf26ab7254d", size = 10888, upload-time = "2026-10-06T09:07:02.095Z" },
 ]
 
 [[package]]
 name = "griffelib"
-version = "2.3.0"
+version = "2.3.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/27/af/018c10bc9edd42b6ef6db2e96b09542050d5253f9b195e74bc910b2d13ab/griffelib-2.3.0.tar.gz", hash = "sha256:7b0952caf5bca6afa4bb5ee8c6a2d183fe3f21b62efc5f6c7243cb2b26d2d115", size = 234534, upload-time = "2026-09-04T15:08:17.472Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/27/b55f1a5278918be765fb2fd8b20966bc72bbdd3f789f031937cceea7834a/griffelib-2.3.2.tar.gz", hash = "sha256:df00c7a0dee3d86268d76788997a1859272cb1fb7b865658e043d2c0c3d52e60", size = 234729, upload-time = "2026-10-06T09:54:37.222Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/63/e876e789525063c840ccfa8857febdabd6523bcef9ce7eb979b9305ea895/griffelib-2.3.0-py3-none-any.whl", hash = "sha256:1b8f9cd525681c26b1d6d574faa1371651e8459ca51d209684f50b8096ae06e0", size = 169423, upload-time = "2026-09-04T15:08:12.956Z" },
+    { url = "https://files.pythonhosted.org/packages/04/e5/0ae74c83c1cab2c14daadf28bd0143eb14bb81503834af987b66badc7b61/griffelib-2.3.2-py3-none-any.whl", hash = "sha256:8e710afededd5607f95bf3c8ccc175ee306e7084459faf27b9f9f44ef2a7a274", size = 169420, upload-time = "2026-10-06T09:54:32.038Z" },
 ]
 
 [[package]]
@@ -1423,14 +1423,15 @@ wheels = [
 
 [[package]]
 name = "markdown-exec"
-version = "1.12.3"
+version = "1.12.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "markupsafe" },
     { name = "pymdown-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6d/76/c47da8edb6a12b066728432fb3724109d9d91de5331df5073d12d272493f/markdown_exec-1.12.3.tar.gz", hash = "sha256:006b9cac46470a9499797bc9c579305ae4719e0a8e495e5401dfbf1e66ce7fb4", size = 77841, upload-time = "2026-07-07T09:53:13.838Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/11/4484c13c38c293cb485fb730790ace11f898dd98ff758c27647369574ecd/markdown_exec-1.12.4.tar.gz", hash = "sha256:9eb8d535f69bbc85dc70b62dd9d04e65f29144de57448a87e25788c61667fbd8", size = 80857, upload-time = "2026-10-06T09:31:59.381Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/a7/0279016386d611183ccc508c5688eb1e2133e8182164d7a2c6213b176f69/markdown_exec-1.12.3-py3-none-any.whl", hash = "sha256:48ac12a565f3f4331b1acd9efc48a0773e717eb7ca7c38e23c1d72ee61660de6", size = 37995, upload-time = "2026-07-07T09:53:12.619Z" },
+    { url = "https://files.pythonhosted.org/packages/21/97/912d221d873cfd6b03a76957503897b31a3e40ce6df7dcf4ed2efdd332cc/markdown_exec-1.12.4-py3-none-any.whl", hash = "sha256:a688e1e91bc84d8b08a26e6b8380b6ca0d83a7235f81c1609de9d832ee1b49c8", size = 54712, upload-time = "2026-10-06T09:31:58.116Z" },
 ]
 
 [package.optional-dependencies]
@@ -2167,7 +2168,7 @@ wheels = [
 
 [[package]]
 name = "pandera"
-version = "0.34.0"
+version = "0.34.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
@@ -2176,9 +2177,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspect" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f9/c3/e3436de25d5d592dacf5a343132f0f20f25499f7b6e8f2b3c99db8f6bc29/pandera-0.34.0.tar.gz", hash = "sha256:f722e08c5749f1dec12a6630ab27e6db871cf6a7bb21bd7f9c5d68ce87c53cfd", size = 1054574, upload-time = "2026-10-05T15:51:46.763Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/56/6c86add6272b295ea77f629757c6d79a12ec30ac51e01a0428d6ff11224c/pandera-0.34.1.tar.gz", hash = "sha256:8907a976403757c5e05a73022d4c447c74844d01c6053667b9a2ca63f26c2fa6", size = 1066371, upload-time = "2026-10-06T15:16:29.118Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/29/db3eb2998200577b3ab680af8c72be6031300592b23e89f620981767ae0d/pandera-0.34.0-py3-none-any.whl", hash = "sha256:37ad021768f6e2b7f2f5d06de5f0dbc9908507526da1a02c59771d31905aa40d", size = 535037, upload-time = "2026-10-05T15:51:45.142Z" },
+    { url = "https://files.pythonhosted.org/packages/53/e2/f86fdba3312c977beb39e7c3b29d1cdb43c508ed8278ff40aa329aa10611/pandera-0.34.1-py3-none-any.whl", hash = "sha256:fbcbd0aafeb8d69d7db0ab7990e89cbea31c2c5b8a5e9bde8b3a33f8678975a4", size = 535038, upload-time = "2026-10-06T15:16:27.372Z" },
 ]
 
 [[package]]
