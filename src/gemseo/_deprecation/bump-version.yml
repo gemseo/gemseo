@@ -2175,7 +2175,7 @@ classes:
   BaseSettings:
     # The target class name is now derived from the name of the settings class,
     # X_Settings targeting X, and read with the target_class_name property.
-    _TARGET_CLASS_NAME: TODO read it with the target_class_name property of a settings instance; in a settings class, remove the assignment, as the value is now derived from the name of the class (X_Settings targets X)
+    _TARGET_CLASS_NAME: TODO read it with the target_class_name property of a settings instance; in a settings class, the value is now derived from the name of the class (X_Settings targets X), so remove the assignment if its value is the name of the class without _Settings, else rename the class to <value>_Settings first, or it would target another class
   PCERegressor_Settings:
     __init__:
       probability_space: null
