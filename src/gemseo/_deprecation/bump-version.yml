@@ -2298,8 +2298,8 @@ classes:
     # _settings_class_to_exclude itself, and a settings mapping other than
     # self._settings.model_dump() is lost.
     _filter_settings:
-      settings: null
-      model_to_exclude: null
+      settings: null TODO _filter_settings() now dumps self._settings by field name, not by alias; filter the mapping yourself if it was not self._settings.model_dump()
+      model_to_exclude: null TODO _filter_settings() now excludes the fields of the classes of _settings_class_to_exclude and _additional_settings_classes_to_exclude; set these class attributes if model_to_exclude was another class
   BaseDriverLibrary:
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     _RESULT_CLASS: _result_class
