@@ -116,7 +116,7 @@ def test_type_errors(random_space, f, snapshot):
     problem = ReliabilityProblem(random_space)
     function = ArrayFunction(f, name="y")
     f = problem.get_event_variables(function)
-    problem.add_event((f > 0.75) & (f > 0.75), event_name="a")
+    problem.add_event((f > 0.75) & (f > 0.5), event_name="a")
     with assert_exception(TypeError, snapshot):
         form.execute(problem)
 

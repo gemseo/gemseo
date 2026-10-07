@@ -21,7 +21,10 @@ from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
+from gemseo.uncertainty.reliability.event import Event
+from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
+from gemseo.uncertainty.reliability.threshold_comparator import ThresholdComparator
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -65,27 +68,81 @@ def test_event(random_space):
     problem.add_event((f1 < 3) & (f2 > 4), event_name="a")
 
     (event_1, event_2) = problem.name_to_event["a"][0]
-    assert (event_1.name, event_1.threshold, event_1.greater, event_1.function) == (
+    assert (event_1.name, event_1.threshold, event_1.comparator, event_1.function) == (
         "f1",
         3,
-        False,
+        ThresholdComparator.LESS,
         function_1,
     )
-    assert (event_2.name, event_2.threshold, event_2.greater, event_2.function) == (
+    assert (event_2.name, event_2.threshold, event_2.comparator, event_2.function) == (
         "f2",
         4,
-        True,
+        ThresholdComparator.GREATER,
         function_2,
     )
     assert list(problem.observables) == [function_1, function_2]
 
 
-def test_event_without_function(random_space, snapshot):
-    """Test ReliabilityProblem raises when function field is None."""
+def _add_event_with_no_function(problem: ReliabilityProblem) -> None:
+    """Add an event whose single elementary event has no function.
+
+    Args:
+        problem: The reliability analysis problem.
+    """
+    f = EventVariable("f")
+    problem.add_event(f > 0, event_name="a")
+
+
+def _add_event_with_partial_function(problem: ReliabilityProblem) -> None:
+    """Add an event with two elementary events on "f", only one bound to a function.
+
+    Args:
+        problem: The reliability analysis problem.
+    """
+    function = ArrayFunction(sum, name="f")
+    unbound_f = EventVariable("f")
+    bound_f = problem.get_event_variables(function)
+    problem.add_event((unbound_f < 1) & (bound_f > 0), event_name="a")
+
+
+def _add_empty_event(problem: ReliabilityProblem) -> None:
+    """Add an event with no elementary event.
+
+    Args:
+        problem: The reliability analysis problem.
+    """
+    problem.add_event(Event(), event_name="a")
+
+
+@pytest.mark.parametrize(
+    "add_event",
+    [
+        _add_event_with_no_function,
+        _add_event_with_partial_function,
+        _add_empty_event,
+    ],
+    ids=["no_function", "partial_function", "empty_event"],
+)
+def test_add_event_value_error(random_space, add_event, snapshot):
+    """add_event raises on an event with no intersections or an unbound variable.
+
+    This covers an event with no intersections of elementary events,
+    an elementary event with no function,
+    and an elementary event sharing a variable name
+    with another one bound to a function.
+    """
     problem = ReliabilityProblem(random_space)
-    f = problem.get_event_variables("f")
     with assert_exception(ValueError, snapshot):
-        problem.add_event(f > 0, event_name="a")
+        add_event(problem)
+
+
+def test_get_event_variables_duplicate_names(random_space, snapshot):
+    """get_event_variables raises when two functions share the same name."""
+    problem = ReliabilityProblem(random_space)
+    function_1 = ArrayFunction(sum, name="f")
+    function_2 = ArrayFunction(sum, name="f")
+    with assert_exception(ValueError, snapshot):
+        problem.get_event_variables(function_1, function_2)
 
 
 def test_add_event_isin_deduplicates_observable(random_space, caplog):

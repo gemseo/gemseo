@@ -18,8 +18,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from gemseo.uncertainty.reliability.elementary_event import ElementaryEvent
 from gemseo.uncertainty.reliability.event import Event
-from gemseo.uncertainty.reliability.event import _ElementaryEvent
+from gemseo.uncertainty.reliability.threshold_comparator import ThresholdComparator
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -62,43 +63,41 @@ class EventVariable:
             self.__function = function_or_name
 
     def __create_event(
-        self, threshold: float, greater: bool, strict: bool = True
+        self, threshold: float, comparator: ThresholdComparator
     ) -> Event:
-        """Create an event from a threshold and a comparison direction.
+        """Create an event from a threshold and a comparator.
 
         Args:
             threshold: The threshold of the elementary event.
-            greater: Whether the variable of interest is greater than the threshold.
-            strict: Whether the comparison to the threshold is strict
-                (`>`/`<` vs `>=`/`<=`).
+            comparator: The comparator between the variable of interest
+                and the threshold.
 
         Returns:
-            The event definined by a single elementary event.
+            The event defined by a single elementary event.
         """
         return Event(
-            _ElementaryEvent(
+            ElementaryEvent(
                 name=self.__name,
                 threshold=threshold,
-                greater=greater,
-                strict=strict,
+                comparator=comparator,
                 function=self.__function,
             )
         )
 
     def __lt__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=False)
+        return self.__create_event(threshold, ThresholdComparator.LESS)
 
     def __le__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=False, strict=False)
+        return self.__create_event(threshold, ThresholdComparator.LESS_EQUAL)
 
     def __gt__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=True)
+        return self.__create_event(threshold, ThresholdComparator.GREATER)
 
     def __ge__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=True, strict=False)
+        return self.__create_event(threshold, ThresholdComparator.GREATER_EQUAL)
 
     def isin(self, interval: Sequence[float]) -> Event:
-        """Create an event for membership in a continuous interval.
+        """Create an event for membership in a closed interval.
 
         Args:
             interval: The lower and upper bounds [a, b] of the interval,
@@ -108,8 +107,8 @@ class EventVariable:
             The event defined as a <= variable <= b.
         """
         return self.__create_event(
-            interval[0], greater=True, strict=False
-        ) & self.__create_event(interval[1], greater=False, strict=False)
+            interval[0], ThresholdComparator.GREATER_EQUAL
+        ) & self.__create_event(interval[1], ThresholdComparator.LESS_EQUAL)
 
     @classmethod
     def __from_functions_or_names(
