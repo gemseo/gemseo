@@ -307,18 +307,10 @@ def _get_renamed_attribute(
 ) -> Any:
     """Return the object a rename points to.
 
-    `new_name` comes from
-    [attribute_renames][gemseo._deprecation.aliases.attribute_renames], where it is
-    always fully qualified, in any package, e.g. GEMSEO or a plugin. The lookup goes
-    through `module` rather than a fresh [import_module][importlib.import_module] when
-    the module part of `new_name` is `module` itself: `module` may be a stand-in whose
-    attribute access is not a plain import (e.g.
-    [_DeprecatedModule][gemseo._deprecation._DeprecatedModule] delegating to a
-    monkeypatched target), and re-importing by name would silently bypass that.
-
-    `new_name` may also be that of a module, e.g. for a module re-exported by a
-    package, which is imported when its package does not hold it yet. The stand-in of
-    the old path of the re-exported module is returned instead, if any (see
+    The object is looked up by
+    [_get_new_object][gemseo._deprecation._get_new_object]. When it is a module
+    re-exported by a package, the stand-in of the old path of the module is returned
+    instead, if any (see
     [_find_reexported_old_module][gemseo._deprecation._find_reexported_old_module]),
     as the old package re-exported the old module, whose old names the new module
     does not resolve.
@@ -386,6 +378,18 @@ def _get_new_object(
 ) -> Any:
     """Return the object a new name designates.
 
+    `new_name` comes from
+    [attribute_renames][gemseo._deprecation.aliases.attribute_renames], where it is
+    always fully qualified, in any package, e.g. GEMSEO or a plugin. The lookup goes
+    through `module` rather than a fresh [import_module][importlib.import_module] when
+    the module part of `new_name` is `module` itself: `module` may be a stand-in whose
+    attribute access is not a plain import (e.g.
+    [_DeprecatedModule][gemseo._deprecation._DeprecatedModule] delegating to a
+    monkeypatched target), and re-importing by name would silently bypass that.
+
+    `new_name` may also be that of a module, e.g. for a module re-exported by a
+    package, which is imported when its package does not hold it yet.
+
     Args:
         module: The module the attribute is looked up on when it stayed in its own
             (possibly renamed) module; ignored when the attribute moved elsewhere.
@@ -402,7 +406,8 @@ def _get_new_object(
             that is not installed, except under a `from module import name`
             statement.
         ImportError: When the new name is in a plugin that is not installed, under a
-            `from module import name` statement.
+            `from module import name` statement (see
+            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
     """
     new_module_name, _, attribute_name = new_name.rpartition(".")
     if new_module_name == module.__name__:
