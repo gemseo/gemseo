@@ -2490,6 +2490,8 @@ classes:
     from_txt:
       variable_names_to_n_components: variable_name_to_n_components
       variable_names_to_group_names: variable_name_to_group_name
+    add_group: &variable-name-to-n-components
+      variable_names_to_n_components: variable_name_to_n_components
   DisciplineAdapter:
     __init__:
       names_to_sizes: name_to_size
@@ -2594,6 +2596,11 @@ classes:
     INEQUALITY_CONSTRAINT_GROUP: inequality_constraint_group
     EQUALITY_CONSTRAINT_GROUP: equality_constraint_group
     OBSERVABLE_GROUP: observable_group
+    add_design_group: *variable-name-to-n-components
+    add_objective_group: *variable-name-to-n-components
+    add_observable_group: *variable-name-to-n-components
+    add_equality_constraint_group: *variable-name-to-n-components
+    add_inequality_constraint_group: *variable-name-to-n-components
     # The generic groups of the functions and of the constraints were removed, in
     # favour of OBJECTIVE_GROUP, EQUALITY_CONSTRAINT_GROUP,
     # INEQUALITY_CONSTRAINT_GROUP and OBSERVABLE_GROUP. As a dataset accepts any
@@ -2736,6 +2743,8 @@ classes:
   IODataset:
     INPUT_GROUP: input_group
     OUTPUT_GROUP: output_group
+    add_input_group: *variable-name-to-n-components
+    add_output_group: *variable-name-to-n-components
   LagrangeMultipliers:
     LOWER_BOUNDS: lower_bounds
     UPPER_BOUNDS: upper_bounds
