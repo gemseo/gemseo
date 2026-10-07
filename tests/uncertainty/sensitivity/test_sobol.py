@@ -366,8 +366,8 @@ def test_confidence_level_default(discipline, random_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], random_space, 100)
     analysis.compute_indices()
-    algos = analysis._output_name_to_sobol_algos
-    assert algos["y"][0].getConfidenceLevel() == 0.95
+    estimators = analysis._output_name_to_estimators
+    assert estimators["y"][0].algo.getConfidenceLevel() == 0.95
 
 
 def test_confidence_level_custom(discipline, random_space) -> None:
@@ -375,8 +375,8 @@ def test_confidence_level_custom(discipline, random_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], random_space, 100)
     analysis.compute_indices(confidence_level=0.90)
-    algos = analysis._output_name_to_sobol_algos
-    assert algos["y"][0].getConfidenceLevel() == 0.90
+    estimators = analysis._output_name_to_estimators
+    assert estimators["y"][0].algo.getConfidenceLevel() == 0.90
 
 
 def test_output_variances(sobol) -> None:
@@ -471,7 +471,7 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
 
 def test_unscale_index_with_negative_values(sobol):
     """Check that negative estimates do not include nan."""
-    f = sobol._SobolAnalysis__unscale_index
+    f = sobol._SobolIndicesEstimatorMixin__unscale_index
     assert not any(isnan(f(array([0.23, -0.87]), "y", 0, False)))
     assert not any(isnan(f({"foo": array([0.23, -0.87])}, "y", 0, False)["foo"]))
 

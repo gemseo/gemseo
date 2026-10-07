@@ -21,16 +21,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from numpy import array
+from numpy import exp
+from numpy import isnan
 from numpy import newaxis
 from numpy import vstack
 from numpy import zeros
 from openturns import CorrelationMatrix
 from openturns import Normal
 from openturns import Point
-from openturns import Sample
 from scipy.stats import norm
 
 from gemseo.dataset.io_dataset import IODataset
@@ -41,6 +43,9 @@ from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Sett
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
+from gemseo.uncertainty.sensitivity._is_sobol_indices_estimator import (
+    ISSobolIndicesEstimator,
+)
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity._sobol_indices_estimator import SobolAnalysisMethod
 from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
@@ -60,6 +65,10 @@ if TYPE_CHECKING:
     from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrPath
+
+
+logger = logging.getLogger(__name__)
 
 
 class ISFORMSobolAnalysis(
@@ -71,6 +80,11 @@ class ISFORMSobolAnalysis(
     the Sobol' indices of a binary event,
     e.g. a disciplinary output exceeding a threshold.
 
+    !!! warning "These Sobol' indices are not for raw disciplinary outputs."
+        For the Sobol' indices of a disciplinary output,
+        it is best to use
+        [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis].
+
     A crude Monte Carlo estimation of these indices is intractable for rare events.
     Instead, this analysis combines three ingredients:
 
@@ -80,28 +94,40 @@ class ISFORMSobolAnalysis(
       namely a unit-variance normal distribution
       centered on the design point in the standard space,
       so that the samples land around the limit state,
-    - a Sobol' analysis of the IS-reweighted indicator,
-      where each sample is weighted by the likelihood ratio
-      between the true standard normal density and the auxiliary density.
+    - IS estimators of the Sobol' indices of the binary event
+      using this IS auxiliary density.
 
-    Several events can be passed;
-    as the auxiliary density depends on the design point of an event,
+    As the auxiliary density depends on the design point of an event,
     each event is processed independently
-    (its own FORM design point, auxiliary density and pick-and-freeze design)
     and the Sobol' indices are estimated event by event.
-    The model evaluation budget `n_samples` is shared across the events:
-    once the design point of every event has been located with FORM,
-    the remaining budget is split equally between the events
-    to draw their Sobol' samples.
+
+    See the [rare events][concept-isformsobol-analysis] part
+    of the sensitivity analysis concepts
+    for the estimators, their confidence intervals and their cost.
 
     !!! note "The Sobol' indices are computed in the standard space"
-        The pick-and-freeze design is drawn from the auxiliary density
+        The pick-and-freeze design is drawn from the IS auxiliary density
         in the standard space,
         so the indices quantify the influence of the *standard* uncertain inputs.
         For independent marginals,
         these standard inputs map one-to-one to the physical inputs
         and share their names.
-    """  # noqa: E501
+    """
+
+    def __init__(self, samples: IODataset | StrPath = "") -> None:  # noqa: D107
+        super().__init__(samples)
+        self._output_name_to_estimators = {}
+        dataset = self.dataset
+        # The variance of the indicator of an event of probability p is p(1-p).
+        event_to_probability = (
+            {}
+            if dataset is None or dataset.empty
+            else dataset.misc.get("probability", {})
+        )
+        self._set_output_variances({
+            event_name: array([probability * (1.0 - probability)])
+            for event_name, probability in event_to_probability.items()
+        })
 
     def compute_samples(  # noqa: D102
         self,
@@ -121,8 +147,7 @@ class ISFORMSobolAnalysis(
                 indexed by their names,
                 e.g. `{"y_high": y > 3.0}` with `y = analysis.get_event_variables("y")`.
                 Each event is processed independently,
-                with its own FORM design point, auxiliary density
-                and pick-and-freeze design.
+                with its own FORM design point, auxiliary density and sampling design.
                 Reminder: FORM and SORM do not support event combinations,
                 e.g. `{"y_high_z_low": (y > 3.0) & (z < 5.6)}`.
             n_samples: The maximum total number of model evaluations
@@ -177,16 +202,12 @@ class ISFORMSobolAnalysis(
         if not use_pick_and_freeze:
             compute_second_order = False
 
-        # In the standard space,
-        # the true input density is the standard normal distribution,
-        # shared by all the events.
         dimension = random_space.dimension
-        true_distribution = Normal(dimension)
 
         event_names = list(events)
         n_events = len(events)
         event_to_standard_samples = []
-        event_to_reweighted_indicator = []
+        event_to_indicator = []
         event_to_sample_size = {}
         event_to_probability = {}
         event_to_design_point = {}
@@ -235,14 +256,6 @@ class ISFORMSobolAnalysis(
         for event_name, event in events.items():
             standard_design_point = event_to_design_point[event_name]
 
-            # The auxiliary IS density is a unit-variance normal distribution
-            # centered on the design point in the standard space.
-            auxiliary_distribution = Normal(
-                Point(standard_design_point),
-                Point([1.0] * dimension),
-                CorrelationMatrix(dimension),
-            )
-
             if use_pick_and_freeze:
                 # The OTSobolDOE pick-and-freeze design is the largest one whose
                 # number of rows N(2+d) (or N(2+2d)) does not exceed the budget.
@@ -263,6 +276,13 @@ class ISFORMSobolAnalysis(
                     )
                 standard_samples = norm.ppf(unit_samples) + standard_design_point
             else:
+                # The auxiliary IS density is a unit-variance normal distribution
+                # centered on the design point in the standard space.
+                auxiliary_distribution = Normal(
+                    Point(standard_design_point),
+                    Point([1.0] * dimension),
+                    CorrelationMatrix(dimension),
+                )
                 sample_size = budget
                 with seed_ot_random_generator(seed):
                     standard_samples = array(auxiliary_distribution.getSample(budget))
@@ -282,26 +302,27 @@ class ISFORMSobolAnalysis(
                 formulation_settings,
             )
 
-            # The IS-reweighted indicator: w * 1_F,
-            # where w is the likelihood ratio between the true and auxiliary densities
-            # and 1_F is the event function.
-            weights = array(true_distribution.computePDF(standard_samples)) / array(
-                auxiliary_distribution.computePDF(standard_samples)
+            # The event probability is the IS estimate mean(w * 1_F),
+            # where w = phi(u) / phi(u - u*) is the likelihood ratio
+            # between the true standard normal density and the auxiliary density
+            # and 1_F is the event indicator; log w = -u* . u + |u*|^2 / 2.
+            indicator = event.evaluate(output_values).astype(float)
+            weights = exp(
+                -standard_samples @ standard_design_point
+                + standard_design_point @ standard_design_point / 2
             )
-            indicator = event.evaluate(output_values)
-            reweighted_indicator = (weights[:, 0] * indicator)[:, newaxis]
 
             event_to_standard_samples.append(standard_samples)
-            event_to_reweighted_indicator.append(reweighted_indicator)
+            event_to_indicator.append(indicator[:, newaxis])
             event_to_sample_size[event_name] = sample_size
-            event_to_probability[event_name] = float(reweighted_indicator.mean())
+            event_to_probability[event_name] = float((weights * indicator).mean())
 
         variables = random_space.variables
         variable_names = list(variables)
         dataset = self.__create_dataset(
             event_names,
             event_to_standard_samples,
-            event_to_reweighted_indicator,
+            event_to_indicator,
             variable_names,
             {name: variable.size for name, variable in variables.items()},
         )
@@ -405,13 +426,13 @@ class ISFORMSobolAnalysis(
     def __create_dataset(
         event_names: list[str],
         standard_samples_per_event: list[RealArray],
-        reweighted_indicator_per_event: list[RealArray],
+        indicator_per_event: list[RealArray],
         variable_names: list[str],
         variable_sizes: Mapping[str, int],
     ) -> IODataset:
-        """Create the dataset of the IS-reweighted samples of all the events.
+        """Create the dataset of the standard samples and indicators of all the events.
 
-        As each event has its own pick-and-freeze design,
+        As each event has its own design,
         the per-event input samples are stacked vertically into a single input group
         and each event has its own output column,
         non-zero only on the rows of its design.
@@ -421,13 +442,13 @@ class ISFORMSobolAnalysis(
             event_names: The names of the events.
             standard_samples_per_event: The input samples in the standard space
                 of each event, each shaped as `(n_samples_e, input_dimension)`.
-            reweighted_indicator_per_event: The IS-reweighted indicator of each event,
+            indicator_per_event: The indicator of each event,
                 each shaped as `(n_samples_e, 1)`.
             variable_names: The names of the random variables.
             variable_sizes: The sizes of the random variables.
 
         Returns:
-            The dataset of the IS-reweighted samples.
+            The dataset of the standard samples and indicators.
         """
         input_data = vstack(standard_samples_per_event)
         n_rows = len(input_data)
@@ -435,7 +456,7 @@ class ISFORMSobolAnalysis(
         event_slices = {}
         start = 0
         for column, (event_name, indicator) in enumerate(
-            zip(event_names, reweighted_indicator_per_event, strict=True)
+            zip(event_names, indicator_per_event, strict=True)
         ):
             stop = start + len(indicator)
             output_data[start:stop, column] = indicator[:, 0]
@@ -465,11 +486,12 @@ class ISFORMSobolAnalysis(
         confidence_level: float = 0.95,
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
+        seed: int | None = seed,
     ) -> SobolIndicesEstimatorMixin.SensitivityIndices:
         """
         Args:
-            algo: The name of the OpenTURNS algorithm
-                to estimate the Sobol' indices from the IS-reweighted samples.
+            algo: The name of the algorithm
+                to estimate the Sobol' indices from the importance-sampling samples.
                 All the algorithms assume a pick-and-freeze design,
                 except `Rank`, which assumes independent samples.
                 If `None`,
@@ -478,60 +500,134 @@ class ISFORMSobolAnalysis(
                 of the confidence intervals associated with the estimates.
             use_asymptotic_distributions: Whether to compute the confidence intervals
                 using the asymptotic distributions; otherwise, use the bootstrap method.
+                When the algorithm is `Algorithm.RANK` (or `"Rank"`),
+                the confidence intervals can only be estimated via bootstrap,
+                and so, this argument is ignored.
             n_replicates: The number of bootstrap replicates
                 used for the computation of the confidence intervals.
+            seed: The seed of the bootstrap.
+                If `None`, the bootstrap intervals are not reproducible.
 
         Raises:
-            ValueError: If `Rank` is used with a pick-and-freeze design
-                or if another algorithm is used with non-pick-and-freeze samples.
+            ValueError: If `Rank` is used with a pick-and-freeze design,
+                if another algorithm is used with non-pick-and-freeze samples
+                or if the bootstrap is used with less than one replicate.
         """  # noqa: D205, D212, D415
         dataset = self.dataset
         use_pick_and_freeze = dataset.misc.get("use_pick_and_freeze", False)
         algo = self._select_sobol_algorithm(algo, use_pick_and_freeze)
         output_names = self._get_output_names(output_names)
-        algo_class = self._algo_name_to_class[algo]
         sample_size_per_event = dataset.misc["sample_size"]
+        design_point_per_event = dataset.misc["design_point"]
+        compute_second_order = dataset.misc.get("eval_second_order", False)
         event_slices = dataset.misc["event_slices"]
-        # Each event has its own pick-and-freeze design stored in its own row range,
+        # Each event has its own design stored in its own row range,
         # so the input and output samples are sliced event by event.
         all_input_data = dataset.get_view(
             group_names=dataset.input_group, variable_names=self._input_names
         ).to_numpy()
-        self._output_name_to_sobol_algos = {}
+        self._output_name_to_estimators = {}
         for output_name in output_names:
-            algos = self._output_name_to_sobol_algos.setdefault(output_name, [])
+            estimators = self._output_name_to_estimators.setdefault(output_name, [])
             start, stop = event_slices[output_name]
-            data = dataset.get_view(
+            indicator = dataset.get_view(
                 group_names=dataset.output_group, variable_names=output_name
-            ).to_numpy()[start:stop]
-            if data.var() == 0.0:
-                algos.append(None)
+            ).to_numpy()[start:stop, 0]
+            # The estimators divide by the variance of the indicator
+            # over the rows of the A block only
+            # (over all the rows for the rank-based estimator,
+            # whose sample size is the number of rows),
+            # so a design whose failing rows all sit in the other blocks
+            # would make every index NaN: skip the event.
+            # This guard does not make every index defined:
+            # the Martinez estimator also divides by the variances
+            # of the other blocks, see the warnings below.
+            sample_size = sample_size_per_event[output_name]
+            if indicator[:sample_size].var() == 0.0:
+                estimators.append(None)
                 continue
 
-            algos.append(
-                self._build_sobol_algo(
-                    algo_class,
-                    Sample(all_input_data[start:stop]),
-                    Sample(data),
-                    sample_size_per_event[output_name],
-                    n_replicates,
-                    use_asymptotic_distributions,
-                    confidence_level,
-                )
+            estimator = ISSobolIndicesEstimator(
+                algo,
+                all_input_data[start:stop],
+                indicator,
+                design_point_per_event[output_name],
+                sample_size,
+                compute_second_order,
+                confidence_level,
+                use_asymptotic_distributions,
+                n_replicates,
+                seed,
             )
+            self.__warn_about_undefined_indices(
+                output_name, algo, estimator, n_replicates
+            )
+            estimators.append(estimator)
+
+        # Use the variance of each estimator, i.e. the very quantity
+        # its indices were divided by, rather than the probability
+        # estimated over all the rows of the design.
+        self._set_output_variances({
+            event_name: array([
+                0.0 if estimator is None else estimator.variance
+                for estimator in event_estimators
+            ])
+            for event_name, event_estimators in self._output_name_to_estimators.items()
+        })
 
         if algo == self.Algorithm.RANK:
             self._indices = self.SensitivityIndices(
-                first=self._get_sobol_indices(self._get_first_order_indices)
+                first=self._get_first_order_indices()
             )
         else:
             self._indices = self.SensitivityIndices(
-                first=self._get_sobol_indices(self._get_first_order_indices),
-                second=self._get_sobol_indices(self._get_second_order_indices),
-                total=self._get_sobol_indices(self._get_total_order_indices),
+                first=self._get_first_order_indices(),
+                second=self._get_second_order_indices(),
+                total=self._get_total_order_indices(),
             )
 
         return self._indices
+
+    @staticmethod
+    def __warn_about_undefined_indices(
+        output_name: str,
+        algo: ISFORMSobolAnalysis.Algorithm,
+        estimator: ISSobolIndicesEstimator,
+        n_replicates: int,
+    ) -> None:
+        """Log a warning when an estimator has undefined indices or replicates.
+
+        Args:
+            output_name: The name of the event.
+            algo: The Sobol' estimation algorithm.
+            estimator: The estimator of the event.
+            n_replicates: The number of bootstrap replicates.
+        """
+        if (
+            isnan(estimator.first_order_indices).any()
+            or isnan(estimator.total_order_indices).any()
+        ):
+            logger.warning(
+                "Some Sobol' indices of the event %r are undefined "
+                "with the %s algorithm: "
+                "the indicator is constant over a block of the design "
+                "that the estimator divides by; "
+                "they are set to NaN.",
+                output_name,
+                algo,
+            )
+
+        if estimator.n_degenerate_replicates > 0:
+            logger.warning(
+                "%s of the %s bootstrap replicates of the event %r "
+                "were discarded with the %s algorithm "
+                "because the indicator was constant over a resampled block; "
+                "the confidence intervals use the other replicates.",
+                estimator.n_degenerate_replicates,
+                n_replicates,
+                output_name,
+                algo,
+            )
 
     def _get_plot_title(self, output_name: str, output_component: int) -> str:
         """Return the default plot title for an event.

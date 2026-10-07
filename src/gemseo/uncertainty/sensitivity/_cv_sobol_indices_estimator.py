@@ -114,6 +114,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import cov
 from numpy import diag
+from numpy import empty
 from numpy import newaxis
 from numpy import quantile
 from numpy import vstack
@@ -131,7 +132,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 
-class CVSobolAlgorithm:
+class CVSobolIndicesEstimator:
     """Algorithm to estimate the Sobol' indices using control variates.
 
     This algorithm is based on the pick-and-freeze (PF) technique.
@@ -170,12 +171,6 @@ class CVSobolAlgorithm:
     Shape: `(n_inputs, sample_size)`.
     """
 
-    __first_indices_interval: RealArray
-    """The bootstrap confidence intervals for the first-order Sobol' indices.
-
-    Shape: `(2, n_inputs)`.
-    """
-
     __g_a: RealArray
     """The CV output data for the samples `1` to `sample_size`.
 
@@ -204,11 +199,23 @@ class CVSobolAlgorithm:
     """The number of independent samples composing each of the two independent input
     datasets used for Sobol' analysis."""
 
-    __total_indices_interval: RealArray
-    """The bootstrap confidence intervals for the total-order Sobol' indices.
+    first_order_indices: RealArray
+    """The first-order Sobol' indices, shaped as `(n_inputs,)`."""
 
-    Shape: `(2, n_inputs)`.
-    """
+    first_order_interval: tuple[RealArray, RealArray]
+    """The lower and upper bounds of the first-order indices,
+    each shaped as `(n_inputs,)`."""
+
+    second_order_indices: RealArray
+    """The second-order Sobol' indices, shaped as `(n_inputs, n_inputs)`;
+an empty array, as they are not estimated."""
+
+    total_order_indices: RealArray
+    """The total-order Sobol' indices, shaped as `(n_inputs,)`."""
+
+    total_order_interval: tuple[RealArray, RealArray]
+    """The lower and upper bounds of the total-order indices,
+    each shaped as `(n_inputs,)`."""
 
     variance: float
     """The output variance estimated with control variates."""
@@ -264,6 +271,15 @@ class CVSobolAlgorithm:
         self.variance = self.__compute_variance()
         self.__confidence_level = confidence_level
         self.__bootstrap_samples = bootstrap_samples
+        self.first_order_indices, first_interval = self.__compute_indices(
+            "first", lambda f_a, f_b, f_mix: f_b * (f_mix - f_a)
+        )
+        self.first_order_interval = (first_interval[0], first_interval[1])
+        self.total_order_indices, total_interval = self.__compute_indices(
+            "total", lambda f_a, f_b, f_mix: (f_a - f_mix) ** 2 / 2
+        )
+        self.total_order_interval = (total_interval[0], total_interval[1])
+        self.second_order_indices = empty((0, 0))
 
     @staticmethod
     def __compute_statistic(
@@ -402,49 +418,3 @@ class CVSobolAlgorithm:
             / self.variance,
             self.__compute_intervals(f_s, g_s, cv_indices_numerator),
         )
-
-    def compute_first_indices(self) -> RealArray:
-        """Compute the first-order Sobol' indices.
-
-        Returns:
-            The first-order Sobol' indices shaped as `(n_inputs,)`.
-        """
-        first_indices, self.__first_indices_interval = self.__compute_indices(
-            "first", lambda f_a, f_b, f_mix: f_b * (f_mix - f_a)
-        )
-        return first_indices
-
-    def compute_total_indices(self) -> RealArray:
-        """Compute the total-order Sobol' indices.
-
-        Returns:
-            The total-order Sobol' indices shaped as `(n_inputs,)`.
-        """
-        total_indices, self.__total_indices_interval = self.__compute_indices(
-            "total", lambda f_a, f_b, f_mix: (f_a - f_mix) ** 2 / 2
-        )
-        return total_indices
-
-    @property
-    def first_indices_interval(self) -> RealArray:
-        """The confidence interval of the first-order Sobol' indices.
-
-        Warning:
-            You must first call `.compute_first_indices()`.
-
-        Returns:
-            The confidence intervals shaped as `(2, n_inputs)`.
-        """
-        return self.__first_indices_interval
-
-    @property
-    def total_indices_interval(self) -> RealArray:
-        """The confidence intervals of the total-order Sobol' indices.
-
-        Warning:
-            You must first call `.compute_total_indices()`.
-
-        Returns:
-            The confidence intervals shaped as `(2, n_inputs)`.
-        """
-        return self.__total_indices_interval
