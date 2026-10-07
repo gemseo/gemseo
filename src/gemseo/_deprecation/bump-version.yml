@@ -2971,7 +2971,7 @@ functions:
 
   # normalize_ds is removed (changelog 1528): a driver normalizes the space itself.
   get_value_and_bounds:
-    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds in the coordinates the user declared; in a driver library iterating on a working problem, its input_space is already normalized when normalize_design_space is set (see gemseo.space.transformation)
+    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation)
 
 # The factories returning an object of the class one of their arguments names, by
 # the name of that parameter: the codemod applies the rules of that class, which the
