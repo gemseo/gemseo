@@ -75,9 +75,13 @@ Ww = scenario.get_event_variables("Ww")
 # %%
 # !!! tip
 #     You can combine events using logical and comparison operators,
-#     e.g. `(a > 3) | (b < 12) & (c.isin([-6, 9]))`
-#     Note: parentheses are required for elementary events
+#     e.g. `(a > 3) | (b < 12) & (c.isin([-6, 9]))`,
+#     and negate an event with `~`,
+#     e.g. `~(a > 3)`.
+#     Parentheses are required around each comparison,
 #     and `&` (AND) takes precedence over `|` (OR).
+#     See [Define an event](plot_howto_define_event.md)
+#     for a full guide to building events.
 #
 # Then define the event of interest named `"too_heavy"` using a comparison operator.
 # Here the event is that the wing weight exceeds 400 lb:

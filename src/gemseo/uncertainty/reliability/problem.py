@@ -23,6 +23,7 @@ from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.reliability.event import Event
 from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from gemseo.core.function.array_function import ArrayFunction
@@ -60,32 +61,30 @@ class ReliabilityProblem(EvaluationProblem[RandomSpace]):
                 e.g. `(f < 3) & (g > 4) | (2 < h) & (h < 5)`
                 where the variables are created using
                 [get_event_variables][gemseo.uncertainty.reliability.problem.ReliabilityProblem.get_event_variables]
-                as `f, g, h = scenario.get_event_variables(func_f, func_g, func_h)`.
+                as `f, g, h = problem.get_event_variables(func_f, func_g, func_h)`.
             event_name: The name to be given to this event.
                 If empty, use `"event_i"` for the i-th event.
 
         Raises:
-            ValueError: If a function field of the events is `None`.
+            ValueError: If the event contains no elementary event,
+                if a function field of the events is `None`,
+                or if two elementary events sharing the same variable name
+                are bound to two different functions.
         """
+        if len(event) == 0:
+            msg = (
+                "The event must be an Event instantiated "
+                "from at least one ElementaryEvent."
+            )
+            raise ValueError(msg)
+
         if not event_name:
             event_name = f"{Event.default_name}_{len(self.__name_to_event) + 1}"
 
-        observables = []
-        for intersection_event in event:
-            for elementary_event in intersection_event:
-                function = elementary_event.function
-                if function not in self.observables and function not in observables:
-                    if function is None:
-                        msg = (
-                            "The function field of the elementary event "
-                            f"{elementary_event.name!r} cannot be None."
-                        )
-                        raise ValueError(msg)
-
-                    observables.append(function)
-
-        for observable in observables:
-            self.add_observable(observable)
+        functions = event.get_functions()
+        for function in functions:
+            if function not in self.observables:
+                self.add_observable(function)
 
         self.__name_to_event[event_name] = event
 
@@ -115,5 +114,18 @@ class ReliabilityProblem(EvaluationProblem[RandomSpace]):
 
         Returns:
             The event variables.
+
+        Raises:
+            ValueError: If two of the functions share the same name.
         """
+        names = [function.name for function in functions]
+        duplicate_names = sorted({name for name in names if names.count(name) > 1})
+        if duplicate_names:
+            label = "name" if len(duplicate_names) == 1 else "names"
+            msg = (
+                "The functions must have different names; "
+                f"several of them share the {label} {pretty_repr(duplicate_names)}."
+            )
+            raise ValueError(msg)
+
         return EventVariable.from_functions(*functions)

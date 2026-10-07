@@ -1,19 +1,42 @@
 # serializer version: 1
 # name: test_bool_raises[and]
-  'The truth value of an Event is ambiguous. Combine events with "&" and "|" instead of "and" and "or", do not use "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+  'An Event is a variable, not a value of this variable, so it has no truth value. Combine events with "&", "|" and "~" instead of "and", "or" and "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
 # ---
 # name: test_bool_raises[bool]
-  'The truth value of an Event is ambiguous. Combine events with "&" and "|" instead of "and" and "or", do not use "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+  'An Event is a variable, not a value of this variable, so it has no truth value. Combine events with "&", "|" and "~" instead of "and", "or" and "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
 # ---
 # name: test_bool_raises[chained_comparison]
-  'The truth value of an Event is ambiguous. Combine events with "&" and "|" instead of "and" and "or", do not use "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+  'An Event is a variable, not a value of this variable, so it has no truth value. Combine events with "&", "|" and "~" instead of "and", "or" and "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
 # ---
 # name: test_bool_raises[not]
-  'The truth value of an Event is ambiguous. Combine events with "&" and "|" instead of "and" and "or", do not use "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+  'An Event is a variable, not a value of this variable, so it has no truth value. Combine events with "&", "|" and "~" instead of "and", "or" and "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
 # ---
 # name: test_bool_raises[or]
-  'The truth value of an Event is ambiguous. Combine events with "&" and "|" instead of "and" and "or", do not use "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
+  'An Event is a variable, not a value of this variable, so it has no truth value. Combine events with "&", "|" and "~" instead of "and", "or" and "not", parenthesize each comparison, and write "(a < x) & (x < b)" or "x.isin([a, b])" instead of "a < x < b".'
 # ---
-# name: test_evaluate_empty_event_raises
+# name: test_value_error[bind_non_function]
+  '''
+  1 validation error for ElementaryEvent
+  function
+    Input should be an instance of ArrayFunction [type=is_instance_of, input_value='not a function', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  '''
+# ---
+# name: test_value_error[bound_exceeded]
+  'The negation of this event would produce more than 2 intersections; increase Event.max_intersections or rewrite the event to avoid this negation.'
+# ---
+# name: test_value_error[conflicting_functions]
+  "The variables 'h' are bound to two different functions."
+# ---
+# name: test_value_error[empty_event_evaluate]
   'The event has no intersections of elementary events.'
+# ---
+# name: test_value_error[empty_event_negation]
+  'The negation of an event with no intersections of elementary events is not defined.'
+# ---
+# name: test_value_error[unbound_and_conflicting_functions]
+  "The variables 'a' are bound to no function. The variables 'h' are bound to two different functions."
+# ---
+# name: test_value_error[unbound_function]
+  "The variables 'a' are bound to no function."
 # ---

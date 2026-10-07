@@ -1,4 +1,13 @@
 # serializer version: 1
-# name: test_event_without_function
-  "The function field of the elementary event 'f' cannot be None."
+# name: test_add_event_value_error[empty_event]
+  'The event must be an Event instantiated from at least one ElementaryEvent.'
+# ---
+# name: test_add_event_value_error[no_function]
+  "The variables 'f' are bound to no function."
+# ---
+# name: test_add_event_value_error[partial_function]
+  "The variables 'f' are bound to no function."
+# ---
+# name: test_get_event_variables_duplicate_names
+  "The functions must have different names; several of them share the name 'f'."
 # ---

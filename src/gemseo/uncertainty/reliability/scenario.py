@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -32,6 +31,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.uncertainty.reliability.elementary_event import ElementaryEvent
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.uncertainty.reliability.result import ReliabilityResult
 
@@ -77,18 +77,26 @@ class ReliabilityScenario(EvaluationScenario[RandomSpace]):
             event_name: The name to be given to this event.
                 If empty, use `"event_i"` for the i-th event.
         """
-        processed_event = deepcopy(event)
-        for intersection_event in processed_event:
-            for elementary_event in intersection_event:
-                output_name = elementary_event.name
-                function = self.__name_to_function.get(output_name)
-                if function is None:
-                    function = self.formulation.create_function((output_name,))
-                    self.__name_to_function[output_name] = function
+        self.formulation.problem.add_event(
+            event.map(self.__bind_function), event_name=event_name
+        )
 
-                elementary_event.function = function
+    def __bind_function(self, elementary_event: ElementaryEvent) -> ElementaryEvent:
+        """Bind an elementary event to the function evaluating its variable.
 
-        self.formulation.problem.add_event(processed_event, event_name=event_name)
+        Args:
+            elementary_event: The elementary event.
+
+        Returns:
+            The elementary event, bound to the function.
+        """
+        name = elementary_event.name
+        function = self.__name_to_function.get(name)
+        if function is None:
+            function = self.formulation.create_function((name,))
+            self.__name_to_function[name] = function
+
+        return elementary_event.bind_function(function)
 
     def _execute(self) -> None:
         settings = self._algorithm_settings

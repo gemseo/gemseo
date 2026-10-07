@@ -180,6 +180,7 @@ convention = "google"
     "RET504",
     "INP001",
     "FURB113",
+    "SIM300",
 ]
 "src/gemseo/util/testing/opt_lib_test_base.py" = ["D"]
 

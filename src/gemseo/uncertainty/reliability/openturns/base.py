@@ -16,8 +16,10 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 from numpy import array
 from numpy import atleast_1d
@@ -34,16 +36,57 @@ from openturns import ThresholdEvent
 from openturns import UnionEvent
 
 from gemseo.uncertainty.reliability.core.base import BaseReliabilityAlgorithm
+from gemseo.uncertainty.reliability.threshold_comparator import ThresholdComparator
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Iterable
+    from collections.abc import Mapping
 
     from openturns import PersistentObject
 
     from gemseo.core.function.array_function import OutputType
+    from gemseo.uncertainty.reliability.elementary_event import ElementaryEvent
     from gemseo.uncertainty.reliability.problem import ReliabilityProblem
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
+
+
+_comparator_to_ot_comparator: Final[
+    Mapping[ThresholdComparator, type[PersistentObject]]
+] = MappingProxyType({
+    ThresholdComparator.LESS: Less,
+    ThresholdComparator.LESS_EQUAL: LessOrEqual,
+    ThresholdComparator.GREATER: Greater,
+    ThresholdComparator.GREATER_EQUAL: GreaterOrEqual,
+})
+"""The map from a comparator to its OpenTURNS comparator."""
+
+
+def _create_intersection_event(
+    events: Iterable[ThresholdEvent | UnionEvent],
+) -> IntersectionEvent:
+    """Combine OpenTURNS events with an OpenTURNS intersection.
+
+    Args:
+        events: The OpenTURNS events of a single intersection.
+
+    Returns:
+        Their OpenTURNS intersection.
+    """
+    return IntersectionEvent(list(events))
+
+
+def _create_union_event(events: Iterable[IntersectionEvent]) -> UnionEvent:
+    """Combine OpenTURNS events with an OpenTURNS union.
+
+    Args:
+        events: The OpenTURNS events of the intersections.
+
+    Returns:
+        Their OpenTURNS union.
+    """
+    return UnionEvent(list(events))
 
 
 class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
@@ -70,40 +113,41 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
         input_vector = RandomVector(random_space.variables.distribution.distribution)
         dimension = random_space.dimension
         observables = {function.name: function for function in problem.observables}
-        ot_intersection_events = []
         event = problem.name_to_event[event_name]
-        for intersection_event in event:
-            ot_intersection_event = []
-            ot_intersection_events.append(ot_intersection_event)
-            for elementary_event in intersection_event:
-                # Use the evaluation function related to event.function
-                function = observables[elementary_event.function.name]
-                func = _FunctionForOpenTURNS(function.evaluate, False)
-                jac = (
-                    _FunctionForOpenTURNS(function.jac, True)
-                    if elementary_event.function.has_jac
-                    else None
-                )
-                ot_function = PythonFunction(dimension, 1, func, gradient=jac)
-                output_vector = CompositeRandomVector(ot_function, input_vector)
-                if elementary_event.greater:
-                    comparator = (
-                        Greater() if elementary_event.strict else GreaterOrEqual()
-                    )
-                else:
-                    comparator = Less() if elementary_event.strict else LessOrEqual()
-                ot_elementary_event = ThresholdEvent(
-                    output_vector, comparator, elementary_event.threshold
-                )
-                ot_intersection_event.append(ot_elementary_event)
+
+        def create_threshold_event(
+            elementary_event: ElementaryEvent,
+        ) -> ThresholdEvent:
+            """Create the OpenTURNS threshold event of an elementary event.
+
+            Args:
+                elementary_event: The elementary event.
+
+            Returns:
+                The OpenTURNS threshold event.
+            """
+            # Use the evaluation function related to event.function
+            function = observables[elementary_event.function.name]
+            func = _FunctionForOpenTURNS(function.evaluate, False)
+            jac = (
+                _FunctionForOpenTURNS(function.jac, True)
+                if elementary_event.function.has_jac
+                else None
+            )
+            ot_function = PythonFunction(dimension, 1, func, gradient=jac)
+            output_vector = CompositeRandomVector(ot_function, input_vector)
+            comparator = _comparator_to_ot_comparator[elementary_event.comparator]()
+            return ThresholdEvent(output_vector, comparator, elementary_event.threshold)
 
         if not event.is_combination:
-            return ot_intersection_events[0][0]
+            # A single elementary event stays a bare ThresholdEvent,
+            # as OpenTURNS algorithms expect it unwrapped in this case.
+            (elementary_event,) = next(iter(event))
+            return create_threshold_event(elementary_event)
 
-        return UnionEvent([
-            IntersectionEvent(ot_intersection_event)
-            for ot_intersection_event in ot_intersection_events
-        ])
+        return event._fold(
+            create_threshold_event, _create_intersection_event, _create_union_event
+        )
 
     @staticmethod
     def _set_seed(seed: int) -> None:
@@ -131,7 +175,7 @@ class _FunctionForOpenTURNS:
         Args:
             function: The function to be wrapped.
             is_jacobian: Whether the function is a Jacobian function.
-        """  # noqa: D205 D212
+        """  # noqa: D205, D212
         self.__function = function
         self.__is_jacobian = is_jacobian
 
