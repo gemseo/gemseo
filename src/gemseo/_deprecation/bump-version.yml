@@ -1826,7 +1826,9 @@ classes:
 
   #### Global configuration
   GlobalConfiguration:
-    fast: TODO use the methods enable_fast_mode and disable_fast_mode instead
+    # An assignment of fast becomes a call of enable_fast_mode or disable_fast_mode;
+    # a read of it has no equivalent and is marked.
+    fast: "{receiver}.enable_fast_mode() if {value} else {receiver}.disable_fast_mode()"
     __init__:
       fast: null TODO call configuration.enable_fast_mode() after creating it
 
