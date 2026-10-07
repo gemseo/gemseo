@@ -2192,16 +2192,27 @@ classes:
       objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-  # The rules of MDOScenario, plus a mark on the space: a DOEScenario over a
+  # The rules of MDOScenario, plus a switch on the space: a DOEScenario over a
   # ParameterSpace (now a RandomSpace) cannot become an MDOScenario, which takes a
-  # DesignSpace only. YAML merge keys do not merge nested mappings, hence the copy.
+  # DesignSpace only, and becomes an EvaluationScenario, with the rules below. YAML
+  # merge keys do not merge nested mappings, hence the copy.
   DOEScenario:
     design_space: design_space
     __init__:
       objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-      design_space: TODO[ParameterSpace] MDOScenario takes a DesignSpace only, and a ParameterSpace is now a RandomSpace, so use EvaluationScenario(disciplines, input_space, formulation_settings=...) and add the objective as an observable with add_observable
+      design_space: IF[ParameterSpace] EvaluationScenario
+  # The rules of a DOEScenario over a ParameterSpace, which becomes an
+  # EvaluationScenario: the space is its input space, and the objective an observable.
+  EvaluationScenario:
+    __init__:
+      __name__: gemseo.scenario.EvaluationScenario
+      objective_name: add_observable({objective_name})
+      maximize_objective: null TODO an observable is neither minimized nor maximized
+      design_space: input_space
+      formulation_settings_model: formulation_settings
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   OptAsMDOScenario: *scenario-class
   MDOScenarioAdapter:
     keep_opt_history: keep_databases
