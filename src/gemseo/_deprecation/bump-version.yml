@@ -404,8 +404,8 @@ modules:
 attributes:
   # Python 3.10 support was dropped, and gemseo no longer requires strenum. Beware
   # that the value of auto() differs: enum.StrEnum lowercases the member name, hence
-  # the TODO the codemod adds to the code using strenum.StrEnum.
-  strenum.StrEnum: enum.StrEnum TODO enum.StrEnum gives auto() the lower-cased member name (MC = auto() was "MC", is now "mc"), so write MC = "MC" to keep the values, or keep strenum as a dependency of your own
+  # the TODO the codemod adds to a class of strenum.StrEnum with an auto() member.
+  strenum.StrEnum: enum.StrEnum
   gemseo.create_parameter_space: gemseo.create_random_space
   gemseo.ScenarioFactory: gemseo.scenario.factory.ScenarioFactory
   gemseo.BaseScenario: gemseo.scenario.evaluation.EvaluationScenario
