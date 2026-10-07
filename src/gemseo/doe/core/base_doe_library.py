@@ -464,7 +464,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
 
     def sample_space(
         self,
-        space: BaseVariableSpace | int,
+        space: BaseVariableSpace,
         settings: BaseDOESettings | None = None,
         use_unit_samples: bool = False,
     ) -> RealArray:
@@ -486,6 +486,10 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         Returns:
             The design of experiments
             whose rows are the samples and columns the variables.
+
+        Note:
+            To sample the unit hypercube from its dimension, use
+            [sample_unit_hypercube][gemseo.doe.core.base_doe_library.BaseDOELibrary.sample_unit_hypercube].
         """
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
