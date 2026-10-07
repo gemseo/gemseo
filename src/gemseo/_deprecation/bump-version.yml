@@ -1386,8 +1386,9 @@ classes:
     DEFAULT_TRANSFORMER: default_transformer
     # The keywords **settings catches go to settings=<the model class>_Settings(...)
     # (changelog 1696). The classes redefining __init__, which stops the lookup of
-    # the rules of their base classes at a constructor call, repeat them.
-    __init__: &ml-model-init
+    # the rules of their base classes at a constructor call, repeat them; the MDA
+    # classes share the rule.
+    __init__: &settings-init
       settings_model: settings
       settings: settings={__class__}_Settings(**{settings})
 
@@ -1496,11 +1497,11 @@ classes:
       # When no string literal names the DOE algorithm, e.g. the default one.
       multi_start_n_samples: TODO use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start
   BaseFCERegressor:
-    __init__: *ml-model-init
+    __init__: *settings-init
   FCERegressor:
-    __init__: *ml-model-init
+    __init__: *settings-init
   PCERegressor:
-    __init__: *ml-model-init
+    __init__: *settings-init
 
   #### Model calibration
   MLAlgoAssessor:
@@ -1541,17 +1542,15 @@ classes:
     # The keywords **settings catches go to settings=<the MDA class>_Settings(...).
     # Every MDA class redefines __init__, which stops the lookup of its base classes'
     # rules at a constructor call, so each one repeats them.
-    __init__: &mda-init
-      settings_model: settings
-      settings: settings={__class__}_Settings(**{settings})
+    __init__: *settings-init
   MDAGaussSeidel:
-    __init__: *mda-init
+    __init__: *settings-init
   MDAJacobi:
-    __init__: *mda-init
+    __init__: *settings-init
   MDANewtonRaphson:
-    __init__: *mda-init
+    __init__: *settings-init
   MDAGSNewton:
-    __init__: *mda-init
+    __init__: *settings-init
   BaseMDASettings:
     linear_solver: null
     linear_solver_tolerance: null
@@ -1561,12 +1560,13 @@ classes:
       # linear_solver="GMRES", linear_solver_settings={"rtol": 1e-8} becomes
       # linear_solver_settings=GMRES_Settings(rtol=1e-8), the tolerance of the linear
       # solver being its rtol field. A settings class whose own __init__ rules shadow
-      # these ones repeats them.
-      linear_solver: &linear-solver-settings linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings}, rtol={linear_solver_tolerance})
-      # When no string literal names the linear solver, e.g. the default one.
-      linear_solver_tolerance: &linear-solver-tolerance TODO use the rtol field of the linear_solver_settings instead
-      # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
-      use_lu_fact: &use-lu-fact TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
+      # these ones merges them.
+      <<: &mda-settings-init
+        linear_solver: linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings}, rtol={linear_solver_tolerance})
+        # When no string literal names the linear solver, e.g. the default one.
+        linear_solver_tolerance: TODO use the rtol field of the linear_solver_settings instead
+        # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
+        use_lu_fact: TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
   BaseMDASolver:
     add_iteration_callback:
       __name__: add_iteration_listener
@@ -1575,35 +1575,29 @@ classes:
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
   MDAChain:
-    __init__: *mda-init
+    __init__: *settings-init
     mdo_chain: discipline_chain
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
   MDAChain_Settings:
     inner_mda_name: null
     __init__:
-      linear_solver: *linear-solver-settings
-      linear_solver_tolerance: *linear-solver-tolerance
-      use_lu_fact: *use-lu-fact
+      <<: *mda-settings-init
       inner_mda_name: inner_mda_settings={inner_mda_name}_Settings(**{inner_mda_settings})
   MDAGSNewton_Settings:
     newton_settings: newton_raphson_settings
     __init__:
       # A mapping is still accepted: the field reads it as its settings model, so
       # gauss_seidel_settings needs no rule.
+      <<: *mda-settings-init
       newton_settings: newton_raphson_settings
-      linear_solver: *linear-solver-settings
-      linear_solver_tolerance: *linear-solver-tolerance
-      use_lu_fact: *use-lu-fact
   MDANewtonRaphson_Settings:
     newton_linear_solver_name: null
     __init__:
-      linear_solver: *linear-solver-settings
-      linear_solver_tolerance: *linear-solver-tolerance
-      use_lu_fact: *use-lu-fact
+      <<: *mda-settings-init
       newton_linear_solver_name: newton_linear_solver_settings={newton_linear_solver_name}_Settings(**{newton_linear_solver_settings})
   MDAQuasiNewton:
-    __init__: *mda-init
+    __init__: *settings-init
 
   #  Monitoring:
   #    __init__:
@@ -1623,16 +1617,18 @@ classes:
     # The shortcuts to the variables of the space were removed; a design space
     # is read through its variables view, like a random space. A `{name}` stands
     # for the argument of the call of the method.
-    variable_names: list({receiver}.variables)
-    variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
-    variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
-    names_to_indices: "{receiver}.variables.name_to_indices"
-    get_size: "{receiver}.variables[{name}].size"
-    get_type: "{receiver}.variables[{name}].type"
+    <<: &variables-view
+      variable_names: list({receiver}.variables)
+      variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
+      variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
+      names_to_indices: "{receiver}.variables.name_to_indices"
+      get_size: "{receiver}.variables[{name}].size"
+      get_type: "{receiver}.variables[{name}].type"
+      # VariableType is a StrEnum: its value spares the migrated code an import of it.
+      # It is always False on a RandomSpace, as a random variable is of random type.
+      has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
     get_lower_bound: "{receiver}.variables[{name}].lower_bound"
     get_upper_bound: "{receiver}.variables[{name}].upper_bound"
-    # VariableType is a StrEnum: its value spares the migrated code an import of it.
-    has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
     to_csv:
       header_char: null
     get_variables_indexes:
@@ -1708,16 +1704,9 @@ classes:
     from_csv: null
     # a random space has no file persistence; rebuild it from the settings of
     # the marginal probability distributions of its random variables.
-    variable_names: list({receiver}.variables)
-    variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
-    # A random variable is of random type, where it was of type "float".
-    variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
-    names_to_indices: "{receiver}.variables.name_to_indices"
-    get_size: "{receiver}.variables[{name}].size"
-    # A random variable is of random type, where it was of type "float".
-    get_type: "{receiver}.variables[{name}].type"
-    # It is always False, as a random variable is of random type.
-    has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
+    # A random variable is of random type, where it was of type "float": the
+    # variable_types and get_type of a RandomSpace return VariableType.RANDOM.
+    <<: *variables-view
     has_current_value: &current-value TODO a current value is a DesignSpace notion; use nominal_value to read the reference point of a space, which is the mean of the distributions here
     get_current_value: *current-value
     set_current_value: *current-value
@@ -2186,7 +2175,7 @@ classes:
   # Scenario
   MDOScenario: &scenario-class
     design_space: design_space
-    __init__:
+    __init__: &scenario-init
       # The objective is now set by add_objective, called on the scenario right after
       # the statement creating it (or marked with a TODO when the scenario is not
       # assigned to a name). The rule also takes maximize_objective out of the call,
@@ -2197,15 +2186,11 @@ classes:
       formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
   # The rules of MDOScenario, plus a switch on the space: a DOEScenario over a
   # ParameterSpace (now a RandomSpace) cannot become an MDOScenario, which takes a
-  # DesignSpace only, and becomes an EvaluationScenario, with the rules below. YAML
-  # merge keys do not merge nested mappings, hence the copy.
+  # DesignSpace only, and becomes an EvaluationScenario, with the rules below.
   DOEScenario:
     design_space: design_space
     __init__:
-      objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
-      formulation_settings_model: formulation_settings
-      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
+      <<: *scenario-init
       design_space: IF[ParameterSpace] EvaluationScenario
   # The rules of a DOEScenario over a ParameterSpace, which becomes an
   # EvaluationScenario: the space is its input space, and the objective an observable.
@@ -2484,7 +2469,7 @@ classes:
       algo_name: algo_settings={algo_name}_Settings(**{algo_settings}, max_iter={max_iter})
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   MDASequential:
-    __init__: *mda-init
+    __init__: *settings-init
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
   Database:
