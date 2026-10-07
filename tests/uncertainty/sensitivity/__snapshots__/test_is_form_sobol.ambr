@@ -5,6 +5,15 @@
 # name: test_inconsistent_algorithm_with_iid_samples
   "Sobol' estimation algorithms (except rank-based) expect pick-and-freeze samples."
 # ---
+# name: test_intervals_without_replicates
+  'The bootstrap confidence intervals require at least one replicate; got 0.'
+# ---
+# name: test_plot_second_order_not_computed
+  "The second-order Sobol' indices of 'y_high' are not computed."
+# ---
+# name: test_plot_second_order_of_constant_event
+  "The second-order Sobol' indices of 'y_high' are undefined, as the variance of the output is zero."
+# ---
 # name: test_small_budget_accepted_by_rank_not_pick_and_freeze
   'n_samples (62) is too small to draw a sample for each of the 1 event(s) after their 61 FORM evaluations; increase n_samples.'
 # ---

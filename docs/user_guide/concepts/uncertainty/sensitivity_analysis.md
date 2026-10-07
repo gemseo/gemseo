@@ -177,7 +177,7 @@ also reports.
 
 It is efficient for initial screening but does not quantify the exact contributions of the uncertain inputs.
 
-### Sobol' analysis
+### Sobol' analysis { #concept-sobol-analysis }
 
 Sobol' analysis decomposes the total output variance by the [Sobol'-Hoeffding identity](https://openturns.github.io/openturns/latest/theory/reliability_sensitivity/sensitivity_sobol.html):
 
@@ -202,13 +202,131 @@ together with their confidence intervals as vertical bars:
 
 ![Sobol' first and total-order indices](figs/sobol_analysis.png)
 
+This method requires a large number of model evaluations (typically 10 000+).
+
+#### Estimators { #concept-sobol-estimators }
+
+The indices are estimated from a pick-and-freeze design [@saltelli2010]:
+two independent input samples $A$ and $B$ of size $N$,
+and the hybrid samples $E^i$ obtained from $A$ by replacing its $i$-th column by that of $B$
+(plus the symmetric samples $C^i$ when the second-order indices are requested).
 Several estimators are available via the `algo` argument of
 [compute_indices()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.compute_indices]:
-SALTELLI (default), JANSEN, MAUNTZ_KUCHERENKO, MARTINEZ, and RANK.
+SALTELLI [@saltelli2002] (default), JANSEN [@jansen1999],
+MAUNTZ_KUCHERENKO [@sobol2007] and MARTINEZ [@martinez2011],
+as well as RANK [@gamboa2022],
+which uses a single sample of independent points instead of a pick-and-freeze design
+and only provides the first-order indices.
 Confidence intervals are retrieved with
 [get_intervals()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.get_intervals].
 
-This method requires a large number of model evaluations (typically 10 000+).
+#### Rare events { #concept-isformsobol-analysis }
+
+A crude Monte Carlo estimation of the Sobol' indices is intractable
+when the quantity of interest is a rare event rather than a raw output.
+[ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+estimates the Sobol' indices of a binary event,
+e.g. a disciplinary output exceeding a threshold,
+by combining three ingredients:
+
+1. [FORM][concept-form-analysis] to locate the most probable failure point (MPFP), a.k.a. design point, of the event;
+2. an importance sampling (IS) auxiliary density —
+   a unit-variance normal distribution centered on the design point in the standard space —
+   so that the samples land around the limit state;
+3. the estimators above, applied to the failure indicator,
+   with the sampled pairs weighted by the ratio between the true and auxiliary densities.
+
+Several events can be passed;
+each is processed independently
+(its own design point, auxiliary density and pick-and-freeze design),
+and the total model evaluation budget `n_samples` is shared across them:
+once every design point has been located with FORM,
+the remaining budget is split equally between the events to draw their Sobol' samples.
+
+!!! note "The indices are computed in the standard space"
+    For independent marginals,
+    the standard inputs map one-to-one to the physical inputs and share their names.
+
+??? note "Weighting the pairs under importance sampling"
+    The samples are drawn in the standard space
+    from the auxiliary density $h=\mathcal{N}(u^*, I_d)$ centered on the design point $u^*$,
+    while the indices of interest are those of the failure indicator $Y=\mathbb{1}_F(U)$
+    under the true density $\varphi=\mathcal{N}(0, I_d)$.
+    Both are product densities,
+    so the likelihood ratio factorizes over the coordinates:
+
+    $$w(u)=\frac{\varphi(u)}{h(u)}=\prod_{k=1}^d w_k(u_k),
+    \qquad \log w_k(u_k) = -u^*_k u_k + \frac{(u^*_k)^2}{2}.$$
+
+    Every Sobol' estimator averages a function of *pairs* of rows $(r, r')$
+    sharing a subset $K$ of coordinates,
+    e.g. the rows of $B$ and $E^i$ share the $i$-th coordinate.
+    Such a pair must be weighted by
+
+    $$\omega_K(r, r') = w(r) \prod_{k\notin K} w_k(r'_k)
+    = \frac{w(r)\,w(r')}{\prod_{k\in K} w_k(r_k)},$$
+
+    that is, the shared coordinates are counted once.
+    Weighting each row separately, i.e. using $w(r)w(r')$,
+    would estimate the Sobol' indices of $w(U)\mathbb{1}_F(U)$ under $h$
+    instead of those of $\mathbb{1}_F(U)$ under $\varphi$,
+    with a bias that does not vanish with the sample size.
+
+    The pick-and-freeze estimators are the OpenTURNS ones
+    in which every sample moment is replaced by its importance-sampling estimate:
+    the mean of a product of the indicators of two rows
+    is weighted by the weight $\omega_K$ of the pair,
+    the mean of a term involving a single row is weighted by the weight of this row
+    and a constant term is left as is, since the weights have expectation one under $h$.
+    In particular, a row whose indicators are all zero contributes nothing
+    to any average, whatever its weights.
+    With a design point at the origin, all the weights are equal to one
+    and the estimators coincide with the OpenTURNS ones.
+    The reference variance is that of the indicator over the block $A$ only,
+    the first-order index $S_i$ is estimated from the pairs $(B, E^i)$,
+    which share the $i$-th coordinate,
+    the total-order index $S_i^T$ from the pairs $(A, E^i)$,
+    which share all the coordinates but the $i$-th one,
+    and the second-order index $S_{ij}$ from the pairs $(E^j, C^i)$,
+    which share the $i$-th and $j$-th coordinates,
+    as in the design of [@saltelli2002].
+    For $d=2$, the blocks $C^1$ and $C^2$ are the blocks $E^2$ and $E^1$, as in OpenTURNS.
+
+    Because the indicator takes the values 0 and 1, its square is itself:
+    the JANSEN estimator, which averages the squared differences $(y-y')^2$,
+    is computed from the weighted means of $y$ and $y'$ and of the product $yy'$;
+    the discordant pairs, where the safe row can carry a weight
+    as large as $e^{\beta^2/2}$ with $\beta$ the distance from the design point to the origin,
+    only enter through these row-weighted means.
+
+    The RANK estimator [@gamboa2022] sorts the independent rows along each coordinate $i$
+    and pairs each row with its successor in that order;
+    under the product density $h$,
+    the coordinates of the successor other than the $i$-th one
+    are independent of the $i$-th one,
+    so the pair is weighted accordingly.
+
+    Every pick-and-freeze index is a smooth function
+    of the mean of independent per-row terms,
+    so the central limit theorem and the delta method give its asymptotic variance,
+    as [@janon2014] shows for the unweighted estimators,
+    hence asymptotic confidence intervals.
+    These intervals are optimistic in the rare-event regime:
+    most weighted terms are zero and a few are large,
+    so the empirical covariance of the terms underestimates the true one
+    until the sample counts many failing rows.
+    The alternative is a percentile bootstrap over the $N$ rows of each block.
+    The RANK estimator only offers bootstrap intervals,
+    as the asymptotic distribution of its weighted variant is not established.
+
+    Other reliability-oriented sensitivity indices are estimated
+    with the same importance sampling ingredients,
+    e.g. the indices of [@perrin2019] and the Shapley effects of [@demangechryst2023].
+
+This method makes Sobol' analysis tractable for rare events,
+but its cost scales with the number of events.
+It also scales with the input dimension $d$ in the case of pick-and-freeze sampling,
+as with the crude Monte Carlo method.
 
 ### HSIC analysis
 
@@ -261,7 +379,7 @@ TARGET and CONDITIONAL modes require specifying `output_bounds` to define the re
 
 ![HSIC R²-HSIC indices](figs/hsic_analysis.png)
 
-### FORM analysis
+### FORM analysis { #concept-form-analysis }
 
 [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] turns the *importance factors*
 of the first-order reliability method (FORM) into sensitivity indices for a binary event,
@@ -293,43 +411,6 @@ derives the importance factors.
 
 This method is cheap (a single FORM run, i.e. tens of model evaluations)
 but relies on FORM's linear approximation of the limit-state surface at the design point.
-
-### ISFORMSobol analysis
-
-[ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
-estimates the Sobol' indices of a binary event.
-A crude Monte Carlo estimation of these indices is intractable for rare events,
-so this analysis combines three ingredients:
-
-1. FORM to locate the most probable failure point (MPFP), a.k.a. design point, of the event;
-2. an importance sampling (IS) auxiliary density —
-   a unit-variance normal distribution centered on the design point in the standard space —
-   so that samples land around the limit state;
-3. a Sobol' analysis of the IS-reweighted indicator,
-   where each sample is weighted by the likelihood ratio
-   between the true standard normal density and the auxiliary density.
-
-Several events can be passed;
-each is processed independently (its own design point, auxiliary density and pick-and-freeze
-design), and the total model evaluation budget `n_samples` is shared across them:
-once every design point has been located with FORM, the remaining budget is split equally
-between the events to draw their Sobol' samples.
-
-!!! note "The indices are computed in the standard space"
-    For independent marginals,
-    the standard inputs map one-to-one to the physical inputs and share their names.
-
-[ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
-reuses the same estimators as
-[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
-(SALTELLI by default for a pick-and-freeze design, JANSEN, MAUNTZ_KUCHERENKO, MARTINEZ,
-and RANK for an independent/i.i.d. design), selected via the `algo` argument of
-[compute_indices()][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis.compute_indices].
-
-This method makes Sobol' analysis tractable for rare events,
-but its cost still scales with the number of events
-and grows with the input dimension $d$ through the pick-and-freeze factor ($2+d$ or $2+2d$
-per event).
 
 ## Common interface { #concept-sensitivity-interface }
 
