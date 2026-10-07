@@ -2194,6 +2194,7 @@ classes:
       objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
   # The rules of MDOScenario, plus a switch on the space: a DOEScenario over a
   # ParameterSpace (now a RandomSpace) cannot become an MDOScenario, which takes a
   # DesignSpace only, and becomes an EvaluationScenario, with the rules below. YAML
@@ -2204,6 +2205,7 @@ classes:
       objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
       design_space: IF[ParameterSpace] EvaluationScenario
   # The rules of a DOEScenario over a ParameterSpace, which becomes an
   # EvaluationScenario: the space is its input space, and the objective an observable.
@@ -2215,8 +2217,10 @@ classes:
       design_space: input_space
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
   OptAsMDOScenario: *scenario-class
   MDOScenarioAdapter:
+    _reset_optimization_problem: _reset_problem
     keep_opt_history: keep_databases
     save_opt_history: save_databases
     LOWER_BND_SUFFIX: lower_bnd_suffix
@@ -2370,10 +2374,7 @@ classes:
   EvaluationProblem:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
-    preprocess_functions: null
-    # use EvaluationProblem.bind_functions to bind the functions to the database
-    # and the counters, and EvaluationProblem.create_working_problem to derive a problem whose
-    # functions work in the coordinates an algorithm manipulates.
+    preprocess_functions: TODO use bind_functions to bind the functions to the database and the counters, and create_working_problem to derive a problem whose functions work in the coordinates an algorithm manipulates
     __init__:
       design_space: input_space
     reset:
@@ -2727,6 +2728,11 @@ classes:
   DatasetPlot:
     DEFAULT_PLOT_ENGINE: default_plot_engine
     FILE_FORMATS_TO_PLOT_ENGINES: file_formats_to_plot_engines
+    # A plot is now configured by a settings model, self.settings, of a class
+    # <Plot>_Settings set as its settings_class attribute, with no __init__ of its own.
+    _specific_settings: TODO the settings of a plot are now a model, so declare its fields in a <Plot>_Settings class set as the settings_class attribute of the plot, remove its __init__, and read them from self.settings
+    _common_settings: settings
+    _n_items: settings.n_items
     # The display options of a plot moved to its settings.
     color: settings.color
     colormap: settings.colormap
@@ -2752,6 +2758,8 @@ classes:
     fig_size: settings.fig_size
     fig_size_x: TODO use settings.fig_size, the pair of the width and the height, instead
     fig_size_y: TODO use settings.fig_size, the pair of the width and the height, instead
+  MatplotlibPlot:
+    _common_settings: _settings
   DependencyGraph:
     IO: io
   IODataset:
