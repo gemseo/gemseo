@@ -2455,6 +2455,9 @@ classes:
       input_names_to_sizes: input_name_to_size
       output_names_to_sizes: output_name_to_size
   BaseCache:
+    # A cache is now a mapping from the input data to the entries: iterating over it
+    # yields the input data, and over its values the entries, as iterating over it did.
+    __iter__: "{receiver}.values()"
     get_all_entries: items
     last_entry: last_item
     names_to_sizes: name_to_size
