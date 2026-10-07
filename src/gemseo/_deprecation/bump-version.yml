@@ -460,6 +460,10 @@ attributes:
 
   gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: gemseo.formulation.BiLevelBCD_Settings
   gemseo.formulations.factory.MDO_FORMULATION_FACTORY: gemseo.formulation.factory.mdo_formulation_factory
+  # The formulations are generic in the type of their input space too, which a
+  # subclass subscripting the base with the type of its settings alone must give.
+  gemseo.formulations.base_formulation.BaseFormulation: gemseo.formulation.core.base.BaseFormulation TODO BaseFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseFormulation[T] must derive from BaseFormulation[T, DesignSpace], DesignSpace being imported at run time
+  gemseo.formulations.base_mdo_formulation.BaseMDOFormulation: gemseo.formulation.core.base_mdo.BaseMDOFormulation TODO BaseMDOFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseMDOFormulation[T] must derive from BaseMDOFormulation[T, DesignSpace], DesignSpace being imported at run time
 
   gemseo.mda.base_parallel_mda_solver.BaseParallelMDASolver: gemseo.mda.core.base_parallel_solver.BaseMDAParallelSolver
   gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings: gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings
@@ -512,8 +516,9 @@ attributes:
 
   gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
   # The mixin became a base class deriving from BaseDistribution, which a class
-  # deriving from both keeps a valid method resolution order with.
-  gemseo.uncertainty.distributions.scalar_distribution_mixin.ScalarDistributionMixin: gemseo.uncertainty.distribution.core.base_univariate.BaseUnivariateDistribution
+  # deriving from both keeps a valid method resolution order with only when
+  # BaseDistribution comes after it.
+  gemseo.uncertainty.distributions.scalar_distribution_mixin.ScalarDistributionMixin: gemseo.uncertainty.distribution.core.base_univariate.BaseUnivariateDistribution TODO BaseUnivariateDistribution derives from BaseDistribution and replaces the pair, so a class deriving from BaseDistribution[...] and this mixin must derive from BaseUnivariateDistribution[...] alone, with the type parameters of BaseDistribution
   gemseo.uncertainty.distributions.base_settings.beta_settings.BaseBetaDistribution_Settings: gemseo.uncertainty.distribution.core.base_univariate_settings.beta.BaseBetaDistributionSettings
   gemseo.uncertainty.distributions.base_settings.exponential_settings.BaseExponentialDistribution_Settings: gemseo.uncertainty.distribution.core.base_univariate_settings.exponential.BaseExponentialDistributionSettings
   gemseo.uncertainty.distributions.base_settings.log_normal_settings.BaseLogNormalDistribution_Settings: gemseo.uncertainty.distribution.core.base_univariate_settings.log_normal.BaseLogNormalDistributionSettings
@@ -931,10 +936,10 @@ attributes:
   gemseo.post.mlearning.ml_regressor_quality_viewer.DatasetPlotOption: null
   gemseo.post.som.LOGGER: null
   gemseo.scenarios.base_scenario.ScenarioInputDataType: null
-  gemseo.uncertainty.distributions.base_distribution.ParametersType: null
-  gemseo.uncertainty.distributions.base_distribution.StandardParametersType: null
-  gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: null
-  gemseo.uncertainty.distributions.scalar_distribution_mixin.StandardParametersType: null
+  gemseo.uncertainty.distributions.base_distribution.ParametersType: TODO use tuple[str, int, float] | Mapping[str, str | int | float] instead
+  gemseo.uncertainty.distributions.base_distribution.StandardParametersType: TODO use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings
+  gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: TODO use tuple[str, int, float] | Mapping[str, str | int | float] instead
+  gemseo.uncertainty.distributions.scalar_distribution_mixin.StandardParametersType: TODO use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings
   gemseo.utils.compatibility.openturns.OT_1_23: null
   gemseo.utils.compatibility.openturns.PEARSON_METHOD_NAME: null
   gemseo.utils.compatibility.openturns.create_trend_basis: null
@@ -1614,6 +1619,8 @@ classes:
   DesignSpace:
     VARIABLE_TYPES_TO_DTYPES: variable_types_to_dtypes
     DesignVariableType: TODO use gemseo.enum.VariableType instead
+    # The name of the HDF5 group of a design space is now private.
+    DESIGN_SPACE_GROUP: '"design_space"'
     # The shortcuts to the variables of the space were removed; a design space
     # is read through its variables view, like a random space. A `{name}` stands
     # for the argument of the call of the method.
@@ -2175,6 +2182,8 @@ classes:
   # Scenario
   MDOScenario: &scenario-class
     design_space: design_space
+    # Of BaseScenario in GEMSEO 6, of MDOScenario alone in GEMSEO 7.
+    _execute_plot_callback: _plot_history
     __init__: &scenario-init
       # The objective is now set by add_objective, called on the scenario right after
       # the statement creating it (or marked with a TODO when the scenario is not
@@ -2228,6 +2237,8 @@ classes:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     _ALGO_FACTORY_CLASS: _algo_factory_class
+    _opt_hist_backup_path: _backup_file_path
+    _execute_backup_callback: _write_backup_file
     # BaseScenario alone defines save_optimization_history,
     # set_optimization_history_backup, clear_history_before_execute, execute,
     # set_algorithm and post_process, which MDOScenario, DOEScenario and
@@ -2360,6 +2371,7 @@ classes:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     preprocess_functions: TODO use bind_functions to bind the functions to the database and the counters, and create_working_problem to derive a problem whose functions work in the coordinates an algorithm manipulates
+    _functions_are_preprocessed: TODO the flag was removed with preprocess_functions; bind_functions needs none, as it rebuilds the wrappers from the original functions when called again
     __init__:
       design_space: input_space
     reset:
@@ -2790,6 +2802,10 @@ classes:
     EPSILON: epsilon
   ScalableModel:
     ABBR: abbr
+  # The class attribute of the mixin, overridden by the distributions of the
+  # plugins, is that of BaseUnivariateDistribution.
+  ScalarDistributionMixin:
+    JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   SobieskiAerodynamics:
     PRESSURE_GRADIENT_LIMIT: pressure_gradient_limit
   SobieskiProblem:
