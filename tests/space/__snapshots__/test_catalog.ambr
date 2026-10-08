@@ -1,0 +1,361 @@
+# serializer version: 1
+# name: test_a_column_name_colliding_several_times_is_reported_once
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have distinct names once converted to strings: '1' names more than one property. [type=value_error, input_value={'properties':     1   1   1
+  0  10  20  30}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_byte_string_index_not_utf8
+  '''
+  1 validation error for Catalog
+    Value error, The label b'\xff' of the catalog is a byte string that cannot be decoded from UTF-8. [type=value_error, input_value={'properties':          m...ff'   2.7
+  b'a'      7.8}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_byte_string_labels_not_utf8
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - The label b'\xff' of the catalog is a byte string that cannot be decoded from UTF-8.
+  - The label b'\xfe' of the catalog is a byte string that cannot be decoded from UTF-8. [type=value_error, input_value={'properties': {'mass': [...ls': [b'\xff', b'\xfe']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_check_hdf_writable_rejects_a_dtype_hdf_cannot_store[datetime64[D]]
+  "The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_a_dtype_hdf_cannot_store[timedelta64[D]]
+  "The property 'date' of the catalog has the dtype timedelta64[D] and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_a_label_utf8_cannot_encode
+  "The label '\\ud800' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_a_property_name_utf8_cannot_encode
+  "The property name '\\ud800' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_a_property_value_utf8_cannot_encode
+  "The value '\\ud800' of the property 'm' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_invalid_property_name[..]
+  "The property name '..' of the catalog is not a valid HDF name and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_invalid_property_name[.]
+  "The property name '.' of the catalog is not a valid HDF name and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_invalid_property_name[]
+  "The property name '' of the catalog is not a valid HDF name and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_invalid_property_name[a/b]
+  "The property name 'a/b' of the catalog is not a valid HDF name and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_invalid_property_name[a\x00b]
+  "The property name 'a\\x00b' of the catalog is not a valid HDF name and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_rejects_an_object_property
+  "The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file."
+# ---
+# name: test_check_hdf_writable_reports_every_offender_at_once
+  '''
+  The catalog cannot be written to an HDF file:
+  - The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file.
+  - The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file.
+  - The label '\ud800' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file.
+  '''
+# ---
+# name: test_duplicate_column_labels
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have distinct names once converted to strings: 'mass' names more than one property. [type=value_error, input_value={'properties':    mass  m...  1     2
+  1     3     4}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_duplicate_column_name_is_reported
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have distinct names once converted to strings: '1' and '2' each name more than one property. [type=value_error, input_value={'properties':     1   1 ...2   2
+  0  10  20  30  40}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_error_of_the_input_is_reported_at_once[kind_and_dimensions]
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - The property 'supplier' of the catalog is an unordered collection (set); use an ordered sequence instead.
+  - The property 'mass' of the catalog has a dimension greater than 1; a property holds one value per row.
+  - The labels of the catalog have a dimension greater than 1. [type=value_error, input_value={'properties': {'supplier...': [['alu'], ['steel']]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_error_of_the_input_is_reported_at_once[multiindex_duplicate_names_and_no_row]
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - A catalog is a flat table, but its column axis is a MultiIndex.
+  - A catalog must have at least one row.
+  - The properties of the catalog do not have distinct names once converted to strings: "('a', 'x')" names more than one property. [type=value_error, input_value={'properties': Empty Data..., x), (a, x)]
+  Index: []}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_error_of_the_input_is_reported_at_once[nested_table_and_undecodable_label]
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - The property 'spec' of the catalog is a DataFrame; a catalog is a flat table, so a property holds values, not another table.
+  - The label b'\xff' of the catalog is a byte string that cannot be decoded from UTF-8. [type=value_error, input_value={'properties': {'spec':  ...]}, 'labels': [b'\xff']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_property_blank
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one property. [type=value_error, input_value={'properties': {'note': [...'], 'void': [nan, nan]}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_property_of_a_dimension_greater_than_one_is_reported
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - The property 'mass' of the catalog has a dimension greater than 1; a property holds one value per row.
+  - The property 'size' of the catalog has a dimension greater than 1; a property holds one value per row. [type=value_error, input_value={'properties': {'mass': [...ize': [[5, 6], [7, 8]]}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_every_property_of_an_invalid_kind_is_reported
+  '''
+  1 validation error for Catalog
+    Value error, The input of the catalog is invalid:
+  - The property 'spec' of the catalog is a DataFrame; a catalog is a flat table, so a property holds values, not another table.
+  - The property 'supplier' of the catalog is an unordered collection (set); use an ordered sequence instead.
+  - The property 'grade' of the catalog is an unordered collection (frozenset); use an ordered sequence instead. [type=value_error, input_value={'properties': {'spec':  ...ade': frozenset({'A'})}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_extra_field_is_rejected
+  '''
+  1 validation error for Catalog
+  labls
+    Extra inputs are not permitted [type=extra_forbidden, input_value=['alu', 'steel'], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_extra_field_is_rejected_by_an_update
+  '''
+  1 validation error for Catalog
+  labls
+    Extra inputs are not permitted [type=extra_forbidden, input_value=['alu', 'acier', 'ti'], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_frozen_arrays_cannot_be_thawed_through_their_base
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_frozen_arrays_cannot_be_thawed_through_their_base.1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_get_position_duplicate_label
+  "The label 'steel' names several alternatives of the catalog, at positions 1 and 3; pass the position of the alternative to choose one of them."
+# ---
+# name: test_get_position_unknown_label[Steel]
+  "The catalog has no alternative labelled 'Steel'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+# ---
+# name: test_get_position_unknown_label[gold]
+  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+# ---
+# name: test_json_is_unsupported
+  "Unable to serialize unknown type: <class 'gemseo.util.read_only_mapping.ReadOnlyMapping'>"
+# ---
+# name: test_labels_field_cannot_be_made_writeable
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_labels_of_wrong_length
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have the same length: mass (2) and labels (1). [type=value_error, input_value={'properties': {'mass': [....8]}, 'labels': ['alu']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_model_validate_a_non_mapping
+  '''
+  1 validation error for Catalog
+    Input should be a valid dictionary or instance of Catalog [type=model_type, input_value=1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/model_type
+  '''
+# ---
+# name: test_multi_index[both]
+  '''
+  1 validation error for Catalog
+    Value error, A catalog is a flat table, but its row and column axes are a MultiIndex. [type=value_error, input_value={'properties':        a
+   ...    1
+  a 1  2.7
+  b 2  7.8}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multi_index[columns]
+  '''
+  1 validation error for Catalog
+    Value error, A catalog is a flat table, but its column axis is a MultiIndex. [type=value_error, input_value={'properties':      a
+       1
+  0  2.7
+  1  7.8}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multi_index[index]
+  '''
+  1 validation error for Catalog
+    Value error, A catalog is a flat table, but its row axis is a MultiIndex. [type=value_error, input_value={'properties':      mass
+  a 1   2.7
+  b 2   7.8}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_nested_sequence_column_in_dataframe
+  '''
+  1 validation error for Catalog
+    Value error, The property 'mass' of the catalog has a dimension greater than 1; a property holds one value per row. [type=value_error, input_value={'properties':      mass
+  0  [1, 2]
+  1  [3, 4]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_nested_sequence_labels
+  '''
+  1 validation error for Catalog
+    Value error, The labels of the catalog have a dimension greater than 1. [type=value_error, input_value={'properties': {'mass': [...['x', 'y'], ['z', 'w']]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_nested_sequence_property
+  '''
+  1 validation error for Catalog
+    Value error, The property 'mass' of the catalog has a dimension greater than 1; a property holds one value per row. [type=value_error, input_value={'properties': {'mass': [[1, 2], [3, 4]]}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_nested_table_property_is_rejected
+  '''
+  1 validation error for Catalog
+    Value error, The property 'spec' of the catalog is a DataFrame; a catalog is a flat table, so a property holds values, not another table. [type=value_error, input_value={'properties': {'spec':    mass
+  0   2.7
+  1   7.8}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_no_property
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one property. [type=value_error, input_value={'properties': {}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_no_row
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one row. [type=value_error, input_value={'properties': Empty Data...lumns: [mass]
+  Index: []}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_no_row_in_a_mapping[properties0]
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one row. [type=value_error, input_value={'properties': {'mass': []}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_no_row_in_a_mapping[properties1]
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one row. [type=value_error, input_value={'properties': {'mass': [], 'cost': []}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_no_row_in_a_mapping_with_labels
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have the same length: mass (0) and labels (1). [type=value_error, input_value={'properties': {'mass': []}, 'labels': ['alu']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_non_string_mapping_key
+  '''
+  2 validation errors for Catalog
+  properties.is-instance[DataFrame]
+    Input should be an instance of DataFrame [type=is_instance_of, input_value={1: [2.7, 7.8]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  properties.dict[str,any].1.[key]
+    Input should be a valid string [type=string_type, input_value=1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/string_type
+  '''
+# ---
+# name: test_properties_field_cannot_be_mutated
+  "'ReadOnlyMapping' object does not support item assignment"
+# ---
+# name: test_properties_field_values_cannot_be_made_writeable
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_ragged_mapping
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have the same length: mass (2) and cost (3). [type=value_error, input_value={'properties': {'mass': [...cost': [1.0, 2.0, 3.0]}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_ragged_mapping_with_series_property
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have the same length: mass (1) and cost (3). [type=value_error, input_value={'properties': {'mass': 0...cost': [1.0, 2.0, 3.0]}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_table_column_names_colliding_once_stringified[1]
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have distinct names once converted to strings: '1' names more than one property. [type=value_error, input_value={'properties':     1  1
+  0  10  a
+  1  20  b}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_table_column_names_colliding_once_stringified[True]
+  '''
+  1 validation error for Catalog
+    Value error, The properties of the catalog do not have distinct names once converted to strings: 'True' names more than one property. [type=value_error, input_value={'properties':   True Tru...0   10    a
+  1   20    b}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unordered_property_is_rejected[property_values0]
+  '''
+  1 validation error for Catalog
+    Value error, The property 'supplier' of the catalog is an unordered collection (set); use an ordered sequence instead. [type=value_error, input_value={'properties': {'supplier': {'ACME'}}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unordered_property_is_rejected[property_values1]
+  '''
+  1 validation error for Catalog
+    Value error, The property 'supplier' of the catalog is an unordered collection (frozenset); use an ordered sequence instead. [type=value_error, input_value={'properties': {'supplier': frozenset({'ACME'})}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unpickled_arrays_are_views
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_unpickled_arrays_are_views.1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_write_hdf_checks_a_label_utf8_cannot_encode_before_writing
+  "The label '\\ud800' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file."
+# ---
+# name: test_write_hdf_checks_before_writing_anything
+  "The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file."
+# ---

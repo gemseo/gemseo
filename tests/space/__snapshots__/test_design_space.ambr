@@ -8,6 +8,12 @@
 # name: test_add_already_existing_variable
   "The variable 'x' already exists."
 # ---
+# name: test_add_catalog_variable_with_a_wrong_label[catalog0]
+  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+# ---
+# name: test_add_catalog_variable_with_a_wrong_label[catalog1]
+  "The label 'gold' names several alternatives of the catalog, at positions 1 and 2; pass the position of the alternative to choose one of them."
+# ---
 # name: test_add_variable_when_already_exists
   "The variable 'varname' already exists."
 # ---
@@ -86,6 +92,9 @@
 # ---
 # name: test_add_variable_with_an_invalid_value_rolls_back
   "The current value of variable 'n' (7) is not between the lower bound 0 and the upper bound 3."
+# ---
+# name: test_add_variable_with_catalog_type_raises
+  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_discrete_type_raises
   'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
@@ -195,6 +204,95 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_catalog_variable_bounds_are_not_settable[set_lower_bound]
+  '''
+  1 validation error for CatalogVariable
+    Value error, lower_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog': Catalog(3 alt...lier), 'lower_bound': 1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_catalog_variable_bounds_are_not_settable[set_upper_bound]
+  '''
+  1 validation error for CatalogVariable
+    Value error, upper_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog': Catalog(3 alt...lier), 'upper_bound': 1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_catalog_variable_csv_is_refused
+  'A design space holding catalog variables cannot be exported to CSV because the catalogs of m and s do not fit in a CSV cell; use to_hdf instead.'
+# ---
+# name: test_catalog_variable_csv_refusal_keeps_the_declaration_order
+  'A design space holding catalog variables cannot be exported to CSV because the catalogs of s and m do not fit in a CSV cell; use to_hdf instead.'
+# ---
+# name: test_catalog_variable_hdf_append_then_integer
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The type of the design variable 'm' is 'catalog'; got 'integer'.
+  '''
+# ---
+# name: test_catalog_variable_hdf_append_with_a_datetime_property
+  "The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file."
+# ---
+# name: test_catalog_variable_hdf_append_with_changed_catalog[changed_properties]
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_catalog_variable_hdf_append_with_changed_catalog[changed_value]
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_catalog_variable_hdf_append_with_changed_catalog[dropped_row]
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_catalog_variable_hdf_append_with_changed_catalog[reordered]
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_catalog_variable_hdf_append_with_unwritable_catalog
+  "The property 'mass' of the catalog holds Python objects and cannot be written to an HDF file."
+# ---
+# name: test_catalog_variable_hdf_with_unwritable_catalog_leaves_file_untouched[False]
+  "The property 'mass' of the catalog holds Python objects and cannot be written to an HDF file."
+# ---
+# name: test_catalog_variable_hdf_with_unwritable_catalog_leaves_file_untouched[True]
+  "The property 'mass' of the catalog holds Python objects and cannot be written to an HDF file."
+# ---
+# name: test_catalog_variable_rejects_a_non_position[value0]
+  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 3.'
+# ---
+# name: test_catalog_variable_rejects_a_non_position[value1]
+  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 1.5.'
+# ---
+# name: test_catalog_variable_rejects_a_non_position[value2]
+  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = -1.'
+# ---
+# name: test_catalog_variable_rejects_a_non_position[value3]
+  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 1.'
+# ---
+# name: test_catalog_variable_rejects_a_non_position[value4]
+  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = steel.'
+# ---
+# name: test_catalog_variable_view
+  '''
+  +------+-------------+-------+-------------+----------+
+  | name | lower_bound | value | upper_bound | type     |
+  +------+-------------+-------+-------------+----------+
+  | x    |      0      |  0.5  |      1      | real     |
+  | t    |     0.45    |  0.55 |     0.72    | discrete |
+  | m    |      0      |   1   |      2      | catalog  |
+  | s    |      0      |  None |      2      | catalog  |
+  +------+-------------+-------+-------------+----------+
+  '''
+# ---
 # name: test_check_empty_design_space
   'The design space is empty.'
 # ---
@@ -248,6 +346,30 @@
   1 validation error for RealVariable
     Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'lower_bound'...1.0, 'upper_bound': 0.0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_database_update_from_hdf_with_changed_catalog[changed_properties]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_database_update_from_hdf_with_changed_catalog[changed_value]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_database_update_from_hdf_with_changed_catalog[dropped_row]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_database_update_from_hdf_with_changed_catalog[reordered]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
   '''
 # ---
 # name: test_dict_to_array_key_error
@@ -379,8 +501,21 @@
 # name: test_from_csv_with_discrete_type_and_no_choices
   "Malformed DesignSpace input file ds.csv has no choices for the variable 't' of type 'discrete'."
 # ---
+# name: test_from_hdf_rejects_a_catalog_on_another_kind
+  "Malformed DesignSpace input file ds.h5 has a catalog for the variable 'm' of type 'real' instead of 'catalog'."
+# ---
+# name: test_from_hdf_rejects_a_catalog_variable_without_catalog
+  "Malformed DesignSpace input file ds.h5 has no catalog for the variable 'm' of type 'catalog'."
+# ---
 # name: test_from_hdf_rejects_inconsistent_choices
   "Malformed DesignSpace input file ds.h5 has choices for the variable 't' of type 'real' instead of 'discrete'."
+# ---
+# name: test_from_hdf_reports_every_payload_mismatch_at_once
+  '''
+  Malformed DesignSpace input file ds.h5:
+  - it has choices for the variable 'm' of type 'real' instead of 'discrete'.
+  - it has a catalog for the variable 'm' of type 'real' instead of 'catalog'.
+  '''
 # ---
 # name: test_from_hdf_with_discrete_type_and_no_choices
   "Malformed DesignSpace input file ds.h5 has no choices for the variable 't' of type 'discrete'."
@@ -579,6 +714,36 @@
 # name: test_prepare_untransformation_checks_boundedness
   'The components 0 of the design space are unbounded.'
 # ---
+# name: test_problem_to_hdf_append_with_changed_catalog[changed_properties]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_problem_to_hdf_append_with_changed_catalog[changed_value]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_problem_to_hdf_append_with_changed_catalog[dropped_row]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_problem_to_hdf_append_with_changed_catalog[reordered]
+  '''
+  The design space stored in the node '/' of the HDF file problem.h5 has different catalogs; the value of a catalog variable is a position in its catalog, so the stored values are only valid with the stored catalog:
+  - The catalog of the design variable 'm' differs from the stored one.
+  '''
+# ---
+# name: test_problem_to_hdf_with_unwritable_catalog_leaves_file_untouched[False]
+  "The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file."
+# ---
+# name: test_problem_to_hdf_with_unwritable_catalog_leaves_file_untouched[True]
+  "The property 'date' of the catalog has the dtype datetime64[D] and cannot be written to an HDF file."
+# ---
 # name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bound]
   'assignment destination is read-only'
 # ---
@@ -639,8 +804,17 @@
 # name: test_set_current_variable_rejects_non_integer_value
   'The variable i is of type integer; got i[0] = 2.7.'
 # ---
+# name: test_set_current_variable_with_a_wrong_label[m-gold-ValueError]
+  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+# ---
+# name: test_set_current_variable_with_a_wrong_label[x-steel-TypeError]
+  "The variable 'x' is not a catalog variable and cannot be set with a label."
+# ---
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'
+# ---
+# name: test_single_catalog_variable_csv_is_refused
+  'A design space holding a catalog variable cannot be exported to CSV because the catalog of m does not fit in a CSV cell; use to_hdf instead.'
 # ---
 # name: test_to_complex_without_current_value
   "'There is no current value for the design variables: y.'"

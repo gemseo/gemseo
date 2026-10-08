@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import gc
 import logging
 import weakref
@@ -32,10 +33,12 @@ import pytest
 from numpy import array
 from numpy import full
 
+from gemseo import compute_doe
 from gemseo import configuration
 from gemseo import execute_algo
 from gemseo.core.algorithm import base_driver_library
 from gemseo.core.algorithm._progress_bar.standard import ProgressBar
+from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.collection.functions import Functions
@@ -674,3 +677,102 @@ def test_empty_transformation_does_not_mutate_the_users_problem() -> None:
     )
 
     assert len(problem.database) == 0
+
+
+@pytest.fixture
+def catalog_problem() -> OptimizationProblem:
+    """An optimization problem whose design space has a catalog variable."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_catalog_variable("c", {"mass": [2.7, 7.8, 4.5]}, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x @ x, "f")
+    return problem
+
+
+@pytest.mark.parametrize(
+    ("library_class", "algo_name"), [(ScipyOpt, "SLSQP"), (SciPyDOE, "MC")]
+)
+@pytest.mark.parametrize("handles_integer_and_discrete", [False, True])
+def test_catalog_variable_unsuitability(
+    catalog_problem, library_class, algo_name, handles_integer_and_discrete
+) -> None:
+    """Check that a driver not handling catalog variables is unsuited to them.
+
+    This holds even for an algorithm handling integer and discrete variables.
+    """
+    description = dataclasses.replace(
+        library_class.ALGORITHM_INFOS[algo_name],
+        handle_integer_variables=handles_integer_and_discrete,
+        handle_discrete_variables=handles_integer_and_discrete,
+    )
+    assert not description.handle_catalog_variables
+    assert not library_class.is_algorithm_suited(description, catalog_problem)
+    assert (
+        library_class._get_unsuitability_reason(description, catalog_problem)
+        == _UnsuitabilityReason.CATALOG_VARIABLES
+    )
+
+
+@pytest.mark.parametrize(
+    ("library_class", "algo_name"), [(ScipyOpt, "SLSQP"), (SciPyDOE, "MC")]
+)
+def test_catalog_variable_suitability(
+    catalog_problem, library_class, algo_name
+) -> None:
+    """Check that a driver handling catalog variables is suited to them."""
+    description = dataclasses.replace(
+        library_class.ALGORITHM_INFOS[algo_name], handle_catalog_variables=True
+    )
+    assert library_class.is_algorithm_suited(description, catalog_problem)
+
+
+def test_check_catalog_variables_handled(catalog_problem, monkeypatch) -> None:
+    """Check that a driver handling catalog variables accepts them."""
+    library = SciPyDOE("MC")
+    monkeypatch.setitem(
+        SciPyDOE.ALGORITHM_INFOS,
+        "MC",
+        dataclasses.replace(
+            SciPyDOE.ALGORITHM_INFOS["MC"], handle_catalog_variables=True
+        ),
+    )
+    library._check_catalog_variables(catalog_problem.design_space)
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        SLSQP_Settings(),
+        SLSQP_Settings(relax_integer_variables=True, relax_discrete_variables=True),
+        MC_Settings(n_samples=2),
+        MC_Settings(
+            n_samples=2, relax_integer_variables=True, relax_discrete_variables=True
+        ),
+    ],
+    ids=("optimizer", "relaxed_optimizer", "doe", "relaxed_doe"),
+)
+def test_execute_with_catalog_variable(catalog_problem, settings, snapshot) -> None:
+    """Check that a driver refuses a catalog variable up front, even relaxed."""
+    with assert_exception(ValueError, snapshot):
+        execute_algo(
+            catalog_problem,
+            algo_type="opt" if isinstance(settings, SLSQP_Settings) else "doe",
+            settings_model=settings,
+        )
+
+    assert not catalog_problem.database
+
+
+@pytest.mark.parametrize("unit_sampling", [False, True])
+def test_compute_doe_with_catalog_variable(
+    catalog_problem, unit_sampling, snapshot
+) -> None:
+    """Check that sampling a space with a catalog variable is refused up front."""
+    with assert_exception(ValueError, snapshot):
+        compute_doe(
+            catalog_problem.design_space,
+            unit_sampling=unit_sampling,
+            algo_name="PYDOE_LHS",
+            n_samples=2,
+        )

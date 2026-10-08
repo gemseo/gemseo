@@ -22,6 +22,8 @@ from typing import TypeVar
 
 from numpy import concatenate
 from numpy import full
+from numpy import integer
+from numpy import issubdtype
 from numpy import zeros
 
 from gemseo.space.variable import BaseVariable
@@ -237,6 +239,9 @@ class Variables(
     def get_integer_mask(self) -> BooleanArray:
         """Return whether the components of the full vector are integer.
 
+        A component is integer when it belongs to an integer variable
+        or to a catalog variable, whose value is a position in its catalog.
+
         Returns:
             Whether the components of the full vector are integer
             (one result per component).
@@ -246,7 +251,11 @@ class Variables(
 
         return concatenate(
             tuple(
-                full(variable.size, variable.type == DataType.INTEGER, dtype=bool)
+                full(
+                    variable.size,
+                    issubdtype(variable.component_type, integer),
+                    dtype=bool,
+                )
                 for variable in self.values()
             )
         )

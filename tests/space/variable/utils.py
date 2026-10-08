@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
@@ -23,7 +24,7 @@ from gemseo.space.variable import RealVariable
 kinds = (RealVariable, IntegerVariable)
 """The kinds of variable whose domain is an interval."""
 
-all_kinds = (*kinds, DiscreteVariable)
+all_kinds = (*kinds, DiscreteVariable, CatalogVariable)
 """All the kinds of variable."""
 
 kind_to_kwargs = {
@@ -31,5 +32,7 @@ kind_to_kwargs = {
     IntegerVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
     # A discrete variable derives its bounds from its choices.
     DiscreteVariable: {"choices": [0, 1]},
+    # A catalog variable derives its bounds from the size of its catalog.
+    CatalogVariable: {"catalog": {"property": [0, 1]}},
 }
 """The arguments building a variable of size 1 with the bounds [0, 1], per kind."""

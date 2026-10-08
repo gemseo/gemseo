@@ -45,6 +45,7 @@ def test_create_from_settings_not_implemented(factory) -> None:
 def test_class_names(factory) -> None:
     """Check that the concrete kinds are discovered and the abstract base is not."""
     assert factory.class_names == [
+        "CatalogVariable",
         "DiscreteVariable",
         "IntegerVariable",
         "RealVariable",

@@ -1703,7 +1703,12 @@ def test_renamed_enumeration_member_warns_and_resolves():
         old_value = DataType.FLOAT
 
     assert old_value is DataType.REAL
-    assert tuple(member.name for member in DataType) == ("DISCRETE", "INTEGER", "REAL")
+    assert tuple(member.name for member in DataType) == (
+        "CATALOG",
+        "DISCRETE",
+        "INTEGER",
+        "REAL",
+    )
 
 
 def test_renamed_enumeration_member_of_a_namesake_class_is_left_alone():

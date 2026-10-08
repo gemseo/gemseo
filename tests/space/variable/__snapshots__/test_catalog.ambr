@@ -1,0 +1,28 @@
+# serializer version: 1
+# name: test_bounds_are_not_settable[lower_bound]
+  '''
+  1 validation error for CatalogVariable
+    Value error, lower_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog':            ma... 50.0, 'lower_bound': 0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bounds_are_not_settable[upper_bound]
+  '''
+  1 validation error for CatalogVariable
+    Value error, upper_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog':            ma... 50.0, 'upper_bound': 0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_get_out_of_domain_component_message
+  'The variable x is a catalog variable with the labels [aluminium, steel, titanium]; got x[0] = 5.'
+# ---
+# name: test_get_out_of_domain_message
+  "The following value of variable 'x' is not a position in its catalog with the labels [aluminium, steel, titanium]: 5 (index 0)."
+# ---
+# name: test_size_is_not_settable
+  '''
+  1 validation error for CatalogVariable
+    Value error, size is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog':            ma...   4.5  50.0, 'size': 2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

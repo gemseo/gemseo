@@ -26,6 +26,7 @@ from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
     [
         ("NO_REASON", ""),
         ("EMPTY_VARIABLE_SPACE", "the variable space is empty"),
+        ("CATALOG_VARIABLES", "it does not handle catalog variables"),
         ("NOT_SYMMETRIC", "the left-hand side of the problem is not symmetric"),
         (
             "NOT_POSITIVE_DEFINITE",

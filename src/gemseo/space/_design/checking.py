@@ -20,6 +20,7 @@ from collections.abc import Mapping
 from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from numpy import equal
 from numpy import isnan
@@ -38,6 +39,19 @@ if TYPE_CHECKING:
     from gemseo.space._design.variables import DesignVariables
     from gemseo.space.variable import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
+
+_types_checked_per_variable: Final[frozenset[DataType]] = frozenset({
+    DataType.CATALOG,
+    DataType.DISCRETE,
+})
+"""The types of the variables whose domain the bounds do not describe.
+
+The bounds of a discrete variable are derived from its choices,
+and those of a catalog variable from its catalog,
+so the vectorized bound comparison cannot tell a non-candidate value
+lying inside the bounds from a candidate one;
+a design space holding such a variable asks each variable about its own domain.
+"""
 
 
 def is_numeric(value: Any) -> bool:
@@ -169,11 +183,11 @@ def check_membership(
             msg = f"Expected an array of shape (..., {size}); got {shape}."
             raise ValueError(msg)
 
-        if not names and variables.has_variables_of_type(DataType.DISCRETE):
-            # The bounds of a discrete variable are derived from its choices,
-            # so the vectorized bound comparison cannot tell a non-candidate value
-            # lying inside the bounds from a candidate one;
-            # fall back to the per-variable path,
+        if not names and any(
+            variable.type in _types_checked_per_variable
+            for variable in variables.values()
+        ):
+            # Fall back to the per-variable path,
             # which asks each variable about its own domain.
             if value.ndim > 1:
                 for value_i in value:
@@ -287,9 +301,13 @@ def check_domain(variables: DesignVariables, name: str, value: NumberArray) -> N
     if value.size != variable.size:
         return
 
-    out_of_domain_indices = variable.find_components_outside_domain(value.real)
+    # Take the real part of the array, not of a component:
+    # a component of an object array can be a non-numeric value,
+    # e.g. a label, which has no real part.
+    real_value = value.real
+    out_of_domain_indices = variable.find_components_outside_domain(real_value)
     for i in sorted(out_of_domain_indices):
-        check_index_in_domain(variable, name, i, value[i].real, out_of_domain_indices)
+        check_index_in_domain(variable, name, i, real_value[i], out_of_domain_indices)
 
 
 def check_membership_dict(

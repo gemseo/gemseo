@@ -59,6 +59,7 @@ def warn_legacy_data_type_value(legacy_value: str, value: str) -> None:
 class DataType(StrEnum):
     """The type of variable data."""
 
+    CATALOG = "catalog"
     DISCRETE = "discrete"
     INTEGER = "integer"
     REAL = "real"

@@ -30,6 +30,7 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable._formatting import format_elided
 from gemseo.space.variable._view_field import expose_fields_as_views
 from gemseo.space.variable.base import DataType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
@@ -37,7 +38,6 @@ from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.space.variable.numeric import ScalarBoundType
 from gemseo.util._numpy import freeze_array
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
-from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -228,15 +228,7 @@ class DiscreteVariable(BaseDeterministicVariable, BaseNumericVariable):
             The representation of the choices,
             e.g. `"[2.0, 4.0, 6.0, ..., 96.0, 98.0, 100.0] (50 choices)"`.
         """
-        choices = self.choices
-        if len(choices) <= _max_displayed_choices:
-            return f"[{pretty_str(choices, sort=False, use_and=False)}]"
-
-        n_head = _max_displayed_choices // 2
-        n_tail = _max_displayed_choices - n_head
-        head = pretty_str(choices[:n_head], sort=False, use_and=False)
-        tail = pretty_str(choices[-n_tail:], sort=False, use_and=False)
-        return f"[{head}, ..., {tail}] ({len(choices)} choices)"
+        return format_elided(self.choices, "choices", _max_displayed_choices)
 
     def _get_out_of_domain_message(
         self, name: str, value: NumberArray, indices: Iterable[int]

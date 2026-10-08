@@ -60,6 +60,9 @@ A CSV file is exported with a space delimiter by default,
 so the separator shall not be a whitespace.
 """
 
+catalog_group: Final[str] = "catalog"
+"""The name of the HDF group storing the catalog of a variable."""
+
 table_names: Final[tuple[str, ...]] = (
     "name",
     _lower_bound,

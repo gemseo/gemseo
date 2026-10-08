@@ -21,7 +21,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
-from unittest import mock
 
 import pytest
 from numpy import array
@@ -224,11 +223,8 @@ def test_methods(test_method) -> None:
 @pytest.fixture(scope="module")
 def variables_space():
     """A variables space."""
-    design_space = mock.MagicMock()
-    design_space.variables = {"x": mock.Mock(size=2)}
-    design_space.dimension = 2
-    design_space.untransform_vect = lambda doe, no_check: doe
-    design_space.name_to_normalization_mask = {"x": array([True, True])}
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", size=2, lower_bound=0.0, upper_bound=1.0)
     return design_space
 
 

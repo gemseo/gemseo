@@ -349,7 +349,8 @@ class Value(RegistryDerivedData):
 
         Use the center of the bounds when both are finite, otherwise the
         finite bound, otherwise zero; for a discrete variable, use its first
-        choice instead.
+        choice instead, and for a catalog variable, the position of the
+        first alternative of its catalog, even though its bounds are finite.
         """
         # A value invalidated by a resize must read as missing here,
         # otherwise the variable would keep its stale wrong-size value.

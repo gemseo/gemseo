@@ -48,10 +48,13 @@ from scipy.sparse import csr_array
 from scipy.sparse import csr_matrix
 
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.problem.database import Database
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
+from gemseo.space import Catalog
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import DataType
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
@@ -2563,6 +2566,58 @@ def test_round_vect(type_, rounded) -> None:
     assert space.round_vect(array([0.9])) == rounded
 
 
+@pytest.fixture
+def catalog_integer_real_space() -> DesignSpace:
+    """A design space with a catalog, an integer and a real variable."""
+    space = DesignSpace()
+    space.add_catalog_variable("c", {"property": [1.0, 2.0, 3.0]})
+    space.add_variable("i", type_="integer", lower_bound=0, upper_bound=3)
+    space.add_variable("x")
+    return space
+
+
+def test_get_integer_mask_catalog_variable(catalog_integer_real_space) -> None:
+    """Check that the integer mask marks a catalog position as integer."""
+    assert_array_equal(
+        catalog_integer_real_space.get_integer_mask(), [True, True, False]
+    )
+
+
+def test_round_vect_catalog_variable(catalog_integer_real_space) -> None:
+    """Check that rounding a design vector rounds a catalog position too."""
+    rounded = catalog_integer_real_space.round_vect(array([1.4, 1.4, 1.4]))
+    assert_array_equal(rounded, [1.0, 1.0, 1.4])
+
+
+def test_round_vect_catalog_variable_gives_a_member(catalog_integer_real_space) -> None:
+    """Check that a rounded design vector is a member of the design space.
+
+    `check_membership` raises if a component is not in its domain,
+    e.g. a catalog component that is not a position.
+    """
+    rounded = catalog_integer_real_space.round_vect(array([1.4, 1.4, 1.4]))
+    catalog_integer_real_space.check_membership(rounded)
+
+
+@pytest.mark.parametrize(
+    ("minus_lb", "expected"), [(True, [1.0, 0.5]), (False, [1.4, 0.5])]
+)
+def test_denormalize_vect_catalog_variable(minus_lb, expected) -> None:
+    """Check that denormalizing rounds a catalog position only with the lower bound.
+
+    A catalog position is not normalized,
+    but it is rounded when the lower bounds are added back,
+    the way the components of an integer variable are.
+    """
+    space = DesignSpace()
+    space.add_catalog_variable("c", {"property": [1.0, 2.0, 3.0]})
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+
+    assert_array_equal(
+        space.denormalize_vect(array([1.4, 0.5]), minus_lb=minus_lb), expected
+    )
+
+
 @pytest.mark.parametrize(
     "variables",
     [
@@ -3566,6 +3621,26 @@ def test_discrete_variable_csv_with_choices_in_fields(
     assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
 
 
+def test_discrete_variable_csv_with_explicit_fields_including_choices(
+    tmp_wd, discrete_design_space
+) -> None:
+    """Check that a fields list already containing "choices" is not duplicated."""
+    file_path = Path("ds.csv")
+    discrete_design_space.to_csv(
+        file_path,
+        fields=["name", "lower_bound", "value", "upper_bound", "type", "choices"],
+    )
+    header = file_path.read_text().splitlines()[0].split()
+
+    assert header.count("choices") == 1
+    assert header == ["name", "lower_bound", "value", "upper_bound", "type", "choices"]
+
+    design_space = DesignSpace.from_csv(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
 def test_from_csv_rejects_inconsistent_choices(tmp_wd, snapshot) -> None:
     """Check that a populated choices cell outside a discrete row raises."""
     file_path = Path("ds.csv")
@@ -3719,3 +3794,649 @@ def test_discrete_variable_mixed_dtypes(discrete_design_space) -> None:
     """Check the promotion of the dtypes of a space mixing the three kinds."""
     discrete_design_space.initialize_missing_current_values()
     assert discrete_design_space.get_current_value().dtype == float64
+
+
+CATALOG = Catalog(
+    properties={"mass": [2.7, 7.8, 4.5], "supplier": ["ACME", "Foundry", "Mill"]},
+    labels=["aluminium", "steel", "titanium"],
+)
+"""A catalog of materials, mixing a numeric and a string property."""
+
+
+@pytest.fixture
+def catalog_design_space() -> DesignSpace:
+    """A design space mixing all the kinds of variable."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_discrete_variable("t", [0.72, 0.45, 0.55], value=0.55)
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    design_space.add_catalog_variable("s", CATALOG)
+    return design_space
+
+
+def test_add_variable_with_catalog_type_raises(snapshot) -> None:
+    """Check that add_variable rejects the catalog type."""
+    design_space = DesignSpace()
+    with assert_exception(ValueError, snapshot):
+        design_space.add_variable("m", type_="catalog")
+
+
+def test_has_catalog_variables(catalog_design_space) -> None:
+    """Check the detection of catalog variables."""
+    assert catalog_design_space.variables.has_variables_of_type(DataType.CATALOG)
+    assert not DesignSpace().variables.has_variables_of_type(DataType.CATALOG)
+
+
+def test_catalog_variable_derived_bounds(catalog_design_space) -> None:
+    """Check that the bounds of a catalog variable span the catalog."""
+    assert_array_equal(catalog_design_space.variables["m"].lower_bound, array([0]))
+    assert_array_equal(catalog_design_space.variables["m"].upper_bound, array([2]))
+
+
+@pytest.mark.parametrize("setter", ["set_lower_bound", "set_upper_bound"])
+def test_catalog_variable_bounds_are_not_settable(
+    catalog_design_space, setter, snapshot
+) -> None:
+    """Check that the bounds of a catalog variable cannot be set."""
+    with assert_exception(ValidationError, snapshot):
+        getattr(catalog_design_space, setter)("m", 1)
+
+
+def test_catalog_variable_scalar_value_shape(catalog_design_space) -> None:
+    """Check that a scalar value is stored as a shape-(1,) integer array."""
+    value = catalog_design_space.get_current_value(["m"])
+
+    assert value.shape == (1,)
+    assert value.dtype == int64
+    assert_array_equal(value, array([1]))
+
+
+def test_catalog_variable_initialize_missing_current_values(
+    catalog_design_space,
+) -> None:
+    """Check that a missing value is the position of the first alternative."""
+    catalog_design_space.initialize_missing_current_values()
+    assert_array_equal(catalog_design_space.get_current_value(["s"]), array([0]))
+
+
+def test_catalog_variable_is_not_normalized(catalog_design_space) -> None:
+    """Check that a catalog component is not normalized."""
+    catalog_design_space.initialize_missing_current_values()
+    value = catalog_design_space.get_current_value()
+
+    assert_array_equal(catalog_design_space.normalize_vect(value)[2:], value[2:])
+
+
+def test_catalog_variable_is_rounded(catalog_design_space) -> None:
+    """Check that a catalog component is rounded to a position."""
+    non_integral_value = array([0.5, 0.55, 1.4, 0.6])
+    assert_array_equal(
+        catalog_design_space.round_vect(non_integral_value)[2:], array([1.0, 1.0])
+    )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        array([3]),
+        array([1.5]),
+        array([-1]),
+        array(["1"]),
+        array(["steel"], dtype=object),
+    ],
+)
+def test_catalog_variable_rejects_a_non_position(
+    catalog_design_space, value, snapshot
+) -> None:
+    """Check that a value outside the catalog is rejected."""
+    with assert_exception(ValueError, snapshot):
+        catalog_design_space.set_current_variable("m", value)
+
+
+def test_add_catalog_variable_with_a_label() -> None:
+    """Check that a label is converted to the position of its alternative."""
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value="steel")
+    value = design_space.get_current_value(["m"])
+    assert_array_equal(value, array([1]))
+    assert value.dtype == int64
+
+
+@pytest.mark.parametrize(
+    "catalog",
+    [
+        CATALOG,
+        Catalog(
+            properties={"mass": [2.7, 7.8, 7.9]},
+            labels=["aluminium", "gold", "gold"],
+        ),
+    ],
+)
+def test_add_catalog_variable_with_a_wrong_label(catalog, snapshot) -> None:
+    """Check that a label naming no or several alternatives is rejected."""
+    design_space = DesignSpace()
+    with assert_exception(ValueError, snapshot):
+        design_space.add_catalog_variable("m", catalog, value="gold")
+
+    assert "m" not in design_space
+
+
+def test_set_current_variable_with_a_label(catalog_design_space) -> None:
+    """Check that the current value of a catalog variable can be set by label."""
+    catalog_design_space.set_current_variable("m", "titanium")
+    assert_array_equal(catalog_design_space.get_current_value(["m"]), array([2]))
+
+
+@pytest.mark.parametrize(
+    ("name", "label", "error"),
+    [("x", "steel", TypeError), ("m", "gold", ValueError)],
+)
+def test_set_current_variable_with_a_wrong_label(
+    catalog_design_space, name, label, error, snapshot
+) -> None:
+    """Check that a label is rejected for a non-catalog variable or if unknown."""
+    with assert_exception(error, snapshot):
+        catalog_design_space.set_current_variable(name, label)
+
+
+def test_catalog_variable_hdf(tmp_wd, catalog_design_space) -> None:
+    """Check that an HDF round-trip preserves the catalog."""
+    file_path = Path("ds.h5")
+    catalog_design_space.to_hdf(file_path)
+    design_space = DesignSpace.from_hdf(file_path)
+
+    assert design_space == catalog_design_space
+    assert design_space._variables["m"].catalog == CATALOG
+
+
+def test_catalog_variable_hdf_with_non_ascii_catalog(tmp_wd) -> None:
+    """Check that an HDF round-trip preserves non-ASCII strings.
+
+    A label, a property name and a cell each carry a non-ASCII character,
+    which `to_hdf` encodes as UTF-8, not as ASCII.
+    """
+    catalog = Catalog(
+        properties={"matériau": ["acier", "béton"]}, labels=["pièce", "poutre"]
+    )
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", catalog)
+
+    file_path = Path("ds.h5")
+    design_space.to_hdf(file_path)
+    read_design_space = DesignSpace.from_hdf(file_path)
+
+    assert read_design_space == design_space
+    assert read_design_space._variables["m"].catalog == catalog
+
+
+def test_catalog_variable_hdf_append(tmp_wd, catalog_design_space) -> None:
+    """Check that appending to an HDF file preserves the catalog."""
+    file_path = Path("ds.h5")
+    catalog_design_space.to_hdf(file_path)
+    catalog_design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path) == catalog_design_space
+
+
+CHANGED_CATALOGS = pytest.mark.parametrize(
+    "catalog",
+    [
+        Catalog(
+            properties={
+                "mass": [4.5, 2.7, 7.8],
+                "supplier": ["Mill", "ACME", "Foundry"],
+            },
+            labels=["titanium", "aluminium", "steel"],
+        ),
+        Catalog(
+            properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+            labels=["aluminium", "steel"],
+        ),
+        Catalog(
+            properties={
+                "mass": [2.7, 7.9, 4.5],
+                "supplier": ["ACME", "Foundry", "Mill"],
+            },
+            labels=["aluminium", "steel", "titanium"],
+        ),
+        Catalog(properties={"mass": [1.0, 2.0]}, labels=["a", "b"]),
+    ],
+    ids=["reordered", "dropped_row", "changed_value", "changed_properties"],
+)
+"""Catalogs differing from `CATALOG`."""
+
+
+@CHANGED_CATALOGS
+def test_catalog_variable_hdf_append_with_changed_catalog(
+    tmp_wd, catalog, snapshot
+) -> None:
+    """Check that appending a catalog variable whose catalog changed is rejected.
+
+    The value of a catalog variable is a position in its catalog, so the stored
+    values would designate other alternatives with another catalog; the file
+    must be left untouched.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    design_space.to_hdf(file_path)
+    content = file_path.read_bytes()
+
+    other_design_space = DesignSpace()
+    other_design_space.add_catalog_variable("m", catalog, value=0)
+    with assert_exception(ValueError, snapshot):
+        other_design_space.to_hdf(file_path, append=True)
+
+    assert file_path.read_bytes() == content
+
+
+@CHANGED_CATALOGS
+def test_problem_to_hdf_append_with_changed_catalog(tmp_wd, catalog, snapshot) -> None:
+    """Check that appending a problem whose catalog changed is rejected.
+
+    The design space stored in the file is never rewritten when appending a
+    database, so the appended input values would be positions in a catalog
+    the file does not hold; the file must be left untouched.
+    """
+    file_path = Path("problem.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([2]), {"f": 2.0})
+    problem.to_hdf(file_path)
+    content = file_path.read_bytes()
+
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", catalog, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([0]), {"f": 0.0})
+    with assert_exception(ValueError, snapshot):
+        problem.to_hdf(file_path, append=True)
+
+    assert file_path.read_bytes() == content
+
+
+def test_problem_to_hdf_append_with_same_catalog(tmp_wd) -> None:
+    """Check that appending a problem with an equal catalog is allowed."""
+    file_path = Path("problem.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([2]), {"f": 2.0})
+    problem.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG.model_copy(), value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([2]), {"f": 2.0})
+    problem.database.store(array([0]), {"f": 0.0})
+    problem.to_hdf(file_path, append=True)
+
+    read_problem = OptimizationProblem.from_hdf(file_path)
+    assert read_problem.design_space.variables["m"].catalog == CATALOG
+    assert_array_equal(
+        [x.unwrap() for x in read_problem.database], [array([2]), array([0])]
+    )
+
+
+@CHANGED_CATALOGS
+def test_database_update_from_hdf_with_changed_catalog(
+    tmp_wd, catalog, snapshot
+) -> None:
+    """Check that loading a database stored with another catalog is rejected.
+
+    This is what a scenario does with `set_backup_settings(load=True)`:
+    the loaded input values would be positions in the stored catalog
+    and would serve cached outputs for other alternatives.
+    """
+    file_path = Path("problem.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([2]), {"f": 2.0})
+    problem.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", catalog, value=1)
+    problem = OptimizationProblem(design_space)
+    with assert_exception(ValueError, snapshot):
+        problem.database.update_from_hdf(file_path)
+
+    assert not problem.database
+
+
+def test_database_update_from_hdf_with_same_catalog(tmp_wd) -> None:
+    """Check that loading a database stored with an equal catalog is allowed."""
+    file_path = Path("problem.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([2]), {"f": 2.0})
+    problem.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG.model_copy(), value=1)
+    problem = OptimizationProblem(design_space)
+    problem.database.update_from_hdf(file_path)
+
+    assert problem.database.get_function_value("f", array([2])) == 2.0
+
+
+def _create_catalog_database() -> Database:
+    """Create a database whose input space has a catalog variable.
+
+    Returns:
+        The database.
+    """
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG, value=1)
+    database = Database(input_space=design_space)
+    database.store(array([2]), {"f": 2.0})
+    return database
+
+
+def test_database_to_hdf_append_at_a_missing_node(tmp_wd) -> None:
+    """Check appending a database with a catalog variable at a missing node."""
+    file_path = Path("problem.h5")
+    _create_catalog_database().to_hdf(file_path)
+
+    _create_catalog_database().to_hdf(file_path, append=True, hdf_node_path="node")
+
+    database = Database.from_hdf(file_path, hdf_node_path="node")
+    assert database.get_function_value("f", array([2])) == 2.0
+
+
+def test_database_to_hdf_append_at_a_node_without_design_space(tmp_wd) -> None:
+    """Check appending a database with a catalog variable at a node without space."""
+    file_path = Path("problem.h5")
+    with h5py.File(file_path, "w") as h5file:
+        h5file.create_group("node")
+
+    _create_catalog_database().to_hdf(file_path, append=True, hdf_node_path="node")
+
+    database = Database.from_hdf(file_path, hdf_node_path="node")
+    assert database.get_function_value("f", array([2])) == 2.0
+
+
+def test_database_to_hdf_with_an_empty_input_space(tmp_wd) -> None:
+    """Check that an empty database with an empty input space can be exported."""
+    file_path = Path("problem.h5")
+    Database().to_hdf(file_path)
+
+    assert not Database.from_hdf(file_path)
+
+
+def test_catalog_variable_hdf_append_then_integer(tmp_wd, snapshot) -> None:
+    """Check that re-exporting a catalog variable as another kind is rejected.
+
+    Were the append allowed, the catalog group of the first export would survive
+    next to an integer variable and `from_hdf` would refuse the very file
+    `to_hdf` just wrote.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_integer_variable("m", lower_bound=0, upper_bound=5)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+
+    assert read_design_space.variables["m"].catalog == CATALOG
+
+
+def test_catalog_variable_hdf_append_with_unwritable_catalog(tmp_wd, snapshot) -> None:
+    """Check that a failed append leaves the previously stored catalog intact.
+
+    `to_hdf(append=True)` rejects a catalog holding an object property
+    (e.g. a missing value) before writing anything,
+    so `from_hdf` reads back the file that was there before the failed append.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+
+    bad_catalog = Catalog(properties={"mass": [1.0, None]})
+    other_design_space = DesignSpace()
+    other_design_space.add_catalog_variable("m", bad_catalog)
+    with assert_exception(ValueError, snapshot):
+        other_design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+    assert read_design_space == design_space
+    assert read_design_space._variables["m"].catalog == CATALOG
+
+
+def test_catalog_variable_hdf_append_with_a_datetime_property(tmp_wd, snapshot) -> None:
+    """Check that a failed append leaves the previously stored catalog intact.
+
+    A `datetime64` property is not an object property,
+    but HDF cannot store its dtype;
+    `to_hdf(append=True)` rejects it before writing anything,
+    so the file that was there before the failed append stays readable.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+
+    bad_catalog = Catalog(
+        properties={
+            "date": np.array(["2020-01-01", "2020-01-02"], dtype="datetime64[D]")
+        }
+    )
+    other_design_space = DesignSpace()
+    other_design_space.add_catalog_variable("m", bad_catalog)
+    with assert_exception(ValueError, snapshot):
+        other_design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+    assert read_design_space == design_space
+    assert read_design_space._variables["m"].catalog == CATALOG
+
+
+@pytest.mark.parametrize("append", [False, True])
+def test_catalog_variable_hdf_with_unwritable_catalog_leaves_file_untouched(
+    tmp_wd, append, snapshot
+) -> None:
+    """Check that a rejected `to_hdf` leaves a pre-existing file untouched.
+
+    Every catalog is checked writable before the file is opened,
+    whichever the value of `append`,
+    so that `to_hdf(append=False)` does not truncate the existing file
+    before failing on a catalog that cannot be written.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+
+    bad_catalog = Catalog(properties={"mass": [1.0, None]})
+    other_design_space = DesignSpace()
+    other_design_space.add_catalog_variable("m", bad_catalog)
+    with assert_exception(ValueError, snapshot):
+        other_design_space.to_hdf(file_path, append=append)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+    assert read_design_space == design_space
+    assert read_design_space._variables["m"].catalog == CATALOG
+
+
+@pytest.mark.parametrize("append", [False, True])
+def test_problem_to_hdf_with_unwritable_catalog_leaves_file_untouched(
+    tmp_wd, append, snapshot
+) -> None:
+    """Check that a rejected problem export leaves a pre-existing file untouched.
+
+    The database is written before its input space, so the catalogs must be
+    checked writable before the file is opened, otherwise the file is left
+    with a database but no design space.
+    """
+    file_path = Path("problem.h5")
+    with h5py.File(file_path, "w") as h5file:
+        h5file.create_dataset("keep", data=[1])
+
+    bad_catalog = Catalog(
+        properties={
+            "date": np.array(["2020-01-01", "2020-01-02"], dtype="datetime64[D]")
+        }
+    )
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", bad_catalog, value=1)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x.sum(), "f")
+    problem.database.store(array([1]), {"f": 1.0})
+    with assert_exception(ValueError, snapshot):
+        problem.to_hdf(file_path, append=append)
+
+    with h5py.File(file_path) as h5file:
+        assert list(h5file) == ["keep"]
+
+
+def test_from_hdf_rejects_a_catalog_on_another_kind(tmp_wd, snapshot) -> None:
+    """Check that a catalog group on a non-catalog variable raises.
+
+    `to_hdf()` never produces such a file; this covers a hand-edited one.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+    with h5py.File(file_path, "a") as h5file:
+        del h5file["design_space"]["m"]["var_type"]
+        h5file["design_space"]["m"]["var_type"] = array([b"real"])
+
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_hdf(file_path)
+
+
+def test_from_hdf_reports_every_payload_mismatch_at_once(tmp_wd, snapshot) -> None:
+    """Check that a variable disagreeing with both payloads names both at once.
+
+    A real variable stored with choices and with a catalog is reported
+    for both at once,
+    so that the file does not have to be imported again to learn about the catalog.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+    with h5py.File(file_path, "a") as h5file:
+        variable_group = h5file["design_space"]["m"]
+        del variable_group["var_type"]
+        variable_group["var_type"] = array([b"real"])
+        variable_group["choices"] = array([1.0, 2.0])
+
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_hdf(file_path)
+
+
+def test_from_hdf_rejects_a_catalog_variable_without_catalog(tmp_wd, snapshot) -> None:
+    """Check that a catalog variable without a catalog group raises."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+    design_space.to_hdf(file_path)
+    with h5py.File(file_path, "a") as h5file:
+        del h5file["design_space"]["m"]["catalog"]
+
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_hdf(file_path)
+
+
+def test_catalog_variable_csv_is_refused(
+    tmp_wd, catalog_design_space, snapshot
+) -> None:
+    """Check that a space holding a catalog variable cannot be exported to CSV."""
+    with assert_exception(ValueError, snapshot):
+        catalog_design_space.to_csv(Path("ds.csv"))
+
+
+def test_single_catalog_variable_csv_is_refused(tmp_wd, snapshot) -> None:
+    """Check that the CSV refusal is worded in the singular for one variable."""
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", CATALOG)
+
+    with assert_exception(ValueError, snapshot):
+        design_space.to_csv(Path("ds.csv"))
+
+
+def test_catalog_variable_csv_refusal_keeps_the_declaration_order(
+    tmp_wd, snapshot
+) -> None:
+    """Check that the CSV refusal names the variables in the order of the space.
+
+    The names are not alphabetised, although `pretty_str` sorts by default.
+    """
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("s", CATALOG)
+    design_space.add_catalog_variable("m", CATALOG)
+
+    with assert_exception(ValueError, snapshot):
+        design_space.to_csv(Path("ds.csv"))
+
+
+def test_catalog_variable_view(catalog_design_space, snapshot) -> None:
+    """Check that the tabular view gains no column for a catalog variable."""
+    assert catalog_design_space.get_pretty_table().get_string() == snapshot
+
+
+def test_catalog_variable_extend(catalog_design_space) -> None:
+    """Check that extending a design space preserves the catalog."""
+    design_space = DesignSpace()
+    design_space.add_variable("y")
+    design_space.extend(catalog_design_space)
+
+    assert design_space._variables["m"].catalog == CATALOG
+
+
+def test_catalog_variable_rename(catalog_design_space) -> None:
+    """Check that renaming a variable preserves the catalog."""
+    catalog_design_space.rename_variable("m", "material")
+
+    assert catalog_design_space._variables["material"].catalog == CATALOG
+
+
+def test_catalog_variable_filter_dimensions(catalog_design_space) -> None:
+    """Check that filtering the only dimension of a catalog variable is identity."""
+    variable = catalog_design_space._variables["m"]
+    catalog_design_space.filter_dimensions("m", [0])
+
+    assert catalog_design_space._variables["m"] is variable
+
+
+def test_catalog_variable_to_scalar_variables(catalog_design_space) -> None:
+    """Check that splitting into scalar variables preserves the catalog."""
+    design_space = catalog_design_space.to_scalar_variables()
+
+    assert design_space._variables["m"].catalog == CATALOG
+
+
+def test_catalog_variable_copy_and_pickle(catalog_design_space) -> None:
+    """Check that copying and unpickling preserve the catalog."""
+    for design_space in (
+        deepcopy(catalog_design_space),
+        pickle.loads(pickle.dumps(catalog_design_space)),
+    ):
+        assert design_space == catalog_design_space
+        catalog = design_space._variables["m"].catalog
+        assert catalog == CATALOG
+        assert not catalog.labels.flags.writeable
+
+
+def test_catalog_variable_to_complex(catalog_design_space) -> None:
+    """Check that a catalog component can be cast to a complex number."""
+    catalog_design_space.to_complex()
+    assert_array_equal(
+        catalog_design_space.get_current_value(["m"]), array([1.0j * 0 + 1])
+    )
