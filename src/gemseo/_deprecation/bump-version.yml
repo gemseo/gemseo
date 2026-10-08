@@ -1372,9 +1372,16 @@ attributes:
   gemseo.uncertainty.distributions.scipy.uniform_settings.SPUniformDistribution_Settings: gemseo.uncertainty.distribution.SPUniformDistribution_Settings
   gemseo.uncertainty.distributions.scipy.weibull.SPWeibullDistribution: gemseo.uncertainty.distribution.SPWeibullDistribution
   gemseo.uncertainty.distributions.scipy.weibull_settings.SPWeibullDistribution_Settings: gemseo.uncertainty.distribution.SPWeibullDistribution_Settings
+  # The nested enumeration Method of each analysis is a module-level class. These
+  # entries precede that of the analysis, as a nested name's rule precedes its
+  # parent's.
+  gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis.Method: gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysisMethod
   gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis: gemseo.uncertainty.sensitivity.CorrelationAnalysis
+  gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.Method: gemseo.uncertainty.sensitivity.hsic.HSICAnalysisMethod
   gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis: gemseo.uncertainty.sensitivity.HSICAnalysis
+  gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.Method: gemseo.uncertainty.sensitivity.morris.MorrisAnalysisMethod
   gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis: gemseo.uncertainty.sensitivity.MorrisAnalysis
+  gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod
   gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis: gemseo.uncertainty.sensitivity.SobolAnalysis
   gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics: gemseo.uncertainty.statistic.EmpiricalStatistics
   gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
@@ -2441,6 +2448,16 @@ classes:
       parameter_space: random_space
       algo: algo_settings={algo}_Settings(**{algo_settings})
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+  # The nested enumeration Method of each analysis is a module-level class, imported
+  # from its public module.
+  CorrelationAnalysis:
+    Method: gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysisMethod
+  HSICAnalysis:
+    Method: gemseo.uncertainty.sensitivity.hsic.HSICAnalysisMethod
+  MorrisAnalysis:
+    Method: gemseo.uncertainty.sensitivity.morris.MorrisAnalysisMethod
+  SobolAnalysis:
+    Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod
 
   LinearDiscipline:
     DEFAULT_MATRIX_DENSITY: default_matrix_density
