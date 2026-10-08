@@ -115,16 +115,19 @@ def test_clean_strips_the_strings(values, expected) -> None:
     but a scalar byte-string property is broadcast as a single value over the rows,
     the way a scalar `str` property is,
     not exploded into one row per byte.
+    The stripped labels are as wide as the labels of a catalog built from them.
     """
     catalog = Catalog(
         properties={"supplier": values, "mass": [2.7, 7.8]}, labels=[" alu", "steel "]
     )
     cleaned_catalog = catalog.clean()
-
-    assert cleaned_catalog is not catalog
-    assert cleaned_catalog == Catalog(
+    expected_catalog = Catalog(
         properties={"supplier": expected, "mass": [2.7, 7.8]}, labels=["alu", "steel"]
     )
+
+    assert cleaned_catalog is not catalog
+    assert cleaned_catalog == expected_catalog
+    assert cleaned_catalog.labels.dtype == expected_catalog.labels.dtype
 
 
 _MERGED_LABELS_MESSAGE = (
@@ -834,14 +837,64 @@ def test_duplicate_labels() -> None:
 @pytest.mark.parametrize(
     ("other", "expected"),
     [
-        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel"]), True),
-        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "iron"]), False),
-        (Catalog(properties={"mass": [2.7, 9.9]}, labels=["alu", "steel"]), False),
-        (Catalog(properties={"cost": [2.7, 7.8]}, labels=["alu", "steel"]), False),
-        (Catalog(properties={"mass": [2.7]}, labels=["alu"]), False),
-        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel "]), False),
         (
-            Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel "]).clean(),
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            True,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "iron"],
+            ),
+            False,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 9.9], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+        ),
+        (
+            Catalog(
+                properties={"cost": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+        ),
+        (
+            Catalog(properties={"mass": [2.7], "supplier": ["ACME"]}, labels=["alu"]),
+            False,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel "],
+            ),
+            False,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel "],
+            ).clean(),
+            True,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": [" ACME ", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+        ),
+        (
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": [" ACME ", "Foundry"]},
+                labels=["alu", "steel"],
+            ).clean(),
             True,
         ),
         ("not a catalog", False),
@@ -852,9 +905,13 @@ def test_eq(other, expected) -> None:
 
     The comparison must return a boolean,
     since `BaseVariable.__eq__` uses it as is.
-    Strings differing by whitespace differ, unless cleaned.
+    Strings differing by whitespace differ, in the labels and in the properties,
+    unless cleaned.
     """
-    catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel"])
+    catalog = Catalog(
+        properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+        labels=["alu", "steel"],
+    )
     assert (catalog == other) is expected
 
 

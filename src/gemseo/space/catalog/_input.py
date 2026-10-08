@@ -758,7 +758,10 @@ def clean_catalog_data(
             pretty_str(merged_labels, sort=False),
         )
 
-    return freeze_property_array(stripped_labels), ReadOnlyMapping(cleaned_properties)
+    # Stripping keeps the width of the data type of the labels,
+    # so they are rebuilt at the width of their longest stripped label,
+    # as the constructor would build them.
+    return _freeze(stripped_labels.tolist(), str_), ReadOnlyMapping(cleaned_properties)
 
 
 def _find_merged_labels(labels: ndarray, stripped_labels: ndarray) -> list[str]:
