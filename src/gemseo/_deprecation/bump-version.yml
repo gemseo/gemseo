@@ -2677,6 +2677,12 @@ classes:
       is_linear: null
     to_dataset:
       group_functions: null
+    # GEMSEO 7 returns early when the function is already of a constraint type,
+    # ignoring value and positive, which GEMSEO 6 applied: the codemod cannot tell
+    # the type of the function, so a call passing either is marked.
+    add_constraint:
+      value: &constraint-of-constraint-type TODO if the function was created with a constraint type (ConstraintType.EQ or INEQ as its function type), value and positive are now ignored without warning; create it with the default function type, or apply the offset and the sign to the function itself
+      positive: *constraint-of-constraint-type
 
   # Jacobian checkers (changelog 747)
   Discipline:
@@ -2691,6 +2697,10 @@ classes:
 
   MDOLinearFunction:
     normalize: null
+    # GEMSEO 6 accepted any third argument; GEMSEO 7 checks that it is a function
+    # type, a StrEnum, so a sequence of input names passed there raises a ValueError.
+    __init__:
+      f_type: TODO[!str] the third positional argument of LinearFunction is its function type; pass the input names as input_names=...
     # the normalization of a design space is a transformation of the space, see
     # gemseo.space.transformation, applied by EvaluationProblem.create_working_problem.
 
