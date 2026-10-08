@@ -385,6 +385,8 @@ modules:
   gemseo.utils.string_tools: gemseo.util.string
   gemseo.utils.testing.helpers: gemseo.util.testing.helper
   gemseo.utils.testing.mocks: gemseo.util.testing.mock
+  # The fixtures of GEMSEO 7 import syrupy, which GEMSEO declares in no extra.
+  gemseo.utils.testing.pytest_conftest: gemseo.util.testing.pytest_conftest TODO add syrupy to the test dependencies of the project, as gemseo.util.testing.pytest_conftest imports it
   gemseo.utils.compatibility: gemseo.util._compatibility
   gemseo.utils: gemseo.util
 
