@@ -45,8 +45,8 @@ from gemseo.doe.factory import DOELibraryFactory
 from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.util.constant import read_only_empty_dict
-from gemseo.util.discipline import flatten_processes
 from gemseo.util.discipline import get_all_outputs
+from gemseo.util.discipline import get_sub_disciplines
 from gemseo.util.discipline import update_default_input_values
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import convert_strings_to_iterable
@@ -308,7 +308,7 @@ class EvaluationScenario(BaseMonitoredProcess, Generic[_SpaceT]):
 
     def __cast_default_inputs_to_complex(self) -> None:
         """Cast the float default inputs of all disciplines to complex."""
-        for discipline in flatten_processes(
+        for discipline in get_sub_disciplines(
             self.formulation.disciplines, recursive=True
         ):
             defaults = discipline.io.input_grammar.defaults

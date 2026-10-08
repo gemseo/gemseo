@@ -42,7 +42,7 @@ from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.util.discipline import flatten_processes
+from gemseo.util.discipline import get_sub_disciplines
 from gemseo.util.testing.helper import concretize_classes
 
 
@@ -234,10 +234,10 @@ def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
 @pytest.mark.parametrize(
     ("recursive", "expected"), [(False, {"d1", "chain2"}), (True, {"d1", "d2", "d3"})]
 )
-def test_flatten_processes_recursive(
+def test_get_sub_disciplines_recursive(
     patch_mdo_formulation, recursive, expected
 ) -> None:
-    """Test the recursive option of flatten_processes.
+    """Test the recursive option of get_sub_disciplines.
 
     Args:
         recursive: Whether to list sub-disciplines recursively.
@@ -258,7 +258,7 @@ def test_flatten_processes_recursive(
 
     classes = [
         discipline.name
-        for discipline in flatten_processes(
+        for discipline in get_sub_disciplines(
             formulation.disciplines, recursive=recursive
         )
     ]
@@ -267,7 +267,7 @@ def test_flatten_processes_recursive(
 
 
 @pytest.mark.parametrize("recursive", [False, True])
-def test_flatten_processes_duplicates(recursive) -> None:
+def test_get_sub_disciplines_duplicates(recursive) -> None:
     """Check that a discipline shared by two processes is returned once.
 
     Args:
@@ -280,12 +280,12 @@ def test_flatten_processes_duplicates(recursive) -> None:
     chain1 = DisciplineChain([d1, d2], "chain1")
     chain2 = DisciplineChain([d2, d1], "chain2")
 
-    disciplines = flatten_processes([chain1, chain2], recursive=recursive)
+    disciplines = get_sub_disciplines([chain1, chain2], recursive=recursive)
 
     assert disciplines == [d1, d2]
 
 
-def test_flatten_processes_formulation(patch_mdo_formulation) -> None:
+def test_get_sub_disciplines_formulation(patch_mdo_formulation) -> None:
     """Check that a formulation is flattened into its disciplines."""
     with concretize_classes(Discipline):
         d1 = Discipline("d1")
@@ -294,14 +294,14 @@ def test_flatten_processes_formulation(patch_mdo_formulation) -> None:
     formulation = NewMDOFormulation(problem, [d1])
     problem.objective = formulation.create_objective(["foo"])
 
-    assert flatten_processes([formulation]) == [d1]
+    assert get_sub_disciplines([formulation]) == [d1]
 
 
-def test_flatten_processes_evaluation_scenario() -> None:
+def test_get_sub_disciplines_evaluation_scenario() -> None:
     """Check that an evaluation scenario is flattened into its disciplines."""
     discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_real_variable("x")
     scenario = EvaluationScenario([discipline], design_space)
 
-    assert flatten_processes([scenario]) == [discipline]
+    assert get_sub_disciplines([scenario]) == [discipline]

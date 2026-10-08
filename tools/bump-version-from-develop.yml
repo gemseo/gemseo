@@ -26,7 +26,7 @@
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# Apart from `flatten_processes` and `DataType`, the only public class attributes,
+# Apart from `DataType`, the only public class attributes,
 # methods and signatures renamed between `develop` and this branch are the ones of the
 # scenario adapters, the fields of the driver settings and the enumeration of
 # `ConstraintAggregation`, listed under `classes:`. The paragraphs of this header say
@@ -50,11 +50,9 @@
 # adapter has to pass it by hand; on this branch, importing the class from its old module
 # raises an `ImportError` saying so.
 #
-# `flatten_processes` (`get_sub_disciplines` on `develop`) renamed its first argument
-# from `disciplines` to `processes`: a call passing it by keyword needs that rename on
-# top of the `names:` entry. It also flattens any `EvaluationScenario`, where `develop`
-# flattens an `MDOScenario` only and returns any other scenario as is. A branch relying
-# on either of these has to account for the difference.
+# `get_sub_disciplines` flattens any `EvaluationScenario`, where `develop` flattens an
+# `MDOScenario` only and returns any other scenario as is. A branch relying on this has
+# to account for the difference.
 #
 # The `DesignSpace` shortcuts to its variables no longer exist: `variable_names`,
 # `variable_sizes`, `variable_types`, `name_to_indices`, `get_size`, `get_type`,
@@ -320,7 +318,6 @@ names:
   gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
   gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
   gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset
-  gemseo.utils.discipline.get_sub_disciplines: gemseo.util.discipline.flatten_processes
 
 # Renamed members of a class, given with the module defining the class on `develop`.
 classes:

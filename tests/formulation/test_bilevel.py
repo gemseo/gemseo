@@ -63,7 +63,7 @@ from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
-from gemseo.util.discipline import flatten_processes
+from gemseo.util.discipline import get_sub_disciplines
 from gemseo.util.name_generator import NameGenerator
 from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.util.testing.helper import assert_exception
@@ -243,8 +243,8 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
     "scenario",
     [generate_sobieski_bilevel_scenario, generate_sobieski_bilevel_bcd_scenario],
 )
-def test_flatten_processes(scenario, request) -> None:
-    """Test flatten_processes with the BiLevel formulation.
+def test_get_sub_disciplines(scenario, request) -> None:
+    """Test get_sub_disciplines with the BiLevel formulation.
 
     Args:
         scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
@@ -252,7 +252,7 @@ def test_flatten_processes(scenario, request) -> None:
     scenario = request.getfixturevalue(scenario.__name__)()
     classes = [
         discipline.__class__
-        for discipline in flatten_processes(scenario.formulation.disciplines)
+        for discipline in get_sub_disciplines(scenario.formulation.disciplines)
     ]
 
     assert set(classes) == {
