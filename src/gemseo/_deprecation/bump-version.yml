@@ -2709,6 +2709,20 @@ classes:
     _UPPER: _upper
     _WEBSITE: _website
     DEFAULT_VARIABLE_NAME: default_variable_name
+    # A distribution is now built from a settings model, BaseDistribution(settings),
+    # which the codemod cannot write from the arguments of a class of a plugin: the
+    # super().__init__ call of such a class, and a call passing the name of the
+    # interfaced distribution, are marked, so are the overrides of
+    # _create_distribution, now _create_distribution(settings).
+    __init__:
+      interfaced_distribution: TODO a distribution now takes a settings model, BaseDistribution.__init__(settings), so pass an instance of its Settings class; a distribution class of your own declares its parameters as the fields of a <Distribution>_Settings class deriving from BaseDistributionSettings, with a _library_name class attribute, sets it as its settings_class class attribute, and creates the interfaced distribution in _create_distribution(settings), as gemseo.uncertainty.distribution.scipy.distribution.SPDistribution does
+    _create_distribution: TODO _create_distribution now takes the settings model of the distribution, _create_distribution(settings), and reads the name and the parameters of the interfaced distribution from its fields, as gemseo.uncertainty.distribution.scipy.distribution.SPDistribution does
+  # A joint distribution is now built from a settings model whose marginal_settings
+  # are the settings of its marginals, and a joint class of a plugin needs a
+  # settings_class deriving from BaseJointDistributionSettings.
+  BaseJointDistribution:
+    __init__:
+      distributions: TODO a joint distribution now takes a settings model, BaseJointDistribution.__init__(settings), whose marginal_settings are the settings models of the marginal distributions; a joint class of your own sets a settings_class class attribute deriving from BaseJointDistributionSettings, as gemseo.uncertainty.distribution.scipy.joint.SPJointDistribution does
   BaseFactory:
     _CLASS: _class
     _PACKAGE_NAMES: _package_names
