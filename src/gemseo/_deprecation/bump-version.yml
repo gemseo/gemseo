@@ -2669,6 +2669,8 @@ classes:
     design_space: design_space
     __init__:
       design_space: design_space
+      # The linearity of the problem is now deduced from its functions.
+      is_linear: null
     to_dataset:
       group_functions: null
 
