@@ -499,9 +499,6 @@ class DesignSpace(
                 or the properties to build it from,
                 either a `DataFrame` or a mapping from a property name
                 to a sequence or a scalar, a scalar being repeated over the rows.
-                The properties are kept as they are;
-                pass a cleaned `Catalog` to clean them,
-                see [clean][gemseo.space.catalog.catalog.Catalog.clean].
             value: The default value of the variable,
                 either the position of an alternative in the catalog
                 or a label naming exactly one alternative,
@@ -513,6 +510,11 @@ class DesignSpace(
                 if the catalog is wrong,
                 if the value is not the position of an alternative,
                 or if the value is a label naming no alternative or several ones.
+
+        Note:
+            The properties of the catalog are kept as they are;
+            pass a cleaned `Catalog` to clean them,
+            see [clean][gemseo.space.catalog.catalog.Catalog.clean].
         """
         variable = CatalogVariable(catalog=catalog)
         if isinstance(value, str):
