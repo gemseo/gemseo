@@ -1636,6 +1636,8 @@ classes:
       variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
       variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
       names_to_indices: "{receiver}.variables.name_to_indices"
+      # An unknown name now raises a KeyError, where get_size raised a ValueError:
+      # code catching ValueError around get_size must catch KeyError instead.
       get_size: "{receiver}.variables[{name}].size"
       get_type: "{receiver}.variables[{name}].type"
       # VariableType is a StrEnum: its value spares the migrated code an import of it.
