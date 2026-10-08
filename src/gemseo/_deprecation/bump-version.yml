@@ -1642,6 +1642,13 @@ classes:
       use_design_space_order: use_space_order
     convert_dict_to_array:
       design_values: variable_values
+    # In a driver library, problem.input_space is the working space, already
+    # normalized when normalize_design_space is set, so a point of it is clipped to
+    # its bounds with normalized=False; normalized=True would clip every component
+    # to [0, 1], the unnormalized ones too. The codemod cannot tell that space from
+    # another one, so the call passing normalized is marked.
+    project_into_bounds:
+      normalized: TODO in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so clip a point of it with project_into_bounds(x) and no normalized argument; normalized=True would clip every component to [0, 1], including those the working space leaves unnormalized
   SellarDesignSpace:
     __init__:
       dtype: null
