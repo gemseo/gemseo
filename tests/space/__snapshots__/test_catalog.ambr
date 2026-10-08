@@ -73,6 +73,13 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_empty_property_beside_a_scalar_property
+  '''
+  1 validation error for Catalog
+    Value error, A catalog must have at least one row. [type=value_error, input_value={'properties': {'mass': [...'supplier': 'alu inc.'}}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_every_duplicate_column_name_is_reported
   '''
   1 validation error for Catalog
@@ -114,7 +121,7 @@
 # name: test_every_property_blank
   '''
   1 validation error for Catalog
-    Value error, A catalog must have at least one property. [type=value_error, input_value={'properties': {'note': [...'], 'void': [nan, nan]}}, input_type=dict]
+    Value error, A catalog must have at least one property. [type=value_error, input_value={'labels': array(['0', '1...<U1'), 'properties': {}}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

@@ -3904,6 +3904,25 @@ def test_add_catalog_variable_with_a_label() -> None:
     assert value.dtype == int64
 
 
+def test_add_catalog_variable_keeps_the_properties_as_they_are() -> None:
+    """Check that the properties are not cleaned, unless the catalog is.
+
+    `add_catalog_variable` does not clean the catalog it builds,
+    while a cleaned catalog is passed as it is.
+    """
+    properties = {"supplier": [" ACME ", "B"], "note": ["", ""]}
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("raw", properties)
+    design_space.add_catalog_variable("cleaned", Catalog(properties=properties).clean())
+
+    raw_catalog = design_space.variables["raw"].catalog
+    assert tuple(raw_catalog.properties) == ("supplier", "note")
+    assert_array_equal(raw_catalog.properties["supplier"], array([" ACME ", "B"]))
+    cleaned_catalog = design_space.variables["cleaned"].catalog
+    assert tuple(cleaned_catalog.properties) == ("supplier",)
+    assert_array_equal(cleaned_catalog.properties["supplier"], array(["ACME", "B"]))
+
+
 @pytest.mark.parametrize(
     "catalog",
     [

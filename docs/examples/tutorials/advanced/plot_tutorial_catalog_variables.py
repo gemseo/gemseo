@@ -74,19 +74,27 @@ materials = Catalog(
 materials.to_dataframe()
 
 # %%
-# The catalog **formats** its input:
-# it strips the strings of their leading and trailing whitespace,
-# and drops, with a warning, a property holding no value.
-# Here, the label `" steel "` becomes `"steel"`
-# and the empty property `"comment"` is dropped:
-Catalog(
+# The catalog keeps its input **as it is**:
+# cleaning the data is up to you.
+# Here, the label `" steel "` keeps its spaces
+# and the empty property `"comment"` is kept:
+raw_materials = Catalog(
     properties={
         "density": [2.7, 7.8, 4.5],
         "cost": [10.0, 5.0, 50.0],
         "comment": ["", "", ""],
     },
     labels=["aluminium", " steel ", "titanium"],
-).to_dataframe()
+)
+raw_materials.to_dataframe()
+
+# %%
+# `clean()` returns a **cleaned** copy of the catalog:
+# the strings are stripped of their leading and trailing whitespace,
+# and a property holding no value is dropped, with a warning.
+# Here, the label `" steel "` becomes `"steel"`
+# and the empty property `"comment"` is dropped:
+raw_materials.clean().to_dataframe()
 
 # %%
 # A catalog can also be built from a `DataFrame`,

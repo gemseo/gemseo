@@ -44,6 +44,7 @@ from gemseo.space.catalog._hdf import read_hdf_property
 from gemseo.space.catalog._hdf import was_unicode_attribute
 from gemseo.space.catalog._input import CatalogFormatter
 from gemseo.space.catalog._input import CatalogInput
+from gemseo.space.catalog._input import clean_catalog_data
 from gemseo.space.catalog._input import freeze_property_array
 from gemseo.space.catalog._input import labels_field
 from gemseo.space.catalog._input import properties_field
@@ -108,15 +109,17 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     also accept the properties of a catalog in place of a catalog,
     and build it themselves.
 
-    **Formatting.** Whatever the way it is built, the input is formatted:
+    **Cleaning.** The data of the catalog are kept as they are:
+    cleaning them is up to the user,
+    e.g. with [clean][gemseo.space.catalog.catalog.Catalog.clean],
+    which returns a new catalog
+    whose strings are stripped and whose blank properties are dropped.
+    `add_catalog_variable` and `CatalogVariable` do not clean a catalog,
+    so pass them a cleaned one, e.g. `Catalog(properties=table).clean()`.
 
-    - the leading and trailing whitespace of every string is removed,
-      in the properties and in the labels,
-      and a byte-string label is decoded from UTF-8;
-    - a property holding no value,
-      i.e. whose every element is a missing value or an empty string,
-      is dropped with a log warning;
-      `0` and `False` are values, so their properties are kept;
+    **Reading.** Whatever the way it is built, the input is read as follows:
+
+    - a byte-string label is decoded from UTF-8;
     - a scalar property is repeated over the rows;
     - the index of a `Series` given as a property is ignored,
       since a property is read positionally;
@@ -132,7 +135,7 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     if a property is an unordered collection, e.g. a `set`, or a `DataFrame`,
     if a property, or the labels, is not one-dimensional,
     if the properties and the labels do not have the same number of elements,
-    if there is no row or no property left,
+    if there is no row or no property,
     if two column names of a `DataFrame` are equal once converted to strings,
     or if a byte-string label is not valid UTF-8.
 
@@ -249,6 +252,26 @@ label naming a single row, not an absence of labels.""",
         """
         return DataFrame(dict(self.properties), index=self.labels, copy=True)
 
+    def clean(self) -> Self:
+        """Return a cleaned copy of the catalog.
+
+        The strings of the labels and of the properties are stripped
+        of their leading and trailing whitespace,
+        then the properties holding no value are dropped
+        and named in a log warning.
+        A property holds no value when each of its elements
+        is a missing value or an empty string;
+        `0` and `False` are values, so their properties are kept.
+
+        Returns:
+            The cleaned catalog.
+
+        Raises:
+            ValidationError: If every property holds no value.
+        """
+        labels, properties = clean_catalog_data(self.labels, self.properties)
+        return self.model_validate({labels_field: labels, properties_field: properties})
+
     def format_labels(self, max_length: int = _max_formatted_labels) -> str:
         """Return a readable representation of the labels.
 
@@ -270,9 +293,8 @@ label naming a single row, not an absence of labels.""",
     def get_position(self, label: str) -> int:
         """Return the position of the alternative named by a label.
 
-        The label is stripped of its leading and trailing whitespace,
-        as the labels of the catalog are,
-        then compared exactly, case included, with each of them.
+        The label is compared exactly, whitespace and case included,
+        with each label of the catalog.
         A catalog built without labels is labelled by the positions,
         so that `"1"` then names the alternative at position `1`.
 
@@ -286,7 +308,6 @@ label naming a single row, not an absence of labels.""",
             ValueError: If no alternative or several alternatives
                 have this label.
         """
-        label = label.strip()
         positions = flatnonzero(self.labels == label)
         if len(positions) == 1:
             return int(positions[0])

@@ -323,9 +323,10 @@ tells whether the design space holds a catalog variable.
 The tabular view shows such a variable as a bounded integer;
 it adds no column.
 
-The catalog is **formatted** when the `Catalog` is built,
+The catalog is **read** when the `Catalog` is built,
 which `add_catalog_variable()` does from the properties it is given,
-while a `Catalog` it is given is already formatted;
+while a `Catalog` it is given is already read.
+Its data are kept as they are, since cleaning them is up to the user;
 the steps run in this order:
 
 1. the labels and the properties are read from the input:
@@ -338,26 +339,29 @@ the steps run in this order:
 2. a property given as an unordered collection, e.g. a `set`, is refused,
    since the order of the rows it would define is arbitrary,
    and so is a property given as a nested table;
-3. every string is stripped of its leading and trailing whitespace,
-   in the properties and in the labels,
-   and a byte-string label is decoded from UTF-8;
+3. a byte-string label is decoded from UTF-8;
 4. every property, and the labels, must be one-dimensional,
    so a property or labels built from a nested sequence are refused;
-5. an input describing no row at all is refused;
-   an empty property beside a property that holds a value
-   is dropped by the next step instead;
-6. a property holding no value is dropped and named in a log warning —
-   a property holds no value when it is empty,
-   or when each of its elements is missing or an empty string;
-   a property of zeros holds values and is kept;
-7. every property, and the labels, must hold the same number of elements;
-8. a property given as a scalar is repeated over the rows;
-9. at least one property must be left;
-10. the arrays are copied and made read-only.
+5. every property, and the labels, must hold the same number of elements,
+   and an input describing no row at all is refused;
+6. a property given as a scalar is repeated over the rows;
+7. there must be at least one property;
+8. the arrays are copied and made read-only.
 
 The errors of the first four steps are reported together,
 in a single exception,
 so that an input can be fixed in one pass.
+
+[clean()][gemseo.space.catalog.catalog.Catalog.clean]
+returns a **cleaned** copy of a catalog:
+every string is stripped of its leading and trailing whitespace,
+in the properties and in the labels,
+then a property holding no value is dropped and named in a log warning —
+a property holds no value when each of its elements
+is missing or an empty string;
+a property of zeros holds values and is kept.
+`add_catalog_variable()` does not clean a catalog,
+so pass it a cleaned one to declare a variable over cleaned data.
 
 The catalog **cannot be changed** once the variable is built:
 neither through the table passed to the constructor,
