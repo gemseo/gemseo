@@ -105,8 +105,18 @@ class CatalogFormatter:
        because the order of the rows it would define is arbitrary,
        and so is a property given as a nested `DataFrame`,
        which is iterable over its column names rather than over values.
-    3. **Normalize the strings**: decode a byte-string label, given as labels
-       or as the index of a `DataFrame`, from UTF-8,
+    3. **Normalize the strings**, in the properties and in the labels,
+       without changing their characters:
+       a zero-dimensional string array is unwrapped into the string it holds,
+       a `bytearray` is converted into `bytes`,
+       whether it is a scalar or an element of a sequence,
+       and a sequence other than a NumPy array of a non-object dtype,
+       e.g. a tuple, a `Series` or an array of Python objects,
+       is converted into a list of its elements,
+       which reveals the true shape of a `DataFrame` column
+       of equal-length sequences;
+       then a byte-string label, given as labels
+       or as the index of a `DataFrame`, is decoded from UTF-8,
        the encoding a catalog writes its labels with to an HDF file;
        a byte-string label that is not valid UTF-8 is rejected.
     4. **Check the dimensionality**: every property, and the labels,
@@ -124,7 +134,14 @@ class CatalogFormatter:
     5. **Check the rectangularity**: every sequence property, and the labels,
        must hold the same number of elements,
        which defines the number of rows;
-       the input is rejected if there is no row.
+       the input is rejected if there is no row,
+       i.e. if a property is empty:
+       without labels, or with empty labels,
+       the error states that a catalog must have at least one row,
+       while with labels, which name at least one row,
+       the error states that the properties and the labels
+       do not have the same length,
+       since the empty property contradicts them.
     6. **Broadcast the scalars**: a scalar property is repeated over the rows.
     7. **Check the non-emptiness**: there must be at least one property.
     8. **Freeze**: every array is copied and made read-only,
@@ -645,7 +662,8 @@ def is_missing(value: Any) -> bool:
 def _is_blank(value: Any) -> bool:
     """Return whether a value carries no information.
 
-    A blank value is a missing value or an empty string.
+    A blank value is a missing value
+    or a string that is empty once stripped of its leading and trailing whitespace.
     A zero and a `False` are values, so they are not blank.
 
     Args:
@@ -655,23 +673,41 @@ def _is_blank(value: Any) -> bool:
         Whether the value is blank.
     """
     if isinstance(value, (str, bytes)):
-        return not value
+        return not value.strip()
 
     return is_missing(value)
 
 
+def is_blank_property(property_values: Iterable[Any]) -> bool:
+    """Return whether a property holds no value.
+
+    A property holds no value when each of its elements is blank,
+    i.e. is a missing value
+    or a string that is empty once stripped of its leading and trailing whitespace;
+    `0` and `False` are values, so their properties hold values.
+    This is the notion
+    [clean_catalog_data][gemseo.space.catalog._input.clean_catalog_data]
+    drops a property by.
+
+    Args:
+        property_values: The property.
+
+    Returns:
+        Whether the property holds no value.
+    """
+    return all(_is_blank(value) for value in property_values)
+
+
 def clean_catalog_data(
     labels: ndarray, properties: Mapping[str, ndarray]
-) -> tuple[Any, dict[str, Any]]:
+) -> tuple[ndarray | list[Any], dict[str, ndarray | list[Any]]]:
     """Clean the data of a catalog.
 
     The strings of the labels and of the properties are stripped
     of their leading and trailing whitespace,
     then the properties holding no value are dropped
-    and named in a log warning.
-    A property holds no value when each of its elements is blank,
-    i.e. is a missing value or an empty string;
-    `0` and `False` are values, so their properties are kept.
+    and named in a log warning,
+    see [is_blank_property][gemseo.space.catalog._input.is_blank_property].
 
     Args:
         labels: The labels of the catalog.
@@ -679,16 +715,30 @@ def clean_catalog_data(
 
     Returns:
         The cleaned labels and the cleaned properties,
+        each as an array, or as a list if it is an array of Python objects,
         to be formatted and frozen again.
+
+    Raises:
+        ValueError: If every property holds no value,
+            since cleaning would leave none.
     """
     cleaned_properties = {}
     dropped_names = []
     for name, property_values in properties.items():
         stripped_property = _strip_strings(property_values)
-        if all(_is_blank(value) for value in stripped_property):
+        if is_blank_property(stripped_property):
             dropped_names.append(name)
         else:
             cleaned_properties[name] = stripped_property
+
+    if dropped_names and not cleaned_properties:
+        msg = (
+            "Every property of the catalog is blank, "
+            "i.e. holds only missing values or empty strings, "
+            "so cleaning the catalog would leave no property: "
+            f"{pretty_str(dropped_names, sort=False)}."
+        )
+        raise ValueError(msg)
 
     if dropped_names:
         logger.warning(
@@ -700,7 +750,7 @@ def clean_catalog_data(
     return _strip_strings(labels), cleaned_properties
 
 
-def _strip_strings(values: ndarray) -> Any:
+def _strip_strings(values: ndarray) -> ndarray | list[Any]:
     """Remove the leading and trailing whitespace of the strings of an array.
 
     Args:
@@ -708,7 +758,8 @@ def _strip_strings(values: ndarray) -> Any:
 
     Returns:
         The array with its strings stripped,
-        as a list if it is an array of Python objects.
+        or a list of its elements, with the strings stripped,
+        if it is an array of Python objects.
     """
     kind = values.dtype.kind
     if kind in "US":

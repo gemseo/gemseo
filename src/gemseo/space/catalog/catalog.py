@@ -267,7 +267,8 @@ label naming a single row, not an absence of labels.""",
             The cleaned catalog.
 
         Raises:
-            ValidationError: If every property holds no value.
+            ValueError: If every property holds no value,
+                since cleaning would leave none.
         """
         labels, properties = clean_catalog_data(self.labels, self.properties)
         return self.model_validate({labels_field: labels, properties_field: properties})
@@ -285,10 +286,16 @@ label naming a single row, not an absence of labels.""",
                 since an elided representation keeps at least one label.
 
         Returns:
-            The representation of the labels,
-            e.g. `"[aluminium, steel, titanium]"`.
+            The representation of the labels, each quoted,
+            so that its leading and trailing whitespace is visible,
+            e.g. `"['aluminium', 'steel ', 'titanium']"`.
         """
-        return format_elided(self.labels, "labels", max_length)
+        # The labels are converted to Python strings,
+        # whose representation is quoted,
+        # unlike the one of a NumPy string, e.g. "np.str_('steel')".
+        return format_elided(
+            [repr(label) for label in self.labels.tolist()], "labels", max_length
+        )
 
     def get_position(self, label: str) -> int:
         """Return the position of the alternative named by a label.

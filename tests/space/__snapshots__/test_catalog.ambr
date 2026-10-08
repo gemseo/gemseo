@@ -54,7 +54,10 @@
 # name: test_check_hdf_writable_rejects_an_invalid_property_name[a\x00b]
   "The property name 'a\\x00b' of the catalog is not a valid HDF name and cannot be written to an HDF file."
 # ---
-# name: test_check_hdf_writable_rejects_an_object_property
+# name: test_check_hdf_writable_rejects_an_object_property[blank]
+  "The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file. It holds no value: use Catalog.clean() to drop the properties holding no value."
+# ---
+# name: test_check_hdf_writable_rejects_an_object_property[objects]
   "The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file."
 # ---
 # name: test_check_hdf_writable_reports_every_offender_at_once
@@ -119,11 +122,7 @@
   '''
 # ---
 # name: test_every_property_blank
-  '''
-  1 validation error for Catalog
-    Value error, A catalog must have at least one property. [type=value_error, input_value={'labels': array(['0', '1...<U1'), 'properties': {}}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
+  'Every property of the catalog is blank, i.e. holds only missing values or empty strings, so cleaning the catalog would leave no property: note and void.'
 # ---
 # name: test_every_property_of_a_dimension_greater_than_one_is_reported
   '''
@@ -170,10 +169,13 @@
   "The label 'steel' names several alternatives of the catalog, at positions 1 and 3; pass the position of the alternative to choose one of them."
 # ---
 # name: test_get_position_unknown_label[Steel]
-  "The catalog has no alternative labelled 'Steel'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+  "The catalog has no alternative labelled 'Steel'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
 # ---
 # name: test_get_position_unknown_label[gold]
-  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+  "The catalog has no alternative labelled 'gold'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
+# ---
+# name: test_get_position_unknown_label[whitespace]
+  "The catalog has no alternative labelled 'steel'; its labels are ['aluminium', 'steel ', 'titanium']. Pass the position of an alternative to choose it by row."
 # ---
 # name: test_json_is_unsupported
   "Unable to serialize unknown type: <class 'gemseo.util.read_only_mapping.ReadOnlyMapping'>"

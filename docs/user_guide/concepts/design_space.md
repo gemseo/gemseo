@@ -343,7 +343,10 @@ the steps run in this order:
 4. every property, and the labels, must be one-dimensional,
    so a property or labels built from a nested sequence are refused;
 5. every property, and the labels, must hold the same number of elements,
-   and an input describing no row at all is refused;
+   and an input describing no row at all, i.e. with an empty property, is refused:
+   with labels, the error is that the properties and the labels
+   do not have the same number of elements,
+   since the labels name at least one row;
 6. a property given as a scalar is repeated over the rows;
 7. there must be at least one property;
 8. the arrays are copied and made read-only.
@@ -360,6 +363,8 @@ then a property holding no value is dropped and named in a log warning —
 a property holds no value when each of its elements
 is missing or an empty string;
 a property of zeros holds values and is kept.
+A catalog whose every property holds no value cannot be cleaned,
+since no property would be left.
 `add_catalog_variable()` does not clean a catalog,
 so pass it a cleaned one to declare a variable over cleaned data.
 

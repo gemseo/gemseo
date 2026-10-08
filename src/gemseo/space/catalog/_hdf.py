@@ -21,6 +21,8 @@ from typing import Final
 
 from numpy.char import encode
 
+from gemseo.space.catalog._input import is_blank_property
+
 if TYPE_CHECKING:
     from h5py import Dataset
     from numpy import ndarray
@@ -91,10 +93,19 @@ def find_hdf_writing_error(name: str, property_values: ndarray) -> str:
 
     kind = property_values.dtype.kind
     if kind == "O":
-        return (
+        message = (
             f"The property {name!r} of the catalog holds Python objects "
             "and cannot be written to an HDF file."
         )
+        if is_blank_property(property_values):
+            # A property of missing values only, e.g. [None, None], is an array
+            # of Python objects, but it holds no value: dropping it is the fix.
+            message += (
+                " It holds no value: use Catalog.clean() "
+                "to drop the properties holding no value."
+            )
+
+        return message
 
     if kind not in _hdf_writable_dtype_kinds:
         return (
