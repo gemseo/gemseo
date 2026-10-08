@@ -2407,6 +2407,12 @@ classes:
     optimization_problem: problem
     design_space: input_space
     _update_design_space: _update_input_space
+    _set_default_input_values_from_design_space: _set_default_input_values_from_space
+    # The hooks of a formulation changed: the codemod cannot rewrite an override,
+    # so the overrides, and the calls, of the removed or changed ones are marked.
+    _init_before_design_space_and_objective: TODO _init_before_design_space_and_objective was removed; implement the abstract method _create_multidisciplinary_process instead, or the formulation is abstract and the factory drops it, and build in create_objective what needs the objective, which the formulation no longer receives at construction; see the formulation section of the GEMSEO 7 upgrading guide
+    add_constraint: TODO a formulation no longer adds a constraint; implement create_constraint(...), returning the constraint function or None, which MDOScenario.add_constraint attaches to the problem; see the formulation section of the GEMSEO 7 upgrading guide
+    get_top_level_disciplines: TODO get_top_level_disciplines now takes an argument include_sub_formulations, False by default; an override must take it too
     __init__:
       # The arguments are kept, and the call marked with this TODO.
       objective_name: &formulation-problem TODO pass the problem first, e.g. OptimizationProblem(design_space), then set its objective; the loose settings go into settings=<Formulation>_Settings(...)
