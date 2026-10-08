@@ -344,7 +344,9 @@ the steps run in this order:
    so a property or labels built from a nested sequence are refused;
 5. every property, and the labels, must hold the same number of elements,
    and an input describing no row at all, i.e. with an empty property, is refused:
-   with labels, the error is that the properties and the labels
+   without labels, or with empty labels, which count as no labels,
+   the error is that a catalog must have at least one row,
+   while with labels, the error is that the properties and the labels
    do not have the same number of elements,
    since the labels name at least one row;
 6. a property given as a scalar is repeated over the rows;
@@ -363,6 +365,8 @@ then a property holding no value is dropped and named in a log warning —
 a property holds no value when each of its elements
 is missing or an empty string;
 a property of zeros holds values and is kept.
+Labels differing only by their leading and trailing whitespace
+are duplicates once stripped and are named in a log warning.
 A catalog whose every property holds no value cannot be cleaned,
 since no property would be left.
 `add_catalog_variable()` does not clean a catalog,

@@ -100,13 +100,21 @@ def test_strings_are_kept_as_they_are() -> None:
         (array([" ACME ", "B\t"]), ["ACME", "B"]),
         (array([b" ACME ", b"B\t"]), [b"ACME", b"B"]),
         ([" ACME ", nan], ["ACME", nan]),
+        (Series([" ACME ", "B\t"]), ["ACME", "B"]),
+        (b"  steel  ", [b"steel", b"steel"]),
+        (bytearray(b"  steel  "), [b"steel", b"steel"]),
     ],
 )
 def test_clean_strips_the_strings(values, expected) -> None:
     """Check that clean returns a new catalog whose strings are stripped.
 
     The strings are stripped in the labels and in the properties,
-    whatever the data type of the property.
+    whatever the data type of the property,
+    including a `Series`, which is read as a sequence of values.
+    `bytes` and `bytearray` are `Sequence` instances,
+    but a scalar byte-string property is broadcast as a single value over the rows,
+    the way a scalar `str` property is,
+    not exploded into one row per byte.
     """
     catalog = Catalog(
         properties={"supplier": values, "mass": [2.7, 7.8]}, labels=[" alu", "steel "]
@@ -119,15 +127,35 @@ def test_clean_strips_the_strings(values, expected) -> None:
     )
 
 
-def test_series_property_is_stripped() -> None:
-    """Check that a property given as a Series is stripped like a list.
+_MERGED_LABELS_MESSAGE = (
+    "The following labels of the catalog differed only "
+    "by their leading and trailing whitespace "
+    "and are duplicates once stripped: {}."
+)
+"""The warning naming the labels that stripping makes duplicates."""
 
-    A Series is neither a `Sequence`, an `ndarray` nor an `Index`,
-    but it is read as a sequence of values, each of them stripped.
+
+@pytest.mark.parametrize(
+    ("labels", "messages"),
+    [
+        (["a", "a ", "b"], (_MERGED_LABELS_MESSAGE.format("'a'"),)),
+        ([" a", "a", "b", "b\t"], (_MERGED_LABELS_MESSAGE.format("'a' and 'b'"),)),
+        (["a", "a", "a "], (_MERGED_LABELS_MESSAGE.format("'a'"),)),
+        (["a", "a", " b"], ()),
+    ],
+)
+def test_clean_names_the_labels_made_duplicates(labels, messages, caplog) -> None:
+    """Check that clean names the labels that stripping makes duplicates.
+
+    Duplicate labels are accepted, so they are not rejected,
+    but labels already duplicated before stripping are not named.
     """
-    catalog = Catalog(properties={"s": Series([" ACME ", "B "]), "x": [1, 2]}).clean()
+    catalog = Catalog(properties={"mass": [2.7] * len(labels)}, labels=labels)
+    with caplog.at_level(logging.WARNING):
+        cleaned_catalog = catalog.clean()
 
-    assert_array_equal(catalog.properties["s"], array(["ACME", "B"]))
+    assert_array_equal(cleaned_catalog.labels, array([s.strip() for s in labels]))
+    assert tuple(record.getMessage() for record in caplog.records) == messages
 
 
 _blank_properties = (
@@ -598,25 +626,6 @@ def test_empty_string_labels_is_one_label() -> None:
     assert_array_equal(catalog.labels, array([""]))
 
 
-@pytest.mark.parametrize(
-    ("value", "stripped"),
-    [(b"  steel  ", b"steel"), (bytearray(b"  steel  "), b"steel")],
-)
-def test_byte_string_scalar_is_stripped_and_not_exploded(value, stripped) -> None:
-    """Check that a scalar byte string is stripped and broadcast as one value.
-
-    `bytes` and `bytearray` are `Sequence` instances,
-    but a scalar byte-string property is stripped and broadcast
-    as a single value over the rows, the way a scalar `str` property is,
-    not exploded into one row per byte,
-    e.g. into a 5-row property of byte codes for `b"steel"`.
-    """
-    catalog = Catalog(properties={"name": value, "mass": 7.8}).clean()
-
-    assert len(catalog) == 1
-    assert_array_equal(catalog.properties["name"], array([stripped]))
-
-
 def test_no_row(snapshot) -> None:
     """Check that a table without any row is rejected."""
     with assert_exception(ValidationError, snapshot):
@@ -755,10 +764,21 @@ def test_nested_sequence_labels(snapshot) -> None:
         Catalog(properties={"mass": [2.7, 7.8]}, labels=[["x", "y"], ["z", "w"]])
 
 
-def test_frozen_arrays(table) -> None:
-    """Check that every stored array is read-only."""
-    catalog = Catalog(properties=table)
+@pytest.mark.parametrize(
+    "build",
+    [
+        pytest.param(Catalog.model_copy, id="built"),
+        pytest.param(Catalog.clean, id="cleaned"),
+    ],
+)
+def test_frozen_arrays(table, build) -> None:
+    """Check that every stored array is read-only, also in a cleaned catalog.
 
+    The table has a property of Python objects, mixing strings and missing values.
+    """
+    catalog = build(Catalog(properties=table.assign(note=[" a", None, "b"])))
+
+    assert catalog.properties["note"].dtype.kind == "O"
     assert not catalog.labels.flags.writeable
     for property_values in catalog.properties.values():
         assert not property_values.flags.writeable
@@ -819,6 +839,11 @@ def test_duplicate_labels() -> None:
         (Catalog(properties={"mass": [2.7, 9.9]}, labels=["alu", "steel"]), False),
         (Catalog(properties={"cost": [2.7, 7.8]}, labels=["alu", "steel"]), False),
         (Catalog(properties={"mass": [2.7]}, labels=["alu"]), False),
+        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel "]), False),
+        (
+            Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel "]).clean(),
+            True,
+        ),
         ("not a catalog", False),
     ],
 )
@@ -827,6 +852,7 @@ def test_eq(other, expected) -> None:
 
     The comparison must return a boolean,
     since `BaseVariable.__eq__` uses it as is.
+    Strings differing by whitespace differ, unless cleaned.
     """
     catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel"])
     assert (catalog == other) is expected
@@ -1029,15 +1055,6 @@ def test_hash_agrees_with_eq(properties, other_properties) -> None:
     assert len({catalog, other_catalog}) == 1
 
 
-def test_whitespace_takes_part_in_equality() -> None:
-    """Check that strings differing by whitespace differ unless cleaned."""
-    catalog = Catalog(properties={"supplier": ["ACME"]})
-    other_catalog = Catalog(properties={"supplier": [" ACME "]})
-
-    assert catalog != other_catalog
-    assert catalog == other_catalog.clean()
-
-
 def test_hash_of_a_catalog_used_as_a_key(table) -> None:
     """Check that a catalog can be used as a mapping key."""
     catalog = Catalog(properties=table)
@@ -1058,18 +1075,21 @@ def test_format_labels(n_labels, expected) -> None:
     assert catalog.format_labels() == expected
 
 
-@pytest.mark.parametrize(("label", "expected"), [("aluminium", 0), ("titanium", 2)])
-def test_get_position(table, label, expected) -> None:
-    """Check that a label is mapped to the position it names."""
-    assert Catalog(properties=table).get_position(label) == expected
+@pytest.mark.parametrize(
+    ("labels", "label", "expected"),
+    [
+        ((), "aluminium", 0),
+        ((), "titanium", 2),
+        (("alu", " alu", "ti"), " alu", 1),
+        (("alu", " alu", "ti"), "alu", 0),
+    ],
+)
+def test_get_position(table, labels, label, expected) -> None:
+    """Check that a label is mapped to the position it names.
 
-
-def test_get_position_compares_whitespace() -> None:
-    """Check that a label is compared exactly, whitespace included."""
-    catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", " alu"])
-
-    assert catalog.get_position(" alu") == 1
-    assert catalog.get_position("alu") == 0
+    The label is compared exactly, whitespace included.
+    """
+    assert Catalog(properties=table, labels=labels).get_position(label) == expected
 
 
 def test_get_position_with_default_labels() -> None:

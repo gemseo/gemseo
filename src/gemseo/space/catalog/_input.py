@@ -628,19 +628,15 @@ def _normalize_strings(property_values: Any) -> Any:
     if property_values is None:
         return None
 
-    if (
-        isinstance(property_values, ndarray)
-        and property_values.dtype.kind != "O"
-        and (property_values.ndim or property_values.dtype.kind not in "US")
-    ):
+    if _is_scalar(property_values):
+        return _normalize_string(property_values)
+
+    if isinstance(property_values, ndarray) and property_values.dtype.kind != "O":
         # Such an array holds no bytearray, no zero-dimensional array
         # and no nested sequence, so there is nothing to normalize;
         # leaving it alone also keeps its data type, which the list
         # below would lose, and skips one Python-level pass over its values.
         return property_values
-
-    if _is_scalar(property_values):
-        return _normalize_string(property_values)
 
     return [_normalize_string(value) for value in property_values]
 
@@ -700,7 +696,7 @@ def is_blank_property(property_values: Iterable[Any]) -> bool:
 
 def clean_catalog_data(
     labels: ndarray, properties: Mapping[str, ndarray]
-) -> tuple[ndarray | list[Any], dict[str, ndarray | list[Any]]]:
+) -> tuple[ndarray, ReadOnlyMapping[str, ndarray]]:
     """Clean the data of a catalog.
 
     The strings of the labels and of the properties are stripped
@@ -708,15 +704,21 @@ def clean_catalog_data(
     then the properties holding no value are dropped
     and named in a log warning,
     see [is_blank_property][gemseo.space.catalog._input.is_blank_property].
+    The labels that differ only by their leading and trailing whitespace
+    become duplicates once stripped,
+    which a catalog accepts,
+    so they are named in a log warning too.
+
+    The data of a catalog are already valid,
+    and cleaning them keeps them so,
+    so the cleaned data are frozen directly rather than formatted again.
 
     Args:
         labels: The labels of the catalog.
         properties: The properties of the catalog.
 
     Returns:
-        The cleaned labels and the cleaned properties,
-        each as an array, or as a list if it is an array of Python objects,
-        to be formatted and frozen again.
+        The cleaned labels and the cleaned properties, frozen.
 
     Raises:
         ValueError: If every property holds no value,
@@ -729,7 +731,7 @@ def clean_catalog_data(
         if is_blank_property(stripped_property):
             dropped_names.append(name)
         else:
-            cleaned_properties[name] = stripped_property
+            cleaned_properties[name] = freeze_property_array(stripped_property)
 
     if dropped_names and not cleaned_properties:
         msg = (
@@ -747,29 +749,67 @@ def clean_catalog_data(
             pretty_str(dropped_names, sort=False),
         )
 
-    return _strip_strings(labels), cleaned_properties
+    stripped_labels = _strip_strings(labels)
+    if merged_labels := _find_merged_labels(labels, stripped_labels):
+        logger.warning(
+            "The following labels of the catalog differed only "
+            "by their leading and trailing whitespace "
+            "and are duplicates once stripped: %s.",
+            pretty_str(merged_labels, sort=False),
+        )
+
+    return freeze_property_array(stripped_labels), ReadOnlyMapping(cleaned_properties)
 
 
-def _strip_strings(values: ndarray) -> ndarray | list[Any]:
+def _find_merged_labels(labels: ndarray, stripped_labels: ndarray) -> list[str]:
+    """Return the stripped labels that stripping made duplicates.
+
+    A label already duplicated before stripping is not named,
+    unless a label differing from it only by its whitespace joins it.
+
+    Args:
+        labels: The labels.
+        stripped_labels: The labels stripped of their leading and trailing whitespace.
+
+    Returns:
+        The representation of each stripped label
+        that two different labels are stripped to.
+    """
+    stripped_label_to_labels: dict[str, set[str]] = {}
+    for label, stripped_label in zip(
+        labels.tolist(), stripped_labels.tolist(), strict=True
+    ):
+        stripped_label_to_labels.setdefault(stripped_label, set()).add(label)
+
+    # The labels are quoted, so that an empty label is visible.
+    return [
+        repr(stripped_label)
+        for stripped_label, original_labels in stripped_label_to_labels.items()
+        if len(original_labels) > 1
+    ]
+
+
+def _strip_strings(values: ndarray) -> ndarray:
     """Remove the leading and trailing whitespace of the strings of an array.
 
     Args:
         values: The array.
 
     Returns:
-        The array with its strings stripped,
-        or a list of its elements, with the strings stripped,
-        if it is an array of Python objects.
+        A copy of the array with its strings stripped,
+        or the array itself if it cannot hold a string.
     """
     kind = values.dtype.kind
     if kind in "US":
         return strip_array(values)
 
     if kind == "O":
-        return [
-            value.strip() if isinstance(value, (str, bytes)) else value
-            for value in values
-        ]
+        stripped_values = values.copy()
+        for index, value in enumerate(values):
+            if isinstance(value, (str, bytes)):
+                stripped_values[index] = value.strip()
+
+        return stripped_values
 
     return values
 

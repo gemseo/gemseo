@@ -262,6 +262,10 @@ label naming a single row, not an absence of labels.""",
         A property holds no value when each of its elements
         is a missing value or an empty string;
         `0` and `False` are values, so their properties are kept.
+        The labels that differ only by their leading and trailing whitespace
+        are duplicates once stripped,
+        which a catalog accepts,
+        and are named in a log warning.
 
         Returns:
             The cleaned catalog.
@@ -271,7 +275,12 @@ label naming a single row, not an absence of labels.""",
                 since cleaning would leave none.
         """
         labels, properties = clean_catalog_data(self.labels, self.properties)
-        return self.model_validate({labels_field: labels, properties_field: properties})
+        # The data of the catalog are valid and cleaning them keeps them so:
+        # they are built without being formatted again.
+        return self.model_construct(**{
+            labels_field: labels,
+            properties_field: properties,
+        })
 
     def format_labels(self, max_length: int = _max_formatted_labels) -> str:
         """Return a readable representation of the labels.
