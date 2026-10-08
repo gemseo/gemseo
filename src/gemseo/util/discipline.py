@@ -46,6 +46,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
+# TODO: API: limit the type annotations of the disciplines arguments to
+# Iterable[BaseDiscipline].
+
 logger = logging.getLogger(__name__)
 
 
@@ -161,14 +164,14 @@ def get_all_outputs(
     )
 
 
-def flatten_processes(
-    processes: Iterable[BaseMonitoredProcess | BaseFormulation],
+def get_sub_disciplines(
+    disciplines: Iterable[BaseMonitoredProcess | BaseFormulation],
     recursive: bool = False,
 ) -> list[BaseMonitoredProcess]:
-    """Replace processes by the processes they are made of.
+    """Replace disciplines by the disciplines they are made of.
 
-    A process exposing a non-empty `disciplines` attribute is replaced by these
-    disciplines, which can be processes themselves;
+    A discipline exposing a non-empty `disciplines` attribute is replaced by these
+    disciplines, which can be composite themselves;
     this covers
     [ProcessDiscipline][gemseo.core.discipline.process_discipline.ProcessDiscipline],
     [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
@@ -176,26 +179,28 @@ def flatten_processes(
     Anything else is kept as is.
 
     Args:
-        processes: The processes to flatten.
-        recursive: Whether to descend until reaching processes containing no
-            other process, so that the result contains no composite process.
+        disciplines: The disciplines to flatten.
+        recursive: Whether to descend until reaching disciplines containing no
+            other discipline, so that the result contains no composite discipline.
             Otherwise, descend by one level only
-            and the result can contain composite processes.
+            and the result can contain composite disciplines.
 
     Returns:
-        The processes, without duplicates, in order of first appearance.
+        The disciplines, without duplicates, in order of first appearance.
     """
-    flattened_processes = []
-    for process in processes:
-        disciplines = getattr(process, "disciplines", ())
-        if not disciplines:
-            flattened_processes.append(process)
+    sub_disciplines = []
+    for discipline in disciplines:
+        inner_disciplines = getattr(discipline, "disciplines", ())
+        if not inner_disciplines:
+            sub_disciplines.append(discipline)
         elif recursive:
-            flattened_processes.extend(flatten_processes(disciplines, recursive=True))
+            sub_disciplines.extend(
+                get_sub_disciplines(inner_disciplines, recursive=True)
+            )
         else:
-            flattened_processes.extend(disciplines)
+            sub_disciplines.extend(inner_disciplines)
 
-    return list(dict.fromkeys(flattened_processes))
+    return list(dict.fromkeys(sub_disciplines))
 
 
 _message: Final[str] = "Two disciplines, among which {}, compute the same outputs: {}"

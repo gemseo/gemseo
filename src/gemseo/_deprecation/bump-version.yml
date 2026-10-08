@@ -529,7 +529,6 @@ attributes:
   gemseo.utils.compatibility.scipy.SCIPY_VERSION: gemseo.util._compatibility.scipy.scipy_version
   gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.epsilon
   gemseo.utils.derivatives.finite_differences.FirstOrderFD: gemseo.util.derivative.approximator.forward_differences.ForwardDifferences
-  gemseo.utils.discipline.get_sub_disciplines: gemseo.util.discipline.flatten_processes
   gemseo.utils.directory_creator.DirectoryNamingMethod: gemseo.util.directory_creator.Naming
 
   gemseo.utils.xdsm.XDSM: gemseo.util.xdsm.xdsm.XDSM
@@ -2480,8 +2479,6 @@ functions:
     disc_name: name
   generate_xdsm:
     discipline: process
-  get_sub_disciplines:
-    disciplines: processes
 
   # key_to_value naming convention (changelog 1797)
   update_default_input_values:
