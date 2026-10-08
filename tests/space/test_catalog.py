@@ -1193,6 +1193,23 @@ def test_model_construct_properties() -> None:
     assert Catalog.model_construct(properties=properties).properties is properties
 
 
+def _round_trip_through_hdf(catalog: Catalog) -> Catalog:
+    """Write a catalog to an HDF file and read it back.
+
+    Args:
+        catalog: The catalog.
+
+    Returns:
+        The catalog read back.
+    """
+    file_path = Path("catalog.h5")
+    with h5py.File(file_path, "w") as h5file:
+        catalog.write_hdf(h5file.create_group("catalog"))
+
+    with h5py.File(file_path) as h5file:
+        return Catalog.read_hdf(h5file["catalog"])
+
+
 def test_hdf_round_trip_with_non_ascii(tmp_wd) -> None:
     """Check that a round trip through HDF preserves non-ASCII strings.
 
@@ -1202,12 +1219,7 @@ def test_hdf_round_trip_with_non_ascii(tmp_wd) -> None:
     catalog = Catalog(
         properties={"matériau": ["acier", "béton"]}, labels=["pièce", "poutre"]
     )
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert tuple(read_catalog.properties) == ("matériau",)
     assert_array_equal(read_catalog.labels, array(["pièce", "poutre"]))
@@ -1222,12 +1234,7 @@ def test_hdf_round_trip_with_byte_string_property(tmp_wd) -> None:
     rather than decoding it into a `"U"` one.
     """
     catalog = Catalog(properties={"a": array([b"x", b"y"])})
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert read_catalog.properties["a"].dtype.kind == "S"
     assert_array_equal(read_catalog.properties["a"], array([b"x", b"y"]))
@@ -1245,12 +1252,7 @@ def test_hdf_round_trip_preserves_the_property_order(tmp_wd) -> None:
         properties={"zinc": [1, 2], "alu": ["x", "y"], "mass": [3.0, 4.0]},
         labels=["p", "q"],
     )
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert tuple(read_catalog.properties) == ("zinc", "alu", "mass")
     assert read_catalog == catalog
