@@ -3059,7 +3059,7 @@ functions:
 
   # normalize_ds is removed (changelog 1528): a driver normalizes the space itself.
   get_value_and_bounds:
-    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation)
+    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation); a library that builds its problem from the coefficients and the bounds of the functions, e.g. a linear one reading their coefficients, which are not normalized, must instead set the class attribute _iterates_on_working_problem = False, as ScipyMILP and ScipyLinprog do
 
 # The factories returning an object of the class one of their arguments names, by
 # the name of that parameter: the codemod applies the rules of that class, which the
