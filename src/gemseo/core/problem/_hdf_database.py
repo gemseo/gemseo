@@ -41,6 +41,9 @@ from numpy import ndarray
 from numpy import str_
 
 from gemseo.space._design.constants import design_space_group
+from gemseo.space._design.io import check_catalogs_are_hdf_writable
+from gemseo.space._design.io import check_catalogs_are_unchanged
+from gemseo.space._design.io import check_stored_catalogs_are_unchanged
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -525,7 +528,29 @@ class HDFDatabase:
             hdf_node_path: The path of the HDF node in which
                 the database should be exported.
                 If empty, the root node is considered.
+
+        Raises:
+            ValueError: If the catalog of a catalog variable of the input space
+                cannot be written to HDF, see
+                [Catalog.check_hdf_writable][gemseo.space.catalog.catalog.Catalog.check_hdf_writable],
+                or, when appending, if it differs from the catalog stored in
+                the file, see
+                [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
         """
+        input_space = database.input_space
+        if input_space:
+            # Checked before the file is opened,
+            # so that the file is left untouched
+            # instead of holding a database without its design space.
+            check_catalogs_are_hdf_writable(input_space)
+            if append:
+                # The design space stored in the file is never rewritten
+                # when appending, so input values appended with another catalog
+                # would be positions in a catalog the file does not hold.
+                check_stored_catalogs_are_unchanged(
+                    input_space, file_path, hdf_node_path
+                )
+
         with h5py.File(file_path, "a" if append else "w") as h5file:
             if hdf_node_path:
                 h5file = h5file.require_group(hdf_node_path)
@@ -576,7 +601,6 @@ class HDFDatabase:
                     )
                     index_dataset += 1
 
-            input_space = database.input_space
             if input_space and (not append or design_space_group not in h5file):
                 try:
                     input_space._to_hdf(
@@ -627,9 +651,22 @@ class HDFDatabase:
             hdf_node_path: The path of the HDF node from which
                 the database should be exported.
                 If empty, the root node is considered.
+
+        Raises:
+            ValueError: If the catalog of a catalog variable of the input space
+                of the database differs from the catalog stored in the file, see
+                [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
         """
         with h5py.File(file_path) as h5file:
             h5file = get_hdf5_group(h5file, hdf_node_path)
+
+            # The stored input values are positions in the stored catalogs,
+            # so they are checked before any of them is read into the database.
+            space_group = h5file.get(design_space_group)
+            if space_group is not None:
+                check_catalogs_are_unchanged(
+                    database.input_space, space_group, file_path
+                )
 
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]

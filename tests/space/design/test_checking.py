@@ -26,6 +26,7 @@ from gemseo.space._design.bounds import Bounds
 from gemseo.space._design.checking import check_addable_value
 from gemseo.space._design.checking import check_membership
 from gemseo.space._design.variables import DesignVariables
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
@@ -301,3 +302,61 @@ def test_check_membership_2d_array_with_a_discrete_variable(
         check_membership(
             discrete_variables, discrete_bounds, array([[1.0, 5.0], [2.0, 3.0]])
         )
+
+
+@pytest.fixture
+def catalog_variables() -> DesignVariables:
+    """A variables with a float variable and a catalog variable."""
+    variables = DesignVariables()
+    variables["x"] = RealVariable(lower_bound=0.0, upper_bound=10.0)
+    variables["c"] = CatalogVariable(catalog={"mass": [2.7, 7.8, 4.5]})
+    return variables
+
+
+@pytest.fixture
+def catalog_bounds(catalog_variables: DesignVariables) -> Bounds:
+    """The bounds of the variables including a catalog one."""
+    return Bounds(catalog_variables)
+
+
+def test_check_addable_value_outside_a_catalog_domain(
+    catalog_variables: DesignVariables, snapshot
+) -> None:
+    """Check that a position beyond the catalog raises."""
+    with assert_exception(ValueError, snapshot):
+        check_addable_value(catalog_variables, array([3.0]), "c")
+
+
+def test_check_membership_dict_outside_a_catalog_domain(
+    catalog_variables: DesignVariables, catalog_bounds: Bounds, snapshot
+) -> None:
+    """Check that the mapping path rejects a non-integral position.
+
+    The value lies within the derived bounds, so the bound comparison accepts it
+    and the check must fall back to the domain check.
+    """
+    with assert_exception(ValueError, snapshot):
+        check_membership(
+            catalog_variables,
+            catalog_bounds,
+            {"x": array([1.0]), "c": array([1.5])},
+        )
+
+
+def test_check_membership_array_outside_a_catalog_domain(
+    catalog_variables: DesignVariables, catalog_bounds: Bounds, snapshot
+) -> None:
+    """Check that the array path rejects a non-integral position.
+
+    The value lies within the derived bounds, so the bound comparison accepts it
+    and the check must fall back to the per-variable path.
+    """
+    with assert_exception(ValueError, snapshot):
+        check_membership(catalog_variables, catalog_bounds, array([1.0, 1.5]))
+
+
+def test_check_membership_array_within_a_catalog_domain(
+    catalog_variables: DesignVariables, catalog_bounds: Bounds
+) -> None:
+    """Check that the array path accepts a position of the catalog."""
+    check_membership(catalog_variables, catalog_bounds, array([1.0, 2.0]))

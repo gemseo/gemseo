@@ -34,6 +34,7 @@ from typing import Final
 from typing import Literal
 from typing import overload
 
+from numpy import array
 from numpy import array_equal
 from numpy import atleast_1d
 from numpy import full
@@ -54,6 +55,7 @@ from gemseo.space._design.variables import DesignVariables
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
@@ -71,6 +73,8 @@ if TYPE_CHECKING:
     from numpy import int64
     from prettytable import PrettyTable
 
+    from gemseo.space.catalog._input import CatalogPropertiesType
+    from gemseo.space.catalog.catalog import Catalog
     from gemseo.space.variable import BoundType
     from gemseo.space.variable.discrete import ChoicesType
     from gemseo.util.read_only_mapping import ReadOnlyMapping
@@ -260,8 +264,9 @@ class DesignSpace(
             prefer the method dedicated to the kind of variable to add, namely
             [add_real_variable][gemseo.space.design.DesignSpace.add_real_variable],
             [add_integer_variable][gemseo.space.design.DesignSpace.add_integer_variable],
+            [add_discrete_variable][gemseo.space.design.DesignSpace.add_discrete_variable]
             or
-            [add_discrete_variable][gemseo.space.design.DesignSpace.add_discrete_variable].
+            [add_catalog_variable][gemseo.space.design.DesignSpace.add_catalog_variable].
 
         Args:
             name: The name of the variable.
@@ -470,6 +475,43 @@ class DesignSpace(
         """
         self._register_variable(name, DiscreteVariable(choices=choices), value)
 
+    def add_catalog_variable(
+        self,
+        name: str,
+        catalog: Catalog | CatalogPropertiesType,
+        value: int | str | None = None,
+    ) -> None:
+        """Add a catalog variable to the design space.
+
+        Such a variable chooses one alternative in a catalog;
+        its value is the position of that alternative in the catalog,
+        from 0 to the number of alternatives minus one,
+        which are its lower and upper bounds.
+
+        Args:
+            name: The name of the variable.
+            catalog: The catalog of the alternatives,
+                or the properties to build it from,
+                either a `DataFrame` or a mapping from a property name
+                to a sequence or a scalar, a scalar being repeated over the rows.
+            value: The default value of the variable,
+                either the position of an alternative in the catalog
+                or a label naming exactly one alternative,
+                see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if the catalog is wrong,
+                if the value is not the position of an alternative,
+                or if the value is a label naming no alternative or several ones.
+        """
+        variable = CatalogVariable(catalog=catalog)
+        if isinstance(value, str):
+            value = variable.catalog.get_position(value)
+
+        self._register_variable(name, variable, value)
+
     @property
     def has_current_value(self) -> bool:
         """Check if each variable has a current value.
@@ -494,6 +536,9 @@ class DesignSpace(
 
     def get_integer_mask(self) -> BooleanArray:
         """Return whether the components of the design vector are integer.
+
+        A component is integer when it belongs to an integer variable
+        or to a catalog variable, whose value is a position in its catalog.
 
         Returns:
             Whether the components of the design vector are integer
@@ -906,6 +951,9 @@ class DesignSpace(
     def round_vect(self, x_vect: ndarray, copy: bool = True) -> ndarray:
         """Round the vector where variables are of integer type.
 
+        The position of a catalog variable is rounded too,
+        as it is a whole number.
+
         Args:
             x_vect: The values to be rounded.
             copy: Whether to round a copy of `x_vect`.
@@ -975,19 +1023,41 @@ class DesignSpace(
         if self._current.name_to_value:
             self.__check_current_names()
 
-    def set_current_variable(self, name: str, current_value: ndarray | None) -> None:
+    def set_current_variable(
+        self, name: str, current_value: ndarray | str | None
+    ) -> None:
         """Set the current value of a single variable.
 
         Args:
             name: The name of the variable.
             current_value: The current value of the variable,
                 or `None` to mark the variable as having no value.
+                The value of a catalog variable can also be a label
+                naming exactly one alternative of its catalog,
+                see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
 
         Raises:
-            ValueError: If the value does not match the size of the variable
-                or if a component of the value falls outside the domain
-                of the kind of the variable.
+            ValueError: If the value does not match the size of the variable,
+                if a component of the value falls outside the domain
+                of the kind of the variable,
+                or if the value is a label naming no alternative or several ones.
+            TypeError: If the value is a label
+                but the variable is not a catalog variable.
         """
+        if isinstance(current_value, str):
+            variable = self._variables[name]
+            if not isinstance(variable, CatalogVariable):
+                msg = (
+                    f"The variable {name!r} is not a catalog variable "
+                    "and cannot be set with a label."
+                )
+                raise TypeError(msg)
+
+            current_value = array(
+                [variable.catalog.get_position(current_value)],
+                dtype=variable.component_type,
+            )
+
         if current_value is not None:
             size = self._variables[name].size
             if current_value.size != size:
@@ -1129,7 +1199,8 @@ class DesignSpace(
                 and the rest of the file is left untouched.
                 If `True` and the node already contains a design space,
                 both design spaces must have the same structure
-                (variables, sizes and types);
+                (variables, sizes and types)
+                and the same catalogs;
                 the bounds are overwritten,
                 and the current value is overwritten,
                 or removed when the exported design space has none.
@@ -1139,7 +1210,12 @@ class DesignSpace(
 
         Raises:
             ValueError: If the file already stores a design space with a different
-                structure at this node.
+                structure at this node,
+                if `append` is `True` and the file stores different catalogs
+                for the catalog variables at this node,
+                or if the catalog of a catalog variable cannot be written to
+                HDF, see
+                [Catalog.check_hdf_writable][gemseo.space.catalog.catalog.Catalog.check_hdf_writable].
         """
         _design_space_io.to_hdf(
             self, file_path, append=append, hdf_node_path=hdf_node_path
@@ -1224,7 +1300,8 @@ class DesignSpace(
                 and the rest of the file is left untouched.
                 If `True` and the file already contains a design space,
                 both design spaces must have the same structure
-                (variables, sizes and types);
+                (variables, sizes and types)
+                and the same catalogs;
                 the bounds are overwritten,
                 and the current value is overwritten,
                 or removed when the exported design space has none.
@@ -1234,7 +1311,9 @@ class DesignSpace(
 
         Raises:
             ValueError: If the HDF file already stores a design space with a
-                different structure.
+                different structure,
+                or, if `append` is `True`, with different catalogs
+                for the catalog variables.
         """
         _design_space_io.to_file(
             self, file_path, delimiter=delimiter, append=append, fields=fields
@@ -1333,7 +1412,9 @@ class DesignSpace(
         - the lower bounds when the upper bounds are infinite,
         - the upper bounds when the lower bounds are infinite,
         - zero when the lower and upper bounds are infinite,
-        - the first choice of a discrete variable.
+        - the first choice of a discrete variable,
+        - the position of the first alternative of a catalog variable's
+          catalog, even though its bounds are finite.
         """
         self._current.initialize_missing()
 

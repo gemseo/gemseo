@@ -22,12 +22,33 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from gemseo.space._core.variables import Variables
+from gemseo.space.variable import BaseVariable
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util.testing.helper import assert_exception
+
+
+def _create_variable(name: str) -> BaseVariable:
+    """Create a variable of the kind encoded by its name.
+
+    Args:
+        name: The name of the variable,
+            `"x"` for real, `"n"` for integer,
+            `"d"` for discrete and `"c"` for catalog.
+
+    Returns:
+        The variable.
+    """
+    if name == "n":
+        return IntegerVariable(lower_bound=0, upper_bound=10)
+    if name == "d":
+        return DiscreteVariable(choices=[1, 2])
+    if name == "c":
+        return CatalogVariable(catalog={"property": [1, 2]})
+    return RealVariable(lower_bound=0.0, upper_bound=1.0)
 
 
 @pytest.fixture
@@ -60,33 +81,33 @@ def test_getitem_unknown_variable(variables) -> None:
 
 
 @pytest.mark.parametrize(
-    ("names", "expected"),
-    [((), False), (("n",), False), (("x",), True), (("x", "n"), True)],
+    ("names", "type_", "expected"),
+    [
+        ((), DataType.REAL, False),
+        ((), DataType.INTEGER, False),
+        ((), DataType.DISCRETE, False),
+        ((), DataType.CATALOG, False),
+        (("x",), DataType.REAL, True),
+        (("x",), DataType.INTEGER, False),
+        (("x",), DataType.DISCRETE, False),
+        (("x",), DataType.CATALOG, False),
+        (("n",), DataType.INTEGER, True),
+        (("x", "n"), DataType.INTEGER, True),
+        (("d",), DataType.DISCRETE, True),
+        (("x", "d"), DataType.DISCRETE, True),
+        (("d",), DataType.CATALOG, False),
+        (("c",), DataType.CATALOG, True),
+        (("x", "c"), DataType.CATALOG, True),
+        (("c",), DataType.DISCRETE, False),
+    ],
 )
-def test_has_real(names, expected) -> None:
-    """Check the detection of real variables."""
+def test_has_variable(names, type_, expected) -> None:
+    """Check the detection of a variable of a given type."""
     variables = Variables()
-    types = {"x": DataType.REAL, "n": DataType.INTEGER}
     for name in names:
-        variables[name] = deterministic_variable_factory.create(
-            types[name], size=1, lower_bound=0, upper_bound=1
-        )
-    assert variables.has_variables_of_type(DataType.REAL) is expected
+        variables[name] = _create_variable(name)
 
-
-@pytest.mark.parametrize(
-    ("names", "expected"),
-    [((), False), (("x",), False), (("n",), True), (("x", "n"), True)],
-)
-def test_has_integer(names, expected) -> None:
-    """Check the detection of integer variables."""
-    variables = Variables()
-    types = {"x": DataType.REAL, "n": DataType.INTEGER}
-    for name in names:
-        variables[name] = deterministic_variable_factory.create(
-            types[name], size=1, lower_bound=0, upper_bound=1
-        )
-    assert variables.has_variables_of_type(DataType.INTEGER) is expected
+    assert variables.has_variables_of_type(type_) is expected
 
 
 def test_get_integer_components(variables) -> None:
@@ -202,24 +223,8 @@ def test_filter_components_of_a_discrete_variable() -> None:
     assert_array_equal(variables["d"].choices, [2.0, 4.0])
 
 
-@pytest.mark.parametrize(
-    ("names", "expected"),
-    [((), False), (("x",), False), (("d",), True), (("x", "d"), True)],
-)
-def test_has_discrete_variables(names, expected) -> None:
-    """Check the detection of discrete variables."""
-    variables = Variables()
-    for name in names:
-        if name == "d":
-            variables[name] = DiscreteVariable(choices=[1, 2])
-        else:
-            variables[name] = RealVariable(lower_bound=0.0, upper_bound=1.0)
-
-    assert variables.has_variables_of_type(DataType.DISCRETE) is expected
-
-
-def test_has_discrete_variables_tracks_mutations() -> None:
-    """Check that the discrete-variable flag stays correct across mutations."""
+def test_has_variable_tracks_mutations_of_a_discrete_variable() -> None:
+    """Check that the discrete detection stays correct across mutations."""
     variables = Variables()
     variables["x"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
     assert variables.has_variables_of_type(DataType.DISCRETE) is False
@@ -241,10 +246,106 @@ def test_has_discrete_variables_tracks_mutations() -> None:
 
     # filter_components() preserves the kind of the variable (a discrete
     # variable is always scalar, so only the identity filtering applies),
-    # so it must not flip the flag either way.
+    # so it must not flip the result either way.
     variables["d"] = DiscreteVariable(choices=[1, 2, 3])
     variables.filter_components("d", [0])
     assert variables.has_variables_of_type(DataType.DISCRETE) is True
 
     del variables["d"]
     assert variables.has_variables_of_type(DataType.DISCRETE) is False
+
+
+def test_has_variable_tracks_mutations_of_a_catalog_variable() -> None:
+    """Check that the catalog detection stays correct across mutations."""
+    variables = Variables()
+    variables["x"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+
+    variables["c"] = CatalogVariable(catalog={"property": [1, 2]})
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    # Overwriting a catalog variable with a discrete one turns it off,
+    # and does not confuse the two types.
+    variables["c"] = DiscreteVariable(choices=[1, 2])
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
+
+    variables["c"] = CatalogVariable(catalog={"property": [1, 2]})
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
+
+    del variables["c"]
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+
+
+def test_has_variable_across_mixed_mutations() -> None:
+    """Check that the discrete and catalog detections stay exact across mutations.
+
+    The sequence mixes every kind of registry mutation
+    (insertion of each kind, renaming, component filtering and deletion),
+    including overwriting a name with a variable of a different kind,
+    which is the classic way a detection drifts from the registry it describes.
+    """
+    variables = Variables()
+
+    variables["a"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+
+    variables["b"] = DiscreteVariable(choices=[1, 2])
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+
+    variables["c"] = CatalogVariable(catalog={"property": [1, 2]})
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    # Renaming does not add or remove a variable, so the detections are unaffected.
+    variables.rename("c", "cat")
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    # Filtering the only component of a scalar discrete variable is an
+    # identity, so it must not flip either detection.
+    variables.filter_components("b", [0])
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    # Overwriting "b" (discrete) with a catalog variable of the same name
+    # must turn the discrete detection off and the catalog one on.
+    variables["b"] = CatalogVariable(catalog={"property": [3, 4]})
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    del variables["cat"]
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
+    assert variables.has_variables_of_type(DataType.CATALOG) is True
+
+    del variables["b"]
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
+    assert variables.has_variables_of_type(DataType.CATALOG) is False
+    assert list(variables) == ["a"]
+
+
+def test_catalog_variable_is_integer() -> None:
+    """Check that the integer mask marks a catalog variable as integer.
+
+    It is not an integer variable,
+    but its value is a position in its catalog, and so a whole number.
+    """
+    variables = Variables()
+    variables["c"] = CatalogVariable(catalog={"property": [1, 2]})
+
+    assert variables.has_variables_of_type(DataType.INTEGER) is False
+    assert_array_equal(variables.get_integer_mask(), [True])
+
+
+def test_filter_components_of_a_catalog_variable() -> None:
+    """Check that filtering the only component of a catalog variable is identity."""
+    variables = Variables()
+    variables["c"] = CatalogVariable(catalog={"property": [1, 2]})
+    variable = variables["c"]
+    variables.filter_components("c", [0])
+
+    assert variables["c"] is variable
+    assert variables["c"].catalog == variable.catalog

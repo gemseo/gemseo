@@ -464,7 +464,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
 
     def sample_space(
         self,
-        space: BaseVariableSpace,
+        space: BaseVariableSpace | int,
         settings: BaseDOESettings | None = None,
         use_unit_samples: bool = False,
     ) -> RealArray:
@@ -487,10 +487,15 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             The design of experiments
             whose rows are the samples and columns the variables.
 
+        Raises:
+            ValueError: If the DOE algorithm does not handle catalog variables
+                and the space includes at least one catalog variable.
+
         Note:
             To sample the unit hypercube from its dimension, use
             [sample_unit_hypercube][gemseo.doe.core.base_doe_library.BaseDOELibrary.sample_unit_hypercube].
         """
+        self._check_catalog_variables(space)
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings,

@@ -33,6 +33,7 @@ class _UnsuitabilityReason(StrEnum):
 
     # BaseDriverLibrary
     EMPTY_VARIABLE_SPACE = "the variable space is empty"
+    CATALOG_VARIABLES = _optimizer_template.format("catalog variables")
     INTEGER_VARIABLES = _optimizer_template.format("integer variables")
     DISCRETE_VARIABLES = _optimizer_template.format("discrete variables")
 

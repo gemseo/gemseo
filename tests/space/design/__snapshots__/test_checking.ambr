@@ -11,6 +11,9 @@
 # name: test_check_addable_value_non_numeric
   "The following value of variable 'x' is neither None nor complex and cannot be cast to float: a (index 0)."
 # ---
+# name: test_check_addable_value_outside_a_catalog_domain
+  "The following value of variable 'c' is not a position in its catalog with the labels [0, 1, 2]: 3.0 (index 0)."
+# ---
 # name: test_check_addable_value_outside_a_discrete_domain
   "The following value of variable 'd' is not among its choices [2.0, 5.0]: 3.0 (index 0)."
 # ---
@@ -32,6 +35,9 @@
 # name: test_check_membership_array_lower_violation
   'The components [0] of the given array ([-1.]) are lower than the lower bound ([0.]) by [1.].'
 # ---
+# name: test_check_membership_array_outside_a_catalog_domain
+  'The variable c is a catalog variable with the labels [0, 1, 2]; got c[0] = 1.5.'
+# ---
 # name: test_check_membership_array_outside_a_discrete_domain
   'The variable d is discrete with the choices [2.0, 5.0]; got d[0] = 3.0.'
 # ---
@@ -43,6 +49,9 @@
 # ---
 # name: test_check_membership_dict_lower_bound_violation
   'The component x[0] of the given array (-1.0) is lower than the lower bound (0.0) by 1.0e+00.'
+# ---
+# name: test_check_membership_dict_outside_a_catalog_domain
+  'The variable c is a catalog variable with the labels [0, 1, 2]; got c[0] = 1.5.'
 # ---
 # name: test_check_membership_dict_outside_a_discrete_domain[value0]
   'The variable d is discrete with the choices [2.0, 5.0]; got d[0] = 3.0.'

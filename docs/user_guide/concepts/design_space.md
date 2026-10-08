@@ -30,7 +30,7 @@ Each variable is described by:
 
 - a name,
 - a size (default: 1),
-- a type ([read more][concept-variable-types]), either `"real"` (default), `"integer"` or `"discrete"`,
+- a type ([read more][concept-variable-types]), either `"real"` (default), `"integer"`, `"discrete"` or `"catalog"`,
 - a lower bound (default: $-\infty$),
 - an upper bound (default: $\infty$),
 - a current value (default: none).
@@ -51,11 +51,12 @@ that allows you to see all the variables at a glance.
 
 ## Variable types { #concept-variable-types }
 
-Three types are available:
+Four types are available:
 
 - `"real"` for the real variables (default),
 - `"integer"` for the integer variables,
-- `"discrete"` for the discrete numeric variables.
+- `"discrete"` for the discrete numeric variables,
+- `"catalog"` for the variables choosing an alternative in a catalog.
 
 Each type has its own declaration method,
 taking what a variable of that type is defined by:
@@ -63,9 +64,11 @@ taking what a variable of that type is defined by:
 and
 [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
 take a size and bounds,
-while
 [add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
-takes the values that the variable can take.
+takes the values that the variable can take,
+while
+[add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
+takes the catalog of the alternatives.
 
 ### Real variables { #concept-real-variables }
 
@@ -184,6 +187,157 @@ tells whether the design space holds a discrete variable.
     - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [DiscreteVariable][gemseo.space.variable.DiscreteVariable]
 
+### Catalog variables { #concept-catalog-variables }
+
+A catalog variable chooses one alternative in a **catalog**,
+and its value is the **position** of that alternative in the catalog,
+from $0$ to the number of alternatives minus one.
+
+Think of a material picked from a qualified list,
+of a supplier, or of an off-the-shelf component:
+the alternatives are not ordered,
+and what distinguishes them are their properties.
+
+A catalog is a table:
+one row per alternative,
+one column per property,
+and one index label naming each alternative.
+It is built from a `pandas` table or from a mapping
+from a property name to a sequence of values.
+
+For instance, a catalog of three materials,
+whose positions are given for the sake of clarity
+but are not part of the catalog:
+
+| Position | Alternative | `density` | `cost` |
+|---------:|-------------|----------:|-------:|
+| 0        | aluminium   | 2.7       | 10.0   |
+| 1        | steel       | 7.8       | 5.0    |
+| 2        | titanium    | 4.5       | 50.0   |
+
+A variable `material` built from this catalog
+takes the values $0$, $1$ and $2$,
+standing for aluminium, steel and titanium.
+Its value can also be given by label,
+e.g. `"steel"` for $1$,
+both to [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
+and to [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable];
+a label naming no alternative, or several ones, is rejected,
+and the position must then be given instead,
+while a label given to a variable that is not a catalog variable
+raises a `TypeError`.
+[Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+returns the position of the alternative named by a label.
+The lower (resp. upper) bound is $0$ (resp. $2$);
+it cannot be set manually.
+Since its value is a position,
+the design space handles it as an integer:
+[get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask] marks it,
+[round_vect()][gemseo.space.design.DesignSpace.round_vect] rounds it,
+and so does [denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]
+with `minus_lb=True`.
+A catalog variable is scalar:
+declare several of them rather than a vector.
+When a variable has no value,
+[initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values]
+gives it the position $0$, i.e. the first alternative.
+
+[variables][gemseo.space.design.DesignSpace.variables]
+reads the catalog back,
+as `design_space.variables["material"].catalog`,
+while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
+called with `DesignVariableType.CATALOG`,
+tells whether the design space holds a catalog variable.
+The tabular view shows such a variable as a bounded integer;
+it adds no column.
+
+The catalog is **formatted** when the `Catalog` is built,
+which `add_catalog_variable()` does from the properties it is given,
+while a `Catalog` it is given is already formatted;
+the steps run in this order:
+
+1. the labels and the properties are read from the input:
+   a string, a byte string or a zero-dimensional array given as the labels
+   is a single label, not a sequence of characters,
+   a `pandas` table whose row or column axis is a `MultiIndex` is refused,
+   since a catalog is a flat table,
+   and so are the columns of a `pandas` table whose names collide
+   once converted to strings, e.g. the integer `1` and the string `"1"`;
+2. a property given as an unordered collection, e.g. a `set`, is refused,
+   since the order of the rows it would define is arbitrary,
+   and so is a property given as a nested table;
+3. every string is stripped of its leading and trailing whitespace,
+   in the properties and in the labels,
+   and a byte-string label is decoded from UTF-8;
+4. every property, and the labels, must be one-dimensional,
+   so a property or labels built from a nested sequence are refused;
+5. an input describing no row at all is refused;
+   an empty property beside a property that holds a value
+   is dropped by the next step instead;
+6. a property holding no value is dropped and named in a log warning —
+   a property holds no value when it is empty,
+   or when each of its elements is missing or an empty string;
+   a property of zeros holds values and is kept;
+7. every property, and the labels, must hold the same number of elements;
+8. a property given as a scalar is repeated over the rows;
+9. at least one property must be left;
+10. the arrays are copied and made read-only.
+
+The errors of the first four steps are reported together,
+in a single exception,
+so that an input can be fixed in one pass.
+
+The catalog **cannot be changed** once the variable is built:
+neither through the table passed to the constructor,
+nor through the table that `variable.catalog.to_dataframe()` hands back,
+nor through the read-only properties that
+`variable.catalog.properties` hands out.
+Changing a catalog means declaring a new variable.
+
+!!! warning
+    A catalog variable is **not yet solvable**:
+    every optimizer and every DOE algorithm rejects a problem including such a variable,
+    and unlike a discrete variable,
+    no setting relaxes it to a float variable.
+    A driver handles catalog variables
+    only when it declares it (`handle_catalog_variables`),
+    which no GEMSEO driver does yet,
+    and which a plugin driver does not by default.
+
+!!! note
+    A design space holding a catalog variable
+    cannot be exported to CSV,
+    since a catalog does not fit in a CSV cell;
+    [to_hdf()][gemseo.space.design.DesignSpace.to_hdf] writes it,
+    and [from_hdf()][gemseo.space.design.DesignSpace.from_hdf] reads it back.
+    Appending to an HDF file, or loading one,
+    requires the catalogs to be those stored in the file,
+    since the stored values are positions in them;
+    otherwise a `ValueError` is raised and the file is left untouched.
+    This holds for a design space, e.g. `to_hdf(append=True)`,
+    and for a database, e.g. `OptimizationProblem.to_hdf(append=True)`,
+    an optimization history backup
+    or `Database.update_from_hdf`.
+
+!!! note
+    A catalog with a single row gives a variable
+    with a single admissible value,
+    hence no choice at all.
+    Such a variable is accepted as is,
+    and still counts as a design variable.
+
+!!! tutorial
+    - [Tutorial - Choose among alternatives with catalog variables][]
+
+??? abstract "API"
+
+    - [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
+    - [variables][gemseo.space.design.DesignSpace.variables]
+    - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
+    - [CatalogVariable][gemseo.space.variable.CatalogVariable]
+    - [Catalog][gemseo.space.catalog.catalog.Catalog]
+    - [Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+
 ## Integer relaxation { #concept-integer-relaxation }
 
 Some algorithms only support real variables.
@@ -202,7 +356,11 @@ into $x_{\mathrm{normalized}}$ in $[0, 1]$:
 where $l_b(x)$ and $u_b(x)$ are the lower and upper bounds of the variable $x$.
 
 !!! warning
-    Integer and discrete variables cannot be normalized.
+    Discrete and catalog variables cannot be normalized.
+    An integer variable is not normalized either,
+    unless [enable_integer_variables_normalization][gemseo.space.design.DesignSpace.enable_integer_variables_normalization]
+    is set to `True`,
+    in which case it follows the same formula as a float variable.
 
 !!! how-to
     - [How to (un)normalize design parameters][]

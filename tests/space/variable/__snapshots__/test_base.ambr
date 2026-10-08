@@ -55,6 +55,12 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_copy_and_pickle_keep_the_kind[CatalogVariable]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[CatalogVariable].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
 # name: test_copy_and_pickle_keep_the_kind[DiscreteVariable]
   'cannot set WRITEABLE flag to True of this array'
 # ---
@@ -75,6 +81,22 @@
 # ---
 # name: test_data_type_from_a_non_string
   "array('float', dtype='<U5') is not a valid DataType"
+# ---
+# name: test_frozen[CatalogVariable-lower_bound]
+  '''
+  1 validation error for CatalogVariable
+  lower_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_frozen[CatalogVariable-upper_bound]
+  '''
+  1 validation error for CatalogVariable
+  upper_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
 # ---
 # name: test_frozen[DiscreteVariable-lower_bound]
   '''

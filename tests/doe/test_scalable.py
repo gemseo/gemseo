@@ -18,13 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from unittest import mock
-
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.doe.factory import doe_library_factory
+from gemseo.space import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
 from .utils import check_problem_execution
@@ -71,11 +70,10 @@ def test_diagonal_doe_on_rosenbrock(dimension) -> None:
 
 @pytest.fixture(scope="module")
 def variables_space():
-    """A mock design space."""
-    design_space = mock.MagicMock()
-    design_space.dimension = 2
-    design_space.variables = {"x": mock.Mock(size=1), "y": mock.Mock(size=1)}
-    design_space.__iter__.return_value = ["x", "y"]
+    """A design space."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0)
     return design_space
 
 

@@ -1,6 +1,42 @@
 # serializer version: 1
+# name: test_compute_doe_with_catalog_variable[False]
+  '''
+  Algorithm PYDOE_LHS is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
+# ---
+# name: test_compute_doe_with_catalog_variable[True]
+  '''
+  Algorithm PYDOE_LHS is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
+# ---
 # name: test_empty_design_space
   'The algorithm algo_name is not adapted to the problem because the variable space is empty.'
+# ---
+# name: test_execute_with_catalog_variable[doe]
+  '''
+  Algorithm MC is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
+# ---
+# name: test_execute_with_catalog_variable[optimizer]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
+# ---
+# name: test_execute_with_catalog_variable[relaxed_doe]
+  '''
+  Algorithm MC is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
+# ---
+# name: test_execute_with_catalog_variable[relaxed_optimizer]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle catalog variables.
+  Use an algorithm handling them; no GEMSEO driver does yet.
+  '''
 # ---
 # name: test_get_result_without_result_class
   'The driver library MyDriver cannot build a result; set its class attribute _result_class.'

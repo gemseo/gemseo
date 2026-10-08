@@ -111,6 +111,9 @@ _SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 class DriverDescription(AlgorithmDescription):
     """The description of a driver."""
 
+    handle_catalog_variables: bool = False
+    """Whether the driver handles catalog variables."""
+
     handle_discrete_variables: bool = False
     """Whether the driver handles discrete variables."""
 
@@ -180,10 +183,10 @@ class BaseDriverLibrary(
         if not problem.input_space:
             return _UnsuitabilityReason.EMPTY_VARIABLE_SPACE
 
+        variables = problem.input_space.variables
         # A relaxation setting is opt-in and a description knows no settings,
         # so an algorithm is suited to a kind of variable
         # only when it handles that kind natively.
-        variables = problem.input_space.variables
         if (
             variables.has_variables_of_type(DataType.INTEGER)
             and not algorithm_description.handle_integer_variables
@@ -195,6 +198,12 @@ class BaseDriverLibrary(
             and not algorithm_description.handle_discrete_variables
         ):
             return _UnsuitabilityReason.DISCRETE_VARIABLES
+
+        if (
+            variables.has_variables_of_type(DataType.CATALOG)
+            and not algorithm_description.handle_catalog_variables
+        ):
+            return _UnsuitabilityReason.CATALOG_VARIABLES
 
         return _UnsuitabilityReason.NO_REASON
 
@@ -481,20 +490,24 @@ class BaseDriverLibrary(
         self,
         input_space: BaseVariableSpace,
     ) -> None:
-        """Check if the algo handles the integer and discrete variables.
+        """Check if the algo handles the catalog, integer and discrete variables.
 
-        The user may relax the variables the algorithm does not handle,
+        The user may relax the integer and discrete variables
+        the algorithm does not handle,
         in this case a warning is logged.
 
         Args:
             input_space: The input space of the problem.
 
         Raises:
-            ValueError: If the corresponding relaxation setting is set to `False`
+            ValueError: If the algo does not handle catalog variables
+                and the input space includes at least one catalog variable,
+                or if the corresponding relaxation setting is set to `False`
                 and the algo does not handle integer (resp. discrete) variables
                 and the input space includes at least one integer (resp. discrete)
                 variable.
         """
+        self._check_catalog_variables(input_space)
         variables = input_space.variables
         self.__check_kind_handling(
             variables.has_variables_of_type(DataType.INTEGER),
@@ -508,6 +521,30 @@ class BaseDriverLibrary(
             self._settings.relax_discrete_variables,
             DataType.DISCRETE,
         )
+
+    def _check_catalog_variables(self, input_space: BaseVariableSpace) -> None:
+        """Check that the algo handles the catalog variables of the input space.
+
+        No setting relaxes a catalog variable.
+
+        Args:
+            input_space: The input space of the problem.
+
+        Raises:
+            ValueError: If the algo does not handle catalog variables
+                and the input space includes at least one catalog variable.
+        """
+        if (
+            input_space.variables.has_variables_of_type(DataType.CATALOG)
+            and not self.ALGORITHM_INFOS[self._algo_name].handle_catalog_variables
+        ):
+            # A catalog variable has no relaxation.
+            msg = (
+                f"Algorithm {self._algo_name} is not adapted to the problem, "
+                "it does not handle catalog variables.\n"
+                "Use an algorithm handling them; no GEMSEO driver does yet."
+            )
+            raise ValueError(msg)
 
     def __check_kind_handling(
         self,
