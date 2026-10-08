@@ -2340,6 +2340,10 @@ classes:
       # the algorithm being the one the library was created with, e.g.
       # OpenTURNS("OT_LHS") or a factory's create("OT_LHS"), when it is known.
       settings: settings={receiver.algo_name}_Settings(**{settings}, eval_obs_jac={eval_obs_jac}, max_design_space_dimension_to_log={max_design_space_dimension_to_log})
+  # The default algorithm of ScipyMILP is now MILP, its new name: a subclass
+  # registering its own algorithm names, e.g. Scipy_MILP, inherits that default.
+  ScipyMILP:
+    ALGORITHM_INFOS: TODO ScipyMILP.__init__ now defaults algo_name to "MILP"; a subclass registering its own algorithm names in ALGORITHM_INFOS must define __init__(self, algo_name="<its algorithm name>") calling super().__init__(algo_name)
   BaseDriverSettings:
     round_ints: null
     # the rounding at every evaluation no longer exists.
