@@ -75,11 +75,12 @@ generate_n2_plot(dummy_disciplines, save=False, show=True)
 # Because of its tabular structure,
 # the N2 chart is hard to analyze when the number of disciplines increases.
 # This is the reason why in this example,
-# you are invited to use an interactive representation in a web browser:
-generate_n2_plot(dummy_disciplines, save=False, show_html=True)
+# you are invited to use an interactive representation in a web browser,
+# saved in the file `n2.html`:
+generate_n2_plot(dummy_disciplines, save=False)
 
 # %%
-# you are invited to use an interactive representation in a web browser.
+# Pass `show_html=True` to open it in a web browser.
 # [Click here](../../../../_static/n2_small.html) to see the rendering.
 #
 # ## Summary

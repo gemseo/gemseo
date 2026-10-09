@@ -120,10 +120,9 @@ scenario = EvaluationScenario([d1, d2], design_space)
 scenario.add_observable("c")
 scenario.add_observable("f")
 # %%
-# Now generate the XDSM diagram.
-# The resulting `xdsm.html` file can be opened in any browser:
+# Now generate the XDSM diagram (set `save_html` to `False` to open it in a web browser):
 
-scenario.xdsmize(show_html=True, save_html=False)
+scenario.xdsmize(save_html=False)
 
 # %%
 # ## Step 4 — Excel-based coupling study analysis
