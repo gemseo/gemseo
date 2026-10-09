@@ -219,7 +219,7 @@ class ISSobolIndicesEstimator:
 
     The indices are divided by the variance of the indicator
     over the block $A$ of the design only,
-    which `ISFORMSobolAnalysis` checks to be positive.
+    which `ROSobolAnalysis` checks to be positive.
     This does not make every index defined:
     the `Martinez` estimator also divides by the variances of the blocks
     $B$ (first order) and $A$ and $E^i$ (total order),

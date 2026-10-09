@@ -117,7 +117,7 @@ class SobolIndicesEstimatorMixin:
     namely
     [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
     and
-    [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis].
+    [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis].
 
     A class using this mixin must also be a
     [BaseGenericSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis],

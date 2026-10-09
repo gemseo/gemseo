@@ -21,5 +21,5 @@
   'n_samples (1) is too small to draw a sample for each of the 1 event(s) after their 61 FORM evaluations; increase n_samples.'
 # ---
 # name: test_vector_valued_event_output_raises
-  "The event output 'y' has 2 components; ISFORMSobolAnalysis only supports event outputs with a single component."
+  "The event output 'y' has 2 components; ROSobolAnalysis only supports event outputs with a single component."
 # ---
