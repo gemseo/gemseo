@@ -28,6 +28,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 import pytest
 
@@ -37,6 +38,9 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import ModuleType
+
+_SUBPROCESS_TIMEOUT: Final[float] = 120.0
+"""The time limit, in seconds, of the fresh interpreter of a test."""
 
 
 def _is_type_checking_guard(test: ast.expr) -> bool:
@@ -54,33 +58,46 @@ def _is_type_checking_guard(test: ast.expr) -> bool:
 
 
 def _get_static_import_names(package: ModuleType) -> tuple[set[str], set[str]]:
-    """Return the names imported under `if TYPE_CHECKING:` in a package.
+    """Return the names bound under `if TYPE_CHECKING:` in a package.
 
     Args:
         package: The package whose `__init__.py` is scanned.
 
     Returns:
-        The names bound by the module-level `if TYPE_CHECKING:` imports,
-        and the names referenced anywhere in the module
-        (an imported name that is referenced is an annotation import,
+        The names bound by the module-level `if TYPE_CHECKING:` block,
+        by an import or an assignment,
+        and the names read anywhere in the module
+        (an imported name that is read is an annotation import,
         not the static mirror of a lazy re-export).
     """
     # A regular package always has a file; only namespace packages do not.
     assert package.__file__ is not None
     tree = ast.parse(Path(package.__file__).read_text(encoding="utf-8"))
-    imported_names: set[str] = set()
+    static_names: set[str] = set()
     for stmt in tree.body:
         if not (isinstance(stmt, ast.If) and _is_type_checking_guard(stmt.test)):
             continue
         for sub_stmt in stmt.body:
             if isinstance(sub_stmt, (ast.Import, ast.ImportFrom)):
-                imported_names.update(
+                static_names.update(
                     alias.asname or alias.name.split(".")[0] for alias in sub_stmt.names
                 )
+            elif isinstance(sub_stmt, ast.Assign):
+                static_names.update(
+                    target.id
+                    for target in sub_stmt.targets
+                    if isinstance(target, ast.Name)
+                )
+            elif isinstance(sub_stmt, ast.AnnAssign) and isinstance(
+                sub_stmt.target, ast.Name
+            ):
+                static_names.add(sub_stmt.target.id)
     referenced_names = {
-        node.id for node in ast.walk(tree) if isinstance(node, ast.Name)
+        node.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
     }
-    return imported_names, referenced_names
+    return static_names, referenced_names
 
 
 def make_lazy_reexport_tests(
@@ -119,20 +136,48 @@ def make_lazy_reexport_tests(
         """Check that `__all__` exposes exactly the expected names."""
         assert set(package.__all__) == set(names) | set(extra_all)
 
+    def test_mapping_is_sorted() -> None:
+        """Check that the names of the mapping are sorted."""
+        assert names == sorted(names)
+
+    if deferred_sample is None:
+        deferred_code = ""
+    else:
+        module_path = name_to_location[deferred_sample].partition(":")[0]
+        if module_path.split(".", 1)[0] == "gemseo":
+            full_module = module_path
+        else:
+            full_module = f"{package.__name__}.{module_path}"
+        deferred_code = (
+            f"assert {full_module!r} not in sys.modules\n"
+            f"getattr(package, {deferred_sample!r})\n"
+            f"assert {full_module!r} in sys.modules\n"
+        )
+
     def test_reexport_is_lazy() -> None:
         """Check that the names are served lazily, not eagerly bound.
 
+        When `deferred_sample` is given,
+        also check that its module is imported only on first attribute access.
+
         Run in a fresh interpreter because the resolved names are cached
-        in the namespace of the package by the first access.
+        in the namespace of the package by the first access,
+        and so that probing `sys.modules` does not mutate
+        the import state of the current test session.
         """
         code = (
+            "import sys\n"
             "from importlib import import_module\n"
             f"package = import_module({package.__name__!r})\n"
             f"names = {names!r}\n"
             "assert not [name for name in names if name in vars(package)]\n"
+            f"{deferred_code}"
         )
         result = subprocess.run(  # noqa: S603
-            [sys.executable, "-c", code], capture_output=True, text=True
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+            timeout=_SUBPROCESS_TIMEOUT,
         )
         assert result.returncode == 0, result.stderr
 
@@ -147,7 +192,7 @@ def make_lazy_reexport_tests(
         assert name in dir(package)
 
     def test_static_names_match_lazy_reexports() -> None:
-        """Check that the `if TYPE_CHECKING:` imports mirror the lazy re-exports.
+        """Check that the `if TYPE_CHECKING:` block mirrors the lazy re-exports.
 
         The `if TYPE_CHECKING:` block of the package gives mypy and IDEs static
         visibility of the names served at runtime by `_name_to_location`; the two
@@ -165,9 +210,10 @@ def make_lazy_reexport_tests(
             f"exported name: {sorted(unknown)}"
         )
 
-    tests = {
+    return {
         "test_lazy_reexport": test_lazy_reexport,
         "test_all": test_all,
+        "test_mapping_is_sorted": test_mapping_is_sorted,
         "test_reexport_is_lazy": test_reexport_is_lazy,
         "test_unknown_attribute": test_unknown_attribute,
         "test_dir": test_dir,
@@ -175,34 +221,3 @@ def make_lazy_reexport_tests(
             test_static_names_match_lazy_reexports
         ),
     }
-
-    if deferred_sample is not None:
-        name = deferred_sample
-        module_path = name_to_location[name].partition(":")[0]
-        if module_path.split(".", 1)[0] == "gemseo":
-            full_module = module_path
-        else:
-            full_module = f"{package.__name__}.{module_path}"
-
-        def test_reexport_defers_import() -> None:
-            """Check that the module is imported only on first attribute access.
-
-            Run in a fresh interpreter so that probing `sys.modules` does not
-            mutate the import state of the current test session.
-            """
-            code = (
-                "import sys\n"
-                "from importlib import import_module\n"
-                f"package = import_module({package.__name__!r})\n"
-                f"assert {full_module!r} not in sys.modules\n"
-                f"getattr(package, {name!r})\n"
-                f"assert {full_module!r} in sys.modules\n"
-            )
-            result = subprocess.run(  # noqa: S603
-                [sys.executable, "-c", code], capture_output=True, text=True
-            )
-            assert result.returncode == 0, result.stderr
-
-        tests["test_reexport_defers_import"] = test_reexport_defers_import
-
-    return tests
