@@ -163,8 +163,8 @@ system_scenario.add_constraint("cstr3")
 system_scenario.add_observable("obj2")
 
 # %%
-# The xDSM diagram shows the nested structure: the DOE drives the sub-scenario.
-system_scenario.xdsmize(show_html=True, save_html=False)
+# The XDSM diagram shows the nested structure: the DOE drives the sub-scenario.
+system_scenario.xdsmize(save_html=False)
 
 # %%
 # ## Step 7 - Run the scenario

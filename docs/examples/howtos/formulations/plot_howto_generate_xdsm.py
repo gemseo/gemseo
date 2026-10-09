@@ -59,8 +59,9 @@ scenario.add_objective("y_4", minimize=False)
 #
 # An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # can generate its own XDSM.
-# Several other options can be provided such as pdf generation for instance
-scenario.xdsmize(show_html=True, save_html=False)
+# Several other options can be provided such as PDF generation for instance.
+# Pass `show_html=True` to open the XDSM in a web browser.
+scenario.xdsmize(save_html=False)
 
 # %%
 # ## Summary
