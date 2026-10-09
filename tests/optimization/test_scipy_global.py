@@ -48,7 +48,6 @@ if TYPE_CHECKING:
     from gemseo.core.problem.database import Database
 
 
-@pytest.mark.xfail(reason="With scipy 1.11+")
 class TestScipyGlobalOpt(TestCase):
     """"""
 
