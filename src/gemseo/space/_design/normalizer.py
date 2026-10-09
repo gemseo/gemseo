@@ -18,15 +18,19 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import asarray
+from numpy import clip
 from numpy import concatenate
+from numpy import floor
 from numpy import isin
 from numpy import where
 from numpy import zeros
 
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import DataType
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util._numpy import convert_array_type
 from gemseo.util._numpy import float64_dtype
@@ -42,6 +46,12 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealOrComplexArrayT
 logger = logging.getLogger(__name__)
+
+sparse_point_message: Final[str] = (
+    "A point of a design space with categorical variables cannot be a sparse array, "
+    "as each of its categorical components is mapped to a category cell."
+)
+"""The message of the error raised for a sparse point with categorical components."""
 
 
 class Normalizer(RegistryDerivedData):
@@ -63,6 +73,20 @@ class Normalizer(RegistryDerivedData):
     """The indices of the normalizable components of the design vector.
     `None` when never been used."""
 
+    __affine_indices: IntegerArray | None
+    """The indices of the components normalized by an affine map.
+
+    These are the normalizable components that are not categorical.
+    `None` when never been used."""
+
+    __categorical_indices: IntegerArray | None
+    """The indices of the categorical components normalized by cells.
+    `None` when never been used."""
+
+    __n_categories: NumberArray | None
+    """The number of categories of each component of `__categorical_indices`.
+    `None` when never been used."""
+
     def __init__(
         self,
         variables: DesignVariables,
@@ -82,6 +106,9 @@ class Normalizer(RegistryDerivedData):
         self.__normalization_factor = None
         self.__normalization_factor_inv = None
         self.__normalization_indices = None
+        self.__affine_indices = None
+        self.__categorical_indices = None
+        self.__n_categories = None
 
     def _rebuild(self) -> None:
         """Rebuild the normalization data."""
@@ -95,6 +122,23 @@ class Normalizer(RegistryDerivedData):
             else zeros(0, dtype=bool)
         )
         self.__normalization_indices = normalization_mask.nonzero()[0]
+        # A categorical component is not scaled by the affine map of its bounds:
+        # a category owns a cell of the unit interval instead.
+        name_to_n_categories = {
+            name: len(variable.categories)
+            for name, variable in self._variables.items()
+            if variable.type == DataType.CATEGORICAL
+        }
+        is_categorical = zeros(self._variables.size, dtype=bool)
+        n_categories = zeros(self._variables.size)
+        for name, n in name_to_n_categories.items():
+            indices = list(self._variables.name_to_indices[name])
+            is_categorical[indices] = True
+            n_categories[indices] = n
+        is_categorical_cell = normalization_mask & is_categorical
+        self.__affine_indices = (normalization_mask & ~is_categorical).nonzero()[0]
+        self.__categorical_indices = is_categorical_cell.nonzero()[0]
+        self.__n_categories = n_categories[self.__categorical_indices]
         # Avoid divide-by-zero when lb == ub.
         is_zero = self.__normalization_factor == 0.0
         self.__normalization_factor_inv = 1.0 / where(
@@ -126,6 +170,13 @@ class Normalizer(RegistryDerivedData):
             # the full value is merely copied and so keeps its dtype.
             return full_value.copy()
 
+        if (
+            subtract_lower_bound
+            and self.__categorical_indices.size
+            and isinstance(full_value, sparse_classes)
+        ):
+            raise TypeError(sparse_point_message)
+
         current_x_dtype = common_dtype
         if current_x_dtype.kind == "i":
             current_x_dtype = float64_dtype
@@ -139,21 +190,29 @@ class Normalizer(RegistryDerivedData):
         # which is what a densified legacy sparse matrix is,
         # and a matrix of more than one column made them raise.
         # The view costs nothing and the value keeps the type it came with.
+        affine_indices = self.__affine_indices
         components = value if is_sparse else asarray(value)
         if subtract_lower_bound:
-            components[..., normalization_indices] -= self.__bounds.full_lower_bound[
-                normalization_indices
+            components[..., affine_indices] -= self.__bounds.full_lower_bound[
+                affine_indices
             ]
 
         if is_sparse:
-            column_mask = isin(value.indices, normalization_indices)
+            column_mask = isin(value.indices, affine_indices)
             value.data[column_mask] *= self.__normalization_factor_inv[value.indices][
                 column_mask
             ]  # type: ignore[index]
         else:
-            components[..., normalization_indices] *= self.__normalization_factor_inv[
-                normalization_indices
+            components[..., affine_indices] *= self.__normalization_factor_inv[
+                affine_indices
             ]  # type: ignore[index]
+
+        categorical_indices = self.__categorical_indices
+        if subtract_lower_bound and categorical_indices.size:
+            # A category is mapped to the centre of its cell.
+            components[..., categorical_indices] = (
+                components[..., categorical_indices] + 0.5
+            ) / self.__n_categories
 
         return value
 
@@ -177,6 +236,13 @@ class Normalizer(RegistryDerivedData):
             The denormalized full value.
         """
         self._refresh()
+        if (
+            add_lower_bound
+            and self.__categorical_indices.size
+            and isinstance(full_value, sparse_classes)
+        ):
+            raise TypeError(sparse_point_message)
+
         normalization_indices = self.__normalization_indices
         lower_bounds = self.__bounds.full_lower_bound
 
@@ -216,9 +282,12 @@ class Normalizer(RegistryDerivedData):
         # a gradient is denormalized without it,
         # and rounding a gradient would destroy its integer components
         # instead of snapping a point to the grid.
+        categorical_indices = self.__categorical_indices
+        decode_categories = bool(categorical_indices.size) and add_lower_bound
         round_integers = self.__integer_rounder.has_integer and add_lower_bound
         # The integer recast only occurs when there are integer components to round.
-        recast_to_int = recast_to_int and round_integers
+        # The categories are decoded to integer positions as well.
+        recast_to_int = recast_to_int and (round_integers or decode_categories)
 
         if full_value.dtype == current_dtype:
             value = full_value.copy()
@@ -232,25 +301,34 @@ class Normalizer(RegistryDerivedData):
             # so it only ever converts a real one here.
             value = convert_array_type(full_value, current_dtype)
 
-        if normalization_indices is not None and normalization_indices.size:
+        affine_indices = self.__affine_indices
+        if affine_indices is not None and affine_indices.size:
             # A dense value is scaled through a base array view of itself;
             # see `normalize`.
             is_sparse = isinstance(value, sparse_classes)
             components = value if is_sparse else asarray(value)
             if is_sparse:
-                column_mask = isin(value.indices, normalization_indices)
+                column_mask = isin(value.indices, affine_indices)
                 value.data[column_mask] *= self.__normalization_factor[value.indices][
                     column_mask
                 ]  # type: ignore[index]
             else:
-                components[..., normalization_indices] *= self.__normalization_factor[
-                    normalization_indices
+                components[..., affine_indices] *= self.__normalization_factor[
+                    affine_indices
                 ]  # type: ignore[index]
 
             if add_lower_bound:
-                components[..., normalization_indices] += lower_bounds[
-                    normalization_indices
-                ]
+                components[..., affine_indices] += lower_bounds[affine_indices]
+
+        if decode_categories:
+            # A category owns a cell of the unit interval.
+            n_categories = self.__n_categories
+            components = asarray(value)
+            components[..., categorical_indices] = clip(
+                floor(components[..., categorical_indices].real * n_categories),
+                0,
+                n_categories - 1,
+            )
 
         if round_integers:
             value = self.__integer_rounder.round(value, copy=False)

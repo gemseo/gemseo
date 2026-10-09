@@ -18,10 +18,6 @@ from __future__ import annotations
 
 from abc import ABC
 from typing import TYPE_CHECKING
-from typing import ClassVar
-
-from numpy import float64
-from numpy import int64
 
 from gemseo.space.variable.base import BaseVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
@@ -43,10 +39,6 @@ BoundType = (
 )
 BoundArray = IntegerArray | RealArray
 
-# The `type` field of a variable shadows the builtin inside the class body,
-# so the NumPy type of the components is aliased here.
-ComponentDType = type[int64 | float64]
-
 
 class BaseNumericVariable(BaseVariable, ABC):
     """The base class of a variable whose components are numbers.
@@ -57,13 +49,10 @@ class BaseNumericVariable(BaseVariable, ABC):
     or bounds derived from what defines the variable,
     e.g. the values it can take or the support of its probability distribution.
 
-    A variable whose components are not numbers, e.g. labels,
-    is neither bounded nor castable to a NumPy type,
-    and so does not derive from this class.
+    A variable whose value is not made of numbers, e.g. a label,
+    has no bounds, and its value is encoded into coordinates rather than cast,
+    so it does not derive from this class.
     """
-
-    component_type: ClassVar[ComponentDType] = float64
-    """The NumPy type of the components of the variable."""
 
     if TYPE_CHECKING:
         # These members are declared for static typing only;
@@ -86,7 +75,7 @@ class BaseNumericVariable(BaseVariable, ABC):
         Returns:
             The cast value of the variable.
         """
-        return value.astype(self.component_type)
+        return value.astype(self.coordinate_type)
 
     def check_finite_bound_components(
         self, bound: BoundArray, bound_prefix: str

@@ -1705,6 +1705,7 @@ def test_renamed_enumeration_member_warns_and_resolves():
     assert old_value is DataType.REAL
     assert tuple(member.name for member in DataType) == (
         "CATALOG",
+        "CATEGORICAL",
         "DISCRETE",
         "INTEGER",
         "REAL",

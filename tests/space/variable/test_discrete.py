@@ -39,7 +39,7 @@ def test_fields() -> None:
 
     assert variable.type == DataType.DISCRETE
     assert variable.size == 1
-    assert variable.component_type is float64
+    assert variable.coordinate_type is float64
     # The choices are sorted at construction.
     assert_array_equal(variable.choices, array([0.45, 0.55, 0.72]))
     assert variable.choices.dtype == float64
@@ -202,24 +202,6 @@ def test_filter_components_rejects_other_selections(components, snapshot) -> Non
     variable = DiscreteVariable(choices=[2, 4])
     with assert_exception(ValueError, snapshot):
         variable.filter_components(components)
-
-
-@pytest.mark.parametrize(
-    ("choices", "expected"),
-    [
-        ([1, 2], "[1.0, 2.0]"),
-        (list(range(6)), "[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]"),
-        (list(range(7)), "[0.0, 1.0, 2.0, ..., 4.0, 5.0, 6.0] (7 choices)"),
-        (
-            list(range(2, 100, 2)),
-            "[2.0, 4.0, 6.0, ..., 94.0, 96.0, 98.0] (49 choices)",
-        ),
-    ],
-)
-def test_format_choices(choices, expected) -> None:
-    """Check the rendering of the choices, elided beyond six values."""
-    variable = DiscreteVariable(choices=choices)
-    assert variable._format_choices() == expected
 
 
 def test_eq() -> None:

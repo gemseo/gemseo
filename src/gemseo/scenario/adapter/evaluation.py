@@ -34,6 +34,7 @@ from numpy import clip
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
+from gemseo.space.variable import DataType
 from gemseo.util.discipline import update_default_input_values
 from gemseo.util.logging import LoggingContext
 from gemseo.util.name_generator import NameGenerator
@@ -280,7 +281,12 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                     self.upper_bnd_suffix,
                 ),
             ]:
-                bounds = {name + suffix: val for name, val in bounds.items()}
+                # A categorical variable has no bounds.
+                bounds = {
+                    f"{name}{suffix}": val
+                    for name, val in bounds.items()
+                    if design_space.variables[name].type != DataType.CATEGORICAL
+                }
                 defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
@@ -332,11 +338,13 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
 
         # Add the design variables bounds to the input grammar
         if self._set_bounds_before_exec:
-            current_value = self.scenario.design_space.get_current_value(as_dict=True)
+            design_space = self.scenario.design_space
+            current_value = design_space.get_current_value(as_dict=True)
             bounds_grammar = input_grammar.__class__("bounds")
             bounds_grammar.update_from_data({
                 variable_name + suffix: variable_value
                 for variable_name, variable_value in current_value.items()
+                if design_space.variables[variable_name].type != DataType.CATEGORICAL
                 for suffix in {
                     self.lower_bnd_suffix,
                     self.upper_bnd_suffix,
@@ -395,7 +403,11 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         if self._set_bounds_before_exec:
             lower_bound_suffix = self.lower_bnd_suffix
             upper_bound_suffix = self.upper_bnd_suffix
-            for name in design_space:
+            for name, variable in design_space.variables.items():
+                # A categorical variable has no bounds.
+                if variable.type == DataType.CATEGORICAL:
+                    continue
+
                 design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
                 design_space.set_upper_bound(name, data[f"{name}{upper_bound_suffix}"])
 
@@ -405,12 +417,16 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             if dv_values:
                 # The design variables that are not inputs keep their current value,
                 # projected into the bounds as these may have just been set.
+                # A categorical variable has no bounds to project into.
+                variables = design_space.variables
                 dv_values = {
                     **{
-                        name: clip(
+                        name: value
+                        if variables[name].type == DataType.CATEGORICAL
+                        else clip(
                             value,
-                            design_space.variables[name].lower_bound,
-                            design_space.variables[name].upper_bound,
+                            variables[name].lower_bound,
+                            variables[name].upper_bound,
                         )
                         for name, value in design_space.get_current_value(
                             as_dict=True
@@ -501,12 +517,22 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         """Retrieve the top-level outputs.
 
         This method overwrites the adapter outputs with the top-level discipline outputs
-        and the current design values.
+        and the current design values,
+        using the labels of the categorical variables.
         """
         data = self.io.output_data
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disciplines()
-        current_value = formulation.problem.design_space.get_current_value(as_dict=True)
+        design_space = formulation.problem.design_space
+        current_value = design_space.get_current_value(as_dict=True)
+        data_converter = self.io.output_grammar.data_converter
+        for name, value in current_value.items():
+            variable = design_space.variables[name]
+            if name in self._output_names and variable.type == DataType.CATEGORICAL:
+                current_value[name] = data_converter.convert_array_to_value(
+                    name, variable.decode(value)
+                )
+
         for output_name in self._output_names:
             for discipline in top_level_disciplines:
                 if (

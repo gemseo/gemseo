@@ -113,6 +113,8 @@ class DriverDescription(AlgorithmDescription):
 
     handle_catalog_variables: bool = False
     """Whether the driver handles catalog variables."""
+    handle_categorical_variables: bool = False
+    """Whether the driver handles categorical variables."""
 
     handle_discrete_variables: bool = False
     """Whether the driver handles discrete variables."""
@@ -204,6 +206,12 @@ class BaseDriverLibrary(
             and not algorithm_description.handle_catalog_variables
         ):
             return _UnsuitabilityReason.CATALOG_VARIABLES
+
+        if (
+            variables.has_variables_of_type(DataType.CATEGORICAL)
+            and not algorithm_description.handle_categorical_variables
+        ):
+            return _UnsuitabilityReason.CATEGORICAL_VARIABLES
 
         return _UnsuitabilityReason.NO_REASON
 
@@ -490,7 +498,7 @@ class BaseDriverLibrary(
         self,
         input_space: BaseVariableSpace,
     ) -> None:
-        """Check if the algo handles the catalog, integer and discrete variables.
+        """Check if the algo handles the non-continuous variables.
 
         The user may relax the integer and discrete variables
         the algorithm does not handle,
@@ -505,10 +513,24 @@ class BaseDriverLibrary(
                 or if the corresponding relaxation setting is set to `False`
                 and the algo does not handle integer (resp. discrete) variables
                 and the input space includes at least one integer (resp. discrete)
-                variable.
+                variable,
+                or if the algo does not handle categorical variables
+                and the input space includes at least one categorical variable.
         """
         self._check_catalog_variables(input_space)
         variables = input_space.variables
+        if (
+            variables.has_variables_of_type(DataType.CATEGORICAL)
+            and not self.ALGORITHM_INFOS[self._algo_name].handle_categorical_variables
+        ):
+            # A categorical variable has no relaxation.
+            msg = (
+                f"Algorithm {self._algo_name} is not adapted to the problem, "
+                "it does not handle categorical variables.\n"
+                "Use an algorithm handling them, e.g. a DOE algorithm."
+            )
+            raise ValueError(msg)
+
         self.__check_kind_handling(
             variables.has_variables_of_type(DataType.INTEGER),
             self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables,

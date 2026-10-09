@@ -21,4 +21,17 @@ search:
 
 ## Algorithms { #concept-algorithms }
 
+!!! note "Categorical variables"
+    A DOE algorithm samples the unit hypercube
+    and maps it onto the design space.
+    In that mapping,
+    the $n$ categories of a categorical variable
+    split $[0, 1]$ into $n$ cells of length $1/n$:
+    a coordinate $u$ in $[0, 1]$ gives
+    the category at position $\lfloor n u \rfloor$
+    (the last one when $u = 1$),
+    and the category at position $i$
+    is mapped to the centre $(i + 1/2)/n$ of its cell.
+    So, each category has the same chance of being sampled.
+
 ## Advanced use { #concept-advanced-use }

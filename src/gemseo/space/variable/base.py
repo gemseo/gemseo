@@ -20,7 +20,10 @@ from abc import ABC
 from abc import abstractmethod
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
+from numpy import float64
+from numpy import int64
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import model_validator
@@ -32,6 +35,11 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
     from typing import Self
+    from typing import TypeAlias
+
+# The `type` field of a variable shadows the builtin inside the class body,
+# so the NumPy type of the coordinates is aliased here.
+CoordinateDType: TypeAlias = type[int64 | float64]
 
 
 class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
@@ -50,6 +58,13 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
     and whatever derives from these inputs is a read-only property,
     so that the fields of a variable are exactly what defines it;
     passing such a derived member raises a `ValueError` naming it.
+    """
+
+    coordinate_type: ClassVar[CoordinateDType] = float64
+    """The NumPy type of the coordinates of the variable.
+
+    The coordinates are the numbers a space carries the value of the variable as:
+    the components of the value for a numeric variable.
     """
 
     if TYPE_CHECKING:

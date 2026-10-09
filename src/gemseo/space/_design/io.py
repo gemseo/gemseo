@@ -29,6 +29,7 @@ from numpy import genfromtxt
 from pandas import DataFrame
 
 from gemseo.space._design.constants import catalog_group
+from gemseo.space._design.constants import categories_group
 from gemseo.space._design.constants import choices_group
 from gemseo.space._design.constants import choices_separator
 from gemseo.space._design.constants import design_space_group
@@ -67,6 +68,7 @@ minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
 _domain_payload_nouns: Final[Mapping[DataType, tuple[str, str]]] = MappingProxyType({
     DataType.DISCRETE: ("no choices", "choices"),
     DataType.CATALOG: ("no catalog", "a catalog"),
+    DataType.CATEGORICAL: ("no categories", "categories"),
 })
 """The noun phrases of the domain payload of a variable type, from its HDF group.
 
@@ -104,13 +106,34 @@ def get_dataset(group: h5py.Group, name: str) -> ndarray | None:
     return dataset
 
 
+def get_strings(group: h5py.Group, name: str) -> list[str] | None:
+    """Retrieve the strings stored in a dataset of an HDF group.
+
+    Args:
+        group: The HDF group.
+        name: The name of the dataset.
+
+    Returns:
+        The strings, or `None` if the dataset does not exist.
+    """
+    dataset = group.get(name)
+    if dataset is None:
+        return None
+
+    return [
+        string.decode() if isinstance(string, bytes) else str(string)
+        for string in dataset[()].ravel()
+    ]
+
+
 def check_structure_is_unchanged(
     design_space: DesignSpace, space_group: h5py.Group, file_path: str | Path
 ) -> None:
     """Check that a design space is consistent with that of an HDF file.
 
     Only the structure that the stored input values rely on is compared:
-    the variable names, in order, and the size and the type of each variable.
+    the variable names, in order, the size and the type of each variable,
+    and the categories, in order, of each categorical variable.
 
     Args:
         design_space: The design space.
@@ -151,6 +174,15 @@ def check_structure_is_unchanged(
                     f"The type of the design variable {name!r} is {stored_type!r}; "
                     f"got {variable.type.value!r}."
                 )
+            elif variable.type == DataType.CATEGORICAL:
+                # The stored values and the database rows are positions
+                # in the list of categories, so its order matters.
+                stored_categories = get_strings(variable_group, categories_group)
+                if stored_categories != list(variable.categories):
+                    error_messages.append(
+                        f"The categories of the design variable {name!r} "
+                        f"are {stored_categories}; got {list(variable.categories)}."
+                    )
 
     if error_messages:
         errors = "\n".join(f"- {error_message}" for error_message in error_messages)
@@ -368,15 +400,26 @@ def to_hdf(
                 # before the file was opened.
                 variable.catalog.write_hdf(variable_group.create_group(catalog_group))
 
+            is_categorical = variable.type == DataType.CATEGORICAL
+            if is_categorical:
+                # The labels may be non-ASCII, hence variable-length UTF-8 strings.
+                write_dataset(
+                    variable_group,
+                    categories_group,
+                    array(variable.categories, dtype=h5py.string_dtype()),
+                )
+
             write_dataset(
                 variable_group, size_group, array(variable.size, dtype=int64_dtype)
             )
-            write_dataset(
-                variable_group, lb_group, array(variable.lower_bound, copy=False)
-            )
-            write_dataset(
-                variable_group, ub_group, array(variable.upper_bound, copy=False)
-            )
+            if not is_categorical:
+                write_dataset(
+                    variable_group, lb_group, array(variable.lower_bound, copy=False)
+                )
+                write_dataset(
+                    variable_group, ub_group, array(variable.upper_bound, copy=False)
+                )
+
             write_dataset(
                 variable_group,
                 var_type_group,
@@ -387,6 +430,16 @@ def to_hdf(
             if value is None:
                 if value_group in variable_group:
                     del variable_group[value_group]
+            elif is_categorical:
+                # The file stores the label, not its position among the categories.
+                write_dataset(
+                    variable_group,
+                    value_group,
+                    array(
+                        [str(label) for label in variable.decode(value)],
+                        dtype=h5py.string_dtype(),
+                    ),
+                )
             else:
                 write_dataset(variable_group, value_group, to_real(value))
 
@@ -466,22 +519,31 @@ def from_hdf(
         for name in variable_names:
             name = name.decode()
             variable_group = get_hdf5_group(space_group, name)
-            l_b = get_dataset(variable_group, lb_group)
-            u_b = get_dataset(variable_group, ub_group)
             var_type = get_dataset(variable_group, var_type_group)[0]
-            value = get_dataset(variable_group, value_group)
-            size = get_hdf5_group(variable_group, size_group)[()]
-            choices = get_dataset(variable_group, choices_group)
-            catalog_hdf_group = variable_group.get(catalog_group)
             decoded_var_type = (
                 var_type.decode() if isinstance(var_type, bytes) else var_type
             )
+            categories = get_strings(variable_group, categories_group)
+            choices = get_dataset(variable_group, choices_group)
+            catalog_hdf_group = variable_group.get(catalog_group)
             _check_domain_payload(
                 file_path,
                 name,
                 decoded_var_type,
-                {DataType.DISCRETE: choices, DataType.CATALOG: catalog_hdf_group},
+                {
+                    DataType.CATALOG: catalog_hdf_group,
+                    DataType.CATEGORICAL: categories,
+                    DataType.DISCRETE: choices,
+                },
             )
+            if categories is not None:
+                labels = get_strings(variable_group, value_group)
+                design_space.add_categorical_variable(
+                    name, categories, None if labels is None else labels[0]
+                )
+                continue
+
+            value = get_dataset(variable_group, value_group)
             if choices is not None:
                 # The bounds of a discrete variable are derived from its choices,
                 # so the persisted ones are informational.
@@ -501,6 +563,9 @@ def from_hdf(
                     value,
                 )
             else:
+                l_b = get_dataset(variable_group, lb_group)
+                u_b = get_dataset(variable_group, ub_group)
+                size = get_hdf5_group(variable_group, size_group)[()]
                 design_space.add_variable(
                     name,
                     size=size,
@@ -583,7 +648,23 @@ def to_csv(
         output_file: The path to the CSV file.
         fields: The fields to be exported. If empty, export all fields.
         delimiter: The string used to separate values.
+
+    Raises:
+        ValueError: If the design space has a catalog or categorical variable,
+            which an HDF file can store but a CSV file cannot.
     """
+    if design_space.variables.has_variables_of_type(DataType.CATEGORICAL):
+        names = ", ".join(
+            repr(name)
+            for name, variable in design_space.variables.items()
+            if variable.type == DataType.CATEGORICAL
+        )
+        msg = (
+            f"The design space has the categorical variables {names}, "
+            "which cannot be exported to a CSV file; use an HDF file instead."
+        )
+        raise ValueError(msg)
+
     separator = delimiter or " "
     columns = list(fields) if fields else list(table_names)
     if design_space.variables.has_variables_of_type(DataType.CATALOG):
@@ -682,7 +763,9 @@ def from_csv(
 
     Raises:
         ValueError: If the file does not contain the minimal variables in
-            its header.
+            its header,
+            or if it has a categorical variable,
+            which an HDF file can store but a CSV file cannot.
     """
     design_space = cls()
     float_data = genfromtxt(file_path, delimiter=delimiter or None, dtype="float")
@@ -733,6 +816,13 @@ def from_csv(
             var_type = str_data[k, col_map[var_type_field]]
         else:
             var_type = cls.DesignVariableType.REAL
+        if var_type == DataType.CATEGORICAL:
+            msg = (
+                f"The variable {name!r} of the file {file_path} is categorical, "
+                "which cannot be imported from a CSV file; use an HDF file instead."
+            )
+            raise ValueError(msg)
+
         choices = read_choices_cell(str_data, col_map, k)
         if choices is not None and var_type != cls.DesignVariableType.DISCRETE:
             msg = (
@@ -795,7 +885,9 @@ def to_file(
 
     Raises:
         ValueError: If the HDF file already stores a design space with a
-            different structure.
+            different structure,
+            or if the design space has a categorical variable
+            and the file is not an HDF file.
     """
     file_path = Path(file_path)
     if file_path.suffix.startswith((".hdf", ".h5")):

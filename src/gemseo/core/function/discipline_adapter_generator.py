@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammar.base import BaseGrammar
+    from gemseo.space.variable import CategoricalVariable
 
 
 class DisciplineAdapterGenerator:
@@ -56,10 +57,16 @@ class DisciplineAdapterGenerator:
     __name_to_size: MutableMapping[str, int]
     """The map from an input name to its size, if known."""
 
+    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    """The map from the name of a categorical input to its variable."""
+
     def __init__(
         self,
         discipline: Discipline,
         name_to_size: MutableMapping[str, int] = read_only_empty_dict,
+        name_to_categorical_variable: Mapping[
+            str, CategoricalVariable
+        ] = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -67,9 +74,15 @@ class DisciplineAdapterGenerator:
             name_to_size: The sizes of the input variables.
                 If empty,
                 determine them from the default inputs and local data of the discipline.
+            name_to_categorical_variable: The map
+                from the name of a categorical input to its variable;
+                the discipline receives the label of the category
+                instead of its position in the input vector.
+                If empty, no input is categorical.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
         self.__name_to_size = name_to_size or {}
+        self.__name_to_categorical_variable = dict(name_to_categorical_variable)
 
     def get_function(
         self,
@@ -125,12 +138,22 @@ class DisciplineAdapterGenerator:
                 self.discipline.io.input_grammar,
             )
         else:
-            differentiated_input_names_substitute = input_names
+            # A categorical input is not differentiable,
+            # its label is not a number.
+            differentiated_input_names_substitute = [
+                name
+                for name in input_names
+                if name not in self.__name_to_categorical_variable
+            ]
 
         if is_differentiable:
-            self.discipline.add_differentiated_inputs(
-                differentiated_input_names_substitute
-            )
+            # An empty list would mean all the inputs: when all of them are
+            # categorical, no input is differentiated.
+            if differentiated_input_names_substitute:
+                self.discipline.add_differentiated_inputs(
+                    differentiated_input_names_substitute
+                )
+
             self.discipline.add_differentiated_outputs(output_names)
 
         return self._adapter_class(
@@ -140,6 +163,7 @@ class DisciplineAdapterGenerator:
             self.discipline,
             self.__name_to_size,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
+            name_to_categorical_variable=self.__name_to_categorical_variable,
         )
 
     def __get_names(

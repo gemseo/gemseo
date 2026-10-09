@@ -24,11 +24,14 @@ from numpy import abs as np_abs
 from numpy import array
 from numpy import clip
 from numpy import equal
+from numpy import full
 from numpy import inf
 from numpy import where
+from numpy import zeros
 
 from gemseo.space._core.codec import concatenate_values
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
+from gemseo.space.variable import BaseNumericVariable
 from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
@@ -38,6 +41,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.space._design.variables import DesignVariables
+    from gemseo.space.variable import BaseDeterministicVariable
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
 
@@ -79,9 +83,12 @@ class Bounds(RegistryDerivedData):
         Returns:
             The lower bound of the variable (possibly infinite);
             this array is read-only.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
         # The variable hands out a view of the frozen bound it stores.
-        return self._variables[name].lower_bound
+        return self.__get_numeric_variable(name).lower_bound
 
     def get_upper_bound(self, name: str) -> NumberArray:
         """Return the upper bound of a variable (read-only).
@@ -92,8 +99,30 @@ class Bounds(RegistryDerivedData):
         Returns:
             The upper bound of the variable (possibly infinite);
             this array is read-only.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
-        return self._variables[name].upper_bound
+        return self.__get_numeric_variable(name).upper_bound
+
+    def __get_numeric_variable(self, name: str) -> BaseNumericVariable:
+        """Return a variable that has bounds.
+
+        Args:
+            name: The name of the variable.
+
+        Returns:
+            The variable.
+
+        Raises:
+            TypeError: If the variable has no bounds.
+        """
+        variable = self._variables[name]
+        if not isinstance(variable, BaseNumericVariable):
+            msg = f"The {variable.type} variable {name} has no bounds."
+            raise TypeError(msg)
+
+        return variable
 
     def set_lower_bound(
         self, name: str, lower_bound: complex | Iterable[complex]
@@ -103,8 +132,11 @@ class Bounds(RegistryDerivedData):
         Args:
             name: The name of the variable.
             lower_bound: The lower bound of the variable.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
-        variable = self._variables[name]
+        variable = self.__get_numeric_variable(name)
         self._variables[name] = variable.model_copy(update={"lower_bound": lower_bound})
 
     def set_upper_bound(
@@ -115,22 +147,61 @@ class Bounds(RegistryDerivedData):
         Args:
             name: The name of the variable.
             upper_bound: The upper bound of the variable.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
-        variable = self._variables[name]
+        variable = self.__get_numeric_variable(name)
         self._variables[name] = variable.model_copy(update={"upper_bound": upper_bound})
 
+    @staticmethod
+    def __get_coordinate_bound(
+        variable: BaseDeterministicVariable, select_lower_bound: bool
+    ) -> NumberArray:
+        """Return the bound of the coordinates of a variable.
+
+        A variable without bounds, e.g. a categorical one,
+        has coordinates ranging from zero to the number of its categories minus one.
+
+        Args:
+            variable: The variable.
+            select_lower_bound: Whether to select the lower bound.
+                Otherwise, select the upper bound.
+
+        Returns:
+            The bound of the coordinates of the variable.
+        """
+        if isinstance(variable, BaseNumericVariable):
+            return variable.lower_bound if select_lower_bound else variable.upper_bound
+
+        if select_lower_bound:
+            return zeros(variable.size, dtype=variable.coordinate_type)
+
+        return full(
+            variable.size, len(variable.categories) - 1, dtype=variable.coordinate_type
+        )
+
     def _rebuild(self) -> None:
-        """Rebuild the bounds of the full vector."""
+        """Rebuild the bounds of the full vector.
+
+        The bounds describe the coordinates of the full vector.
+        """
         variables = self._variables
         self.__full_lower_bound = freeze_array(
             concatenate_values(
-                {name: variable.lower_bound for name, variable in variables.items()},
+                {
+                    name: self.__get_coordinate_bound(variable, True)
+                    for name, variable in variables.items()
+                },
                 variables,
             )
         )
         self.__full_upper_bound = freeze_array(
             concatenate_values(
-                {name: variable.upper_bound for name, variable in variables.items()},
+                {
+                    name: self.__get_coordinate_bound(variable, False)
+                    for name, variable in variables.items()
+                },
                 variables,
             )
         )
@@ -173,7 +244,10 @@ class Bounds(RegistryDerivedData):
             names: The names of the variables.
                 If empty, return the lower bounds of all the variables.
             as_dict: Whether to return a dictionary keyed by variable name.
-                Otherwise, return an array.
+                The variables without bounds, e.g. categorical ones,
+                are then left out.
+                Otherwise, return an array
+                in which a variable without bounds has the range of its coordinates.
 
         Returns:
             The lower bounds of the variables;
@@ -206,7 +280,10 @@ class Bounds(RegistryDerivedData):
             names: The names of the variables.
                 If empty, return the upper bounds of all the variables.
             as_dict: Whether to return a dictionary keyed by variable name.
-                Otherwise, return an array.
+                The variables without bounds, e.g. categorical ones,
+                are then left out.
+                Otherwise, return an array
+                in which a variable without bounds has the range of its coordinates.
 
         Returns:
             The upper bounds of the variables;
@@ -241,12 +318,25 @@ class Bounds(RegistryDerivedData):
 
             names = self._variables
 
-        get_bound = (
-            self.get_lower_bound if select_lower_bounds else self.get_upper_bound
-        )
-        name_to_bound = {name: get_bound(name) for name in names}
         if as_dict:
-            return name_to_bound
+            # A variable without bounds, e.g. a categorical one, is left out.
+            return {
+                name: self.__get_coordinate_bound(
+                    self._variables[name], select_lower_bounds
+                )
+                for name in names
+                if isinstance(self._variables[name], BaseNumericVariable)
+            }
+
+        # A variable without bounds, e.g. a categorical one,
+        # has the range of its coordinates here,
+        # so that the array is aligned with the design vector.
+        name_to_bound = {
+            name: self.__get_coordinate_bound(
+                self._variables[name], select_lower_bounds
+            )
+            for name in names
+        }
 
         # Freeze for consistency: every bound handed out is read-only.
         return freeze_array(concatenate_values(name_to_bound, names))
@@ -268,7 +358,14 @@ class Bounds(RegistryDerivedData):
         """
         active_lower_bound: dict[str, BooleanArray] = {}
         active_upper_bound: dict[str, BooleanArray] = {}
-        for name in self._variables:
+        for name, variable in self._variables.items():
+            if not isinstance(variable, BaseNumericVariable):
+                # A variable without bounds has no active bound.
+                no_active_bound = zeros(variable.size, dtype=bool)
+                active_lower_bound[name] = no_active_bound
+                active_upper_bound[name] = no_active_bound.copy()
+                continue
+
             lower_bound = self.get_lower_bound(name)
             lower_bound = where(equal(lower_bound, None), -inf, lower_bound)
             upper_bound = self.get_upper_bound(name)

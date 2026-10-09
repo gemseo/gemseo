@@ -71,6 +71,9 @@ T = TypeVar("T", bound=BaseDOESettings)
 class DOEAlgorithmDescription(DriverDescription):
     """The description of a DOE algorithm."""
 
+    handle_categorical_variables: bool = True
+    """Whether the DOE algorithm handles categorical variables."""
+
     handle_discrete_variables: bool = True
     """Whether the optimization algorithm handles discrete variables."""
 

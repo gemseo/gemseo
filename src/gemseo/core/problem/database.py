@@ -58,6 +58,7 @@ from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import DataType
 from gemseo.space.variable import data_type_to_numpy_type
 from gemseo.util._compatibility.numpy import numpy_greater_than_2
 from gemseo.util.constant import read_only_empty_dict
@@ -1219,6 +1220,10 @@ class Database(Mapping):
         # which may happen to be integral even for a relaxed run.
         name_to_type = {}
         for name, variable in input_variables.items():
+            if variable.type == DataType.CATEGORICAL:
+                # The labels replace the positions once the dataset is built.
+                continue
+
             type_ = (
                 dtype(float)
                 if name in self.relaxed_variable_names
@@ -1307,7 +1312,21 @@ class Database(Mapping):
         # So
         # 1) we cast the str-like int to float
         # 2) these float-like int to int.
-        return dataset.astype(name_to_type_without_int).astype(name_to_type)
+        dataset = dataset.astype(name_to_type_without_int).astype(name_to_type)
+
+        # Decode the values of the categorical variables
+        # stored in the database as position values.
+        # A stored coordinate is expected to be an exact position,
+        # so a non-integer one is an error here;
+        # only the discipline adapter rounds, as it may receive perturbed points.
+        for name, variable in input_variables.items():
+            if variable.type == DataType.CATEGORICAL:
+                column = (input_group, name, 0)
+                dataset[column] = variable.decode(dataset[column].to_numpy()).astype(
+                    object
+                )
+
+        return dataset
 
     def __update_data_and_columns_for_dataset(
         self,

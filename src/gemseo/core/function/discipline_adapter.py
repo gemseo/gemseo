@@ -26,6 +26,8 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import empty
 from numpy import ndarray
+from numpy import rint
+from numpy import zeros
 from scipy.sparse import block_array
 from scipy.sparse import block_diag
 from scipy.sparse import csr_array
@@ -39,10 +41,12 @@ from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import MutableMapping
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
+    from gemseo.space.variable import CategoricalVariable
     from gemseo.util.typing import JacobianData
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import StrKeyMapping
@@ -69,10 +73,15 @@ class DisciplineAdapter(ArrayFunction):
     measured and stored by this sibling, as if they had been given.
     """
 
+    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    """The map from the name of a categorical input to its variable."""
+
     differentiated_input_names_substitute: Sequence[str]
     """The names of the inputs with respect to which to differentiate the functions.
 
-    If empty, consider the variables of their input space.
+    If empty, consider the variables of their input space,
+    except the categorical ones,
+    whose positions have no order and hence no derivative.
     """
 
     def __init__(
@@ -83,6 +92,9 @@ class DisciplineAdapter(ArrayFunction):
         discipline: Discipline,
         name_to_size: MutableMapping[str, int] = read_only_empty_dict,
         differentiated_input_names_substitute: Sequence[str] = (),
+        name_to_categorical_variable: Mapping[
+            str, CategoricalVariable
+        ] = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -99,7 +111,15 @@ class DisciplineAdapter(ArrayFunction):
                 of the discipline.
             differentiated_input_names_substitute: The names of the inputs
                 with respect to which to differentiate the functions.
-                If empty, consider the variables of their input space.
+                If empty, consider the variables of their input space,
+                except the categorical ones,
+                whose positions have no order and hence no derivative;
+                when all of them are categorical, no input is differentiated.
+            name_to_categorical_variable: The map
+                from the name of a categorical input to its variable;
+                the discipline receives the label of the category
+                instead of its position in the input vector.
+                If empty, no input is categorical.
         """  # noqa: D205, D212, D415
         super().__init__(
             self._func_to_wrap,
@@ -109,7 +129,10 @@ class DisciplineAdapter(ArrayFunction):
             output_names=output_names,
         )
         self.differentiated_input_names_substitute = (
-            differentiated_input_names_substitute or input_names
+            differentiated_input_names_substitute
+            or [
+                name for name in input_names if name not in name_to_categorical_variable
+            ]
         )
         self.__default_inputs = default_input_data
         self.__input_size = 0
@@ -118,6 +141,11 @@ class DisciplineAdapter(ArrayFunction):
         self.__discipline = discipline
         self.__input_name_to_slice = {}
         self.__input_name_to_size = name_to_size or {}
+        self.__name_to_categorical_variable = {
+            name: variable
+            for name, variable in name_to_categorical_variable.items()
+            if name in input_names
+        }
         self.__given_input_names = frozenset(name_to_size)
         self.__differentiated_input_name_to_slice = {}
         input_names = set(self.input_names)
@@ -234,10 +262,36 @@ class DisciplineAdapter(ArrayFunction):
         Returns:
             The Jacobian value.
         """
-        input_data = self._create_discipline_input_data(x_vect)
         n_samples = len(x_vect) if x_vect.ndim == 2 else 1
+        if not self.differentiated_input_names_substitute:
+            return self.__compute_null_jacobian(x_vect, n_samples)
+
+        input_data = self._create_discipline_input_data(x_vect)
         jacobian_data = self.__discipline.linearize(input_data)
         return self._convert_jacobian_to_array(jacobian_data, n_samples=n_samples)
+
+    def __compute_null_jacobian(
+        self, x_vect: NumberArray, n_samples: int
+    ) -> NumberArray:
+        """Compute the Jacobian when no input is differentiated.
+
+        Like in the other cases,
+        the Jacobian has no column for the inputs that are not differentiated,
+        i.e. no column at all here.
+
+        Args:
+            x_vect: The input vector.
+            n_samples: The number of samples.
+
+        Returns:
+            The null Jacobian.
+        """
+        n_columns = 0
+        n_rows = array(self._func_to_wrap(x_vect)).size // n_samples
+        if n_samples > 1:
+            return csr_array((n_samples * n_rows, n_samples * n_columns))
+
+        return zeros(n_columns if n_rows == 1 else (n_rows, n_columns))
 
     def _convert_jacobian_to_array(
         self, jacobian_data: JacobianData, n_samples: int = 1
@@ -453,6 +507,8 @@ class DisciplineAdapter(ArrayFunction):
         The variables in the input data are cast according to the types defined in the
         design space.
 
+        The categorical variables are given as labels.
+
         Args:
             x_vect: The input vector of the function.
 
@@ -474,9 +530,36 @@ class DisciplineAdapter(ArrayFunction):
         if variable_types is not None:
             # Restore the proper data types as declared in the design space.
             for name, type_ in variable_types.items():
-                input_data[name] = input_data[name].astype(type_, copy=False)
+                if name not in self.__name_to_categorical_variable:
+                    input_data[name] = input_data[name].astype(type_, copy=False)
+
+        self.__decode_categories(input_data, x_vect)
 
         if x_vect.ndim == 2:
             return {k: v.ravel() for k, v in input_data.items()}
 
         return input_data
+
+    def __decode_categories(
+        self, input_data: MutableMapping[str, ndarray], x_vect: ndarray
+    ) -> None:
+        """Set the categorical inputs to the labels of their categories.
+
+        Args:
+            input_data: The input data of the discipline.
+            x_vect: The input vector of the function,
+                whose categorical components are positions among the categories.
+        """
+        data_converter = self.__discipline.io.input_grammar.data_converter
+        for name, variable in self.__name_to_categorical_variable.items():
+            # A finite-difference or complex-step perturbation of the design vector
+            # may leave the integer positions: round the real part to the nearest one.
+            labels = variable.decode(
+                rint(x_vect[..., self.__input_name_to_slice[name]].real)
+            )
+            # The labels of several samples are given as such to the discipline.
+            input_data[name] = (
+                labels
+                if x_vect.ndim == 2
+                else data_converter.convert_array_to_value(name, labels)
+            )

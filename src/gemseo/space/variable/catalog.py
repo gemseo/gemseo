@@ -35,10 +35,10 @@ from gemseo.space.catalog._input import CatalogPropertiesType
 from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable.base import CoordinateDType
 from gemseo.space.variable.base import DataType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
-from gemseo.space.variable.numeric import ComponentDType
 from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ class CatalogVariable(
     a property of the catalog holds a value per alternative.
     """
 
-    component_type: ClassVar[ComponentDType] = int64
+    coordinate_type: ClassVar[CoordinateDType] = int64
 
     type: ClassVar[DataType] = DataType.CATALOG
 
@@ -156,7 +156,7 @@ class CatalogVariable(
         Returns:
             The bound of the variable.
         """
-        return freeze_array(array([position], dtype=self.component_type))
+        return freeze_array(array([position], dtype=self.coordinate_type))
 
     def get_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool
@@ -195,7 +195,7 @@ class CatalogVariable(
         Returns:
             The position of the first alternative of the catalog.
         """  # noqa: D205, D212
-        return array([0], dtype=self.component_type)
+        return array([0], dtype=self.coordinate_type)
 
     def filter_components(self, components: Sequence[int]) -> Self:  # noqa: D102
         return self._filter_scalar_components(components)

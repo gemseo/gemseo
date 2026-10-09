@@ -22,12 +22,20 @@ import pytest
 
 from tests.space.variable.utils import all_kinds
 from tests.space.variable.utils import kind_to_kwargs
+from tests.space.variable.utils import numeric_kinds
 
 if TYPE_CHECKING:
+    from gemseo.space.variable import BaseNumericVariable
     from gemseo.space.variable import BaseVariable
 
 
 @pytest.fixture(params=all_kinds)
 def variable(request) -> BaseVariable:
-    """A variable of each kind, of size 1 and with the bounds [0, 1]."""
+    """A variable of each kind, of size 1 and with the bounds [0, 1] if it has any."""
+    return request.param(**kind_to_kwargs[request.param])
+
+
+@pytest.fixture(params=numeric_kinds)
+def numeric_variable(request) -> BaseNumericVariable:
+    """A bounded variable of each kind, of size 1 and with the bounds [0, 1]."""
     return request.param(**kind_to_kwargs[request.param])

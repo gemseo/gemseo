@@ -1334,6 +1334,26 @@ def test_int_opt_problem(
             )
 
 
+def test_categorical_opt_problem(snapshot) -> None:
+    """Check that an optimization algorithm refuses a categorical variable.
+
+    A categorical variable cannot be relaxed,
+    so no setting lets an optimization algorithm handle it.
+    """
+    f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+    design_space = DesignSpace()
+    design_space.add_categorical_variable("x", ["a", "b"], "a")
+    problem = OptimizationProblem(design_space)
+    problem.objective = -f_1
+    with assert_exception(ValueError, snapshot):
+        optimization_library_factory.execute(
+            problem,
+            settings=L_BFGS_B_Settings(
+                relax_integer_variables=True, relax_discrete_variables=True
+            ),
+        )
+
+
 def test_int_opt_problem_discrete_check_independent(snapshot) -> None:
     """Check that relaxing the discrete variables does not relax the integer ones.
 

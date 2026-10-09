@@ -25,6 +25,7 @@ from numpy import isfinite
 from numpy import square
 
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline.wrapper.job_scheduler.lsf import LSF
 from gemseo.discipline.wrapper.job_scheduler.slurm import SLURM
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
@@ -40,6 +41,7 @@ from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.job_scheduler import wrap_scenario_in_job_scheduler
 from gemseo.scenario.mdo import MDOScenario
+from gemseo.space import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -333,6 +335,29 @@ def test_design_variable_defaults(
 
     for name, value in scenario.design_space.get_current_value(as_dict=True).items():
         assert wrapper.io.input_grammar.defaults[name] == pytest.approx(value)
+
+
+def test_categorical_design_variable_defaults(tmp_wd) -> None:
+    """Initialize the wrapper defaults with the labels of the categorical variables."""
+    discipline = AnalyticDiscipline({"y": "x"})
+    discipline.io.input_grammar.update_from_types({"material": str})
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium"), "aluminium"
+    )
+    design_space.add_real_variable("x", value=0.5)
+    scenario = EvaluationScenario([discipline], design_space)
+    scenario.add_observable("y")
+    scenario.set_algorithm(CustomDOE_Settings(samples=array([[1.0, 0.5]])))
+
+    wrapper = wrap_scenario_in_job_scheduler(
+        scenario,
+        "SLURM",
+        workdir_path=tmp_wd,
+        adapter_settings={"input_names": ("x", "material")},
+    )
+
+    assert wrapper.io.input_grammar.defaults["material"] == "aluminium"
 
 
 def test_current_design_value_as_starting_point(

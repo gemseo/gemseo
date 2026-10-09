@@ -35,6 +35,7 @@ from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import BaseVariable
+from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
@@ -103,6 +104,7 @@ def test_intermediate_classes_are_abstract(cls, abstract_methods) -> None:
         (RealVariable, True, True),
         (IntegerVariable, True, True),
         (DiscreteVariable, True, True),
+        (CategoricalVariable, True, False),
         (RandomVariable, False, True),
     ],
 )
@@ -124,6 +126,7 @@ def test_axes_of_the_hierarchy(cls, is_deterministic, is_numeric) -> None:
         (RealVariable, {"size", "lower_bound", "upper_bound"}),
         (IntegerVariable, {"size", "lower_bound", "upper_bound"}),
         (DiscreteVariable, {"choices"}),
+        (CategoricalVariable, {"categories"}),
         (RandomVariable, {"distribution_settings"}),
     ],
 )
@@ -212,10 +215,10 @@ def test_wrong_boundaries(cls: type[BaseVariable], snapshot) -> None:
 
 
 @pytest.mark.parametrize("bound", ["lower_bound", "upper_bound"])
-def test_frozen(variable, bound, snapshot) -> None:
+def test_frozen(numeric_variable, bound, snapshot) -> None:
     """Check that a variable is immutable (bounds cannot be reassigned)."""
     with assert_exception(ValidationError, snapshot):
-        setattr(variable, bound, 0)
+        setattr(numeric_variable, bound, 0)
 
 
 @pytest.mark.parametrize("cls", kinds)
@@ -255,7 +258,7 @@ def test_bounds_are_handed_out_as_views(cls, bound, attribute_name, value) -> No
     for name in ("lower_bound", "upper_bound"):
         assert getattr(variable, name).shape == (2,)
         assert getattr(variable, name).strides == (8,)
-        assert getattr(variable, name).dtype == variable.component_type
+        assert getattr(variable, name).dtype == variable.coordinate_type
 
     assert_array_equal(variable.get_default_value(), [1, 1])
 
@@ -326,15 +329,15 @@ def test_model_copy_with_another_type(cls, type_, snapshot) -> None:
         variable.model_copy(update={"type": type_})
 
 
-def test_copy_and_pickle_keep_the_kind(variable, snapshot) -> None:
+def test_copy_and_pickle_keep_the_kind(numeric_variable, snapshot) -> None:
     """Check that copying and unpickling preserve the kind and the frozen bounds."""
-    assert copy(variable) is variable
-    assert deepcopy(variable) is variable
+    assert copy(numeric_variable) is numeric_variable
+    assert deepcopy(numeric_variable) is numeric_variable
 
-    restored = pickle.loads(pickle.dumps(variable))
+    restored = pickle.loads(pickle.dumps(numeric_variable))
 
-    assert type(restored) is type(variable)
-    assert restored == variable
+    assert type(restored) is type(numeric_variable)
+    assert restored == numeric_variable
     assert not restored.lower_bound.flags.writeable
     assert not restored.upper_bound.flags.writeable
 

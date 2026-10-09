@@ -5,6 +5,12 @@
 # name: test_add_constraints.1
   "The function type 'obj' is not one of those authorized (eq and ineq)."
 # ---
+# name: test_categorical_opt_problem
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle categorical variables.
+  Use an algorithm handling them, e.g. a DOE algorithm.
+  '''
+# ---
 # name: test_constraints_dim
   'The function output dimension is not available yet, please call function ineq1(x): 0.5 -x[0] ** 3 <= -1 once.'
 # ---

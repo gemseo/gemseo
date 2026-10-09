@@ -20,6 +20,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.space.variable import DataType
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import pretty_repr
 
@@ -202,11 +203,22 @@ def wrap_scenario_in_job_scheduler(
 
     settings.update(adapter_settings)
     adapter = adapter_class(scenario, **settings)
-    adapter.io.input_grammar.defaults.update({
-        name: value
-        for name, value in design_space.get_current_value(as_dict=True).items()
-        if name in adapter.io.input_grammar
-    })
+    input_grammar = adapter.io.input_grammar
+    defaults = {}
+    for name, value in design_space.get_current_value(as_dict=True).items():
+        if name not in input_grammar:
+            continue
+
+        # A discipline receives the label of a categorical variable.
+        variable = design_space.variables[name]
+        if variable.type == DataType.CATEGORICAL:
+            value = input_grammar.data_converter.convert_array_to_value(
+                name, variable.decode(value)
+            )
+
+        defaults[name] = value
+
+    input_grammar.defaults.update(defaults)
 
     return JobSchedulerDisciplineFactory().wrap_discipline(
         discipline=adapter,

@@ -29,6 +29,7 @@ from gemseo.space._core.codec import split_full_value
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design import checking
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import BaseNumericVariable
 from gemseo.util._numpy import complex128_dtype
 from gemseo.util._numpy import float64_dtype
 from gemseo.util._numpy import get_common_dtype as _compute_common_dtype
@@ -43,7 +44,26 @@ if TYPE_CHECKING:
     from gemseo.space._design.bounds import Bounds
     from gemseo.space._design.normalizer import Normalizer
     from gemseo.space._design.variables import DesignVariables
+    from gemseo.space.variable import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
+
+
+def cast_coordinates(
+    variable: BaseDeterministicVariable, value: NumberArray
+) -> NumberArray:
+    """Cast a value of a variable to the NumPy type of its coordinates.
+
+    Args:
+        variable: The variable.
+        value: The value of the variable, as coordinates.
+
+    Returns:
+        The cast value.
+    """
+    if isinstance(variable, BaseNumericVariable):
+        return variable.cast(value)
+
+    return value.astype(variable.coordinate_type)
 
 
 class Value(RegistryDerivedData):
@@ -271,7 +291,9 @@ class Value(RegistryDerivedData):
         self.__name_to_value_view = ReadOnlyMapping(self.__name_to_value)
         for name, val in self.__name_to_value.items():
             if val is not None:
-                self.__name_to_value[name] = self._variables[name].cast(val)
+                self.__name_to_value[name] = cast_coordinates(
+                    self._variables[name], val
+                )
 
         self.__update_metadata()
 
@@ -297,7 +319,9 @@ class Value(RegistryDerivedData):
             checking.check_domain(self._variables, name, value)
         # A variable with no value keeps its None marker; a genuine value is cast
         # so that the caller does not keep a hand on the stored array.
-        self.__name_to_value[name] = None if value is None else variable.cast(value)
+        self.__name_to_value[name] = (
+            None if value is None else cast_coordinates(variable, value)
+        )
         self.__update_metadata()
 
     def pop(self, name: str) -> None:
@@ -370,13 +394,18 @@ class Value(RegistryDerivedData):
         Raises:
             ValueError: If the current value falls outside the bounds.
         """
-        lower_bound = self.__bounds.get_lower_bound(name)
-        upper_bound = self.__bounds.get_upper_bound(name)
         # A value invalidated by a resize is not checked against the new bounds.
         self.__update_status()
         current_value = self.__name_to_value.get(name)
         if current_value is None:
             return
+
+        if not isinstance(self._variables[name], BaseNumericVariable):
+            # A variable without bounds is checked against its domain when added.
+            return
+
+        lower_bound = self.__bounds.get_lower_bound(name)
+        upper_bound = self.__bounds.get_upper_bound(name)
 
         indices = logical_or(
             current_value < lower_bound - bound_atol,
@@ -526,8 +555,8 @@ class Value(RegistryDerivedData):
         ) in self._variables.name_to_normalization_mask.items():
             if not to_normalize.any():
                 # A value left unnormalized keeps the NumPy type of its variable.
-                self.__name_to_normalized_value[name] = self._variables[name].cast(
-                    self.__name_to_normalized_value[name]
+                self.__name_to_normalized_value[name] = cast_coordinates(
+                    self._variables[name], self.__name_to_normalized_value[name]
                 )
 
     @staticmethod
