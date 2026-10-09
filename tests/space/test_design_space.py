@@ -54,10 +54,10 @@ from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
 from gemseo.space import Catalog
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import DataType
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
+from gemseo.space.variable import VariableType
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
@@ -2749,7 +2749,7 @@ def test_unpickle_design_space_of_the_last_release() -> None:
     assert space.dimension == 4
     assert tuple(space.variables) == ("x", "y", "i")
 
-    # Every variable has been restored as the class pinning its data type,
+    # Every variable has been restored as the class pinning its variable type,
     # with the bounds frozen by the validation of the new classes.
     assert type(space._variables["x"]) is RealVariable
     assert type(space._variables["y"]) is RealVariable
@@ -2775,61 +2775,63 @@ def test_unpickle_design_space_of_the_last_release() -> None:
     )
 
 
-@pytest.mark.parametrize("data_type", ["float", b"float"])
-def test_add_variable_with_a_legacy_data_type(data_type) -> None:
-    """Check that ``add_variable`` still accepts the data type value of 6.3."""
+@pytest.mark.parametrize("variable_type", ["float", b"float"])
+def test_add_variable_with_a_legacy_variable_type(variable_type) -> None:
+    """Check that ``add_variable`` still accepts the variable type value of 6.3."""
     design_space = DesignSpace()
-    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
+    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
         design_space.add_variable(
-            "x", type_=data_type, lower_bound=0.0, upper_bound=1.0
+            "x", type_=variable_type, lower_bound=0.0, upper_bound=1.0
         )
 
     assert design_space.variables["x"].type == real_type
 
 
-def test_from_csv_with_a_legacy_data_type() -> None:
-    """Check that a CSV file storing the data type value of 6.3 is read."""
-    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
+def test_from_csv_with_a_legacy_variable_type() -> None:
+    """Check that a CSV file storing the variable type value of 6.3 is read."""
+    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
         space = DesignSpace.from_csv(current_dir / "design_space_legacy_type.csv")
 
     assert space.variables["x_shared"].type == real_type
 
 
-def test_from_hdf_with_a_legacy_data_type(tmp_wd) -> None:
-    """Check that an HDF file storing the data type value of 6.3 is read."""
-    file_path = _write_hdf_with_a_stored_data_type(b"float", "legacy.h5")
+def test_from_hdf_with_a_legacy_variable_type(tmp_wd) -> None:
+    """Check that an HDF file storing the variable type value of 6.3 is read."""
+    file_path = _write_hdf_with_a_stored_variable_type(b"float", "legacy.h5")
 
-    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
+    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
         space = DesignSpace.from_hdf(file_path)
 
     assert space.variables["x"].type == real_type
 
 
-def test_to_hdf_appends_to_a_legacy_data_type(tmp_wd) -> None:
-    """Check that appending to a file storing the data type value of 6.3 works.
+def test_to_hdf_appends_to_a_legacy_variable_type(tmp_wd) -> None:
+    """Check that appending to a file storing the variable type value of 6.3 works.
 
-    The consistency check compares the stored data type to the current one, so a
+    The consistency check compares the stored variable type to the current one, so a
     value of a past release must be normalized before the comparison, otherwise the
     append is refused for a variable that did not change.
     """
-    file_path = _write_hdf_with_a_stored_data_type(b"float", "legacy.h5")
+    file_path = _write_hdf_with_a_stored_variable_type(b"float", "legacy.h5")
 
     space = DesignSpace()
     space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
-    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
+    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
         space.to_hdf(file_path, append=True)
 
-    # The append rewrote the data type, so reading the file back no longer warns.
+    # The append rewrote the variable type, so reading the file back no longer warns.
     with warnings.catch_warnings():
         warnings.simplefilter("error", DeprecationWarning)
         assert DesignSpace.from_hdf(file_path).variables["x"].type == real_type
 
 
-def _write_hdf_with_a_stored_data_type(data_type: bytes, file_name: str) -> Path:
-    """Write a design space to HDF and overwrite the data type it stored.
+def _write_hdf_with_a_stored_variable_type(
+    variable_type: bytes, file_name: str
+) -> Path:
+    """Write a design space to HDF and overwrite the variable type it stored.
 
     Args:
-        data_type: The data type value to store, as HDF stores it.
+        variable_type: The variable type value to store, as HDF stores it.
         file_name: The name of the file to write.
 
     Returns:
@@ -2842,19 +2844,19 @@ def _write_hdf_with_a_stored_data_type(data_type: bytes, file_name: str) -> Path
     with h5py.File(file_path, "a") as h5_file:
         variable_group = h5_file["design_space"]["x"]
         del variable_group["var_type"]
-        variable_group["var_type"] = np.array([data_type], dtype="bytes")
+        variable_group["var_type"] = np.array([variable_type], dtype="bytes")
 
     return file_path
 
 
-def test_to_hdf_appends_to_an_unknown_data_type(tmp_wd, snapshot) -> None:
-    """Check that appending to a file storing an unknown data type raises.
+def test_to_hdf_appends_to_an_unknown_variable_type(tmp_wd, snapshot) -> None:
+    """Check that appending to a file storing an unknown variable type raises.
 
     ``to_hdf()`` never produces such a file; this covers a hand-edited or otherwise
-    corrupted one. The stored value is not a data type at all, so the consistency
+    corrupted one. The stored value is not a variable type at all, so the consistency
     check reports it as is, naming the file and the variable.
     """
-    file_path = _write_hdf_with_a_stored_data_type(b"not-a-type", "bogus.h5")
+    file_path = _write_hdf_with_a_stored_variable_type(b"not-a-type", "bogus.h5")
 
     space = DesignSpace()
     space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
@@ -3823,8 +3825,8 @@ def test_add_variable_with_catalog_type_raises(snapshot) -> None:
 
 def test_has_catalog_variables(catalog_design_space) -> None:
     """Check the detection of catalog variables."""
-    assert catalog_design_space.variables.has_variables_of_type(DataType.CATALOG)
-    assert not DesignSpace().variables.has_variables_of_type(DataType.CATALOG)
+    assert catalog_design_space.variables.has_variables_of_type(VariableType.CATALOG)
+    assert not DesignSpace().variables.has_variables_of_type(VariableType.CATALOG)
 
 
 def test_catalog_variable_derived_bounds(catalog_design_space) -> None:

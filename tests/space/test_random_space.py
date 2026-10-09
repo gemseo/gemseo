@@ -41,7 +41,7 @@ from gemseo.space._core.variables import UnknownVariableError
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.random import RandomVariable
 from gemseo.uncertainty.distribution.openturns.distribution_settings import (
     OTDistribution_Settings,
@@ -114,9 +114,9 @@ def test_container_behavior(space) -> None:
     assert "x" in space
     assert "z" not in space
     assert space.variables["x"].size == 2
-    assert space.variables["x"].type == DataType.REAL
+    assert space.variables["x"].type == VariableType.REAL
     assert space.variables["y"].size == 1
-    assert space.variables["y"].type == DataType.REAL
+    assert space.variables["y"].type == VariableType.REAL
     assert space.get_indexed_variable_names() == ["x[0]", "x[1]", "y"]
     assert_array_equal(space.get_variables_indexes(["y"]), [2])
 

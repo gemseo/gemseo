@@ -52,13 +52,9 @@ if TYPE_CHECKING:
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Optimizer  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Strength  # noqa: F401
     from gemseo.enum._constraint_aggregation import AggregationFunction  # noqa: F401
-
-    # TODO: name conflict (issue #1812): DataType clashes with SobieskiBase.DataType;
-    # rename both at definition site (DesignVariableType / SobieskiDataType) and drop
-    # the aliases.
-    from gemseo.enum._data_type import DataType as DesignVariableType  # noqa: F401
     from gemseo.enum._ot_optimal_lhs import SpaceFillingCriterion  # noqa: F401
     from gemseo.enum._ot_optimal_lhs import TemperatureProfile  # noqa: F401
+    from gemseo.enum._variable_type import VariableType  # noqa: F401
     from gemseo.machine_learning.core.quality.base_ml_model_quality import (
         BaseMLModelQuality as _BaseMLModelQuality,
     )
@@ -217,7 +213,6 @@ if TYPE_CHECKING:
     SelectionCriterion = _BaseDistributionFitter.SelectionCriterion
     """The selection criterion for distribution fitting."""
 
-    # TODO: name conflict (issue #1812): see the DesignVariableType note above.
     SobieskiDataType = _SobieskiBase.DataType
     """The NumPy dtype of the data of the Sobieski problem."""
 
@@ -255,7 +250,6 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "DatasetTrend": "gemseo.post.dataset.trend:Trend",
     "DatasetType": "gemseo.problem.dataset:DatasetType",
     "DerivationMode": "gemseo.core.derivative.derivation_mode:DerivationMode",
-    "DesignVariableType": "gemseo.enum._data_type:DataType",
     "DifferentiationMethod": (
         "gemseo.core.problem.evaluation:EvaluationProblem.DifferentiationMethod"
     ),
@@ -357,6 +351,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
         ":BaseToleranceInterval.ToleranceIntervalSide"
     ),
     "UniformDistribution": "gemseo.problem.uncertainty.util:UniformDistribution",
+    "VariableType": "gemseo.enum._variable_type:VariableType",
 })
 
 install_lazy_reexport(globals(), _name_to_location)

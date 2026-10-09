@@ -24,7 +24,7 @@ from typing import Final
 from pydantic import Field
 from pydantic import field_validator
 
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.uncertainty.distribution.core.base_settings import BaseDistributionSettings
 from gemseo.uncertainty.distribution.factory import distribution_factory
@@ -71,7 +71,7 @@ class RandomVariable(BaseNumericVariable):
     everything else is derived from them and read-only:
     the joint probability distribution of its components,
     its size (the number of these components),
-    its data type (always real)
+    its variable type (always real)
     and its bounds (the limits of the support of its distribution).
 
     Note:
@@ -89,7 +89,7 @@ class RandomVariable(BaseNumericVariable):
         of the distribution, which the variable leaves untouched.
     """
 
-    type: ClassVar[DataType] = DataType.REAL
+    type: ClassVar[VariableType] = VariableType.REAL
 
     distribution_settings: tuple[BaseDistributionSettings, ...] = Field(
         min_length=1,

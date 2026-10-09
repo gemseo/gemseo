@@ -12,17 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Compatibility with the data type values of the past releases.
+"""Compatibility with the variable type values of the past releases.
 
-The value of a [DataType][gemseo.enum.DesignVariableType] is stored in the
+The value of a [VariableType][gemseo.enum.VariableType] is stored in the
 files a design space is written to, so a file written by a past release refers to
-a data type by the value that release used. Such a value keeps being accepted,
+a variable type by the value that release used. Such a value keeps being accepted,
 whatever the release that wrote the file, so that these files remain readable.
 """
 
 from __future__ import annotations
 
-from gemseo.enum._data_type import legacy_data_type_values as legacy_data_type_values
-from gemseo.enum._data_type import (
-    warn_legacy_data_type_value as warn_legacy_data_type_value,
+from gemseo.enum._variable_type import (
+    legacy_variable_type_values as legacy_variable_type_values,
+)
+from gemseo.enum._variable_type import (
+    warn_legacy_variable_type_value as warn_legacy_variable_type_value,
 )

@@ -28,7 +28,7 @@ from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import model_validator
 
-from gemseo.enum._data_type import DataType as DataType  # noqa: TC001
+from gemseo.enum._variable_type import VariableType as VariableType  # noqa: TC001
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -47,7 +47,7 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
 
     Whatever its kind, a variable reads as
     `size`, the number of its components,
-    and `type`, the [DesignVariableType][gemseo.enum.DesignVariableType] of these
+    and `type`, the [VariableType][gemseo.enum.VariableType] of these
     components;
     what else defines it depends on its kind,
     e.g. bounds for a variable whose components are numbers
@@ -80,8 +80,8 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
             """The size of the variable."""
 
         @property
-        def type(self) -> DataType:
-            """The type of data."""
+        def type(self) -> VariableType:
+            """The type of the variable."""
 
     @model_validator(mode="before")
     @classmethod

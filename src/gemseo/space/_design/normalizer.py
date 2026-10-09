@@ -30,7 +30,7 @@ from numpy import zeros
 
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design.constants import bound_atol
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util._numpy import convert_array_type
 from gemseo.util._numpy import float64_dtype
@@ -127,7 +127,7 @@ class Normalizer(RegistryDerivedData):
         name_to_n_categories = {
             name: len(variable.categories)
             for name, variable in self._variables.items()
-            if variable.type == DataType.CATEGORICAL
+            if variable.type == VariableType.CATEGORICAL
         }
         is_categorical = zeros(self._variables.size, dtype=bool)
         n_categories = zeros(self._variables.size)

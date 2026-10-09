@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.dataset.io_dataset import IODataset
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
-    from gemseo.util.string import VariableType
+    from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import RealArray
 
 
@@ -497,7 +497,7 @@ class SobolIndicesEstimatorMixin:
 
     def plot(
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
@@ -712,7 +712,7 @@ class SobolIndicesEstimatorMixin:
 
     def plot_second_order(
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         settings: Heatmap_Settings | None = None,
     ) -> Heatmap:
         """Plot the second-order Sobol' indices using a symmetric heat map.

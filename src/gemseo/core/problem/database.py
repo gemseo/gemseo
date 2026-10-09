@@ -58,8 +58,8 @@ from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import DataType
-from gemseo.space.variable import data_type_to_numpy_type
+from gemseo.space.variable import VariableType
+from gemseo.space.variable import variable_type_to_numpy_type
 from gemseo.util._compatibility.numpy import numpy_greater_than_2
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
@@ -1220,14 +1220,14 @@ class Database(Mapping):
         # which may happen to be integral even for a relaxed run.
         name_to_type = {}
         for name, variable in input_variables.items():
-            if variable.type == DataType.CATEGORICAL:
+            if variable.type == VariableType.CATEGORICAL:
                 # The labels replace the positions once the dataset is built.
                 continue
 
             type_ = (
                 dtype(float)
                 if name in self.relaxed_variable_names
-                else dtype(data_type_to_numpy_type[variable.type])
+                else dtype(variable_type_to_numpy_type[variable.type])
             )
             for component in range(variable.size):
                 name_to_type[input_group, name, component] = type_
@@ -1320,7 +1320,7 @@ class Database(Mapping):
         # so a non-integer one is an error here;
         # only the discipline adapter rounds, as it may receive perturbed points.
         for name, variable in input_variables.items():
-            if variable.type == DataType.CATEGORICAL:
+            if variable.type == VariableType.CATEGORICAL:
                 column = (input_group, name, 0)
                 dataset[column] = variable.decode(dataset[column].to_numpy()).astype(
                     object

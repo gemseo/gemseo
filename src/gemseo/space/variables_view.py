@@ -24,7 +24,7 @@ from gemseo.util.read_only_mapping import ReadOnlyMapping
 
 if TYPE_CHECKING:
     from gemseo.space._core.variables import Variables
-    from gemseo.space.variable import DataType
+    from gemseo.space.variable import VariableType
 
 _VariableT = TypeVar("_VariableT", bound=BaseVariable)
 """The type of the variables of the registry."""
@@ -54,7 +54,7 @@ class VariablesView(ReadOnlyMapping[str, _VariableT]):
         """The map from a variable name to an index range in the full vector."""
         return self._mapping.name_to_indices
 
-    def has_variables_of_type(self, type_: DataType) -> bool:
+    def has_variables_of_type(self, type_: VariableType) -> bool:
         """Return whether at least one variable is of a given type.
 
         Args:

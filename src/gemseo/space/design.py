@@ -57,11 +57,11 @@ from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import CategoricalVariable
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import data_type_to_numpy_type
+from gemseo.space.variable import VariableType
+from gemseo.space.variable import variable_type_to_numpy_type
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import pretty_str
@@ -86,23 +86,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _get_interval_data_types() -> tuple[DataType, ...]:
-    """Return the data types of the variables whose domain is an interval.
+def _get_interval_variable_types() -> tuple[VariableType, ...]:
+    """Return the variable types of the variables whose domain is an interval.
 
     These are the only variables that a caller can declare
-    from a data type, a size and bounds;
+    from a variable type, a size and bounds;
     a variable of another kind, e.g. a discrete one,
     is defined by what its own kind takes as input
     and so must be passed already built.
 
     Returns:
-        The data types of the variables whose domain is an interval.
+        The variable types of the variables whose domain is an interval.
     """
     factory = deterministic_variable_factory
     return tuple(
-        data_type
-        for data_type in factory.data_types
-        if issubclass(factory.get_class_from_data_type(data_type), BaseIntervalVariable)
+        variable_type
+        for variable_type in factory.variable_types
+        if issubclass(
+            factory.get_class_from_variable_type(variable_type), BaseIntervalVariable
+        )
     )
 
 
@@ -141,11 +143,11 @@ class DesignSpace(
 
     _supports_normalization: ClassVar[bool] = True
 
-    DesignVariableType = DataType
+    DesignVariableType = VariableType
 
     # TODO: API: the values are not dtypes but types, either fix the values or the name.
     variable_types_to_dtypes: Final[Mapping[str, type[int64 | float64]]] = (
-        data_type_to_numpy_type
+        variable_type_to_numpy_type
     )
     """One NumPy `dtype` per design variable type."""
 
@@ -252,7 +254,7 @@ class DesignSpace(
         self,
         name: str,
         size: int = 1,
-        type_: Literal[DataType.REAL, DataType.INTEGER] = DataType.REAL,
+        type_: Literal[VariableType.REAL, VariableType.INTEGER] = VariableType.REAL,
         lower_bound: BoundType = -inf,
         upper_bound: BoundType = inf,
         value: complex | Iterable[complex] | None = None,
@@ -305,15 +307,15 @@ class DesignSpace(
 
         # A caller may name the type by the value of a past release,
         # e.g. when replaying a script written against that release,
-        # so normalize it before comparing it to the data types.
-        # A value that is not a data type at all is left as is,
+        # so normalize it before comparing it to the variable types.
+        # A value that is not a variable type at all is left as is,
         # so that the message below names the valid ones.
-        decoded_type_ = DataType._resolve_value(decoded_type_)
+        decoded_type_ = VariableType._resolve_value(decoded_type_)
 
-        interval_data_types = _get_interval_data_types()
-        if decoded_type_ not in interval_data_types:
+        interval_variable_types = _get_interval_variable_types()
+        if decoded_type_ not in interval_variable_types:
             msg = (
-                f"Only {pretty_str(interval_data_types, use_and=True)} variables "
+                f"Only {pretty_str(interval_variable_types, use_and=True)} variables "
                 "may be declared "
                 "through the type_ argument of add_variable; "
                 "use the add_<kind>_variable method instead."
@@ -574,7 +576,7 @@ class DesignSpace(
 
         name_to_value = self.get_current_value(as_dict=True)
         for name, variable in self._variables.items():
-            if variable.type == DataType.CATEGORICAL:
+            if variable.type == VariableType.CATEGORICAL:
                 name_to_value[name] = variable.decode(name_to_value[name])
 
         return name_to_value
@@ -1043,7 +1045,7 @@ class DesignSpace(
                 [OptimizationResult][gemseo.optimization.result.OptimizationResult].
         """
         if isinstance(value, Mapping) and self._variables.has_variables_of_type(
-            DataType.CATEGORICAL
+            VariableType.CATEGORICAL
         ):
             value = {
                 name: self.__encode_labels(name, val)
@@ -1096,7 +1098,7 @@ class DesignSpace(
             otherwise the value.
         """
         variable = self._variables[name]
-        if variable.type != DataType.CATEGORICAL or value is None:
+        if variable.type != VariableType.CATEGORICAL or value is None:
             return value
 
         array_value = atleast_1d(value)
@@ -1131,7 +1133,7 @@ class DesignSpace(
                 but the variable is neither a catalog nor a categorical variable.
         """
         variable = self._variables[name]
-        if isinstance(current_value, str) and variable.type != DataType.CATEGORICAL:
+        if isinstance(current_value, str) and variable.type != VariableType.CATEGORICAL:
             if not isinstance(variable, CatalogVariable):
                 msg = (
                     f"The variable {name!r} is neither a catalog "

@@ -32,7 +32,7 @@ from pydantic import model_validator
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable._formatting import format_elided
 from gemseo.space.variable._view_field import expose_fields_as_views
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.space.variable.numeric import ScalarBoundType
@@ -90,7 +90,7 @@ class DiscreteVariable(BaseDeterministicVariable, BaseNumericVariable):
     changes that view only.
     """
 
-    type: ClassVar[DataType] = DataType.DISCRETE
+    type: ClassVar[VariableType] = VariableType.DISCRETE
 
     choices: ChoicesType = Field(
         description="""The values that the variable can take.

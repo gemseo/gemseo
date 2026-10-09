@@ -86,7 +86,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.base import DatasetPlotPropertyType
     from gemseo.scenario.backup_settings import BackupSettings
     from gemseo.space.random import RandomSpace
-    from gemseo.util.string import VariableType
+    from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import StrPath
 
 OutputsType = str | tuple[str, int] | Sequence[str | tuple[str, int]]
@@ -354,7 +354,7 @@ class BaseGenericSensitivityAnalysis(
             self._input_names,
         )
 
-    def sort_input_variables(self, output: VariableType) -> list[str]:
+    def sort_input_variables(self, output: VariableOrComponent) -> list[str]:
         """Return the inputs sorted in descending order.
 
         Args:
@@ -383,7 +383,7 @@ class BaseGenericSensitivityAnalysis(
 
     def plot(
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
@@ -435,7 +435,7 @@ class BaseGenericSensitivityAnalysis(
 
     def plot_field(
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         mesh: RealArray | None = None,
         input_names: Iterable[str] = (),
         standardize: bool = False,
@@ -546,7 +546,7 @@ class BaseGenericSensitivityAnalysis(
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,
-        sorting_output: VariableType = "",
+        sorting_output: VariableOrComponent = "",
         bar_plot_settings: BarPlot_Settings | None = None,
     ) -> BarPlot:
         """Plot the sensitivity indices on a bar plot.
@@ -634,7 +634,7 @@ class BaseGenericSensitivityAnalysis(
         outputs: OutputsType,
         standardize: bool,
         sort: bool,
-        sorting_output: VariableType,
+        sorting_output: VariableOrComponent,
     ) -> Dataset:
         r"""Create the dataset to plot.
 
@@ -736,7 +736,7 @@ class BaseGenericSensitivityAnalysis(
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,
-        sorting_output: VariableType = "",
+        sorting_output: VariableOrComponent = "",
         radar_chart_settings: RadarChart_Settings | None = None,
     ) -> RadarChart:
         """Plot the sensitivity indices on a radar chart.
@@ -832,7 +832,7 @@ class BaseGenericSensitivityAnalysis(
         self,
         indices: BaseGenericSensitivityAnalysis
         | Iterable[BaseGenericSensitivityAnalysis],
-        output: VariableType,
+        output: VariableOrComponent,
         input_names: Iterable[str] = (),
         title: str = "",
         use_bar_plot: bool = True,

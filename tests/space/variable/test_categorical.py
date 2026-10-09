@@ -26,8 +26,8 @@ from pydantic import ValidationError
 
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import CategoricalVariable
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -35,7 +35,7 @@ def test_fields() -> None:
     """Check the fields of a categorical variable."""
     variable = CategoricalVariable(categories=["steel", "aluminium", "titanium"])
 
-    assert variable.type == DataType.CATEGORICAL
+    assert variable.type == VariableType.CATEGORICAL
     assert variable.size == 1
     assert variable.coordinate_type is int64
     # The declaration order is kept.

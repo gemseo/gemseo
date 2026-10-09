@@ -184,7 +184,7 @@ def test_core_imports_no_domain() -> None:
     """``gemseo.core`` must only depend on the shared foundations."""
     # `space` and `dataset` are a TEMPORARY exception for gemseo.core, pending
     # the dataset-inversion MR that removes this foundation-layer dependency.
-    # `enum` only depends on `util`: gemseo.core reads DataType from there.
+    # `enum` only depends on `util`: gemseo.core reads VariableType from there.
     allowed_segments = {"core", "enum", "util", "space", "dataset"}
     violations = [
         (finding.file, finding.lineno, finding.module)

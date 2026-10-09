@@ -24,7 +24,7 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.space.transformation.base import BaseSpaceTransformation
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ class SpaceNormalization(BaseSpaceTransformation["DesignSpace"]):
                 if variable is None:
                     variable = bounds_to_variable[key] = (
                         deterministic_variable_factory.create(
-                            DataType.REAL,
+                            VariableType.REAL,
                             size=stop - start,
                             lower_bound=lower_bound,
                             upper_bound=upper_bound,

@@ -22,15 +22,15 @@ from numpy import float64
 from numpy import inf
 from numpy.testing import assert_array_equal
 
-from gemseo.space.variable import DataType
 from gemseo.space.variable import RealVariable
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
 def test_init_defaults() -> None:
     """Test the default values of __init__."""
     variable = RealVariable()
-    assert variable.type == DataType.REAL
+    assert variable.type == VariableType.REAL
     assert variable.size == 1
     assert variable.lower_bound == -array([inf])
     assert variable.upper_bound == array([inf])

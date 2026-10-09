@@ -720,7 +720,7 @@ attributes:
   gemseo.algos.base_driver_library.TQDM_LOGGER: gemseo.core.algorithm._progress_bar.custom.logger
   gemseo.algos.database.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.algos.design_space.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
-  gemseo.algos.design_space.TYPE_MAP: gemseo.space.variable.data_type_to_numpy_type
+  gemseo.algos.design_space.TYPE_MAP: gemseo.space.variable.variable_type_to_numpy_type
   gemseo.algos.doe.scipy.scipy_doe.SCIPY_VERSION: gemseo.util._compatibility.scipy.scipy_version
   gemseo.algos.doe.scipy.scipy_doe.SEED: gemseo.util.seeder.seed
   gemseo.algos.opt.nlopt.nlopt.C_LONG_MAX: gemseo.util.constant.infinite_int
@@ -883,6 +883,9 @@ attributes:
   gemseo.utils.string_tools.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
 
   # Other renamed public names; the colormap data and the logging formats are now private.
+  # The enumeration of the variable types, whose FLOAT member became REAL (see classes:).
+  gemseo.algos._variable.DataType: gemseo.space.variable.VariableType
+  gemseo.algos.design_space.DataType: gemseo.space.variable.VariableType
   gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULTSettings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
   gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULT_Settings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
   gemseo.mlearning.core.algos.ml_algo.MLAlgoSettingsType: gemseo.machine_learning.core.model.base_ml_model.MLModelSettingsType
@@ -894,6 +897,7 @@ attributes:
   gemseo.post.core.colormaps.PLASMA_DATA: gemseo.post._engine.colormap._plasma_data
   gemseo.post.core.colormaps.VIRIDIS_DATA: gemseo.post._engine.colormap._viridis_data
   gemseo.post.dataset.scatter_plot_matrix.ColormapName: gemseo.post.dataset.pair_plot_settings.ColormapName
+  gemseo.utils.string_tools.VariableType: gemseo.util.string.VariableOrComponent
   gemseo.utils.logging.DEFAULT_DATE_FORMAT: gemseo.util.constant._logging_date_format
   gemseo.utils.logging.DEFAULT_MESSAGE_FORMAT: gemseo.util.constant._logging_message_format
   # The logging settings are now a field of the global configuration, with other fields.
@@ -1249,7 +1253,7 @@ classes:
   #    __init__:
   #      scenario: execution_sequence
 
-  #### DataType
+  #### DataType (renamed VariableType, see attributes:)
   # N.B. SobieskiBase.DataType is an unrelated enumeration of NumPy dtypes
   # that also has a FLOAT member; it declares no REAL and its FLOAT is still
   # live, so the guards of the installer leave it alone.
@@ -1278,7 +1282,7 @@ classes:
     get_upper_bound: null
     # TODO: use space.variables[name].upper_bound instead.
     has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(DataType.INTEGER) instead.
+    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead.
     to_csv:
       header_char: null
     get_variables_indexes:
@@ -1367,7 +1371,7 @@ classes:
     get_type: null
     # TODO: use space.variables[name].type instead.
     has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(DataType.INTEGER) instead;
+    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead;
     # it is always False, as a random variable is of real type.
     has_current_value: null
     get_current_value: null

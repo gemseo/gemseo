@@ -155,6 +155,21 @@ def test_renamed_function_via_old_reexport_path():
     assert traverse_add_diff_io_mda is set_mda_differentiated_ios
 
 
+def test_renamed_type_alias_of_renamed_module():
+    """A renamed type alias of a renamed module resolves to its successor."""
+    from gemseo.util.string import VariableOrComponent
+
+    with pytest.warns(DeprecationWarning, match="'VariableType'") as records:
+        from gemseo.utils.string_tools import VariableType
+
+    assert VariableType is VariableOrComponent
+    messages = [str(record.message) for record in records]
+    assert (
+        "The attribute 'VariableType' of the module 'gemseo.utils.string_tools' is "
+        "deprecated; use 'gemseo.util.string.VariableOrComponent' instead." in messages
+    )
+
+
 def test_renamed_attribute_of_renamed_module_warns_about_the_attribute():
     """The warning names the renamed attribute, not only the renamed module.
 
@@ -503,8 +518,8 @@ def test_class_deprecation_is_visible_under_the_default_filters():
     assert "The class 'gemseo.space.variable.Variable' is deprecated" in result.stderr
 
 
-def test_data_type_deprecation_is_visible_under_the_default_filters():
-    """The deprecation of a data type value is shown although raised by library code.
+def test_variable_type_deprecation_is_visible_under_the_default_filters():
+    """The deprecation of a variable type value is shown although raised by the library.
 
     The default filters silence a `DeprecationWarning` that is not raised from
     `__main__`; `install` registers a filter so that this one is shown.
@@ -527,7 +542,7 @@ def test_data_type_deprecation_is_visible_under_the_default_filters():
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "The variable data type 'float' is deprecated" in result.stderr
+    assert "The variable type 'float' is deprecated" in result.stderr
 
 
 def test_renamed_submodule_is_not_an_attribute_rename():
@@ -1358,10 +1373,10 @@ def test_unknown_member_name_of_an_aliased_enumeration_raises(snapshot):
     Args:
         snapshot: Fixture to compare the error message with a snapshot.
     """
-    from gemseo.space.variable import DataType
+    from gemseo.space.variable import VariableType
 
     with assert_exception(KeyError, snapshot):
-        DataType["DOES_NOT_EXIST"]
+        VariableType["DOES_NOT_EXIST"]
 
 
 def test_nested_renames_of_a_shared_class_are_merged():
@@ -1697,13 +1712,23 @@ def test_renamed_enumeration_member_warns_and_resolves():
     members live in the class namespace, so the data descriptor must not disturb
     them.
     """
-    from gemseo.space.variable import DataType
+    from gemseo.space.variable import VariableType
+
+    with pytest.warns(DeprecationWarning, match="'DataType'"):
+        from gemseo.algos._variable import DataType
+
+    assert DataType is VariableType
+
+    with pytest.warns(DeprecationWarning, match="'DataType'"):
+        from gemseo.algos.design_space import DataType as DesignSpaceDataType
+
+    assert DesignSpaceDataType is VariableType
 
     with pytest.warns(DeprecationWarning, match="'FLOAT'"):
         old_value = DataType.FLOAT
 
-    assert old_value is DataType.REAL
-    assert tuple(member.name for member in DataType) == (
+    assert old_value is VariableType.REAL
+    assert tuple(member.name for member in VariableType) == (
         "CATALOG",
         "CATEGORICAL",
         "DISCRETE",
@@ -1715,7 +1740,7 @@ def test_renamed_enumeration_member_warns_and_resolves():
 def test_renamed_enumeration_member_of_a_namesake_class_is_left_alone():
     """A namesake enumeration keeps the member the table renames elsewhere.
 
-    `SobieskiBase.DataType` shares its name with the data type of a variable but
+    `SobieskiBase.DataType` shares the old name of the variable type but
     enumerates NumPy dtypes; it declares no `REAL` and its `FLOAT` is still live, so
     the guards of the installer must leave it untouched.
     """

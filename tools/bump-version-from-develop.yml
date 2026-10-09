@@ -26,7 +26,7 @@
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# Apart from `DataType`, the only public class attributes,
+# Apart from `DataType`, now `VariableType`, the only public class attributes,
 # methods and signatures renamed between `develop` and this branch are the ones of the
 # scenario adapters, the fields of the driver settings and the enumeration of
 # `ConstraintAggregation`, listed under `classes:`. The paragraphs of this header say
@@ -299,8 +299,10 @@ modules:
 # Renamed classes, functions and variables, given with the module defining them: the
 # module of the old name is renamed too when it is also a key of `modules:`.
 names:
+  gemseo.algos._variable.DataType: gemseo.space.variable.VariableType
   gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
   gemseo.algos.base_algo_factory._AlgoFactoryMeta: gemseo.core.algorithm.base_algorithm_factory._AlgorithmFactoryMeta
+  gemseo.algos.design_space.DataType: gemseo.space.variable.VariableType
   gemseo.algos.problem_function.ProblemFunction: gemseo.core.function.evaluation_function.EvaluationFunction
   gemseo.algos.stop_criteria.DesvarIsNan: gemseo.core.problem.termination_criterion.DesvarIsNan
   gemseo.algos.stop_criteria.FtolReached: gemseo.core.problem.termination_criterion.FtolReached
@@ -318,10 +320,11 @@ names:
   gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
   gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
   gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset
+  gemseo.utils.string_tools.VariableType: gemseo.util.string.VariableOrComponent
 
 # Renamed members of a class, given with the module defining the class on `develop`.
 classes:
-  # The value of the data type changed with its name, from "float" to "real". On
+  # The value of the variable type changed with its name, from "float" to "real". On
   # `develop`, `DesignSpace.DesignVariableType` is `DataType` itself, so a use site
   # spelled `DesignSpace.DesignVariableType.FLOAT` needs the same rename although the
   # key below does not name `DesignSpace`. Beware that `DataType.FLOAT` still resolves

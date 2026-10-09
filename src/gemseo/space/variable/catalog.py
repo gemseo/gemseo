@@ -36,7 +36,7 @@ from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util._numpy import freeze_array
@@ -80,7 +80,7 @@ class CatalogVariable(
 
     coordinate_type: ClassVar[CoordinateDType] = int64
 
-    type: ClassVar[DataType] = DataType.CATALOG
+    type: ClassVar[VariableType] = VariableType.CATALOG
 
     catalog: Catalog = Field(
         description="The catalog of the alternatives that the variable can take; "

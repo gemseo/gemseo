@@ -20,7 +20,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import pretty_repr
 
@@ -211,7 +211,7 @@ def wrap_scenario_in_job_scheduler(
 
         # A discipline receives the label of a categorical variable.
         variable = design_space.variables[name]
-        if variable.type == DataType.CATEGORICAL:
+        if variable.type == VariableType.CATEGORICAL:
             value = input_grammar.data_converter.convert_array_to_value(
                 name, variable.decode(value)
             )

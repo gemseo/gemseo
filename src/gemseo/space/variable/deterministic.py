@@ -23,7 +23,7 @@ from typing import ClassVar
 
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import BaseVariable
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -45,8 +45,8 @@ class BaseDeterministicVariable(BaseVariable, ABC):
     unlike a random variable, which is defined by a probability distribution.
     """
 
-    type: ClassVar[DataType] = DataType.REAL
-    """The type of data."""
+    type: ClassVar[VariableType] = VariableType.REAL
+    """The type of the variable."""
 
     @abstractmethod
     def get_normalization_mask(

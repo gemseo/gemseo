@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from pandas import DataFrame
 
-from gemseo.enum import DesignVariableType
+from gemseo.enum import VariableType
 from gemseo.space import Catalog
 from gemseo.space import DesignSpace
 
@@ -155,7 +155,7 @@ design_space.variables["material"].catalog.to_dataframe()
 
 # %%
 # and the type of the variables tells whether the design space holds a catalog variable:
-design_space.variables.has_variables_of_type(DesignVariableType.CATALOG)
+design_space.variables.has_variables_of_type(VariableType.CATALOG)
 
 # %%
 # ## Step 4 — Save and reload the design space

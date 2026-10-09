@@ -30,7 +30,7 @@ from pydantic import ValidationError
 
 from gemseo.space import Catalog
 from gemseo.space.variable import CatalogVariable
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -51,7 +51,7 @@ def variable(table) -> CatalogVariable:
 
 def test_fields(variable, table) -> None:
     """Check the fields of a catalog variable."""
-    assert variable.type == DataType.CATALOG
+    assert variable.type == VariableType.CATALOG
     assert variable.size == 1
     assert variable.coordinate_type is int64
     assert variable.catalog == Catalog(properties=table)

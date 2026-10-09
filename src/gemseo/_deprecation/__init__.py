@@ -567,7 +567,7 @@ class _AliasingMemberMap(dict[str, Enum]):  # noqa: FURB189
     """The member map of an enumeration, resolving the old names of renamed members.
 
     It replaces the `_member_map_` of the enumeration, which the lookup of a member by
-    name, e.g. `DataType["FLOAT"]`, reads. An old name is only resolved by
+    name, e.g. `VariableType["FLOAT"]`, reads. An old name is only resolved by
     `__missing__`: it is neither contained nor iterated, so it is not listed among the
     members, e.g. by `__members__`.
     """
@@ -635,7 +635,7 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
     binding is remapped to the new name before any other `__init_subclass__`
     (defined on `cls` or inherited) runs, subject to the same declared-new-name
     condition. The old name of a member of an enumeration is also resolved by the
-    lookup of a member by name, e.g. `DataType["FLOAT"]`, through an
+    lookup of a member by name, e.g. `VariableType["FLOAT"]`, through an
     [_AliasingMemberMap][gemseo._deprecation._AliasingMemberMap], even when it is
     not aliased as an attribute because it resolves to an attribute inherited from a
     base class, e.g. the method `str.center` of a `StrEnum`, which a descriptor would
@@ -909,7 +909,7 @@ def install() -> None:
         )
         warnings.filterwarnings(
             "once",
-            message=r"The variable data type '.*' is deprecated",
+            message=r"The variable type '.*' is deprecated",
             category=DeprecationWarning,
         )
     sys.meta_path.insert(0, _DeprecatedModuleFinder())
