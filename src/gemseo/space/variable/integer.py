@@ -32,7 +32,7 @@ from numpy import mod
 
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.interval import BaseIntervalVariable
 from gemseo.util._numpy import freeze_array
 
@@ -82,7 +82,7 @@ class IntegerVariable(BaseIntervalVariable):
 
     coordinate_type: ClassVar[CoordinateDType] = int64
 
-    type: ClassVar[DataType] = DataType.INTEGER
+    type: ClassVar[VariableType] = VariableType.INTEGER
 
     def get_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool

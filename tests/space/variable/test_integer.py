@@ -26,15 +26,15 @@ from numpy import int64
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import DataType
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
 def test_init_defaults() -> None:
     """Test the default values of __init__."""
     variable = IntegerVariable()
-    assert variable.type == DataType.INTEGER
+    assert variable.type == VariableType.INTEGER
     assert variable.size == 1
     assert variable.lower_bound == -array([inf])
     assert variable.upper_bound == array([inf])
@@ -125,7 +125,7 @@ def test_model_copy_converts_the_update() -> None:
     new_variable = variable.model_copy(update={"upper_bound": 3})
 
     assert isinstance(new_variable, IntegerVariable)
-    assert new_variable.type == DataType.INTEGER
+    assert new_variable.type == VariableType.INTEGER
     assert new_variable.upper_bound.dtype == int64
     assert_array_equal(new_variable.upper_bound, array([3, 3]))
 

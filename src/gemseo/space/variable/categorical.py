@@ -31,7 +31,7 @@ from pydantic import model_validator
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable._formatting import format_elided
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.util._numpy import freeze_array
 from gemseo.util.string import pretty_repr
@@ -83,7 +83,7 @@ class CategoricalVariable(BaseDeterministicVariable):
     as for the variables on which this function does not depend.
     """
 
-    type: ClassVar[DataType] = DataType.CATEGORICAL
+    type: ClassVar[VariableType] = VariableType.CATEGORICAL
 
     coordinate_type: ClassVar[CoordinateDType] = int64
     """The NumPy type of the coordinate of the variable.

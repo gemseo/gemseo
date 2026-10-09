@@ -51,7 +51,7 @@ def project_onto_declared_domain(
         The value projected onto the domain `space` declares,
         `value` itself when `space` has nothing to relax.
     """  # noqa: E501
-    from gemseo.enum._data_type import DataType
+    from gemseo.enum._variable_type import VariableType
     from gemseo.space.design import DesignSpace
     from gemseo.space.transformation.relaxation import SpaceRelaxation
 
@@ -60,8 +60,8 @@ def project_onto_declared_domain(
 
     variables = space.variables
     if not (
-        variables.has_variables_of_type(DataType.INTEGER)
-        or variables.has_variables_of_type(DataType.DISCRETE)
+        variables.has_variables_of_type(VariableType.INTEGER)
+        or variables.has_variables_of_type(VariableType.DISCRETE)
     ):
         return value
 
@@ -102,7 +102,7 @@ def create_working_transformation(
         ValueError: When normalization is asked of a space that has no
             bounds to normalize against.
     """
-    from gemseo.enum._data_type import DataType
+    from gemseo.enum._variable_type import VariableType
     from gemseo.space.design import DesignSpace
     from gemseo.space.transformation.normalization import SpaceNormalization
     from gemseo.space.transformation.relaxation import SpaceRelaxation
@@ -125,8 +125,8 @@ def create_working_transformation(
         Callable[[DesignSpace], BaseSpaceTransformation[DesignSpace]]
     ] = []
     variables = space.variables
-    if (relax_integer and variables.has_variables_of_type(DataType.INTEGER)) or (
-        relax_discrete and variables.has_variables_of_type(DataType.DISCRETE)
+    if (relax_integer and variables.has_variables_of_type(VariableType.INTEGER)) or (
+        relax_discrete and variables.has_variables_of_type(VariableType.DISCRETE)
     ):
         transformation_factories.append(
             partial(

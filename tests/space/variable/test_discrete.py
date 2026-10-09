@@ -27,9 +27,9 @@ from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import RealVariable
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -37,7 +37,7 @@ def test_fields() -> None:
     """Check the fields of a discrete variable."""
     variable = DiscreteVariable(choices=[0.72, 0.45, 0.55])
 
-    assert variable.type == DataType.DISCRETE
+    assert variable.type == VariableType.DISCRETE
     assert variable.size == 1
     assert variable.coordinate_type is float64
     # The choices are sorted at construction.

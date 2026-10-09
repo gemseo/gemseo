@@ -282,16 +282,16 @@ class LagrangeMultipliers:
         # so checking a point against it checks the bounds only of these
         # and the full domain of the others.
         from gemseo.space.transformation.relaxation import SpaceRelaxation
-        from gemseo.space.variable import DataType
+        from gemseo.space.variable import VariableType
 
         variables = space.variables
         working_space = SpaceRelaxation(
             space,
             relax_integer=any(
-                variables[name].type == DataType.INTEGER for name in relaxed_names
+                variables[name].type == VariableType.INTEGER for name in relaxed_names
             ),
             relax_discrete=any(
-                variables[name].type == DataType.DISCRETE for name in relaxed_names
+                variables[name].type == VariableType.DISCRETE for name in relaxed_names
             ),
         ).working_space
         working_space.check_membership(x_vect)

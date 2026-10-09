@@ -37,7 +37,7 @@ from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.space.transformation.identity import SpaceIdentity
 from gemseo.space.transformation.normalization import SpaceNormalization
 from gemseo.space.transformation.relaxation import SpaceRelaxation
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -126,7 +126,7 @@ def test_relaxation_working_space(mixed_space) -> None:
 
     assert list(working_space) == ["x", "i", "d", "j"]
     assert [variable.type for variable in working_space.variables.values()] == [
-        DataType.REAL
+        VariableType.REAL
     ] * 4
     assert working_space.variables["j"] is working_space.variables["i"]
     assert_allclose(working_space.get_lower_bounds(), array([0.0, 0.0, 1.0, 0.0]))
@@ -145,10 +145,10 @@ def test_relaxation_working_space(mixed_space) -> None:
     )
 
     assert [variable.type for variable in mixed_space.variables.values()] == [
-        DataType.REAL,
-        DataType.INTEGER,
-        DataType.DISCRETE,
-        DataType.INTEGER,
+        VariableType.REAL,
+        VariableType.INTEGER,
+        VariableType.DISCRETE,
+        VariableType.INTEGER,
     ]
     assert_equal(
         dict(mixed_space.name_to_normalization_mask),
@@ -267,9 +267,9 @@ def test_relaxation_keeps_the_discrete_variables_when_asked(mixed_space) -> None
     working_space = transformation.working_space
 
     assert [variable.type for variable in working_space.variables.values()] == [
-        DataType.REAL,
-        DataType.REAL,
-        DataType.DISCRETE,
+        VariableType.REAL,
+        VariableType.REAL,
+        VariableType.DISCRETE,
     ]
     # The discrete component, `5.4`, is left as it is: not snapped to a choice.
     assert_allclose(
@@ -289,9 +289,9 @@ def test_relaxation_keeps_the_integer_variables_when_asked(mixed_space) -> None:
     working_space = transformation.working_space
 
     assert [variable.type for variable in working_space.variables.values()] == [
-        DataType.REAL,
-        DataType.INTEGER,
-        DataType.REAL,
+        VariableType.REAL,
+        VariableType.INTEGER,
+        VariableType.REAL,
     ]
     assert_allclose(
         transformation.project(array([2.5, 4.0, 5.4])), array([2.5, 4.0, 3.0])

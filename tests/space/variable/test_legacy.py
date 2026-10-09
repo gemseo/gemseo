@@ -65,7 +65,7 @@ def test_unpickle_legacy_variable_with_default_fields() -> None:
 def test_legacy_variable_is_not_a_kind() -> None:
     """Check that the legacy variable is out of the hierarchy and of its factory.
 
-    Otherwise the factory would find two classes pinning the real data type.
+    Otherwise the factory would find two classes pinning the real variable type.
     """
     assert not issubclass(Variable, BaseVariable)
     assert "Variable" not in DeterministicVariableFactory().class_names

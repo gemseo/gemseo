@@ -819,7 +819,7 @@
 # name: test_to_complex_without_current_value
   "'There is no current value for the design variables: y.'"
 # ---
-# name: test_to_hdf_appends_to_an_unknown_data_type
+# name: test_to_hdf_appends_to_an_unknown_variable_type
   '''
   The design space stored in the node '/' of the HDF file bogus.h5 has a different structure:
   - The type of the design variable 'x' is 'not-a-type'; got 'real'.

@@ -22,30 +22,30 @@ from warnings import warn
 from numpy import inf
 from pydantic import BaseModel
 
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 
 class Variable(BaseModel):
     """A variable of the releases predating the hierarchy of variables.
 
-    A single `Variable` class used to define a variable of any data type. It has been
-    replaced by one class per data type, namely
+    A single `Variable` class used to define a variable of any variable type.
+    It has been replaced by one class per variable type, namely
     [RealVariable][gemseo.space.variable.RealVariable] and
     [IntegerVariable][gemseo.space.variable.IntegerVariable], built by
     `DeterministicVariableFactory`.
 
     A pickle refers to a class by name, so loading a design space pickled by such a
     release requires this name to still resolve. This class exists for that sole
-    purpose: unpickling one turns it into the variable of the matching data type,
+    purpose: unpickling one turns it into the variable of the matching variable type,
     fully validated. Do not use it for anything else.
     """
 
     size: Any = 1
     """The size of the variable."""
 
-    type: Any = DataType.REAL
-    """The type of data."""
+    type: Any = VariableType.REAL
+    """The type of the variable."""
 
     lower_bound: Any = -inf
     """The lower bound of the variable."""
@@ -54,7 +54,7 @@ class Variable(BaseModel):
     """The upper bound of the variable."""
 
     def __setstate__(self, state: dict[str, Any]) -> None:
-        """Restore the variable as the variable class pinning its data type.
+        """Restore the variable as the variable class pinning its variable type.
 
         The fields of the old class are read from the state and passed to the factory,
         so that the restored variable is validated as a new one would be, e.g. its
@@ -67,7 +67,7 @@ class Variable(BaseModel):
         """
         fields = state.get("__dict__", {})
         variable = deterministic_variable_factory.create(
-            fields.get("type", DataType.REAL),
+            fields.get("type", VariableType.REAL),
             size=fields.get("size", 1),
             lower_bound=fields.get("lower_bound", -inf),
             upper_bound=fields.get("upper_bound", inf),

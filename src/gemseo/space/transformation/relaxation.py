@@ -25,7 +25,7 @@ from numpy import asarray
 from numpy import float64
 
 from gemseo.space.transformation.base import BaseSpaceTransformation
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 if TYPE_CHECKING:
@@ -92,14 +92,14 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
         self.__relaxed_names = frozenset(
             name
             for name, variable in space.variables.items()
-            if (variable.type == DataType.INTEGER and relax_integer)
-            or (variable.type == DataType.DISCRETE and relax_discrete)
+            if (variable.type == VariableType.INTEGER and relax_integer)
+            or (variable.type == VariableType.DISCRETE and relax_discrete)
         )
         name_to_indices = space._variables.name_to_indices
         self.__discrete_components = tuple(
             (name_to_indices[name], asarray(variable.choices, dtype=float64))
             for name, variable in space.variables.items()
-            if variable.type == DataType.DISCRETE and relax_discrete
+            if variable.type == VariableType.DISCRETE and relax_discrete
         )
 
     @property
@@ -134,7 +134,7 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
             if relaxed_variable is None:
                 relaxed_variable = bounds_to_variable[key] = (
                     deterministic_variable_factory.create(
-                        DataType.REAL,
+                        VariableType.REAL,
                         size=variable.size,
                         lower_bound=lower_bound,
                         upper_bound=upper_bound,

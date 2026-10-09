@@ -42,8 +42,8 @@ from gemseo.space._design.constants import value_group
 from gemseo.space._design.constants import var_type_group
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable import CatalogVariable
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util._numpy import int64_dtype
 from gemseo.util.hdf5 import get_hdf5_group
@@ -65,11 +65,13 @@ if TYPE_CHECKING:
 minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
 """The minimal fields required in a design space CSV file."""
 
-_domain_payload_nouns: Final[Mapping[DataType, tuple[str, str]]] = MappingProxyType({
-    DataType.DISCRETE: ("no choices", "choices"),
-    DataType.CATALOG: ("no catalog", "a catalog"),
-    DataType.CATEGORICAL: ("no categories", "categories"),
-})
+_domain_payload_nouns: Final[Mapping[VariableType, tuple[str, str]]] = (
+    MappingProxyType({
+        VariableType.DISCRETE: ("no choices", "choices"),
+        VariableType.CATALOG: ("no catalog", "a catalog"),
+        VariableType.CATEGORICAL: ("no categories", "categories"),
+    })
+)
 """The noun phrases of the domain payload of a variable type, from its HDF group.
 
 A type maps to the phrases saying that the payload is missing and present,
@@ -163,18 +165,18 @@ def check_structure_is_unchanged(
                 )
 
             stored_type = get_hdf5_group(variable_group, var_type_group)[0].decode()
-            # A file written by a past release stores the data type value of that
+            # A file written by a past release stores the variable type value of that
             # release, so normalize it before comparing;
-            # a stored value that is not a data type at all is left as is,
+            # a stored value that is not a variable type at all is left as is,
             # and the message below reports it as it stands.
-            stored_data_type = DataType._resolve_value(stored_type)
+            stored_variable_type = VariableType._resolve_value(stored_type)
 
-            if stored_data_type != variable.type:
+            if stored_variable_type != variable.type:
                 error_messages.append(
                     f"The type of the design variable {name!r} is {stored_type!r}; "
                     f"got {variable.type.value!r}."
                 )
-            elif variable.type == DataType.CATEGORICAL:
+            elif variable.type == VariableType.CATEGORICAL:
                 # The stored values and the database rows are positions
                 # in the list of categories, so its order matters.
                 stored_categories = get_strings(variable_group, categories_group)
@@ -305,7 +307,7 @@ def check_stored_catalogs_are_unchanged(
             [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
     """
     if not Path(file_path).exists() or not space.variables.has_variables_of_type(
-        DataType.CATALOG
+        VariableType.CATALOG
     ):
         return
 
@@ -400,7 +402,7 @@ def to_hdf(
                 # before the file was opened.
                 variable.catalog.write_hdf(variable_group.create_group(catalog_group))
 
-            is_categorical = variable.type == DataType.CATEGORICAL
+            is_categorical = variable.type == VariableType.CATEGORICAL
             if is_categorical:
                 # The labels may be non-ASCII, hence variable-length UTF-8 strings.
                 write_dataset(
@@ -448,7 +450,7 @@ def _check_domain_payload(
     file_path: str | Path,
     name: str,
     var_type: str,
-    payloads: Mapping[DataType, Any],
+    payloads: Mapping[VariableType, Any],
 ) -> None:
     """Check that the domain payloads of a variable match its type.
 
@@ -471,17 +473,17 @@ def _check_domain_payload(
     # variable stored with choices and a catalog, so gather the mismatches
     # and report them together rather than one import attempt at a time.
     error_messages = []
-    for data_type, (missing_payload, payload_noun) in _domain_payload_nouns.items():
-        payload = payloads[data_type]
-        if var_type == data_type and payload is None:
+    for variable_type, (missing_payload, payload_noun) in _domain_payload_nouns.items():
+        payload = payloads[variable_type]
+        if var_type == variable_type and payload is None:
             error_messages.append(
                 f"has {missing_payload} for the variable {name!r} "
-                f"of type {data_type.value!r}"
+                f"of type {variable_type.value!r}"
             )
-        elif var_type != data_type and payload is not None:
+        elif var_type != variable_type and payload is not None:
             error_messages.append(
                 f"has {payload_noun} for the variable {name!r} "
-                f"of type {var_type!r} instead of {data_type.value!r}"
+                f"of type {var_type!r} instead of {variable_type.value!r}"
             )
 
     if not error_messages:
@@ -531,9 +533,9 @@ def from_hdf(
                 name,
                 decoded_var_type,
                 {
-                    DataType.CATALOG: catalog_hdf_group,
-                    DataType.CATEGORICAL: categories,
-                    DataType.DISCRETE: choices,
+                    VariableType.CATALOG: catalog_hdf_group,
+                    VariableType.CATEGORICAL: categories,
+                    VariableType.DISCRETE: choices,
                 },
             )
             if categories is not None:
@@ -629,7 +631,7 @@ def to_dataframe(design_space: DesignSpace) -> DataFrame:
         "upper_bound": upper_bounds,
         "type": variable_types,
     }
-    if design_space.variables.has_variables_of_type(DataType.DISCRETE):
+    if design_space.variables.has_variables_of_type(VariableType.DISCRETE):
         # Do not add a column that every variable would leave empty.
         data[choices_group] = choices
     return DataFrame(data)
@@ -653,11 +655,11 @@ def to_csv(
         ValueError: If the design space has a catalog or categorical variable,
             which an HDF file can store but a CSV file cannot.
     """
-    if design_space.variables.has_variables_of_type(DataType.CATEGORICAL):
+    if design_space.variables.has_variables_of_type(VariableType.CATEGORICAL):
         names = ", ".join(
             repr(name)
             for name, variable in design_space.variables.items()
-            if variable.type == DataType.CATEGORICAL
+            if variable.type == VariableType.CATEGORICAL
         )
         msg = (
             f"The design space has the categorical variables {names}, "
@@ -667,7 +669,7 @@ def to_csv(
 
     separator = delimiter or " "
     columns = list(fields) if fields else list(table_names)
-    if design_space.variables.has_variables_of_type(DataType.CATALOG):
+    if design_space.variables.has_variables_of_type(VariableType.CATALOG):
         names = tuple(
             name
             for name, variable in design_space.variables.items()
@@ -684,7 +686,7 @@ def to_csv(
         )
         raise ValueError(msg)
 
-    if design_space.variables.has_variables_of_type(DataType.DISCRETE):
+    if design_space.variables.has_variables_of_type(VariableType.DISCRETE):
         if separator == choices_separator:
             msg = (
                 "A design space holding a discrete variable cannot be exported "
@@ -816,7 +818,7 @@ def from_csv(
             var_type = str_data[k, col_map[var_type_field]]
         else:
             var_type = cls.DesignVariableType.REAL
-        if var_type == DataType.CATEGORICAL:
+        if var_type == VariableType.CATEGORICAL:
             msg = (
                 f"The variable {name!r} of the file {file_path} is categorical, "
                 "which cannot be imported from a CSV file; use an HDF file instead."

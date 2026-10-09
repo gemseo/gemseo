@@ -47,7 +47,7 @@ if TYPE_CHECKING:
 
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import OutputsType
-    from gemseo.util.string import VariableType
+    from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import StrPath
 
 from openturns import CorrelationAnalysis as OTCorrelationAnalysis
@@ -168,7 +168,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
 
     def plot(  # noqa: D102
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,
@@ -242,7 +242,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,
-        sorting_output: VariableType = "",
+        sorting_output: VariableOrComponent = "",
         radar_chart_settings: RadarChart_Settings | None = None,
     ) -> RadarChart:
         """

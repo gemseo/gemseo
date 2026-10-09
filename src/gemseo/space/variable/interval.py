@@ -59,7 +59,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
 
     Such a variable is defined by
     a size,
-    a data type
+    a variable type
     and the bounds of its components,
     which the caller supplies.
 
@@ -81,7 +81,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
     This class is abstract:
     a concrete subclass pins
     [type][gemseo.space.variable.deterministic.BaseDeterministicVariable.type]
-    to one [DesignVariableType][gemseo.enum.DesignVariableType] member
+    to one [VariableType][gemseo.enum.VariableType] member
     and implements the kind-specific hooks.
     """
 

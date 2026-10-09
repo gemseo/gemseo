@@ -47,7 +47,7 @@ from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.optimization.result import OptimizationResult
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import data_type_to_numpy_type
+from gemseo.space.variable import variable_type_to_numpy_type
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.lock import synchronized
 from gemseo.util.pydantic import create_model
@@ -218,7 +218,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             # a DOE handles the integer and discrete variables,
             # so the driver never relaxes them and their dtypes are recorded here.
             python_var_types = {
-                name: data_type_to_numpy_type[type_]
+                name: variable_type_to_numpy_type[type_]
                 for name, type_ in variable_types.items()
                 if type_ != DesignSpace.DesignVariableType.REAL
             }

@@ -19,10 +19,10 @@ from __future__ import annotations
 import pytest
 from numpy.testing import assert_array_equal
 
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import DeterministicVariableFactory
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.testing.helper import assert_exception
@@ -68,49 +68,49 @@ def test_create(factory) -> None:
 
 
 @pytest.mark.parametrize(
-    ("data_type", "cls"),
+    ("variable_type", "cls"),
     [
-        (DataType.REAL, RealVariable),
-        (DataType.INTEGER, IntegerVariable),
+        (VariableType.REAL, RealVariable),
+        (VariableType.INTEGER, IntegerVariable),
         ("real", RealVariable),
         ("integer", IntegerVariable),
         (b"real", RealVariable),
         (b"integer", IntegerVariable),
     ],
 )
-def test_create_kind(factory, data_type, cls) -> None:
-    """Check the resolution of a data type to the kind pinning it."""
-    variable = factory.create(data_type, size=2)
+def test_create_kind(factory, variable_type, cls) -> None:
+    """Check the resolution of a variable type to the kind pinning it."""
+    variable = factory.create(variable_type, size=2)
     assert isinstance(variable, cls)
     assert variable.size == 2
 
 
-@pytest.mark.parametrize("data_type", ["float", b"float"])
-def test_create_kind_from_a_legacy_data_type(factory, data_type) -> None:
-    """Check that a data type value of a past release still resolves."""
+@pytest.mark.parametrize("variable_type", ["float", b"float"])
+def test_create_kind_from_a_legacy_variable_type(factory, variable_type) -> None:
+    """Check that a variable type value of a past release still resolves."""
     with pytest.deprecated_call():
-        variable = factory.create(data_type, size=2)
+        variable = factory.create(variable_type, size=2)
 
     assert isinstance(variable, RealVariable)
-    assert variable.type == DataType.REAL
+    assert variable.type == VariableType.REAL
 
 
 def test_create_for_unknown_variable_type(factory, snapshot) -> None:
-    """Check that an unknown data type raises."""
+    """Check that an unknown variable type raises."""
     with assert_exception(ValueError, snapshot):
         factory.create("complex")
 
 
-def test_update_invalidates_the_data_types(factory, monkeypatch) -> None:
-    """Check that rediscovering the classes rebuilds the data-type map."""
+def test_update_invalidates_the_variable_types(factory, monkeypatch) -> None:
+    """Check that rediscovering the classes rebuilds the variable-type map."""
 
     class OtherIntegerVariable(IntegerVariable):
-        """Another variable class pinning the integer data type."""
+        """Another variable class pinning the integer variable type."""
 
     # Build the map from the classes discovered so far.
     assert isinstance(factory.create("integer"), IntegerVariable)
 
-    # Rediscover the classes with the integer data type pinned by another class.
+    # Rediscover the classes with the integer variable type pinned by another class.
     class_names = ("RealVariable", "OtherIntegerVariable")
     # IntegerVariable is still resolvable by name, but no longer discovered,
     # so that a stale map fails the assertion below instead of raising.
@@ -134,11 +134,11 @@ def test_update_invalidates_the_data_types(factory, monkeypatch) -> None:
     assert isinstance(variable, OtherIntegerVariable)
 
 
-def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
-    """Check that two classes pinning the same data type raise."""
+def test_duplicate_variable_type(factory, monkeypatch, snapshot) -> None:
+    """Check that two classes pinning the same variable type raise."""
 
     class OtherRealVariable(RealVariable):
-        """Another variable class pinning the real data type."""
+        """Another variable class pinning the real variable type."""
 
     name_to_class = {
         "RealVariable": RealVariable,
@@ -159,8 +159,8 @@ def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
 
 
 def test_create_discrete_variable(factory) -> None:
-    """Check the creation of a discrete variable from its data type."""
-    variable = factory.create(DataType.DISCRETE, choices=[4, 2])
+    """Check the creation of a discrete variable from its variable type."""
+    variable = factory.create(VariableType.DISCRETE, choices=[4, 2])
 
     assert isinstance(variable, DiscreteVariable)
     assert_array_equal(variable.choices, [2.0, 4.0])

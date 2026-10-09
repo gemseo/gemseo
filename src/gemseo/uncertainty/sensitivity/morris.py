@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.scenario.backup_settings import BackupSettings
     from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
-    from gemseo.util.string import VariableType
+    from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrPath
 
@@ -531,7 +531,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
 
     def plot(
         self,
-        output: VariableType,
+        output: VariableOrComponent,
         input_names: Iterable[str] = (),
         title: str = "",
         save: bool = True,

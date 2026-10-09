@@ -119,7 +119,7 @@ mentioning the type of the variable.
 [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 rounds the integer components of a vector,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
-called with `DesignVariableType.INTEGER`,
+called with `VariableType.INTEGER`,
 and [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
 tell where the integer variables are.
 
@@ -171,7 +171,7 @@ gives it its first choice.
 reads the choices back,
 as `design_space.variables["thickness"].choices`,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
-called with `DesignVariableType.DISCRETE`,
+called with `VariableType.DISCRETE`,
 tells whether the design space holds a discrete variable.
 
 !!! warning
@@ -233,7 +233,7 @@ gives it its first category.
 reads the categories back,
 as `design_space.variables["material"].categories`,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
-called with `DesignVariableType.CATEGORICAL`,
+called with `VariableType.CATEGORICAL`,
 tells whether the design space holds a categorical variable.
 
 !!! warning
@@ -318,7 +318,7 @@ gives it the position $0$, i.e. the first alternative.
 reads the catalog back,
 as `design_space.variables["material"].catalog`,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
-called with `DesignVariableType.CATALOG`,
+called with `VariableType.CATALOG`,
 tells whether the design space holds a catalog variable.
 The tabular view shows such a variable as a bounded integer;
 it adds no column.

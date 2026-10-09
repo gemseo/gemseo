@@ -26,7 +26,7 @@ from typing import Final
 # it is re-exported explicitly and left out of the public surface.
 from gemseo.space.variable._legacy import Variable as Variable
 from gemseo.space.variable.base import BaseVariable as BaseVariable
-from gemseo.space.variable.base import DataType as DataType  # noqa: TC001
+from gemseo.space.variable.base import VariableType as VariableType  # noqa: TC001
 from gemseo.space.variable.catalog import CatalogVariable
 from gemseo.space.variable.categorical import CategoricalVariable
 from gemseo.space.variable.deterministic import (
@@ -51,17 +51,19 @@ if TYPE_CHECKING:
     from gemseo.space.variable.base import CoordinateDType
     from gemseo.space.variable.random import RandomVariable  # noqa: F401
 
-data_type_to_numpy_type: Final[Mapping[DataType, CoordinateDType]] = MappingProxyType({
-    cls.type: cls.coordinate_type
-    for cls in (
-        CatalogVariable,
-        CategoricalVariable,
-        DiscreteVariable,
-        IntegerVariable,
-        RealVariable,
-    )
-})
-"""The map from a variable data type to the NumPy type of its coordinates."""
+variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
+    MappingProxyType({
+        cls.type: cls.coordinate_type
+        for cls in (
+            CatalogVariable,
+            CategoricalVariable,
+            DiscreteVariable,
+            IntegerVariable,
+            RealVariable,
+        )
+    })
+)
+"""The map from a variable type to the NumPy type of its coordinates."""
 
 # A random variable drags in the probability distributions,
 # which a design space has no use for,
@@ -74,7 +76,7 @@ install_lazy_reexport(
     globals(),
     _name_to_location,
     extra_all=[
-        "data_type_to_numpy_type",
+        "variable_type_to_numpy_type",
         "BaseDeterministicVariable",
         "BaseIntervalVariable",
         "BaseNumericVariable",
@@ -83,7 +85,7 @@ install_lazy_reexport(
         "BoundType",
         "CatalogVariable",
         "CategoricalVariable",
-        "DataType",
+        "VariableType",
         "DeterministicVariableFactory",
         "DiscreteVariable",
         "IntegerVariable",

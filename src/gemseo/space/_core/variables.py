@@ -27,7 +27,7 @@ from numpy import issubdtype
 from numpy import zeros
 
 from gemseo.space.variable import BaseVariable
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
@@ -260,7 +260,7 @@ class Variables(
             )
         )
 
-    def has_variables_of_type(self, type_: DataType) -> bool:
+    def has_variables_of_type(self, type_: VariableType) -> bool:
         """Return whether the registry has at least one variable of a given type.
 
         Args:

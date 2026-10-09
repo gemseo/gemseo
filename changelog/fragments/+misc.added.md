@@ -33,12 +33,12 @@
   variables, hence of a `RandomSpace` as well as of a `DesignSpace`, and it is the only accessor to these variables;
   `add_copula` is one more method of the space mutating the registry that this view exposes.
 - `BaseVariableSpace.add_variable` is the common entry point to add a variable, whatever the kind of space; its
-  arguments depend on this kind, e.g. a size, a data type and bounds for a `DesignSpace`, the settings of the marginal
-  probability distributions of the components for a `RandomSpace`.
+  arguments depend on this kind, e.g. a size, a variable type and bounds for a `DesignSpace`, the settings of the
+  marginal probability distributions of the components for a `RandomSpace`.
 - The probabilistic data of a `RandomSpace` is read through `variables` too: `variables.distribution` (joint
   distribution of the space), `variables[name].distribution`, `variables[name].distribution_settings` and the statistics
   of `variables[name].distribution` such as `range` and `support`.
-- `space.variables.has_variables_of_type(DataType.INTEGER)` is `False` for a `RandomSpace`, whose random variables
+- `space.variables.has_variables_of_type(VariableType.INTEGER)` is `False` for a `RandomSpace`, whose random variables
   are always of real type.
 - The function `gemseo.create_random_space` creates an empty `RandomSpace`.
 - The factory `gemseo.space.factory.random_space_factory` creates `RandomSpace` objects.
@@ -64,8 +64,9 @@
   `RandomSpace`, the random variable is rebuilt from the settings of the marginal probability distributions of the kept
   components and the copula covering it, if any, is removed, so that the random variables it covered become independent.
 - The hierarchy of the variables of a space is public, in the `gemseo.space.variable` package. Every kind of variable
-  derives from the abstract `BaseVariable`, which defines a variable by a size and a data type; a variable is immutable
-  and its fields are exactly what its kind takes as input, anything deriving from them being a read-only property.
+  derives from the abstract `BaseVariable`, which defines a variable by a size and a variable type; a variable is
+  immutable and its fields are exactly what its kind takes as input, anything deriving from them being a read-only
+  property.
   The arrays a variable hands out, e.g. the bounds of a `RealVariable` or the choices of a `DiscreteVariable`,
   are read-only views of what the variable stores: in-place mutation raises
   `ValueError: assignment destination is read-only`, the writeable flag cannot be re-enabled, and reassigning the
@@ -77,9 +78,9 @@
   interval defined by a size and bounds supplied by the caller; `DiscreteVariable` derives its size and its bounds from
   its choices; the `gemseo.space.variable.random.RandomVariable` of a `RandomSpace` derives its size, its type and its
   bounds from the settings of the probability distributions of its components.
-- The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its data type.
-  A random variable is built from the settings of its probability distributions, not from a data type, and so is out of
-  the scope of this factory.
+- The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its variable
+  type. A random variable is built from the settings of its probability distributions, not from a variable type, and so
+  is out of the scope of this factory.
 - Passing a read-only member of a variable, e.g. the size of a scalar variable or a bound derived from the choices of a
   discrete variable, raises an error naming that member and what the kind of variable takes as input, e.g.
   `"lower_bound is read-only; the input of a DiscreteVariable is choices."`.

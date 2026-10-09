@@ -25,7 +25,7 @@ from numpy.testing import assert_equal
 
 from gemseo.space.design import DesignSpace
 from gemseo.space.transformation.normalization import SpaceNormalization
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 
 
 @pytest.fixture
@@ -67,12 +67,12 @@ def test_transform_space_builds_the_whole_working_space(mixed_space) -> None:
     # whatever the type it is normalized from;
     # a variable left alone keeps its own type.
     assert [working_space.variables[name].type for name in working_space] == [
-        DataType.REAL,
-        DataType.REAL,
-        DataType.INTEGER,
-        DataType.REAL,
-        DataType.REAL,
-        DataType.REAL,
+        VariableType.REAL,
+        VariableType.REAL,
+        VariableType.INTEGER,
+        VariableType.REAL,
+        VariableType.REAL,
+        VariableType.REAL,
     ]
     # A normalizable component lands in the unit interval;
     # a component without finite bounds and an integer one keep the bounds they have.

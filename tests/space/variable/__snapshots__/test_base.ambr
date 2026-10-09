@@ -79,9 +79,6 @@
 # name: test_copy_and_pickle_keep_the_kind[RealVariable].1
   'cannot set WRITEABLE flag to True of this array'
 # ---
-# name: test_data_type_from_a_non_string
-  "array('float', dtype='<U5') is not a valid DataType"
-# ---
 # name: test_frozen[CatalogVariable-lower_bound]
   '''
   1 validation error for CatalogVariable
@@ -269,7 +266,7 @@
 # name: test_model_copy_with_another_type[IntegerVariable-real]
   '''
   1 validation error for IntegerVariable
-    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'size': 2, 'lower_bound'...<DataType.REAL: 'real'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'size': 2, 'lower_bound'...iableType.REAL: 'real'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -371,42 +368,42 @@
 # name: test_type_is_not_settable[discrete-IntegerVariable]
   '''
   1 validation error for IntegerVariable
-    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.DISCRETE: 'discrete'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.DISCRETE: 'discrete'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_type_is_not_settable[discrete-RealVariable]
   '''
   1 validation error for RealVariable
-    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.DISCRETE: 'discrete'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.DISCRETE: 'discrete'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_type_is_not_settable[integer-IntegerVariable]
   '''
   1 validation error for IntegerVariable
-    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.INTEGER: 'integer'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.INTEGER: 'integer'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_type_is_not_settable[integer-RealVariable]
   '''
   1 validation error for RealVariable
-    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.INTEGER: 'integer'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.INTEGER: 'integer'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_type_is_not_settable[real-IntegerVariable]
   '''
   1 validation error for IntegerVariable
-    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.REAL: 'real'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a IntegerVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.REAL: 'real'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_type_is_not_settable[real-RealVariable]
   '''
   1 validation error for RealVariable
-    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <DataType.REAL: 'real'>}, input_type=dict]
+    Value error, type is read-only; the inputs of a RealVariable are lower_bound, size and upper_bound. [type=value_error, input_value={'type': <VariableType.REAL: 'real'>}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -425,6 +422,9 @@
     Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
   '''
+# ---
+# name: test_variable_type_from_a_non_string
+  "array('float', dtype='<U5') is not a valid VariableType"
 # ---
 # name: test_wrong_boundaries[IntegerVariable]
   '''

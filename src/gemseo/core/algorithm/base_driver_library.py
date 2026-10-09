@@ -70,7 +70,7 @@ from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.core.problem.termination_criterion import MaxIterReachedException
 from gemseo.core.problem.termination_criterion import MaxTimeReached
 from gemseo.core.problem.termination_criterion import TerminationCriterion
-from gemseo.enum._data_type import DataType
+from gemseo.enum._variable_type import VariableType
 from gemseo.space.transformation._working import create_working_transformation
 from gemseo.space.transformation._working import project_onto_declared_domain
 from gemseo.util._workflow_observer.injector import WorkflowObserverMeta
@@ -190,25 +190,25 @@ class BaseDriverLibrary(
         # so an algorithm is suited to a kind of variable
         # only when it handles that kind natively.
         if (
-            variables.has_variables_of_type(DataType.INTEGER)
+            variables.has_variables_of_type(VariableType.INTEGER)
             and not algorithm_description.handle_integer_variables
         ):
             return _UnsuitabilityReason.INTEGER_VARIABLES
 
         if (
-            variables.has_variables_of_type(DataType.DISCRETE)
+            variables.has_variables_of_type(VariableType.DISCRETE)
             and not algorithm_description.handle_discrete_variables
         ):
             return _UnsuitabilityReason.DISCRETE_VARIABLES
 
         if (
-            variables.has_variables_of_type(DataType.CATALOG)
+            variables.has_variables_of_type(VariableType.CATALOG)
             and not algorithm_description.handle_catalog_variables
         ):
             return _UnsuitabilityReason.CATALOG_VARIABLES
 
         if (
-            variables.has_variables_of_type(DataType.CATEGORICAL)
+            variables.has_variables_of_type(VariableType.CATEGORICAL)
             and not algorithm_description.handle_categorical_variables
         ):
             return _UnsuitabilityReason.CATEGORICAL_VARIABLES
@@ -520,7 +520,7 @@ class BaseDriverLibrary(
         self._check_catalog_variables(input_space)
         variables = input_space.variables
         if (
-            variables.has_variables_of_type(DataType.CATEGORICAL)
+            variables.has_variables_of_type(VariableType.CATEGORICAL)
             and not self.ALGORITHM_INFOS[self._algo_name].handle_categorical_variables
         ):
             # A categorical variable has no relaxation.
@@ -532,16 +532,16 @@ class BaseDriverLibrary(
             raise ValueError(msg)
 
         self.__check_kind_handling(
-            variables.has_variables_of_type(DataType.INTEGER),
+            variables.has_variables_of_type(VariableType.INTEGER),
             self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables,
             self._settings.relax_integer_variables,
-            DataType.INTEGER,
+            VariableType.INTEGER,
         )
         self.__check_kind_handling(
-            variables.has_variables_of_type(DataType.DISCRETE),
+            variables.has_variables_of_type(VariableType.DISCRETE),
             self.ALGORITHM_INFOS[self._algo_name].handle_discrete_variables,
             self._settings.relax_discrete_variables,
-            DataType.DISCRETE,
+            VariableType.DISCRETE,
         )
 
     def _check_catalog_variables(self, input_space: BaseVariableSpace) -> None:
@@ -557,7 +557,7 @@ class BaseDriverLibrary(
                 and the input space includes at least one catalog variable.
         """
         if (
-            input_space.variables.has_variables_of_type(DataType.CATALOG)
+            input_space.variables.has_variables_of_type(VariableType.CATALOG)
             and not self.ALGORITHM_INFOS[self._algo_name].handle_catalog_variables
         ):
             # A catalog variable has no relaxation.

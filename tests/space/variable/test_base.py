@@ -36,18 +36,18 @@ from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import CategoricalVariable
-from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
+from gemseo.space.variable import VariableType
 from gemseo.space.variable.random import RandomVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.testing.helper import assert_exception
 from tests.space.variable.utils import kinds
 
 
-def test_data_type_from_a_non_string(snapshot) -> None:
-    """Check that a non-string does not resolve to the data type its `str()` names.
+def test_variable_type_from_a_non_string(snapshot) -> None:
+    """Check that a non-string does not resolve to the variable type its `str()` names.
 
     `_missing_` looks a legacy value up after calling `str()` on it, so without
     the guard rejecting a non-string, any object whose `str()` is a legacy value
@@ -55,18 +55,18 @@ def test_data_type_from_a_non_string(snapshot) -> None:
     type that value named in a past release.
     """
     with assert_exception(ValueError, snapshot):
-        DataType(array("float"))
+        VariableType(array("float"))
 
 
-def test_data_type_from_a_numpy_string() -> None:
+def test_variable_type_from_a_numpy_string() -> None:
     """Check that a legacy value read as a NumPy string still resolves.
 
     A CSV file is read as an array of NumPy strings, which are `str` instances,
     so they must go on resolving; this is the contrast case of
-    `test_data_type_from_a_non_string`.
+    `test_variable_type_from_a_non_string`.
     """
-    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
-        assert DataType(str_("float")) is DataType.REAL
+    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
+        assert VariableType(str_("float")) is VariableType.REAL
 
 
 def test_base_variable_is_abstract() -> None:
@@ -173,12 +173,13 @@ def test_non_positive_size(cls, size, snapshot) -> None:
 
 @pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize(
-    "type_", ["complex", DataType.REAL, DataType.INTEGER, DataType.DISCRETE]
+    "type_", ["complex", VariableType.REAL, VariableType.INTEGER, VariableType.DISCRETE]
 )
 def test_type_is_not_settable(cls, type_, snapshot) -> None:
-    """Check that the data type, pinned by the kind, cannot be passed.
+    """Check that the variable type, pinned by the kind, cannot be passed.
 
-    This holds whatever the value, including the data type pinned by the kind itself.
+    This holds whatever the value,
+    including the variable type pinned by the kind itself.
     """
     with assert_exception(ValidationError, snapshot):
         cls(type=type_)
@@ -320,10 +321,10 @@ def test_model_copy_with_inconsistent_update(cls, snapshot) -> None:
 
 @pytest.mark.parametrize(
     ("cls", "type_"),
-    [(RealVariable, DataType.INTEGER), (IntegerVariable, DataType.REAL)],
+    [(RealVariable, VariableType.INTEGER), (IntegerVariable, VariableType.REAL)],
 )
 def test_model_copy_with_another_type(cls, type_, snapshot) -> None:
-    """Check that an update contradicting the pinned data type is rejected."""
+    """Check that an update contradicting the pinned variable type is rejected."""
     variable = cls(size=2, lower_bound=0, upper_bound=1)
     with assert_exception(ValidationError, snapshot):
         variable.model_copy(update={"type": type_})

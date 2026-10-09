@@ -66,7 +66,8 @@ default_delimiter: Final[str] = ", "
 default_key_value_separator: Final[str] = "="
 """A string to separate key and value in a key-value pair of a mapping."""
 
-VariableType = str | tuple[str, int]
+VariableOrComponent = str | tuple[str, int]
+"""A variable name, or a variable name and a component index."""
 
 
 def __stringify(
@@ -175,7 +176,7 @@ def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) 
     return f"{name}[{index}]"
 
 
-def get_name_and_component(variable: VariableType) -> tuple[str, int]:
+def get_name_and_component(variable: VariableOrComponent) -> tuple[str, int]:
     """Return the name and the component of a variable.
 
     Args:
@@ -259,7 +260,8 @@ def filter_names(
 
 
 def get_variables_with_components(
-    variables: VariableType | Iterable[VariableType], name_to_size: Mapping[str, int]
+    variables: VariableOrComponent | Iterable[VariableOrComponent],
+    name_to_size: Mapping[str, int],
 ) -> Iterator[tuple[str, int]]:
     """Convert a set of variables to `tuple(str, int)` objects.
 

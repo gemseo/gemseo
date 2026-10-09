@@ -29,7 +29,7 @@ from numpy import vectorize
 
 from gemseo.space._design.constants import bound_atol
 from gemseo.space.variable import BaseNumericVariable
-from gemseo.space.variable import DataType
+from gemseo.space.variable import VariableType
 from gemseo.space.variable._formatting import format_components
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
@@ -41,10 +41,10 @@ if TYPE_CHECKING:
     from gemseo.space.variable import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
 
-_types_checked_per_variable: Final[frozenset[DataType]] = frozenset({
-    DataType.CATALOG,
-    DataType.CATEGORICAL,
-    DataType.DISCRETE,
+_types_checked_per_variable: Final[frozenset[VariableType]] = frozenset({
+    VariableType.CATALOG,
+    VariableType.CATEGORICAL,
+    VariableType.DISCRETE,
 })
 """The types of the variables whose domain the bounds do not describe.
 
@@ -246,7 +246,7 @@ def are_full_values_surely_valid(
         Whether the values are valid for sure.
     """
     if full_values.dtype.kind not in "iuf" or variables.has_variables_of_type(
-        DataType.DISCRETE
+        VariableType.DISCRETE
     ):
         return False
 
@@ -254,7 +254,7 @@ def are_full_values_surely_valid(
     whole_number_indices = [
         index
         for name, variable in variables.items()
-        if variable.type in {DataType.CATEGORICAL, DataType.INTEGER}
+        if variable.type in {VariableType.CATEGORICAL, VariableType.INTEGER}
         for index in variables.name_to_indices[name]
     ]
     return bool(
