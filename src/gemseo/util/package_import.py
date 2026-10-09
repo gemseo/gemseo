@@ -41,6 +41,10 @@ def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
 
     Returns:
         The object resolved from its defining module.
+
+    Raises:
+        AttributeError: If an attribute of the chain does not exist.
+        ModuleNotFoundError: If the module cannot be imported.
     """
     module_path, _, attribute = location.partition(":")
     if module_path.split(".", 1)[0] == "gemseo":
@@ -64,6 +68,12 @@ def install_lazy_reexport(
     Meant to be called from a package ``__init__.py`` as
     ``install_lazy_reexport(globals(), _name_to_location)``.
 
+    The installed ``__getattr__`` caches each resolved object in ``namespace``,
+    so that the following accesses are plain attribute lookups.
+    It raises an ``AttributeError`` for a name that is not exported
+    and an ``ImportError`` chained to the original error
+    when the location of an exported name cannot be resolved.
+
     Args:
         namespace: The ``globals()`` of the calling package ``__init__.py``.
         name_to_location: Mapping from exported name to
@@ -76,14 +86,23 @@ def install_lazy_reexport(
     names = list(name_to_location)
 
     def __dir__() -> list[str]:  # noqa: N807
-        return [*namespace, *names]
+        return sorted({*namespace, *names})
 
     def __getattr__(name: str) -> Any:  # noqa: N807
         location = name_to_location.get(name)
         if location is None:
             msg = f"module {package_name!r} has no attribute {name!r}"
             raise AttributeError(msg)
-        return resolve_lazy_export(package_name, location, name)
+        try:
+            obj = resolve_lazy_export(package_name, location, name)
+        except AttributeError as exc:
+            msg = (
+                f"cannot import name {name!r} from {package_name!r}: "
+                f"the location {location!r} cannot be resolved ({exc})."
+            )
+            raise ImportError(msg) from exc
+        namespace[name] = obj
+        return obj
 
     namespace["__all__"] = [*names, *extra_all]
     namespace["__dir__"] = __dir__

@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_bad_location[BadChain]
+  "cannot import name 'BadChain' from 'fake_lazy_pkg': the location 'sub:Outer.Nope' cannot be resolved (type object 'Outer' has no attribute 'Nope')."
+# ---
+# name: test_bad_location[Missing]
+  "cannot import name 'Missing' from 'fake_lazy_pkg': the location 'sub' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_unknown_name
+  "module 'fake_lazy_pkg' has no attribute 'unknown'"
+# ---

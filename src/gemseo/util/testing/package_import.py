@@ -120,10 +120,21 @@ def make_lazy_reexport_tests(
         assert set(package.__all__) == set(names) | set(extra_all)
 
     def test_reexport_is_lazy() -> None:
-        """Check that the names are served lazily, not eagerly bound."""
-        namespace = vars(package)
-        for name in names:
-            assert name not in namespace
+        """Check that the names are served lazily, not eagerly bound.
+
+        Run in a fresh interpreter because the resolved names are cached
+        in the namespace of the package by the first access.
+        """
+        code = (
+            "from importlib import import_module\n"
+            f"package = import_module({package.__name__!r})\n"
+            f"names = {names!r}\n"
+            "assert not [name for name in names if name in vars(package)]\n"
+        )
+        result = subprocess.run(  # noqa: S603
+            [sys.executable, "-c", code], capture_output=True, text=True
+        )
+        assert result.returncode == 0, result.stderr
 
     def test_unknown_attribute(snapshot) -> None:
         """Check that accessing an unknown attribute raises `AttributeError`."""
