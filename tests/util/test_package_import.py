@@ -302,7 +302,9 @@ def test_get_static_import_names(tmp_path) -> None:
     }
 
 
-def test_reexport_is_lazy_detects_an_eager_binding(tmp_path, monkeypatch) -> None:
+def test_reexport_is_lazy_detects_an_eager_binding(
+    tmp_path, monkeypatch, request
+) -> None:
     """Check that a name bound eagerly by the package fails the laziness test."""
     package_dir = tmp_path / "eager_tmp_pkg"
     package_dir.mkdir()
@@ -314,9 +316,10 @@ def test_reexport_is_lazy_detects_an_eager_binding(tmp_path, monkeypatch) -> Non
         encoding="utf-8",
     )
     monkeypatch.syspath_prepend(tmp_path)
-    monkeypatch.delitem(sys.modules, "eager_tmp_pkg", raising=False)
+    # A monkeypatch of `sys.modules` would restore the imported package at teardown,
+    # as the entry is absent before the import and only created by it.
+    request.addfinalizer(lambda: sys.modules.pop("eager_tmp_pkg", None))
     package = import_module("eager_tmp_pkg")
-    monkeypatch.setitem(sys.modules, "eager_tmp_pkg", package)
 
     test_reexport_is_lazy = make_lazy_reexport_tests(package)["test_reexport_is_lazy"]
 
