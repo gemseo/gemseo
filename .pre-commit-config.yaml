@@ -47,12 +47,12 @@ repos:
         exclude: \.ipynb$
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: "0.12.24"
+    rev: "0.13.0"
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.10
+    rev: v0.17.0
     hooks:
       # The markdown files are handled by rumdl,
       # which itself delegates the code blocks to ruff,
@@ -70,7 +70,7 @@ repos:
         stages: [commit-msg]
 
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.2.78
+    rev: v0.2.79
     hooks:
       - id: rumdl-fmt
         exclude: ^\.gitlab
