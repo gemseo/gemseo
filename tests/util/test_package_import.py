@@ -137,14 +137,16 @@ def test_bad_location(fake_package, name, snapshot) -> None:
     assert getattr(fake_package, name, None) is None
 
 
-def test_from_import_bad_location(fake_package) -> None:
+def test_from_import_bad_location(fake_package, snapshot) -> None:
     """Check that ``from package import name`` raises an ImportError.
 
-    CPython turns the AttributeError of the module ``__getattr__`` into its own
-    ImportError, without the cause.
+    It keeps the message and the cause, which CPython would replace by its own
+    generic ImportError if the module ``__getattr__`` raised an AttributeError.
     """
-    with pytest.raises(ImportError, match="cannot import name 'Missing'"):
+    with assert_exception(ImportError, snapshot) as exc_info:
         from fake_lazy_pkg import Missing  # noqa: F401
+
+    assert isinstance(exc_info.value.__cause__, AttributeError)
 
 
 @pytest.fixture

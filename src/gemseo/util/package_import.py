@@ -16,15 +16,77 @@
 
 from __future__ import annotations
 
+import dis
+import sys
 from importlib import import_module
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
+from typing import NoReturn
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from types import ModuleType
+
+_import_from_opcode: Final[int] = dis.opmap["IMPORT_FROM"]
+"""The opcode importing a name in a `from module import name` statement."""
+
+
+def is_imported_from(module_name: str) -> bool:
+    """Return whether the attribute being looked up is imported by a `from` statement.
+
+    The frame looking the attribute up is the first one outside this module
+    and the module `module_name`, the frames of these modules being those of
+    the `__getattr__` of a module and of its helpers. It imports the attribute
+    when it is executing the `IMPORT_FROM` instruction of a
+    `from module import name` statement.
+
+    Args:
+        module_name: The name of the module defining the `__getattr__`
+            and its helpers.
+
+    Returns:
+        Whether the attribute is imported by a `from module import name` statement.
+    """
+    skipped_module_names = {__name__, module_name}
+    frame = sys._getframe(1)
+    while frame is not None and frame.f_globals.get("__name__") in (
+        skipped_module_names
+    ):
+        frame = frame.f_back
+    return (
+        frame is not None and frame.f_code.co_code[frame.f_lasti] == _import_from_opcode
+    )
+
+
+def raise_unresolvable_attribute(
+    msg: str, module_name: str, cause: BaseException | None = None
+) -> NoReturn:
+    """Raise the error of a module-level attribute that cannot be resolved.
+
+    An `AttributeError` is raised, so that `hasattr` and `getattr` with a default keep
+    working, as they only swallow an `AttributeError`, except under a
+    `from module import name` statement, which would replace an `AttributeError` by a
+    generic "cannot import name" `ImportError`, losing the message and the cause:
+    an `ImportError` is raised there instead.
+
+    Args:
+        msg: The error message.
+        module_name: The name of the module defining the `__getattr__`
+            and its helpers (see [is_imported_from]
+            [gemseo.util.package_import.is_imported_from]).
+        cause: The error the raised one is chained to, if any.
+
+    Raises:
+        ImportError: Under a `from module import name` statement.
+        AttributeError: Otherwise.
+    """
+    error_type = ImportError if is_imported_from(module_name) else AttributeError
+    if cause is None:
+        raise error_type(msg)
+    raise error_type(msg) from cause
 
 
 def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
@@ -106,8 +168,13 @@ def install_lazy_reexport(
 
     The installed ``__getattr__`` raises an ``AttributeError``
     for a name that is not exported,
-    and an ``AttributeError`` chained to the original one
-    when an attribute of the location of an exported name does not exist.
+    and an error chained to the original one
+    when an attribute of the location of an exported name does not exist:
+    an ``ImportError`` under a ``from package import name`` statement,
+    which would otherwise replace the message and the cause
+    by a generic "cannot import name" one,
+    and an ``AttributeError`` otherwise,
+    so that ``hasattr`` and ``getattr`` with a default keep working.
     An error raised while importing the module of the location,
     e.g. a ``ModuleNotFoundError`` for a misspelt module,
     propagates unchanged.
@@ -140,7 +207,7 @@ def install_lazy_reexport(
                 f"The location {location!r} of the name {name!r} "
                 f"exported by {package_name!r} cannot be resolved ({exc})."
             )
-            raise AttributeError(msg) from exc
+            raise_unresolvable_attribute(msg, __name__, exc)
         namespace[name] = obj
         return obj
 

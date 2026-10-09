@@ -721,11 +721,14 @@ def test_renamed_attribute_of_live_module_imported_after_install(monkeypatch):
     imported; the others go through the finder, which wraps their real loader.
     """
     module_name = "gemseo.post.dataset.radviz"
+    # The alias resolves through the package, which caches the RadViz of the module
+    # it imported: cache the current one, so that the teardown restores it
+    # (and the current submodule attribute, which the re-import replaces).
+    package = importlib.import_module("gemseo.post.dataset")
+    package.RadViz  # noqa: B018
+    monkeypatch.delitem(vars(package), "RadViz")
+    monkeypatch.setitem(vars(package), "radviz", sys.modules[module_name])
     monkeypatch.delitem(sys.modules, module_name)
-    # The alias resolves through the package, which caches the RadViz of the old module.
-    monkeypatch.delitem(
-        vars(importlib.import_module("gemseo.post.dataset")), "RadViz", raising=False
-    )
 
     module = importlib.import_module(module_name)
 

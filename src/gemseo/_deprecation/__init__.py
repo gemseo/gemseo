@@ -70,7 +70,6 @@ seen by the code importing the new path. Patch the new path instead.
 
 from __future__ import annotations
 
-import dis
 import sys
 import warnings
 from enum import Enum
@@ -95,6 +94,7 @@ from gemseo._deprecation.aliases import module_renames
 from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
+from gemseo.util.package_import import raise_unresolvable_attribute
 from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
@@ -106,9 +106,6 @@ _package_prefix: Final[str] = "gemseo."
 
 _plugin_prefix: Final[str] = "gemseo_"
 """The prefix of the name of the package of a GEMSEO plugin, e.g. `gemseo_excel`."""
-
-_import_from_opcode: Final[int] = dis.opmap["IMPORT_FROM"]
-"""The opcode importing a name in a `from module import name` statement."""
 
 _installed: bool = False
 
@@ -158,33 +155,11 @@ def _warn_attribute_rename(module_name: str, name: str, new_name: str) -> None:
     )
 
 
-def _is_imported_from() -> bool:
-    """Return whether the attribute being looked up is imported by a `from` statement.
-
-    The frame looking the attribute up is the first one outside this module, the
-    frames of this module being those of the `__getattr__` of a module and of its
-    helpers. It imports the attribute when it is executing the `IMPORT_FROM`
-    instruction of a `from module import name` statement.
-
-    Returns:
-        Whether the attribute is imported by a `from module import name` statement.
-    """
-    frame = sys._getframe(1)
-    while frame is not None and frame.f_globals.get("__name__") == __name__:
-        frame = frame.f_back
-    return (
-        frame is not None and frame.f_code.co_code[frame.f_lasti] == _import_from_opcode
-    )
-
-
 def _raise_unresolvable_attribute(msg: str) -> NoReturn:
     """Raise the error of a module-level attribute that cannot be resolved.
 
-    An `AttributeError` is raised, so that `hasattr` and `getattr` with a default keep
-    working, as they only swallow an `AttributeError`, except under a
-    `from module import name` statement, which would replace an `AttributeError` by a
-    generic "cannot import name" `ImportError`, losing the message: an `ImportError` is
-    raised there instead.
+    See [raise_unresolvable_attribute]
+    [gemseo.util.package_import.raise_unresolvable_attribute].
 
     Args:
         msg: The error message.
@@ -193,9 +168,7 @@ def _raise_unresolvable_attribute(msg: str) -> NoReturn:
         ImportError: Under a `from module import name` statement.
         AttributeError: Otherwise.
     """
-    if _is_imported_from():
-        raise ImportError(msg)
-    raise AttributeError(msg)
+    raise_unresolvable_attribute(msg, __name__)
 
 
 def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
