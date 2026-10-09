@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Reliability-oriented Sobol' analysis combining FORM and importance sampling."""
+"""Reliability-oriented Sobol' analysis."""
 
 from __future__ import annotations
 
@@ -71,10 +71,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ISFORMSobolAnalysis(
+class ROSobolAnalysis(
     SobolIndicesEstimatorMixin, BaseROSensitivityAnalysis[SobolAnalysisMethod]
 ):
-    r"""Reliability-oriented Sobol' analysis based on FORM and importance sampling.
+    r"""Reliability-oriented Sobol' analysis.
 
     This reliability-oriented sensitivity analysis estimates
     the Sobol' indices of a binary event,
@@ -86,7 +86,7 @@ class ISFORMSobolAnalysis(
         [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis].
 
     A crude Monte Carlo estimation of these indices is intractable for rare events.
-    Instead, this analysis combines three ingredients:
+    Instead, this analysis currently combines three ingredients:
 
     - the first-order reliability method (FORM)
       to locate the most probable failure point (MPFP), a.k.a. design point,
@@ -101,7 +101,7 @@ class ISFORMSobolAnalysis(
     each event is processed independently
     and the Sobol' indices are estimated event by event.
 
-    See the [rare events][concept-isformsobol-analysis] part
+    See the [rare events][concept-rosobol-analysis] part
     of the sensitivity analysis concepts
     for the estimators, their confidence intervals and their cost.
 
@@ -397,7 +397,7 @@ class ISFORMSobolAnalysis(
         scenario = EvaluationScenario(
             disciplines,
             random_space,
-            name="ISFORMSobolAnalysisSamplingPhase",
+            name="ROSobolAnalysisSamplingPhase",
             formulation_settings=formulation_settings,
         )
         for output_name in output_names:
@@ -413,7 +413,7 @@ class ISFORMSobolAnalysis(
             if values.shape[1] > 1:
                 msg = (
                     f"The event output {output_name!r} has {values.shape[1]} "
-                    "components; ISFORMSobolAnalysis only supports event outputs "
+                    "components; ROSobolAnalysis only supports event outputs "
                     "with a single component."
                 )
                 raise ValueError(msg)
@@ -482,7 +482,7 @@ class ISFORMSobolAnalysis(
     def compute_indices(
         self,
         output_names: str | Iterable[str] = (),
-        algo: ISFORMSobolAnalysis.Algorithm | None = None,
+        algo: ROSobolAnalysis.Algorithm | None = None,
         confidence_level: float = 0.95,
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
@@ -591,7 +591,7 @@ class ISFORMSobolAnalysis(
     @staticmethod
     def __warn_about_undefined_indices(
         output_name: str,
-        algo: ISFORMSobolAnalysis.Algorithm,
+        algo: ROSobolAnalysis.Algorithm,
         estimator: ISSobolIndicesEstimator,
         n_replicates: int,
     ) -> None:

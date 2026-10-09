@@ -82,7 +82,7 @@ class OTJointDistribution(BaseJointDistribution):
         [OT_SORM][gemseo.uncertainty.reliability.openturns.sorm.OT_SORM],
         [OT_IS_FORM][gemseo.uncertainty.reliability.openturns.is_form.OT_IS_FORM]
         and
-        [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+        [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]
         rely on the Rosenblatt transformation of the random vector,
         called iso-probabilistic transformation by OpenTURNS.
         With a collection of block copulas,

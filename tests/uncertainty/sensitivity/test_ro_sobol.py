@@ -64,7 +64,7 @@ from gemseo.uncertainty.sensitivity._is_sobol_indices_estimator import (
     ISSobolIndicesEstimator,
 )
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
-from gemseo.uncertainty.sensitivity.is_form_sobol import ISFORMSobolAnalysis
+from gemseo.uncertainty.sensitivity.ro_sobol import ROSobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
 from gemseo.util.testing.helper import assert_exception
@@ -95,9 +95,9 @@ def parameter_space() -> RandomSpace:
 
 
 @pytest.fixture(scope="module")
-def analysis(discipline, parameter_space) -> ISFORMSobolAnalysis:
-    """An IS-FORM-Sobol' analysis with a pick-and-freeze design."""
-    analysis = ISFORMSobolAnalysis()
+def analysis(discipline, parameter_space) -> ROSobolAnalysis:
+    """A reliability-oriented Sobol' analysis with a pick-and-freeze design."""
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500
@@ -166,7 +166,7 @@ def test_compute_samples_with_random_space(discipline) -> None:
     space.add_variable("x1", OTNormalDistribution_Settings())
     space.add_variable("x2", OTNormalDistribution_Settings())
 
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline], space, {"y_high": y > threshold}, n_samples=500
@@ -177,7 +177,7 @@ def test_compute_samples_with_random_space(discipline) -> None:
 
 def test_compute_second_order_false(discipline, parameter_space) -> None:
     """Check that a pick-and-freeze design can skip second-order indices."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline],
@@ -203,7 +203,7 @@ def test_high_dimension_sampling_factor() -> None:
     for name in ("x1", "x2", "x3"):
         space.add_variable(name, OTNormalDistribution_Settings())
 
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline], space, {"y_high": y > threshold}, n_samples=2000
@@ -211,7 +211,7 @@ def test_high_dimension_sampling_factor() -> None:
     sample_size = dataset.misc["sample_size"]["y_high"]
     assert len(dataset) == sample_size * (2 + 2 * 3)
 
-    analysis_no_second_order = ISFORMSobolAnalysis()
+    analysis_no_second_order = ROSobolAnalysis()
     y = analysis_no_second_order.get_event_variables("y")
     dataset_no_second_order = analysis_no_second_order.compute_samples(
         [discipline],
@@ -226,7 +226,7 @@ def test_high_dimension_sampling_factor() -> None:
 
 def test_too_small_n_samples(discipline, parameter_space, snapshot) -> None:
     """Check that a budget too small to sample after FORM raises an error."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     with assert_exception(ValueError, snapshot):
         analysis.compute_samples(
@@ -242,7 +242,7 @@ def test_seed_reproducibility_pick_and_freeze(discipline, parameter_space) -> No
     """
 
     def get_input_data(seed):
-        analysis = ISFORMSobolAnalysis()
+        analysis = ROSobolAnalysis()
         y = analysis.get_event_variables("y")
         dataset = analysis.compute_samples(
             [discipline],
@@ -275,7 +275,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
     # pick-and-freeze (which needs N(2+d)=4 samples here, with d=2).
     n_samples = n_form_evaluations + 1
 
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline],
@@ -286,7 +286,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
     )
     assert len(dataset) >= 1
 
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     with assert_exception(ValueError, snapshot):
         analysis.compute_samples(
@@ -318,12 +318,12 @@ def test_vector_valued_event_output_raises(
         return zeros(parameter_space.dimension), 0
 
     monkeypatch.setattr(
-        ISFORMSobolAnalysis,
-        "_ISFORMSobolAnalysis__compute_standard_design_point",
+        ROSobolAnalysis,
+        "_ROSobolAnalysis__compute_standard_design_point",
         staticmethod(fake_compute_standard_design_point),
     )
 
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     with assert_exception(ValueError, snapshot):
         analysis.compute_samples(
@@ -367,7 +367,7 @@ def test_probability(analysis) -> None:
 
 def test_rank_based(discipline, parameter_space) -> None:
     """Check the rank-based estimation from independent samples."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [discipline],
@@ -390,7 +390,7 @@ def test_inconsistent_algorithm_with_iid_samples(
     discipline, parameter_space, snapshot
 ) -> None:
     """Check that a pick-and-freeze algorithm rejects independent samples."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [discipline],
@@ -418,7 +418,7 @@ def test_form_design_point_consistency(discipline, parameter_space, analysis) ->
 
 def test_several_events(discipline, parameter_space, analysis) -> None:
     """Check that several events share the n_samples budget."""
-    multi = ISFORMSobolAnalysis()
+    multi = ROSobolAnalysis()
     y = multi.get_event_variables("y")
     multi.compute_samples(
         [discipline],
@@ -473,7 +473,7 @@ def test_plot(analysis, sort, sort_by_total, kwargs) -> None:
 
 def test_plot_rank_based(discipline, parameter_space) -> None:
     """Check that plot() works when only first-order indices are available."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [discipline],
@@ -505,8 +505,8 @@ def test_sort_input_variables(analysis) -> None:
 
 
 def test_factory() -> None:
-    """Check that the high-level API creates an ISFORMSobolAnalysis."""
-    assert isinstance(create_sensitivity_analysis("ISFORMSobol"), ISFORMSobolAnalysis)
+    """Check that the high-level API creates an ROSobolAnalysis."""
+    assert isinstance(create_sensitivity_analysis("ROSobol"), ROSobolAnalysis)
 
 
 # Ground truth: the Sobol' indices of the indicator of a linear limit state
@@ -581,9 +581,12 @@ def linear_space() -> RandomSpace:
 
 
 @pytest.fixture(scope="module")
-def linear_analysis(linear_discipline, linear_space) -> ISFORMSobolAnalysis:
-    """An IS-FORM-Sobol' analysis of the linear limit state (pick-and-freeze)."""
-    analysis = ISFORMSobolAnalysis()
+def linear_analysis(linear_discipline, linear_space) -> ROSobolAnalysis:
+    """A reliability-oriented Sobol' analysis of the linear limit state.
+
+    It uses a pick-and-freeze design.
+    """
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [linear_discipline],
@@ -595,9 +598,12 @@ def linear_analysis(linear_discipline, linear_space) -> ISFORMSobolAnalysis:
 
 
 @pytest.fixture(scope="module")
-def linear_rank_analysis(linear_discipline, linear_space) -> ISFORMSobolAnalysis:
-    """An IS-FORM-Sobol' analysis of the linear limit state (independent rows)."""
-    analysis = ISFORMSobolAnalysis()
+def linear_rank_analysis(linear_discipline, linear_space) -> ROSobolAnalysis:
+    """A reliability-oriented Sobol' analysis of the linear limit state.
+
+    Its design has independent rows.
+    """
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [linear_discipline],
@@ -642,10 +648,10 @@ def test_linear_probability(linear_analysis) -> None:
         "max_interval_width",
     ),
     [
-        (ISFORMSobolAnalysis.Algorithm.SALTELLI, 0.05, 0.05, 0.1, 0.3),
-        (ISFORMSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO, 0.05, 0.05, 0.1, 0.3),
-        (ISFORMSobolAnalysis.Algorithm.MARTINEZ, 0.05, 0.05, 0.1, 0.3),
-        (ISFORMSobolAnalysis.Algorithm.JANSEN, 0.12, 0.08, 0.3, 1.0),
+        (ROSobolAnalysis.Algorithm.SALTELLI, 0.05, 0.05, 0.1, 0.3),
+        (ROSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO, 0.05, 0.05, 0.1, 0.3),
+        (ROSobolAnalysis.Algorithm.MARTINEZ, 0.05, 0.05, 0.1, 0.3),
+        (ROSobolAnalysis.Algorithm.JANSEN, 0.12, 0.08, 0.3, 1.0),
     ],
 )
 def test_pick_and_freeze_indices_match_exact_values(
@@ -722,10 +728,10 @@ def test_rank_indices_match_exact_values(linear_rank_analysis) -> None:
 @pytest.mark.parametrize(
     "algo",
     [
-        ISFORMSobolAnalysis.Algorithm.SALTELLI,
-        ISFORMSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO,
-        ISFORMSobolAnalysis.Algorithm.MARTINEZ,
-        ISFORMSobolAnalysis.Algorithm.JANSEN,
+        ROSobolAnalysis.Algorithm.SALTELLI,
+        ROSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO,
+        ROSobolAnalysis.Algorithm.MARTINEZ,
+        ROSobolAnalysis.Algorithm.JANSEN,
     ],
 )
 def test_asymptotic_intervals_match_bootstrap(linear_analysis, algo) -> None:
@@ -760,7 +766,7 @@ def test_asymptotic_intervals_match_bootstrap(linear_analysis, algo) -> None:
 
 
 @pytest.fixture
-def restored_analysis(analysis) -> Iterator[ISFORMSobolAnalysis]:
+def restored_analysis(analysis) -> Iterator[ROSobolAnalysis]:
     """The module-scoped analysis, whose indices are recomputed after the test."""
     yield analysis
     analysis.compute_indices()
@@ -873,7 +879,7 @@ def test_constant_event_has_zero_variance(
     The event occurs at no sample or at every sample,
     so no estimator is built for it.
     """
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500
@@ -894,7 +900,7 @@ def test_plot_second_order_of_constant_event(
     discipline, parameter_space, snapshot
 ) -> None:
     """Check that the second-order indices of a constant event cannot be plotted."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500
@@ -908,7 +914,7 @@ def test_plot_second_order_of_constant_event(
 
 def test_plot_second_order_not_computed(discipline, parameter_space, snapshot) -> None:
     """Check that missing second-order indices cannot be plotted."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
         [discipline],
@@ -923,12 +929,10 @@ def test_plot_second_order_not_computed(discipline, parameter_space, snapshot) -
 
 
 pick_and_freeze_estimators = {
-    ISFORMSobolAnalysis.Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
-    ISFORMSobolAnalysis.Algorithm.JANSEN: JansenSensitivityAlgorithm,
-    ISFORMSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO: (
-        MauntzKucherenkoSensitivityAlgorithm
-    ),
-    ISFORMSobolAnalysis.Algorithm.MARTINEZ: MartinezSensitivityAlgorithm,
+    ROSobolAnalysis.Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
+    ROSobolAnalysis.Algorithm.JANSEN: JansenSensitivityAlgorithm,
+    ROSobolAnalysis.Algorithm.MAUNTZ_KUCHERENKO: (MauntzKucherenkoSensitivityAlgorithm),
+    ROSobolAnalysis.Algorithm.MARTINEZ: MartinezSensitivityAlgorithm,
 }
 """The OpenTURNS estimators associated with the pick-and-freeze algorithms."""
 
@@ -1013,7 +1017,7 @@ def test_rank_at_origin_matches_openturns() -> None:
     standard_samples = default_rng(1).standard_normal((2500, 3))
     indicator = compute_nonlinear_indicator(standard_samples)
     estimator = ISSobolIndicesEstimator(
-        ISFORMSobolAnalysis.Algorithm.RANK,
+        ROSobolAnalysis.Algorithm.RANK,
         standard_samples,
         indicator,
         zeros(3),
@@ -1035,7 +1039,7 @@ def test_rank_at_origin_matches_openturns() -> None:
 
 
 def build_estimator(
-    algo: ISFORMSobolAnalysis.Algorithm,
+    algo: ROSobolAnalysis.Algorithm,
     indicator_blocks: Sequence[RealArray],
     use_asymptotic_distributions: bool,
     n_replicates: int = 100,
@@ -1084,7 +1088,7 @@ def create_martinez_blocks() -> list[RealArray]:
 def test_martinez_with_constant_block(use_asymptotic_distributions) -> None:
     """Check that a constant block makes the Martinez first-order indices NaN."""
     estimator = build_estimator(
-        ISFORMSobolAnalysis.Algorithm.MARTINEZ,
+        ROSobolAnalysis.Algorithm.MARTINEZ,
         create_martinez_blocks(),
         use_asymptotic_distributions,
         10,
@@ -1105,7 +1109,7 @@ def test_saltelli_bootstrap_discards_degenerate_replicates() -> None:
     block_a = zeros(20)
     block_a[0] = 1.0
     blocks = [block_a] + [rng.integers(0, 2, 20).astype(float) for _ in range(3)]
-    estimator = build_estimator(ISFORMSobolAnalysis.Algorithm.SALTELLI, blocks, False)
+    estimator = build_estimator(ROSobolAnalysis.Algorithm.SALTELLI, blocks, False)
     assert 0 < estimator.n_degenerate_replicates < 100
     assert isfinite(estimator.first_order_interval).all()
     assert isfinite(estimator.total_order_interval).all()
@@ -1116,14 +1120,14 @@ def test_rank_bootstrap_discards_degenerate_replicates() -> None:
     """Check that the replicates without any failing row are discarded."""
     indicator = zeros(20)
     indicator[0] = 1.0
-    estimator = build_estimator(ISFORMSobolAnalysis.Algorithm.RANK, [indicator], False)
+    estimator = build_estimator(ROSobolAnalysis.Algorithm.RANK, [indicator], False)
     assert 0 < estimator.n_degenerate_replicates < 100
     assert isfinite(estimator.first_order_interval).all()
 
 
 def test_undefined_indices_are_logged(discipline, parameter_space, caplog) -> None:
     """Check the warnings about the undefined indices and discarded replicates."""
-    analysis = ISFORMSobolAnalysis()
+    analysis = ROSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
         [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500

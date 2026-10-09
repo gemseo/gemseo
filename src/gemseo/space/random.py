@@ -223,7 +223,7 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
             [OT_SORM][gemseo.uncertainty.reliability.openturns.sorm.OT_SORM],
             [OT_IS_FORM][gemseo.uncertainty.reliability.openturns.is_form.OT_IS_FORM]
             and
-            [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+            [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]
             several orders of magnitude slower.
             Add the random variables sharing a non-normal copula consecutively,
             in any order,

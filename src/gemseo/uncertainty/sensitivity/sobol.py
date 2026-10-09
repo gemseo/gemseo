@@ -101,7 +101,7 @@ class SobolAnalysis(
     !!! note "There are other Sobol indices for binary events."
         When the variable of interest is a disciplinary output exceeding a threshold,
         it is best to use
-        [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+        [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]
         designed for binary events.
     """
 

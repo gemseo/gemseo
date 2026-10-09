@@ -33,27 +33,27 @@ GEMSEO provides six sensitivity analysis techniques,
 in two families:
 Correlation, Morris, Sobol' and HSIC analyses quantify the contribution of each uncertain input
 to the variability of a *raw disciplinary output*,
-while FORM and ISFORMSobol analyses are **reliability-oriented**:
+while FORM and ROSobol analyses are **reliability-oriented** (RO, hence the name ROSobol):
 they quantify the contribution of each uncertain input to a binary *event*
 (e.g. a disciplinary output exceeding a threshold) rather than to the raw output itself.
 
 ## Available sensitivity analyses { #concept-sensitivity-analyses }
 
-| Analysis    | Class                                                                                   | Approach                                                 | Key indices                                           |
-|-------------|-----------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------------------------------------------|
-| Correlation | [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]   | Linear / Monotonic                                       | Pearson, Spearman, PCC, PRCC                          |
-| Morris      | [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]                  | Screening                                                | $\mu^*$, $\sigma$                                     |
-| Sobol'      | [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]                     | Variance-based                                           | First-order $S_i$, total-order $S_T$                  |
-| HSIC        | [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]                        | Kernel-based                                             | HSIC, $R^2$-HSIC                                      |
-| FORM        | [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis]                        | Reliability-oriented (importance factors)                | Classical, elliptical, physical importance factors    |
-| ISFORMSobol | [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis] | Reliability-oriented Sobol' (FORM + importance sampling) | First-order $S_i$, total-order $S_i^T$ (of the event) |
+| Analysis    | Class                                                                                 | Approach                                                 | Key indices                                           |
+|-------------|---------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------------------------------------------|
+| Correlation | [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis] | Linear / Monotonic                                       | Pearson, Spearman, PCC, PRCC                          |
+| Morris      | [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]                | Screening                                                | $\mu^*$, $\sigma$                                     |
+| Sobol'      | [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]                   | Variance-based                                           | First-order $S_i$, total-order $S_T$                  |
+| HSIC        | [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]                      | Kernel-based                                             | HSIC, $R^2$-HSIC                                      |
+| FORM        | [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis]                      | Reliability-oriented (importance factors)                | Classical, elliptical, physical importance factors    |
+| ROSobol     | [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]            | Reliability-oriented Sobol' (FORM + importance sampling) | First-order $S_i$, total-order $S_i^T$ (of the event) |
 
-Correlation, Sobol', HSIC, FORM and ISFORMSobol analyses integrate features from [OpenTURNS](https://openturns.github.io/www/)
+Correlation, Sobol', HSIC, FORM and ROSobol analyses integrate features from [OpenTURNS](https://openturns.github.io/www/)
 while Morris analysis is a custom implementation.
 
-!!! note "FORM and ISFORMSobol analyze events, not raw outputs"
+!!! note "FORM and ROSobol analyze events, not raw outputs"
     For [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] and
-    [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis],
+    [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis],
     the notion of *output* used throughout the common API
     (e.g. the keys of `indices`, the `output`/`outputs` arguments of the plotting methods)
     is equivalent to the notion of *event*: an output name is an event name.
@@ -71,7 +71,7 @@ Broadly speaking, the following guidelines can be provided:
 | Sobol'      | Full variance decomposition needed                                       | 10 000+                                          | None                                                        |
 | HSIC        | Non-monotonic dependence; target/conditional SA                          | Hundreds                                         | None (kernel-based)                                         |
 | FORM        | Importance factors needed for a rare event / limit-state                 | One FORM run (tens of evaluations)               | Event well-approximated by a hyperplane at the design point |
-| ISFORMSobol | Full Sobol' decomposition of a rare event; crude Monte Carlo intractable | FORM run(s) + shared Sobol' budget across events | None beyond FORM's per-event design-point search            |
+| ROSobol     | Full Sobol' decomposition of a rare event; crude Monte Carlo intractable | FORM run(s) + shared Sobol' budget across events | None beyond FORM's per-event design-point search            |
 
 ### Correlation analysis
 
@@ -220,11 +220,11 @@ and only provides the first-order indices.
 Confidence intervals are retrieved with
 [get_intervals()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.get_intervals].
 
-#### Rare events { #concept-isformsobol-analysis }
+#### Rare events { #concept-rosobol-analysis }
 
 A crude Monte Carlo estimation of the Sobol' indices is intractable
 when the quantity of interest is a rare event rather than a raw output.
-[ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis]
+[ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]
 estimates the Sobol' indices of a binary event,
 e.g. a disciplinary output exceeding a threshold,
 by combining three ingredients:
