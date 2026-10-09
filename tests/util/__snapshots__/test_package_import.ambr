@@ -5,7 +5,10 @@
 # name: test_bad_location[Missing]
   "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
 # ---
-# name: test_from_import_bad_location
+# name: test_from_import_bad_location[lazy]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_bad_location[wrapped]
   "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
 # ---
 # name: test_module_import_error_propagates[Broken-AttributeError]

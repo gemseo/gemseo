@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 import gemseo
+from gemseo._deprecation import _install_attribute_aliases
 from gemseo.util.package_import import install_lazy_reexport
 from gemseo.util.package_import import resolve_lazy_export
 from gemseo.util.testing.helper import assert_exception
@@ -137,12 +138,20 @@ def test_bad_location(fake_package, name, snapshot) -> None:
     assert getattr(fake_package, name, None) is None
 
 
-def test_from_import_bad_location(fake_package, snapshot) -> None:
+@pytest.mark.parametrize("wrapped", [False, True], ids=["lazy", "wrapped"])
+def test_from_import_bad_location(fake_package, wrapped, snapshot) -> None:
     """Check that ``from package import name`` raises an ImportError.
 
     It keeps the message and the cause, which CPython would replace by its own
     generic ImportError if the module ``__getattr__`` raised an AttributeError.
+
+    The lazy ``__getattr__`` can be wrapped by the one of the deprecation aliases,
+    which delegates the names it has no rename for to it.
     """
+    if wrapped:
+        _install_attribute_aliases(fake_package)
+        assert fake_package.__getattr__.__module__ == "gemseo._deprecation"
+
     with assert_exception(ImportError, snapshot) as exc_info:
         from fake_lazy_pkg import Missing  # noqa: F401
 

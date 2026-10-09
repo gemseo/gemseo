@@ -168,7 +168,7 @@ def _raise_unresolvable_attribute(msg: str) -> NoReturn:
         ImportError: Under a `from module import name` statement.
         AttributeError: Otherwise.
     """
-    raise_unresolvable_attribute(msg, __name__)
+    raise_unresolvable_attribute(msg)
 
 
 def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:

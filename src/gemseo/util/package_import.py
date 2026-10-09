@@ -33,27 +33,34 @@ if TYPE_CHECKING:
 _import_from_opcode: Final[int] = dis.opmap["IMPORT_FROM"]
 """The opcode importing a name in a `from module import name` statement."""
 
+_getattr_module_names: Final[frozenset[str]] = frozenset({
+    __name__,
+    "gemseo._deprecation",
+})
+"""The names of the modules defining module-level `__getattr__` and their helpers.
 
-def is_imported_from(module_name: str) -> bool:
+The `__getattr__` of `gemseo._deprecation` wraps the lazy one
+of this module, so the frames of both can sit between the frame looking an
+attribute up and the one raising its error.
+"""
+
+
+def is_imported_from() -> bool:
     """Return whether the attribute being looked up is imported by a `from` statement.
 
-    The frame looking the attribute up is the first one outside this module
-    and the module `module_name`, the frames of these modules being those of
-    the `__getattr__` of a module and of its helpers. It imports the attribute
-    when it is executing the `IMPORT_FROM` instruction of a
-    `from module import name` statement.
-
-    Args:
-        module_name: The name of the module defining the `__getattr__`
-            and its helpers.
+    The frame looking the attribute up is the first one outside the modules
+    defining module-level `__getattr__` and their helpers,
+    i.e. this module and `gemseo._deprecation`,
+    whose `__getattr__` can wrap one of this module.
+    It imports the attribute when it is executing the `IMPORT_FROM` instruction
+    of a `from module import name` statement.
 
     Returns:
         Whether the attribute is imported by a `from module import name` statement.
     """
-    skipped_module_names = {__name__, module_name}
     frame = sys._getframe(1)
-    while frame is not None and frame.f_globals.get("__name__") in (
-        skipped_module_names
+    while (
+        frame is not None and frame.f_globals.get("__name__") in _getattr_module_names
     ):
         frame = frame.f_back
     return (
@@ -62,7 +69,7 @@ def is_imported_from(module_name: str) -> bool:
 
 
 def raise_unresolvable_attribute(
-    msg: str, module_name: str, cause: BaseException | None = None
+    msg: str, cause: BaseException | None = None
 ) -> NoReturn:
     """Raise the error of a module-level attribute that cannot be resolved.
 
@@ -70,20 +77,18 @@ def raise_unresolvable_attribute(
     working, as they only swallow an `AttributeError`, except under a
     `from module import name` statement, which would replace an `AttributeError` by a
     generic "cannot import name" `ImportError`, losing the message and the cause:
-    an `ImportError` is raised there instead.
+    an `ImportError` is raised there instead
+    (see [is_imported_from][gemseo.util.package_import.is_imported_from]).
 
     Args:
         msg: The error message.
-        module_name: The name of the module defining the `__getattr__`
-            and its helpers (see [is_imported_from]
-            [gemseo.util.package_import.is_imported_from]).
         cause: The error the raised one is chained to, if any.
 
     Raises:
         ImportError: Under a `from module import name` statement.
         AttributeError: Otherwise.
     """
-    error_type = ImportError if is_imported_from(module_name) else AttributeError
+    error_type = ImportError if is_imported_from() else AttributeError
     if cause is None:
         raise error_type(msg)
     raise error_type(msg) from cause
@@ -207,7 +212,7 @@ def install_lazy_reexport(
                 f"The location {location!r} of the name {name!r} "
                 f"exported by {package_name!r} cannot be resolved ({exc})."
             )
-            raise_unresolvable_attribute(msg, __name__, exc)
+            raise_unresolvable_attribute(msg, exc)
         namespace[name] = obj
         return obj
 
