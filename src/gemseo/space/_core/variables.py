@@ -253,7 +253,7 @@ class Variables(
             tuple(
                 full(
                     variable.size,
-                    issubdtype(variable.component_type, integer),
+                    issubdtype(variable.coordinate_type, integer),
                     dtype=bool,
                 )
                 for variable in self.values()

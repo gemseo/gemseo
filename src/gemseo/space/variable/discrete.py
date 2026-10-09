@@ -187,7 +187,7 @@ class DiscreteVariable(BaseDeterministicVariable, BaseNumericVariable):
         Returns:
             The bound of the variable.
         """
-        return freeze_array(array([self.choices[index]], dtype=self.component_type))
+        return freeze_array(array([self.choices[index]], dtype=self.coordinate_type))
 
     def get_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool
@@ -212,7 +212,7 @@ class DiscreteVariable(BaseDeterministicVariable, BaseNumericVariable):
         Returns:
             The lowest choice.
         """  # noqa: D205, D212
-        return array([self.choices[0]], dtype=self.component_type)
+        return array([self.choices[0]], dtype=self.coordinate_type)
 
     def filter_components(self, components: Sequence[int]) -> Self:  # noqa: D102
         return self._filter_scalar_components(components)

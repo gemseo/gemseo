@@ -20,16 +20,21 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import pytest
 from numpy import array
+from numpy import dtype
+from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
+from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
 from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.space.variable import CategoricalVariable
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.testing.helper import assert_exception
 
@@ -271,3 +276,121 @@ def test_default_inputs_size_prevails_over_local_data_size() -> None:
         ["x", "y"], ["f"], {"x": array([1.0, 2.0])}, discipline
     )
     assert_equal(function.evaluate(array([1.0, 2.0, 3.0])), array([33.0]))
+
+
+class MaterialDiscipline(Discipline):
+    """A discipline computing `y = density[material] * x` from a material label."""
+
+    density: ClassVar[dict[str, float]] = {
+        "steel": 7.8,
+        "aluminium": 2.7,
+        "titanium": 4.5,
+    }
+    """The density of the materials."""
+
+    def __init__(self, vectorized: bool) -> None:
+        super().__init__()
+        material_type = ndarray if vectorized else str
+        self.io.input_grammar.update_from_types({
+            "material": material_type,
+            "x": ndarray,
+        })
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {
+            "material": array(["steel"]) if vectorized else "steel",
+            "x": array([1.0]),
+        }
+        self.materials = []
+
+    def _run(self, input_data):
+        material = input_data["material"]
+        self.materials.append(material)
+        if isinstance(material, str):
+            return {"y": self.density[material] * input_data["x"]}
+
+        return {"y": array([self.density[m] for m in material]) * input_data["x"]}
+
+
+def create_categorical_function(vectorized: bool) -> DisciplineAdapter:
+    """Create a function of a categorical input and a real input.
+
+    Args:
+        vectorized: Whether the discipline handles several samples at once.
+    """
+    discipline = MaterialDiscipline(vectorized)
+    return DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        {},
+        discipline,
+        {"material": 1, "x": 1},
+        name_to_categorical_variable={
+            "material": CategoricalVariable(
+                categories=("steel", "aluminium", "titanium")
+            )
+        },
+    )
+
+
+@pytest.mark.parametrize("with_dtype_metadata", [False, True])
+def test_categorical_input_is_given_as_a_label(with_dtype_metadata) -> None:
+    """Check that the discipline receives the label of a categorical input."""
+    function = create_categorical_function(False)
+    x_vect = array([2.0, 0.5])
+    if with_dtype_metadata:
+        # As a DOE records the type of the variables of a mixed space.
+        x_vect.dtype = dtype(x_vect.dtype, metadata={"material": int64})
+
+    assert_allclose(function.evaluate(x_vect), array([4.5 * 0.5]))
+    assert function._DisciplineAdapter__discipline.materials == ["titanium"]
+
+    assert_allclose(function.evaluate(array([1.0, 2.0])), array([2.7 * 2.0]))
+    assert function._DisciplineAdapter__discipline.materials == [
+        "titanium",
+        "aluminium",
+    ]
+
+
+def test_categorical_input_of_several_samples_is_given_as_labels() -> None:
+    """Check that the discipline receives the labels of several samples at once."""
+    function = create_categorical_function(True)
+    x_vect = array([[2.0, 0.5], [0.0, 1.0], [1.0, 2.0]])
+    assert_allclose(
+        function.evaluate(x_vect).ravel(), array([4.5 * 0.5, 7.8, 2.7 * 2.0])
+    )
+    materials = function._DisciplineAdapter__discipline.materials
+    assert_equal(materials[0], array(["titanium", "steel", "aluminium"]))
+
+
+def test_categorical_input_with_complex_coordinates() -> None:
+    """Check that the complex coordinates of a complex-step perturbation are rounded."""
+    function = create_categorical_function(False)
+    output = function.evaluate(array([2 + 0j, 0.5 + 1e-30j]))
+    assert_allclose(output, array([4.5 * 0.5]))
+    assert function._DisciplineAdapter__discipline.materials == ["titanium"]
+
+
+class OnlyMaterialDiscipline(Discipline):
+    """A discipline computing `y` from a material label only."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_types({"material": str})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {"material": "steel"}
+
+    def _run(self, input_data):
+        return {"y": array([MaterialDiscipline.density[input_data["material"]]])}
+
+
+def test_jacobian_wrt_categorical_inputs_only() -> None:
+    """Check that the Jacobian has no column when all the inputs are categorical."""
+    generator = DisciplineAdapterGenerator(
+        OnlyMaterialDiscipline(),
+        {"material": 1},
+        {"material": CategoricalVariable(categories=("steel", "aluminium"))},
+    )
+    function = generator.get_function(["material"], ["y"])
+    assert function.differentiated_input_names_substitute == []
+    assert_allclose(function.evaluate(array([1.0])), array([2.7]))
+    assert function.jac(array([1.0])).shape == (0,)

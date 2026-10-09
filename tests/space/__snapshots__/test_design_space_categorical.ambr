@@ -1,0 +1,119 @@
+# serializer version: 1
+# name: test_add_categorical_variable_with_invalid_arguments[duplicated-categories]
+  '''
+  1 validation error for CategoricalVariable
+    Value error, The following category appears several times: 'steel'. [type=value_error, input_value={'categories': ['steel', 'steel']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_categorical_variable_with_invalid_arguments[integer]
+  '1 is not a category of the variable; the categories are [steel, aluminium].'
+# ---
+# name: test_add_categorical_variable_with_invalid_arguments[several-labels]
+  "'gold' is not a category of the variable; the categories are [steel, aluminium]."
+# ---
+# name: test_add_categorical_variable_with_invalid_arguments[unknown-label]
+  "'gold' is not a category of the variable; the categories are [steel, aluminium]."
+# ---
+# name: test_categorical_check_membership_error[value0]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 3.0, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value1]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = -1.0, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value2]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 0.5, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value3]
+  'The component x[0] of the given array (3.0) is greater than the upper bound (2.0) by 1.0e+00.'
+# ---
+# name: test_categorical_check_membership_error[value4]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 3.0, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value5]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 3, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value6]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 0.5, which is not the position of a category.'
+# ---
+# name: test_categorical_check_membership_error[value7]
+  'The component x[0] of the given array (2.5) is greater than the upper bound (2.0) by 5.0e-01.'
+# ---
+# name: test_categorical_variable_cannot_be_exported_to_csv[to_csv]
+  "The design space has the categorical variables 'material', 'colour', which cannot be exported to a CSV file; use an HDF file instead."
+# ---
+# name: test_categorical_variable_cannot_be_exported_to_csv[to_file]
+  "The design space has the categorical variables 'material', 'colour', which cannot be exported to a CSV file; use an HDF file instead."
+# ---
+# name: test_categorical_variable_cannot_be_imported_from_csv
+  "The variable 'material' of the file ds.csv is categorical, which cannot be imported from a CSV file; use an HDF file instead."
+# ---
+# name: test_categorical_variable_has_no_bounds[set-lower-bound]
+  'The categorical variable material has no bounds.'
+# ---
+# name: test_categorical_variable_has_no_bounds[set-upper-bound]
+  'The categorical variable material has no bounds.'
+# ---
+# name: test_categorical_variable_hdf_append_with_other_categories
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The categories of the design variable 'material' are ['aluminium', 'stainless steel', 'titanium']; got ['titanium', 'stainless steel', 'aluminium'].
+  '''
+# ---
+# name: test_categorical_variable_pretty_table[False]
+  '''
+  Design space:
+  +----------+-------------+-------+-------------+-------------+
+  | Name     | Lower bound | Value | Upper bound | Type        |
+  +----------+-------------+-------+-------------+-------------+
+  | material |             |  None |             | categorical |
+  +----------+-------------+-------+-------------+-------------+
+  '''
+# ---
+# name: test_categorical_variable_pretty_table[True]
+  '''
+  Design space:
+  +----------+-------------+-----------+-------------+-------------+
+  | Name     | Lower bound |   Value   | Upper bound | Type        |
+  +----------+-------------+-----------+-------------+-------------+
+  | material |             | aluminium |             | categorical |
+  | x        |      0      |     1     |      2      | real        |
+  +----------+-------------+-----------+-------------+-------------+
+  '''
+# ---
+# name: test_check_membership_of_a_three_dimensional_array
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 1.5, which is not the position of a category.'
+# ---
+# name: test_check_membership_of_many_invalid_points[points0]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 1.5, which is not the position of a category.'
+# ---
+# name: test_check_membership_of_many_invalid_points[points1]
+  'The component x[0] of the given array (2.5) is greater than the upper bound (2.0) by 5.0e-01.'
+# ---
+# name: test_check_membership_of_many_invalid_points[points2]
+  'The component x[0] of the given array (-0.5) is lower than the lower bound (0.0) by 5.0e-01.'
+# ---
+# name: test_check_membership_of_many_non_integer_points
+  'The variable n is of type integer; got n[0] = 1.5.'
+# ---
+# name: test_hdf_invalid_file[categories-of-a-real-variable]
+  "Malformed DesignSpace input file ds.h5 has categories for the variable 'x' of type 'real' instead of 'categorical'."
+# ---
+# name: test_hdf_invalid_file[no-categories]
+  "Malformed DesignSpace input file ds.h5 has no categories for the variable 'material' of type 'categorical'."
+# ---
+# name: test_set_current_value_with_an_invalid_categorical_value[gold]
+  "'gold' is not a category of the variable; the categories are [steel, aluminium, titanium]."
+# ---
+# name: test_set_current_value_with_an_invalid_categorical_value[material1]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 3, which is not the position of a category.'
+# ---
+# name: test_set_current_value_with_an_invalid_categorical_value[material2]
+  'The variable material is categorical with the categories [steel, aluminium, titanium]; got the coordinate material[0] = 0.5, which is not the position of a category.'
+# ---
+# name: test_sparse_point_with_a_categorical_variable[denormalize_vect]
+  'A point of a design space with categorical variables cannot be a sparse array, as each of its categorical components is mapped to a category cell.'
+# ---
+# name: test_sparse_point_with_a_categorical_variable[normalize_vect]
+  'A point of a design space with categorical variables cannot be a sparse array, as each of its categorical components is mapped to a category cell.'
+# ---

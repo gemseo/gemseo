@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from prettytable import PrettyTable
 
 from gemseo.space._design.constants import table_names
+from gemseo.space.variable import BaseNumericVariable
 from gemseo.util.string import _format_value_in_pretty_table_16
 
 if TYPE_CHECKING:
@@ -66,12 +67,20 @@ def get_pretty_table(
         for i in range(variable.size):
             # Strip the imaginary part of a complex-step perturbation.
             value_i = None if value is None else value[i].real
+            if isinstance(variable, BaseNumericVariable):
+                lower_bound = variable.lower_bound[i]
+                upper_bound = variable.upper_bound[i]
+            else:
+                # A categorical variable shows its label and has no bounds.
+                lower_bound = upper_bound = ""
+                if value_i is not None:
+                    value_i = str(variable.decode(value_i))
 
             data = {
                 "name": name_template.format(name=name, index=i),
                 "value": value_i,
-                "lower_bound": variable.lower_bound[i],
-                "upper_bound": variable.upper_bound[i],
+                "lower_bound": lower_bound,
+                "upper_bound": upper_bound,
                 "type": variable.type,
             }
 

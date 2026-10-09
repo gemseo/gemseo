@@ -1,7 +1,7 @@
 ---
 reading_time: true
 complexity: beginner
-description: "A design space is a collection of bounded variables, each characterized by a name, a size, a type, bounds, and a current value."
+description: "A design space is a collection of variables, each characterized by a name, a size, a type, bounds or a set of values, and a current value."
 tags: ['user_guide']
 search:
   boost: 2
@@ -21,7 +21,8 @@ search:
 A [DesignSpace][gemseo.space.design.DesignSpace]
 is a collection of variables,
 that can be either scalar or vector,
-defined by bounds.
+defined by bounds
+or by the set of values they can take.
 It is typically used
 to define the input space that is explored through an optimization problem
 or a design of experiments.
@@ -30,16 +31,18 @@ Each variable is described by:
 
 - a name,
 - a size (default: 1),
-- a type ([read more][concept-variable-types]), either `"real"` (default), `"integer"`, `"discrete"` or `"catalog"`,
-- a lower bound (default: $-\infty$),
-- an upper bound (default: $\infty$),
+- a type ([read more][concept-variable-types]), either `"real"` (default), `"integer"`, `"discrete"`, `"catalog"` or `"categorical"`,
+- a lower bound (default: $-\infty$), for a numeric variable,
+- an upper bound (default: $\infty$), for a numeric variable,
 - a current value (default: none).
 
 As an example,
 when dealing with an aerodynamic simulation,
 you might consider a real variable "wing_span"
 bounded between 10 and 15 meters and
-an integer variable "number_of_ribs" between 5 and 20.
+an integer variable "number_of_ribs" between 5 and 20
+and a categorical variable "material"
+taking the value `"aluminium"`, `"titanium"` or `"composite"`.
 
 A design space has several properties that allow you
 to retrieve the information listed above.
@@ -57,6 +60,7 @@ Four types are available:
 - `"integer"` for the integer variables,
 - `"discrete"` for the discrete numeric variables,
 - `"catalog"` for the variables choosing an alternative in a catalog.
+- `"categorical"` for the variables whose value is one of a set of unordered labels.
 
 Each type has its own declaration method,
 taking what a variable of that type is defined by:
@@ -66,9 +70,11 @@ and
 take a size and bounds,
 [add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
 takes the values that the variable can take,
-while
 [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
-takes the catalog of the alternatives.
+the catalog of the alternatives
+and
+[add_categorical_variable()][gemseo.space.design.DesignSpace.add_categorical_variable]
+the labels that the variable can take.
 
 ### Real variables { #concept-real-variables }
 
@@ -187,6 +193,71 @@ tells whether the design space holds a discrete variable.
     - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [DiscreteVariable][gemseo.space.variable.DiscreteVariable]
 
+### Categorical variables { #concept-categorical-variables }
+
+A categorical variable takes different labels, also called categories.
+Unlike the choices of a discrete variable,
+these labels are not numbers
+and have no order.
+
+Think of the material of a wing panel,
+chosen among `"aluminium"`, `"titanium"` and `"composite"`:
+the materials cannot be sorted,
+and there is no material halfway between two of them,
+unlike the integer `2` between `1` and `3`.
+
+The categories are passed to
+[add_categorical_variable()][gemseo.space.design.DesignSpace.add_categorical_variable];
+they must be strings without duplication,
+and cannot be changed afterwards.
+A categorical variable is scalar
+and has no bounds.
+
+A discipline receives the label,
+e.g. `"titanium"`,
+while the current value, the design vector and the database
+store the position of this label among the categories,
+starting from zero,
+e.g. `1`.
+[set_current_value()][gemseo.space.design.DesignSpace.set_current_value],
+when passed a mapping,
+and [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable]
+accept the label as well as its position,
+and the table view of the design space displays the label.
+
+When a variable has no value,
+[initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values]
+gives it its first category.
+
+[variables][gemseo.space.design.DesignSpace.variables]
+reads the categories back,
+as `design_space.variables["material"].categories`,
+while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
+called with `DesignVariableType.CATEGORICAL`,
+tells whether the design space holds a categorical variable.
+
+!!! warning
+    The optimization algorithms reject a problem including a categorical variable,
+    and no option relaxes it,
+    as its categories have no order.
+    The DOE algorithms sample it
+    ([read more][concept-samplers-doe]).
+
+!!! note
+    When a design space is saved to a file,
+    the value of a categorical variable is stored as its label,
+    and the variable has no bounds to store:
+    an HDF file has neither lower-bound nor upper-bound dataset.
+    A design space with a categorical variable can only be saved to an HDF file,
+    not to a CSV file.
+
+??? abstract "API"
+
+    - [add_categorical_variable()][gemseo.space.design.DesignSpace.add_categorical_variable]
+    - [variables][gemseo.space.design.DesignSpace.variables]
+    - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
+    - [CategoricalVariable][gemseo.space.variable.CategoricalVariable]
+
 ### Catalog variables { #concept-catalog-variables }
 
 A catalog variable chooses one alternative in a **catalog**,
@@ -224,7 +295,8 @@ both to [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_var
 and to [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable];
 a label naming no alternative, or several ones, is rejected,
 and the position must then be given instead,
-while a label given to a variable that is not a catalog variable
+while a label given to a variable that is neither a catalog
+nor a categorical variable
 raises a `TypeError`.
 [Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
 returns the position of the alternative named by a label.
@@ -357,10 +429,11 @@ where $l_b(x)$ and $u_b(x)$ are the lower and upper bounds of the variable $x$.
 
 !!! warning
     Discrete and catalog variables cannot be normalized.
-    An integer variable is not normalized either,
+    An integer or categorical variable is not normalized either,
     unless [enable_integer_variables_normalization][gemseo.space.design.DesignSpace.enable_integer_variables_normalization]
     is set to `True`,
-    in which case it follows the same formula as a float variable.
+    in which case an integer variable follows the same formula as a float variable
+    and a categorical one is mapped as described in [Samplers (DOE)][concept-samplers-doe].
 
 !!! how-to
     - [How to (un)normalize design parameters][]

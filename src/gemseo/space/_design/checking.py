@@ -28,6 +28,7 @@ from numpy import ndarray
 from numpy import vectorize
 
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable._formatting import format_components
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
@@ -42,12 +43,14 @@ if TYPE_CHECKING:
 
 _types_checked_per_variable: Final[frozenset[DataType]] = frozenset({
     DataType.CATALOG,
+    DataType.CATEGORICAL,
     DataType.DISCRETE,
 })
 """The types of the variables whose domain the bounds do not describe.
 
 The bounds of a discrete variable are derived from its choices,
-and those of a catalog variable from its catalog,
+those of a catalog variable from its catalog,
+and a categorical variable has none,
 so the vectorized bound comparison cannot tell a non-candidate value
 lying inside the bounds from a candidate one;
 a design space holding such a variable asks each variable about its own domain.
@@ -190,6 +193,12 @@ def check_membership(
             # Fall back to the per-variable path,
             # which asks each variable about its own domain.
             if value.ndim > 1:
+                if are_full_values_surely_valid(variables, bounds, value):
+                    # The values are all valid:
+                    # a failure is reported by the loop below,
+                    # which names the variable and the component at fault.
+                    return
+
                 for value_i in value:
                     check_membership(variables, bounds, value_i)
                 return
@@ -213,6 +222,46 @@ def check_membership(
         f"got a {type(value)} instead."
     )
     raise TypeError(msg)
+
+
+def are_full_values_surely_valid(
+    variables: DesignVariables, bounds: Bounds, full_values: NumberArray
+) -> bool:
+    """Check quickly that full values stay within the bounds and the categories.
+
+    This vectorized test only handles design spaces
+    whose variables are real, integer or categorical and whose values are real,
+    and is conservative:
+    when it returns `False`,
+    the values may still be valid,
+    and the caller must then check them variable by variable.
+
+    Args:
+        variables: The variables.
+        bounds: The bounds.
+        full_values: The full values,
+            the components being along the last axis.
+
+    Returns:
+        Whether the values are valid for sure.
+    """
+    if full_values.dtype.kind not in "iuf" or variables.has_variables_of_type(
+        DataType.DISCRETE
+    ):
+        return False
+
+    # The integer and categorical components must be whole numbers.
+    whole_number_indices = [
+        index
+        for name, variable in variables.items()
+        if variable.type in {DataType.CATEGORICAL, DataType.INTEGER}
+        for index in variables.name_to_indices[name]
+    ]
+    return bool(
+        (full_values[..., whole_number_indices] % 1 == 0).all()
+        and (full_values >= bounds.full_lower_bound - bound_atol).all()
+        and (full_values <= bounds.full_upper_bound + bound_atol).all()
+    )
 
 
 def check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
@@ -343,8 +392,14 @@ def check_membership_dict(
             raise ValueError(msg)
 
         out_of_domain_indices = variable.find_components_outside_domain(value.real)
+        is_numeric_variable = isinstance(variable, BaseNumericVariable)
         for i in range(variable.size):
             value_i = value[i].real
+            if not is_numeric_variable:
+                # A variable without bounds is checked against its domain only.
+                check_index_in_domain(variable, name, i, value_i, out_of_domain_indices)
+                continue
+
             lower_bound = variable.lower_bound[i]
             if value_i < lower_bound - bound_atol:
                 msg = (

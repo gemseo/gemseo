@@ -74,9 +74,9 @@ def test_normalization_mask_is_read_only(
         mask[0] = False
 
 
-def test_component_type() -> None:
-    """Check the NumPy type of the components of a real variable."""
-    assert RealVariable().component_type is float64
+def test_coordinate_type() -> None:
+    """Check the NumPy type of the coordinates of a real variable."""
+    assert RealVariable().coordinate_type is float64
 
 
 def test_cast() -> None:

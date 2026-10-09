@@ -46,6 +46,7 @@ def test_class_names(factory) -> None:
     """Check that the concrete kinds are discovered and the abstract base is not."""
     assert factory.class_names == [
         "CatalogVariable",
+        "CategoricalVariable",
         "DiscreteVariable",
         "IntegerVariable",
         "RealVariable",

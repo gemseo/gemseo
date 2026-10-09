@@ -31,9 +31,9 @@ from numpy import logical_and
 from numpy import mod
 
 from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable.base import CoordinateDType
 from gemseo.space.variable.base import DataType
 from gemseo.space.variable.interval import BaseIntervalVariable
-from gemseo.space.variable.numeric import ComponentDType
 from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
@@ -80,7 +80,7 @@ def _find_non_integer_indices(value: NumberArray) -> set[int]:
 class IntegerVariable(BaseIntervalVariable):
     """A variable whose components are integers."""
 
-    component_type: ClassVar[ComponentDType] = int64
+    coordinate_type: ClassVar[CoordinateDType] = int64
 
     type: ClassVar[DataType] = DataType.INTEGER
 

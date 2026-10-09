@@ -106,9 +106,9 @@ def test_infinite_bound_is_stored_as_float(side) -> None:
     assert getattr(variable, f"{side}_bound").dtype == float64
 
 
-def test_component_type() -> None:
-    """Check the NumPy type of the components of an integer variable."""
-    assert IntegerVariable().component_type is int64
+def test_coordinate_type() -> None:
+    """Check the NumPy type of the coordinates of an integer variable."""
+    assert IntegerVariable().coordinate_type is int64
 
 
 def test_cast() -> None:

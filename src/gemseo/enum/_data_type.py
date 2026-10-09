@@ -60,6 +60,7 @@ class DataType(StrEnum):
     """The type of variable data."""
 
     CATALOG = "catalog"
+    CATEGORICAL = "categorical"
     DISCRETE = "discrete"
     INTEGER = "integer"
     REAL = "real"

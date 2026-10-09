@@ -28,6 +28,7 @@ import pytest
 from numpy import array
 from numpy import inf
 from numpy import ndarray
+from numpy.testing import assert_allclose
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
@@ -49,6 +50,7 @@ from gemseo.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.power_2 import Power2
+from gemseo.scenario import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.scipy.normal_settings import (
@@ -61,7 +63,6 @@ from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.scenario.mdo import MDOScenario
     from gemseo.util.typing import StrKeyMapping
 
 
@@ -789,3 +790,156 @@ def test_preprocessors(custom_doe, n_processes, add_pre_processors):
     assert len(problem.database) == 3
     if add_pre_processors:
         assert list(preprocessor.tuples) == [(0, 1), (1, 1), (2, 2), (0, 0)]
+
+
+density = {"steel": 7.8, "aluminium": 2.7, "titanium": 4.5}
+"""The density of the materials."""
+
+
+class MaterialDiscipline(Discipline):
+    """A discipline computing `y = density[material] * x` from a material label."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_types({"material": str, "x": ndarray})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {"material": "steel", "x": array([1.0])}
+        self.labels = []
+
+    def _run(self, input_data: StrKeyMapping):
+        material = input_data["material"]
+        self.labels.append(material)
+        return {"y": density[material] * input_data["x"]}
+
+
+class VectorizedMaterialDiscipline(Discipline):
+    """A discipline computing `y = density[material] * x` from material labels."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_types({"material": ndarray, "x": ndarray})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {
+            "material": array(["steel"]),
+            "x": array([1.0]),
+        }
+        self.labels = []
+
+    def _run(self, input_data: StrKeyMapping):
+        material = input_data["material"]
+        self.labels.extend(material)
+        return {"y": array([density[label] for label in material]) * input_data["x"]}
+
+
+@pytest.fixture
+def material_design_space() -> DesignSpace:
+    """A design space with a categorical variable and a real one."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    return design_space
+
+
+def test_full_factorial_on_a_categorical_variable(material_design_space) -> None:
+    """Check that a full-factorial DOE samples a categorical variable."""
+    discipline = MaterialDiscipline()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3, 2]))
+
+    # The discipline reads labels.
+    assert sorted(set(discipline.labels)) == sorted(density)
+    assert len(discipline.labels) == 6
+    # The database stores the positions.
+    database = scenario.formulation.problem.database
+    inputs = array([x.wrapped_array for x in database])
+    assert_array_equal(inputs, [[i, x] for x in (0.0, 1.0) for i in range(3)])
+    labels = list(density)
+    for x, data in database.items():
+        position, real = x.wrapped_array
+        assert_allclose(data["y"], [density[labels[int(position)]] * real])
+
+    # The dataset shows the labels.
+    dataset = scenario.to_dataset(opt_naming=False)
+    assert list(dataset.get_view(variable_names="material").to_numpy().ravel()) == [
+        labels[i] for _ in range(2) for i in range(3)
+    ]
+
+
+class DifferentiableMaterialDiscipline(MaterialDiscipline):
+    """A material discipline with an analytic Jacobian with respect to `x`."""
+
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+        self._init_jacobian(input_names, output_names)
+        self.jac["y"]["x"] = array([[density[self.io.input_data["material"]]]])
+
+
+def test_full_factorial_on_a_categorical_variable_with_jacobian(
+    material_design_space,
+) -> None:
+    """Check that the gradient stores zeros at the categorical coordinates."""
+    scenario = MDOScenario([DifferentiableMaterialDiscipline()], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3, 2], eval_jac=True))
+
+    labels = list(density)
+    database = scenario.formulation.problem.database
+    assert len(database) == 6
+    for x, data in database.items():
+        position = int(x.wrapped_array[0])
+        assert_almost_equal(data["@y"], [0.0, density[labels[position]]])
+
+
+def test_full_factorial_on_categorical_variables_only_with_jacobian() -> None:
+    """Check that a DOE can evaluate the Jacobian with categorical variables only."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    scenario = MDOScenario([MaterialDiscipline()], design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3], eval_jac=True))
+
+    database = scenario.formulation.problem.database
+    assert len(database) == 3
+    for data in database.values():
+        assert_equal(data["@y"], [0.0])
+
+
+def test_full_factorial_on_categorical_variables_only_with_jacobian_vectorized() -> (
+    None
+):
+    """Check the vectorized Jacobian evaluation with categorical variables only."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    discipline = VectorizedMaterialDiscipline()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3], eval_jac=True, vectorize=True))
+
+    database = scenario.formulation.problem.database
+    assert len(database) == 3
+    for data in database.values():
+        # The vectorized evaluation records the (output, input) Jacobian block.
+        assert_equal(data["@y"], [[0.0]])
+
+
+@pytest.mark.parametrize("vectorize", [False, True])
+def test_lhs_on_a_categorical_variable(material_design_space, vectorize) -> None:
+    """Check that an LHS samples every category, also when vectorized."""
+    discipline = (VectorizedMaterialDiscipline if vectorize else MaterialDiscipline)()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_LHS_Settings(n_samples=30, vectorize=vectorize))
+
+    database = scenario.formulation.problem.database
+    positions = {int(x.wrapped_array[0]) for x in database}
+    assert positions == {0, 1, 2}
+    assert set(discipline.labels) == set(density)

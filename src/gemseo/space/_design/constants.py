@@ -53,6 +53,9 @@ choices_group: Final[str] = _choices
 This is also the name of the CSV column.
 """
 
+categories_group: Final[str] = "categories"
+"""The name of the HDF dataset storing the categories of a variable."""
+
 choices_separator: Final[str] = "|"
 """The string separating the choices within a CSV cell.
 

@@ -149,7 +149,7 @@ def test_resize_invalidation_survives_another_mutation(
 
 
 @pytest.mark.parametrize("dtype", [int64, float32, float64])
-def test_set_casts_to_the_component_type(dtype) -> None:
+def test_set_casts_to_the_coordinate_type(dtype) -> None:
     """Check that set casts the value of a float variable to float64."""
     _, value = _build_value("x")
 

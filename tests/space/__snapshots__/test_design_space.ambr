@@ -808,7 +808,7 @@
   "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
 # ---
 # name: test_set_current_variable_with_a_wrong_label[x-steel-TypeError]
-  "The variable 'x' is not a catalog variable and cannot be set with a label."
+  "The variable 'x' is neither a catalog nor a categorical variable and cannot be set with a label."
 # ---
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'

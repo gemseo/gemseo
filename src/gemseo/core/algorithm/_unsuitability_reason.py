@@ -36,6 +36,7 @@ class _UnsuitabilityReason(StrEnum):
     CATALOG_VARIABLES = _optimizer_template.format("catalog variables")
     INTEGER_VARIABLES = _optimizer_template.format("integer variables")
     DISCRETE_VARIABLES = _optimizer_template.format("discrete variables")
+    CATEGORICAL_VARIABLES = _optimizer_template.format("categorical variables")
 
     # BaseLinearSolverLibrary
     NOT_SYMMETRIC = _linear_solver_template.format("symmetric")

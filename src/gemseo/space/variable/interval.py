@@ -67,7 +67,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
     a bound could be defined with a scalar,
     in that case the bound will be converted to a NumPy array of the expected `size`.
     The components of a bound are stored
-    with the NumPy type of the components of the variable,
+    with the NumPy type of the coordinates of the variable,
     whatever the type of the value the caller supplies,
     unless a component is infinite,
     which an integer type cannot hold.
@@ -182,13 +182,13 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
         self,
         bound_name: str,
     ) -> None:
-        """Cast a bound to the NumPy type of the components of the variable.
+        """Cast a bound to the NumPy type of the coordinates of the variable.
 
         The cast is done after the bound has been checked,
         so that a component outside the domain of the variable is rejected
         instead of being silently cast into it,
         e.g. a non-integer bound of an integer variable
-        or a bound too large for the type of the components.
+        or a bound too large for the type of the coordinates.
 
         Args:
             bound_name: The name of the bound.
@@ -197,11 +197,11 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
         # An infinite component cannot be cast to an integer,
         # so a bound with one keeps the type it was supplied with
         # and the other components rely on this value.
-        if bound.dtype == self.component_type or not isfinite(bound).all():
+        if bound.dtype == self.coordinate_type or not isfinite(bound).all():
             return
 
         # Bypass assignment validation to avoid recursion when using setattr.
-        self.__dict__[bound_name] = freeze_array(bound.astype(self.component_type))
+        self.__dict__[bound_name] = freeze_array(bound.astype(self.coordinate_type))
 
     @staticmethod
     def get_default_component_value(
@@ -240,7 +240,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
                     zip(self.lower_bound, self.upper_bound, strict=True),
                 )
             ),
-            dtype=self.component_type,
+            dtype=self.coordinate_type,
         )
 
     def filter_components(self, components: Sequence[int]) -> Self:  # noqa: D102

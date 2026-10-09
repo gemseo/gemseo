@@ -36,6 +36,7 @@ from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
             "NOT_LINEAR_OPERATOR",
             "the left-hand side of the problem is not a linear operator",
         ),
+        ("CATEGORICAL_VARIABLES", "it does not handle categorical variables"),
         ("NON_LINEAR_PROBLEM", "it does not handle non-linear problems"),
         ("INEQUALITY_CONSTRAINTS", "it does not handle inequality constraints"),
         ("EQUALITY_CONSTRAINTS", "it does not handle equality constraints"),

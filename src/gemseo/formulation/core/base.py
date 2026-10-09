@@ -33,6 +33,7 @@ from numpy import arange
 from numpy import empty
 from numpy import zeros
 from scipy.sparse import block_array
+from scipy.sparse import csr_array
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
@@ -320,6 +321,7 @@ class BaseFormulation(Generic[T, _SpaceT], metaclass=ABCGoogleDocstringInheritan
         masking_data_names: Sequence[str],
         x_masked: ndarray,
         all_data_names: Iterable[str] = (),
+        n_samples: int = 1,
     ) -> ndarray:
         """Unmask a vector or matrix from names, with respect to other names.
 
@@ -333,6 +335,9 @@ class BaseFormulation(Generic[T, _SpaceT], metaclass=ABCGoogleDocstringInheritan
             all_data_names: The names of the variables
                 whose values the full array will concatenate.
                 If empty, use the names of all the input variables.
+            n_samples: The number of samples.
+                It is only used when no variable is masking,
+                as `x_masked` then has no column to tell it.
 
         Returns:
             The vector or matrix related to the input mask.
@@ -345,6 +350,14 @@ class BaseFormulation(Generic[T, _SpaceT], metaclass=ABCGoogleDocstringInheritan
 
         name_to_size = self.variable_sizes
         mask_size = sum(name_to_size[name] for name in masking_data_names)
+        if not mask_size:
+            # Nothing to unmask: the full array is made of zeros,
+            # with the layout of the other cases, one block of columns per sample.
+            full_size = sum(name_to_size[name] for name in all_data_names)
+            if n_samples > 1:
+                return csr_array((x_masked.shape[0], n_samples * full_size))
+
+            return zeros((*x_masked.shape[:-1], full_size), dtype=x_masked.dtype)
 
         if (n_samples := x_masked.shape[-1] // mask_size) == 1:
             return self.__unmask_x_swap_order_if_one_sample(

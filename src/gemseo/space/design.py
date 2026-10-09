@@ -56,6 +56,7 @@ from gemseo.space.base import BaseVariableSpace
 from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import CatalogVariable
+from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
@@ -264,9 +265,10 @@ class DesignSpace(
             prefer the method dedicated to the kind of variable to add, namely
             [add_real_variable][gemseo.space.design.DesignSpace.add_real_variable],
             [add_integer_variable][gemseo.space.design.DesignSpace.add_integer_variable],
-            [add_discrete_variable][gemseo.space.design.DesignSpace.add_discrete_variable]
+            [add_discrete_variable][gemseo.space.design.DesignSpace.add_discrete_variable],
+            [add_catalog_variable][gemseo.space.design.DesignSpace.add_catalog_variable]
             or
-            [add_catalog_variable][gemseo.space.design.DesignSpace.add_catalog_variable].
+            [add_categorical_variable][gemseo.space.design.DesignSpace.add_categorical_variable].
 
         Args:
             name: The name of the variable.
@@ -357,9 +359,10 @@ class DesignSpace(
             checking.check_addable_value(self._variables, array_value, name)
             if len(array_value) == 1 and variable.size > 1:
                 array_value = full(variable.size, value)
+            # A default value takes the NumPy type of the variable,
+            # even a complex one, unlike a value cast by the variable.
             self._current.set_variable(
-                name,
-                array_value.astype(variable.component_type, copy=False),
+                name, array_value.astype(variable.coordinate_type, copy=False)
             )
             self._current.check_value(name)
         except ValueError:
@@ -512,6 +515,40 @@ class DesignSpace(
 
         self._register_variable(name, variable, value)
 
+    def add_categorical_variable(
+        self,
+        name: str,
+        categories: Sequence[str],
+        value: str | None = None,
+    ) -> None:
+        """Add a categorical variable to the design space.
+
+        The domain of such a variable is a finite set of unordered labels,
+        e.g. materials.
+        A discipline receives the label,
+        while the current value, the design vector and the database
+        store the position of this label among the categories,
+        starting from zero.
+
+        Args:
+            name: The name of the variable.
+            categories: The labels that the variable can take,
+                without duplication.
+                The position of a label is its index in the categories.
+            value: The default value of the variable,
+                which must be one of the categories.
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if the categories are wrong,
+                or if the value is not one of the categories.
+        """
+        variable = CategoricalVariable(categories=categories)
+        self._register_variable(
+            name, variable, None if value is None else variable.encode(value)
+        )
+
     @property
     def has_current_value(self) -> bool:
         """Check if each variable has a current value.
@@ -528,11 +565,19 @@ class DesignSpace(
         It is empty unless every variable has a current value,
         so that a partially valued design space is not seen
         as defining a reference value.
+
+        The value of a categorical variable is its label,
+        while its current value is the position of this label.
         """
         if not self.has_current_value:
             return {}
 
-        return self.get_current_value(as_dict=True)
+        name_to_value = self.get_current_value(as_dict=True)
+        for name, variable in self._variables.items():
+            if variable.type == DataType.CATEGORICAL:
+                name_to_value[name] = variable.decode(name_to_value[name])
+
+        return name_to_value
 
     def get_integer_mask(self) -> BooleanArray:
         """Return whether the components of the design vector are integer.
@@ -965,7 +1010,9 @@ class DesignSpace(
 
     def set_current_value(
         self,
-        value: NumberArray | Mapping[str, NumberArray | None] | OptimizationResult,
+        value: NumberArray
+        | Mapping[str, NumberArray | str | Sequence[str] | None]
+        | OptimizationResult,
     ) -> None:
         """Set the current design value of all the variables.
 
@@ -982,6 +1029,9 @@ class DesignSpace(
                 When passed as a NumPy array or an
                 [OptimizationResult][gemseo.optimization.result.OptimizationResult],
                 every variable is given a value.
+                In a mapping,
+                the value of a categorical variable can be given as labels
+                instead of coordinates.
 
         Raises:
             ValueError: If the value has a wrong dimension,
@@ -992,6 +1042,16 @@ class DesignSpace(
                 a NumPy array nor an
                 [OptimizationResult][gemseo.optimization.result.OptimizationResult].
         """
+        if isinstance(value, Mapping) and self._variables.has_variables_of_type(
+            DataType.CATEGORICAL
+        ):
+            value = {
+                name: self.__encode_labels(name, val)
+                if name in self._variables
+                else val
+                for name, val in value.items()
+            }
+
         if isinstance(value, Mapping) and value:
             # An empty mapping clears the current value of every variable;
             # a non-empty mapping must cover all the variables.
@@ -1023,8 +1083,32 @@ class DesignSpace(
         if self._current.name_to_value:
             self.__check_current_names()
 
+    def __encode_labels(self, name: str, value: Any) -> Any:
+        """Convert the labels of a categorical variable into coordinates.
+
+        Args:
+            name: The name of the variable.
+            value: The value of the variable.
+
+        Returns:
+            The coordinates of the labels
+            when the variable is categorical and the value is made of labels,
+            otherwise the value.
+        """
+        variable = self._variables[name]
+        if variable.type != DataType.CATEGORICAL or value is None:
+            return value
+
+        array_value = atleast_1d(value)
+        if array_value.dtype.kind in "USO" and all(
+            isinstance(label, str) for label in array_value.ravel()
+        ):
+            return variable.encode(array_value.ravel().tolist())
+
+        return value
+
     def set_current_variable(
-        self, name: str, current_value: ndarray | str | None
+        self, name: str, current_value: ndarray | str | Sequence[str] | None
     ) -> None:
         """Set the current value of a single variable.
 
@@ -1035,6 +1119,8 @@ class DesignSpace(
                 The value of a catalog variable can also be a label
                 naming exactly one alternative of its catalog,
                 see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
+                For a categorical variable,
+                it can be given as labels instead of coordinates.
 
         Raises:
             ValueError: If the value does not match the size of the variable,
@@ -1042,24 +1128,25 @@ class DesignSpace(
                 of the kind of the variable,
                 or if the value is a label naming no alternative or several ones.
             TypeError: If the value is a label
-                but the variable is not a catalog variable.
+                but the variable is neither a catalog nor a categorical variable.
         """
-        if isinstance(current_value, str):
-            variable = self._variables[name]
+        variable = self._variables[name]
+        if isinstance(current_value, str) and variable.type != DataType.CATEGORICAL:
             if not isinstance(variable, CatalogVariable):
                 msg = (
-                    f"The variable {name!r} is not a catalog variable "
-                    "and cannot be set with a label."
+                    f"The variable {name!r} is neither a catalog "
+                    "nor a categorical variable and cannot be set with a label."
                 )
                 raise TypeError(msg)
 
             current_value = array(
                 [variable.catalog.get_position(current_value)],
-                dtype=variable.component_type,
+                dtype=variable.coordinate_type,
             )
 
         if current_value is not None:
-            size = self._variables[name].size
+            current_value = self.__encode_labels(name, current_value)
+            size = variable.size
             if current_value.size != size:
                 msg = (
                     f"The variable {name} of size {size} "
@@ -1095,6 +1182,8 @@ class DesignSpace(
                 If empty, the lower bounds of all the design variables are returned.
             as_dict: Whether to return the lower bounds
                 as a dictionary of the form `{variable_name: variable_lower_bound}`.
+                The variables without bounds, e.g. categorical ones,
+                are then left out.
 
         Returns:
             The lower bounds of the design variables;
@@ -1128,6 +1217,8 @@ class DesignSpace(
                 If empty, the upper bounds of all the design variables are returned.
             as_dict: Whether to return the upper bounds
                 as a dictionary of the form `{variable_name: variable_upper_bound}`.
+                The variables without bounds, e.g. categorical ones,
+                are then left out.
 
         Returns:
             The upper bounds of the design variables;
@@ -1143,6 +1234,9 @@ class DesignSpace(
         Args:
             name: The name of the variable.
             lower_bound: The value of the lower bound.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
         self._bounds.set_lower_bound(name, lower_bound)
 
@@ -1156,6 +1250,9 @@ class DesignSpace(
         Args:
             name: The name of the variable.
             upper_bound: The value of the upper bound.
+
+        Raises:
+            TypeError: If the variable has no bounds.
         """
         self._bounds.set_upper_bound(name, upper_bound)
 
@@ -1260,6 +1357,7 @@ class DesignSpace(
             file_path: The path to the file.
                 If the extension starts with `"hdf"`,
                 the file will be considered as an HDF file.
+                A design space with a categorical variable requires an HDF file.
             hdf_node_path: The path of the HDF node from which
                 the database should be imported.
                 If empty, the root node is considered.
@@ -1292,6 +1390,7 @@ class DesignSpace(
             file_path: The file path to save the design space.
                 If the extension starts with `"hdf"`,
                 the design space will be saved in an HDF file.
+                A design space with a categorical variable requires an HDF file.
             delimiter: The string used to separate values for CSV files.
             append: If `False`, the file is truncated
                 and the design space is exported.
@@ -1313,7 +1412,9 @@ class DesignSpace(
             ValueError: If the HDF file already stores a design space with a
                 different structure,
                 or, if `append` is `True`, with different catalogs
-                for the catalog variables.
+                for the catalog variables,
+                or if the design space has a categorical variable
+                and the file is not an HDF file.
         """
         _design_space_io.to_file(
             self, file_path, delimiter=delimiter, append=append, fields=fields
@@ -1329,6 +1430,10 @@ class DesignSpace(
             fields: The fields to be exported.
                 If empty, export all fields.
             delimiter: The string used to separate values.
+
+        Raises:
+            ValueError: If the design space has a categorical variable,
+                which requires an HDF file.
         """
         _design_space_io.to_csv(self, output_file, fields=fields, delimiter=delimiter)
 
@@ -1350,7 +1455,9 @@ class DesignSpace(
 
         Raises:
             ValueError: If the file does not contain the minimal variables
-                in its header.
+                in its header,
+                or if it has a categorical variable,
+                which requires an HDF file.
         """
         return _design_space_io.from_csv(
             cls, file_path, header=header, delimiter=delimiter
@@ -1414,7 +1521,8 @@ class DesignSpace(
         - zero when the lower and upper bounds are infinite,
         - the first choice of a discrete variable,
         - the position of the first alternative of a catalog variable's
-          catalog, even though its bounds are finite.
+          catalog, even though its bounds are finite,
+        - the first category of a categorical variable.
         """
         self._current.initialize_missing()
 
@@ -1522,9 +1630,6 @@ class DesignSpace(
             variable = self._variables[name]
             size = variable.size
             type_ = variable.type
-            lower_bounds = variable.lower_bound
-            upper_bounds = variable.upper_bound
-
             try:
                 current_value = self.get_current_value([name])
             except KeyError:
@@ -1540,6 +1645,8 @@ class DesignSpace(
                 )
                 continue
 
+            lower_bounds = variable.lower_bound
+            upper_bounds = variable.upper_bound
             for index, indexed_name in enumerate(self.get_indexed_variable_names(name)):
                 design_space.add_variable(
                     indexed_name,

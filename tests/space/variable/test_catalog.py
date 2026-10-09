@@ -53,7 +53,7 @@ def test_fields(variable, table) -> None:
     """Check the fields of a catalog variable."""
     assert variable.type == DataType.CATALOG
     assert variable.size == 1
-    assert variable.component_type is int64
+    assert variable.coordinate_type is int64
     assert variable.catalog == Catalog(properties=table)
     # The bounds are derived from the number of alternatives.
     assert_array_equal(variable.lower_bound, array([0]))

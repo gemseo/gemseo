@@ -134,21 +134,24 @@ def test_is_algorithm_suited_pbm_type() -> None:
     )
 
 
-@pytest.mark.parametrize("kind", ["integer", "discrete"])
+@pytest.mark.parametrize("kind", ["integer", "discrete", "categorical"])
 @pytest.mark.parametrize("handles_kind", [False, True])
 def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
-    """Check is_algorithm_suited with unhandled integer or discrete variables."""
+    """Check is_algorithm_suited with unhandled integer, discrete or categorical variables."""  # noqa: E501
     description = OptimizationAlgorithmDescription(
         "foo",
         "bar",
         handle_integer_variables=handles_kind if kind == "integer" else False,
         handle_discrete_variables=handles_kind if kind == "discrete" else False,
+        handle_categorical_variables=handles_kind if kind == "categorical" else False,
     )
     design_space = DesignSpace()
     if kind == "integer":
         design_space.add_integer_variable("x", lower_bound=1, upper_bound=3, value=1)
-    else:
+    elif kind == "discrete":
         design_space.add_discrete_variable("x", [1, 2, 3], value=1)
+    else:
+        design_space.add_categorical_variable("x", ["a", "b"], value="a")
 
     problem = OptimizationProblem(design_space)
     assert (
@@ -159,8 +162,10 @@ def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
         expected_reason = _UnsuitabilityReason.NO_REASON
     elif kind == "integer":
         expected_reason = _UnsuitabilityReason.INTEGER_VARIABLES
-    else:
+    elif kind == "discrete":
         expected_reason = _UnsuitabilityReason.DISCRETE_VARIABLES
+    else:
+        expected_reason = _UnsuitabilityReason.CATEGORICAL_VARIABLES
 
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)

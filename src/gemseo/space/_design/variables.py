@@ -46,11 +46,11 @@ class NormalizationMasks(ReadOnlyMapping[str, BooleanArray]):
         return self._mapping[key].view()
 
 
-# The design variables are deterministic, and today they all happen to be
-# numeric too (a catalog variable stores numeric positions),
-# so the helpers of this package read their bounds directly;
-# a truly non-numeric kind would make these reads conditional on
-# isinstance(variable, BaseNumericVariable).
+# The design variables are deterministic but not necessarily numeric:
+# a categorical variable has no bounds,
+# so the helpers of this package read the bounds of a variable
+# only when it is an instance of BaseNumericVariable,
+# and give a variable without bounds the range of its coordinates when they need one.
 class DesignVariables(Variables[BaseDeterministicVariable]):
     """A registry of design variables.
 

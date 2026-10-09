@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
+from gemseo.space.variable import DataType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.function.discipline_adapter import DisciplineAdapter
     from gemseo.formulation.core.base import BaseFormulation
+    from gemseo.space.variable import CategoricalVariable
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
 
@@ -184,6 +186,7 @@ class FunctionFromDiscipline(ArrayFunction):
             self.__differentiated_input_names,
             self.__discipline_adapter.jac(x_vect[..., self._input_mask]),
             self.__all_differentiated_input_names,
+            n_samples=len(x_vect) if x_vect.ndim == 2 else 1,
         )
         jac.astype(x_vect.dtype)
         return jac
@@ -197,6 +200,25 @@ class FunctionFromDiscipline(ArrayFunction):
             )
 
         return self.__input_mask
+
+    @staticmethod
+    def __get_name_to_categorical_variable(
+        formulation: BaseFormulation,
+    ) -> dict[str, CategoricalVariable]:
+        """Return the categorical design variables.
+
+        Args:
+            formulation: The formulation to which the function will be attached.
+
+        Returns:
+            The map from the name of a categorical design variable
+            to this variable.
+        """
+        return {
+            name: variable
+            for name, variable in formulation.input_space.variables.items()
+            if variable.type == DataType.CATEGORICAL
+        }
 
     @classmethod
     def __get_discipline_adapter_generator(
@@ -226,7 +248,11 @@ class FunctionFromDiscipline(ArrayFunction):
             ValueError: If no discipline is found.
         """
         if discipline is not None:
-            return DisciplineAdapterGenerator(discipline, formulation.variable_sizes)
+            return DisciplineAdapterGenerator(
+                discipline,
+                formulation.variable_sizes,
+                cls.__get_name_to_categorical_variable(formulation),
+            )
 
         for discipline in (
             formulation.get_top_level_disciplines()
@@ -235,7 +261,9 @@ class FunctionFromDiscipline(ArrayFunction):
         ):
             if discipline.io.output_grammar.has_names(output_names):
                 return DisciplineAdapterGenerator(
-                    discipline, formulation.variable_sizes
+                    discipline,
+                    formulation.variable_sizes,
+                    cls.__get_name_to_categorical_variable(formulation),
                 )
 
         msg = (
