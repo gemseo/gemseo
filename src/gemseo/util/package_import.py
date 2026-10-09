@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import MutableMapping
+    from types import ModuleType
 
 
 def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
@@ -47,14 +48,42 @@ def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
         ModuleNotFoundError: If the module cannot be imported.
     """
     module_path, _, attribute = location.partition(":")
-    if module_path.split(".", 1)[0] == "gemseo":
-        module = import_module(module_path)
-    else:
-        module = import_module(f"{package_name}.{module_path}")
+    module = _import_location_module(package_name, module_path)
+    return _get_attribute_chain(module, attribute or name)
 
-    obj: Any = module
-    for attr in (attribute or name).split("."):
-        obj = getattr(obj, attr)
+
+def _import_location_module(package_name: str, module_path: str) -> ModuleType:
+    """Import the module part of a location.
+
+    Args:
+        package_name: The name of the package requesting the resolution.
+        module_path: The module part of the location, imported absolutely
+            when its first segment is ``gemseo``, otherwise relative to
+            ``package_name``.
+
+    Returns:
+        The imported module.
+    """
+    if module_path.split(".", 1)[0] == "gemseo":
+        return import_module(module_path)
+    return import_module(f"{package_name}.{module_path}")
+
+
+def _get_attribute_chain(obj: Any, attribute_chain: str) -> Any:
+    """Walk a dot-separated chain of attributes from an object.
+
+    Args:
+        obj: The object the walk starts from.
+        attribute_chain: The dot-separated names of the attributes to walk.
+
+    Returns:
+        The object at the end of the chain.
+
+    Raises:
+        AttributeError: If an attribute of the chain does not exist.
+    """
+    for attribute in attribute_chain.split("."):
+        obj = getattr(obj, attribute)
     return obj
 
 
@@ -70,9 +99,18 @@ def install_lazy_reexport(
 
     The installed ``__getattr__`` caches each resolved object in ``namespace``,
     so that the following accesses are plain attribute lookups.
-    It raises an ``AttributeError`` for a name that is not exported
-    and an ``ImportError`` chained to the original error
-    when the location of an exported name cannot be resolved.
+    As with an eager ``from module import Name``,
+    the package then keeps the object it resolved first:
+    a later change of the attribute in its defining module, e.g. a monkeypatch,
+    is not seen through the package.
+
+    The installed ``__getattr__`` raises an ``AttributeError``
+    for a name that is not exported,
+    and an ``AttributeError`` chained to the original one
+    when an attribute of the location of an exported name does not exist.
+    An error raised while importing the module of the location,
+    e.g. a ``ModuleNotFoundError`` for a misspelt module,
+    propagates unchanged.
 
     Args:
         namespace: The ``globals()`` of the calling package ``__init__.py``.
@@ -86,21 +124,23 @@ def install_lazy_reexport(
     names = list(name_to_location)
 
     def __dir__() -> list[str]:  # noqa: N807
-        return sorted({*namespace, *names})
+        return list({*namespace, *names})
 
     def __getattr__(name: str) -> Any:  # noqa: N807
         location = name_to_location.get(name)
         if location is None:
             msg = f"module {package_name!r} has no attribute {name!r}"
             raise AttributeError(msg)
+        module_path, _, attribute_chain = location.partition(":")
+        module = _import_location_module(package_name, module_path)
         try:
-            obj = resolve_lazy_export(package_name, location, name)
+            obj = _get_attribute_chain(module, attribute_chain or name)
         except AttributeError as exc:
             msg = (
-                f"cannot import name {name!r} from {package_name!r}: "
-                f"the location {location!r} cannot be resolved ({exc})."
+                f"The location {location!r} of the name {name!r} "
+                f"exported by {package_name!r} cannot be resolved ({exc})."
             )
-            raise ImportError(msg) from exc
+            raise AttributeError(msg) from exc
         namespace[name] = obj
         return obj
 

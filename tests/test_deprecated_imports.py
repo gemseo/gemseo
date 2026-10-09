@@ -722,6 +722,10 @@ def test_renamed_attribute_of_live_module_imported_after_install(monkeypatch):
     """
     module_name = "gemseo.post.dataset.radviz"
     monkeypatch.delitem(sys.modules, module_name)
+    # The alias resolves through the package, which caches the RadViz of the old module.
+    monkeypatch.delitem(
+        vars(importlib.import_module("gemseo.post.dataset")), "RadViz", raising=False
+    )
 
     module = importlib.import_module(module_name)
 

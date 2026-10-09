@@ -31,9 +31,10 @@ from gemseo.util.package_import import resolve_lazy_export
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from typing import Any
+    from collections.abc import Iterator
 
 SOURCE_DIR = Path(gemseo.__file__).parent
+TESTS_DIR = Path(__file__).parents[1]
 
 
 @pytest.fixture
@@ -113,7 +114,6 @@ def test_dir_without_duplicates(fake_package) -> None:
     fake_package.Foo  # noqa: B018
     names = dir(fake_package)
     assert len(names) == len(set(names))
-    assert names == sorted(names)
     assert "Foo" in names
 
 
@@ -127,24 +127,62 @@ def test_unknown_name(fake_package, snapshot) -> None:
 
 @pytest.mark.parametrize("name", ["Missing", "BadChain"])
 def test_bad_location(fake_package, name, snapshot) -> None:
-    """Check that a wrong location raises an ImportError chained to its cause."""
-    with assert_exception(ImportError, snapshot) as exc_info:
+    """Check that a wrong attribute raises an AttributeError chained to its cause."""
+    with assert_exception(AttributeError, snapshot) as exc_info:
         getattr(fake_package, name)
 
     assert isinstance(exc_info.value.__cause__, AttributeError)
     assert name not in fake_package.__dict__
+    assert not hasattr(fake_package, name)
+    assert getattr(fake_package, name, None) is None
 
 
 def test_from_import_bad_location(fake_package) -> None:
-    """Check that ``from package import name`` keeps the cause of the error."""
-    with pytest.raises(ImportError) as exc_info:
+    """Check that ``from package import name`` raises an ImportError.
+
+    CPython turns the AttributeError of the module ``__getattr__`` into its own
+    ImportError, without the cause.
+    """
+    with pytest.raises(ImportError, match="cannot import name 'Missing'"):
         from fake_lazy_pkg import Missing  # noqa: F401
 
-    assert isinstance(exc_info.value.__cause__, AttributeError)
+
+@pytest.fixture
+def tmp_package(tmp_path, monkeypatch) -> Iterator[ModuleType]:
+    """A package on disk re-exporting names from submodules that cannot be imported."""
+    package_dir = tmp_path / "lazy_tmp_pkg"
+    package_dir.mkdir()
+    (package_dir / "__init__.py").write_text(
+        "from gemseo.util.package_import import install_lazy_reexport\n"
+        "install_lazy_reexport(globals(), {'Broken': 'broken', 'Typo': 'typo'})\n",
+        encoding="utf-8",
+    )
+    (package_dir / "broken.py").write_text(
+        "raise AttributeError('Raised while importing broken.')\n", encoding="utf-8"
+    )
+    monkeypatch.syspath_prepend(tmp_path)
+    yield import_module("lazy_tmp_pkg")
+    for name in [name for name in sys.modules if name.startswith("lazy_tmp_pkg")]:
+        del sys.modules[name]
+
+
+@pytest.mark.parametrize(
+    ("name", "error"), [("Broken", AttributeError), ("Typo", ModuleNotFoundError)]
+)
+def test_module_import_error_propagates(tmp_package, name, error, snapshot) -> None:
+    """Check that an error raised by the import of the module is not wrapped."""
+    with assert_exception(error, snapshot) as exc_info:
+        getattr(tmp_package, name)
+
+    assert exc_info.value.__cause__ is None
 
 
 def _get_package_names() -> list[str]:
-    """Return the names of the packages calling ``install_lazy_reexport``."""
+    """Return the names of the packages calling ``install_lazy_reexport``.
+
+    Returns:
+        The names of the packages.
+    """
     names = []
     for path in sorted(SOURCE_DIR.rglob("__init__.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -158,95 +196,35 @@ def _get_package_names() -> list[str]:
     return names
 
 
-PACKAGE_NAMES = _get_package_names()
+def _get_tested_package_names() -> set[str]:
+    """Return the names of the packages passed to ``make_lazy_reexport_tests``.
 
-
-def _get_mapping_keys(package_name: str) -> list[str]:
-    """Return the keys of ``_name_to_location`` in definition order."""
-    path = SOURCE_DIR.parent.joinpath(*package_name.split("."), "__init__.py")
-    tree = ast.parse(path.read_text(encoding="utf-8"))
-    for node in tree.body:
-        targets = (
-            node.targets
-            if isinstance(node, ast.Assign)
-            else [node.target]
-            if isinstance(node, ast.AnnAssign)
-            else []
-        )
-        if any(getattr(t, "id", None) == "_name_to_location" for t in targets):
-            mapping: Any = node.value
-            # Unwrap MappingProxyType({...}).
-            if isinstance(mapping, ast.Call):
-                mapping = mapping.args[0]
-            return [key.value for key in mapping.keys]
-    msg = f"No _name_to_location in {package_name}"
-    raise AssertionError(msg)
-
-
-def _get_exported_type_checking_names(package_name: str) -> set[str]:
-    """Return the names exported by the ``if TYPE_CHECKING:`` block of a package.
-
-    These are the imported names whose line carries ``# noqa: F401``
-    (the alias name is used when present; for a parenthesized import,
-    the comment is on the alias line or on the ``from`` line)
-    and the names assigned in the block (e.g. ``Name = _Class.Name``).
-    The other imports only serve type hints.
+    Returns:
+        The names of the packages, read from the first argument of the calls,
+        written as a dotted name like ``gemseo.mda``, in the test modules.
     """
-    path = SOURCE_DIR.parent.joinpath(*package_name.split("."), "__init__.py")
-    source = path.read_text(encoding="utf-8")
-    lines = source.splitlines()
     names = set()
-    for node in ast.parse(source).body:
-        if not (
-            isinstance(node, ast.If)
-            and isinstance(node.test, ast.Name)
-            and node.test.id == "TYPE_CHECKING"
-        ):
-            continue
-        for statement in node.body:
-            if isinstance(statement, ast.ImportFrom):
-                for alias in statement.names:
-                    # The noqa is on the alias line of a parenthesized import,
-                    # or on the line of the "from" keyword.
-                    if any(
-                        "noqa: F401" in lines[lineno - 1]
-                        for lineno in (alias.lineno, statement.lineno)
-                    ):
-                        names.add(alias.asname or alias.name)
-            elif isinstance(statement, ast.Assign):
-                names.update(t.id for t in statement.targets)
-            elif isinstance(statement, ast.AnnAssign):
-                names.add(statement.target.id)
+    for path in TESTS_DIR.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and getattr(node.func, "id", None) == "make_lazy_reexport_tests"
+                and node.args
+            ):
+                names.add(ast.unparse(node.args[0]))
     return names
 
 
 def test_discovered_packages() -> None:
     """Check that the discovery of the lazily re-exporting packages works."""
-    assert len(PACKAGE_NAMES) > 30
-    assert "gemseo.enum" in PACKAGE_NAMES
-    assert "gemseo.mda" in PACKAGE_NAMES
+    package_names = _get_package_names()
+    assert len(package_names) > 30
+    assert "gemseo.enum" in package_names
+    assert "gemseo.mda" in package_names
 
 
-@pytest.mark.parametrize("package_name", PACKAGE_NAMES)
-def test_package_exports_resolve(package_name) -> None:
-    """Check that every exported name resolves to the object of its location."""
-    package = import_module(package_name)
-    mapping = package._name_to_location
-    for name, location in mapping.items():
-        expected = resolve_lazy_export(package_name, location, name)
-        assert getattr(package, name) is expected
-
-
-@pytest.mark.parametrize("package_name", PACKAGE_NAMES)
-def test_package_mapping_is_sorted(package_name) -> None:
-    """Check that the keys of the mapping are sorted by character code."""
-    keys = _get_mapping_keys(package_name)
-    assert keys == sorted(keys)
-    assert len(keys) == len(set(keys))
-
-
-@pytest.mark.parametrize("package_name", PACKAGE_NAMES)
-def test_package_type_checking_block(package_name) -> None:
-    """Check that the TYPE_CHECKING block exposes exactly the exported names."""
-    keys = set(_get_mapping_keys(package_name))
-    assert _get_exported_type_checking_names(package_name) == keys
+def test_packages_are_tested() -> None:
+    """Check that every lazily re-exporting package has its factory-made tests."""
+    untested = set(_get_package_names()) - _get_tested_package_names()
+    assert not untested, sorted(untested)
