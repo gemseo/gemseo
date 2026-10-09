@@ -28,20 +28,26 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import MutableMapping
-    from types import ModuleType
 
 _import_from_opcode: Final[int] = dis.opmap["IMPORT_FROM"]
 """The opcode importing a name in a `from module import name` statement."""
 
-_getattr_module_names: Final[frozenset[str]] = frozenset({
-    __name__,
-    "gemseo._deprecation",
-})
-"""The names of the modules defining module-level `__getattr__` and their helpers.
+getattr_wrapper_marker: Final[str] = "_gemseo_getattr_wrapper"
+"""The name of the global marking a module that looks attributes up for its callers.
 
-The `__getattr__` of `gemseo._deprecation` wraps the lazy one
-of this module, so the frames of both can sit between the frame looking an
-attribute up and the one raising its error.
+A module defining a module-level `__getattr__`, or a helper called by one, sets this
+global to `True` so that
+[is_imported_from][gemseo.util.package_import.is_imported_from] skips its frames
+when it searches for the frame looking the attribute up.
+This module and `gemseo._deprecation`, whose `__getattr__` wraps the lazy one
+of this module, set it;
+a plugin wrapping a module-level `__getattr__` can set it too.
+"""
+
+_gemseo_getattr_wrapper: Final[bool] = True
+"""Whether this module looks attributes up for its callers.
+
+See [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker].
 """
 
 
@@ -49,9 +55,9 @@ def is_imported_from() -> bool:
     """Return whether the attribute being looked up is imported by a `from` statement.
 
     The frame looking the attribute up is the first one outside the modules
-    defining module-level `__getattr__` and their helpers,
-    i.e. this module and `gemseo._deprecation`,
-    whose `__getattr__` can wrap one of this module.
+    marked by the global named
+    [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker],
+    i.e. the modules defining module-level `__getattr__` and their helpers.
     It imports the attribute when it is executing the `IMPORT_FROM` instruction
     of a `from module import name` statement.
 
@@ -59,9 +65,7 @@ def is_imported_from() -> bool:
         Whether the attribute is imported by a `from module import name` statement.
     """
     frame = sys._getframe(1)
-    while (
-        frame is not None and frame.f_globals.get("__name__") in _getattr_module_names
-    ):
+    while frame is not None and frame.f_globals.get(getattr_wrapper_marker, False):
         frame = frame.f_back
     return (
         frame is not None and frame.f_code.co_code[frame.f_lasti] == _import_from_opcode
@@ -94,8 +98,43 @@ def raise_unresolvable_attribute(
     raise error_type(msg) from cause
 
 
+def get_location_module_name(package_name: str, location: str) -> str:
+    """Return the full name of the module part of a location.
+
+    Args:
+        package_name: The name of the package requesting the resolution.
+        location: The location of the object, formatted as
+            ``"module[:attribute.chain]"``. The module part is absolute
+            when its first segment is ``gemseo``, otherwise relative to
+            ``package_name``.
+
+    Returns:
+        The full name of the module.
+    """
+    module_path = location.partition(":")[0]
+    if module_path.split(".", 1)[0] == "gemseo":
+        return module_path
+    return f"{package_name}.{module_path}"
+
+
 def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
     """Resolve a ``"module[:attr.chain]"`` location to its object.
+
+    When an attribute of the location does not exist,
+    an error chained to the original one is raised:
+    an ``ImportError`` under a ``from package import name`` statement,
+    which would otherwise replace the message and the cause
+    by a generic "cannot import name" one,
+    and an ``AttributeError`` otherwise,
+    so that ``hasattr`` and ``getattr`` with a default keep working
+    (see [raise_unresolvable_attribute]
+    [gemseo.util.package_import.raise_unresolvable_attribute]).
+
+    An error raised while importing the module of the location,
+    e.g. a ``ModuleNotFoundError`` for a misspelt module,
+    propagates unchanged,
+    except an ``AttributeError`` under a ``from package import name`` statement,
+    which is chained to an ``ImportError`` for the same reason.
 
     Args:
         package_name: The name of the package requesting the resolution.
@@ -111,29 +150,32 @@ def resolve_lazy_export(package_name: str, location: str, name: str) -> Any:
         The object resolved from its defining module.
 
     Raises:
-        AttributeError: If an attribute of the chain does not exist.
-        ModuleNotFoundError: If the module cannot be imported.
+        AttributeError: If an attribute of the chain does not exist,
+            or if the import of the module raises one,
+            except under a ``from package import name`` statement.
+        ImportError: If an attribute of the chain does not exist,
+            or if the import of the module raises an ``AttributeError``,
+            under a ``from package import name`` statement.
     """
-    module_path, _, attribute = location.partition(":")
-    module = _import_location_module(package_name, module_path)
-    return _get_attribute_chain(module, attribute or name)
-
-
-def _import_location_module(package_name: str, module_path: str) -> ModuleType:
-    """Import the module part of a location.
-
-    Args:
-        package_name: The name of the package requesting the resolution.
-        module_path: The module part of the location, imported absolutely
-            when its first segment is ``gemseo``, otherwise relative to
-            ``package_name``.
-
-    Returns:
-        The imported module.
-    """
-    if module_path.split(".", 1)[0] == "gemseo":
-        return import_module(module_path)
-    return import_module(f"{package_name}.{module_path}")
+    module_name = get_location_module_name(package_name, location)
+    try:
+        module = import_module(module_name)
+    except AttributeError as error:
+        if not is_imported_from():
+            raise
+        msg = (
+            f"The import of the module {module_name!r} of the name {name!r} "
+            f"exported by {package_name!r} raised an error ({error})."
+        )
+        raise ImportError(msg) from error
+    try:
+        return _get_attribute_chain(module, location.partition(":")[2] or name)
+    except AttributeError as error:
+        msg = (
+            f"The location {location!r} of the name {name!r} "
+            f"exported by {package_name!r} cannot be resolved ({error})."
+        )
+        raise_unresolvable_attribute(msg, error)
 
 
 def _get_attribute_chain(obj: Any, attribute_chain: str) -> Any:
@@ -173,16 +215,9 @@ def install_lazy_reexport(
 
     The installed ``__getattr__`` raises an ``AttributeError``
     for a name that is not exported,
-    and an error chained to the original one
-    when an attribute of the location of an exported name does not exist:
-    an ``ImportError`` under a ``from package import name`` statement,
-    which would otherwise replace the message and the cause
-    by a generic "cannot import name" one,
-    and an ``AttributeError`` otherwise,
-    so that ``hasattr`` and ``getattr`` with a default keep working.
-    An error raised while importing the module of the location,
-    e.g. a ``ModuleNotFoundError`` for a misspelt module,
-    propagates unchanged.
+    and the errors of [resolve_lazy_export]
+    [gemseo.util.package_import.resolve_lazy_export] for an exported name
+    whose location cannot be resolved.
 
     Args:
         namespace: The ``globals()`` of the calling package ``__init__.py``.
@@ -203,16 +238,7 @@ def install_lazy_reexport(
         if location is None:
             msg = f"module {package_name!r} has no attribute {name!r}"
             raise AttributeError(msg)
-        module_path, _, attribute_chain = location.partition(":")
-        module = _import_location_module(package_name, module_path)
-        try:
-            obj = _get_attribute_chain(module, attribute_chain or name)
-        except AttributeError as exc:
-            msg = (
-                f"The location {location!r} of the name {name!r} "
-                f"exported by {package_name!r} cannot be resolved ({exc})."
-            )
-            raise_unresolvable_attribute(msg, exc)
+        obj = resolve_lazy_export(package_name, location, name)
         namespace[name] = obj
         return obj
 

@@ -5,11 +5,23 @@
 # name: test_bad_location[Missing]
   "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
 # ---
+# name: test_deprecated_module_bad_location
+  "The location 'sub:Outer.Nope' of the name 'BadChain' exported by 'fake_lazy_pkg' cannot be resolved (type object 'Outer' has no attribute 'Nope')."
+# ---
+# name: test_deprecated_module_unknown_name
+  "module 'fake_old_pkg' has no attribute 'unknown'"
+# ---
 # name: test_from_import_bad_location[lazy]
   "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
 # ---
 # name: test_from_import_bad_location[wrapped]
   "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_module_import_error[Broken-ImportError]
+  "The import of the module 'lazy_tmp_pkg.broken' of the name 'Broken' exported by 'lazy_tmp_pkg' raised an error (Raised while importing broken.)."
+# ---
+# name: test_from_import_module_import_error[Typo-ModuleNotFoundError]
+  "No module named 'lazy_tmp_pkg.typo'"
 # ---
 # name: test_module_import_error_propagates[Broken-AttributeError]
   'Raised while importing broken.'

@@ -82,7 +82,6 @@ from importlib.util import find_spec as _find_spec
 from types import ModuleType
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import NoReturn
 
 from gemseo._deprecation.aliases import attribute_renames
 from gemseo._deprecation.aliases import class_attribute_renames
@@ -108,6 +107,13 @@ _plugin_prefix: Final[str] = "gemseo_"
 """The prefix of the name of the package of a GEMSEO plugin, e.g. `gemseo_excel`."""
 
 _installed: bool = False
+
+_gemseo_getattr_wrapper: Final[bool] = True
+"""Whether this module looks attributes up for its callers.
+
+Its module-level `__getattr__` wraps the lazy one of the re-exporting packages
+(see [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker]).
+"""
 
 
 def _resolve_new_name(old_name: str) -> str | None:
@@ -155,22 +161,6 @@ def _warn_attribute_rename(module_name: str, name: str, new_name: str) -> None:
     )
 
 
-def _raise_unresolvable_attribute(msg: str) -> NoReturn:
-    """Raise the error of a module-level attribute that cannot be resolved.
-
-    See [raise_unresolvable_attribute]
-    [gemseo.util.package_import.raise_unresolvable_attribute].
-
-    Args:
-        msg: The error message.
-
-    Raises:
-        ImportError: Under a `from module import name` statement.
-        AttributeError: Otherwise.
-    """
-    raise_unresolvable_attribute(msg)
-
-
 def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
     """Raise when a module-level attribute raises instead of resolving.
 
@@ -189,7 +179,7 @@ def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
             `from module import name` statement.
         AttributeError: When the attribute was removed with no replacement, otherwise
             (see
-            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
     """
     migration = manual_migrations.get(module_name, {}).get(name)
     if migration is not None:
@@ -203,7 +193,7 @@ def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
             f"The attribute {name!r} of the module {module_name!r} was removed, "
             "with no replacement."
         )
-        _raise_unresolvable_attribute(msg)
+        raise_unresolvable_attribute(msg)
 
 
 def _raise_for_removed_module(name: str) -> None:
@@ -305,7 +295,7 @@ def _get_renamed_attribute(
             statement.
         ImportError: When the new name is in a plugin that is not installed, under a
             `from module import name` statement (see
-            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
     """
     new_object = _get_new_object(module, module_name, name, new_name)
     if isinstance(new_object, ModuleType):
@@ -380,7 +370,7 @@ def _get_new_object(
             statement.
         ImportError: When the new name is in a plugin that is not installed, under a
             `from module import name` statement (see
-            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
     """
     new_module_name, _, attribute_name = new_name.rpartition(".")
     if new_module_name == module.__name__:
@@ -393,7 +383,7 @@ def _get_new_object(
         )
         if msg is None:
             raise
-        _raise_unresolvable_attribute(msg)
+        raise_unresolvable_attribute(msg)
     try:
         return getattr(new_module, attribute_name)
     except AttributeError:
@@ -415,6 +405,11 @@ class _DeprecatedModule(ModuleType):
             try:
                 return getattr(target, name)
             except AttributeError:
+                # The target has the name but cannot resolve it,
+                # e.g. a lazily re-exported name with a wrong location:
+                # its error tells why.
+                if name in dir(target):
+                    raise
                 msg = f"module {self.__name__!r} has no attribute {name!r}"
                 raise AttributeError(msg) from None
         # The module warning only names the new module, which does not carry the old

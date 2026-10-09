@@ -26,10 +26,15 @@ from typing import TYPE_CHECKING
 import pytest
 
 import gemseo
+from gemseo._deprecation import _DeprecatedModule
 from gemseo._deprecation import _install_attribute_aliases
+from gemseo.util.package_import import get_location_module_name
+from gemseo.util.package_import import getattr_wrapper_marker
 from gemseo.util.package_import import install_lazy_reexport
 from gemseo.util.package_import import resolve_lazy_export
 from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.package_import import _get_static_import_names
+from gemseo.util.testing.package_import import make_lazy_reexport_tests
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -186,6 +191,143 @@ def test_module_import_error_propagates(tmp_package, name, error, snapshot) -> N
         getattr(tmp_package, name)
 
     assert exc_info.value.__cause__ is None
+
+
+@pytest.mark.parametrize(
+    ("name", "error"), [("Broken", ImportError), ("Typo", ModuleNotFoundError)]
+)
+def test_from_import_module_import_error(tmp_package, name, error, snapshot) -> None:
+    """Check the error of ``from package import name`` when the module import fails.
+
+    CPython would replace an ``AttributeError`` raised by the import of the module
+    by its own generic ImportError, so it is chained to an ``ImportError``;
+    the other errors propagate unchanged.
+    """
+    namespace: dict[str, object] = {}
+    with assert_exception(error, snapshot) as exc_info:
+        exec(f"from lazy_tmp_pkg import {name}", namespace)  # noqa: S102
+
+    if error is ImportError:
+        assert isinstance(exc_info.value.__cause__, AttributeError)
+    else:
+        assert exc_info.value.__cause__ is None
+
+
+@pytest.fixture
+def deprecated_module(fake_package) -> ModuleType:
+    """A stand-in of a renamed module delegating to the fake package."""
+    module = _DeprecatedModule("fake_old_pkg")
+    module.__dict__["_deprecation_target"] = fake_package
+    return module
+
+
+def test_deprecated_module_bad_location(deprecated_module, snapshot) -> None:
+    """Check that a stand-in keeps the error of a lazy name it cannot resolve."""
+    with assert_exception(AttributeError, snapshot) as exc_info:
+        deprecated_module.BadChain  # noqa: B018
+
+    assert isinstance(exc_info.value.__cause__, AttributeError)
+
+
+def test_deprecated_module_unknown_name(deprecated_module, snapshot) -> None:
+    """Check that a stand-in reports an unknown name with its own name."""
+    with assert_exception(AttributeError, snapshot) as exc_info:
+        deprecated_module.unknown  # noqa: B018
+
+    assert exc_info.value.__cause__ is None
+
+
+@pytest.mark.parametrize("marked", [False, True], ids=["unmarked", "marked"])
+def test_from_import_through_third_party_wrapper(fake_package, marked) -> None:
+    """Check that a wrapper module setting the marker is seen through.
+
+    Without the marker, the frame of the wrapper is taken for the one looking the
+    name up, so CPython replaces the AttributeError by its generic ImportError.
+    """
+    wrapper = ModuleType("third_party_wrapper")
+    if marked:
+        setattr(wrapper, getattr_wrapper_marker, True)
+    exec(  # noqa: S102
+        "def wrap(lazy_getattr):\n"
+        "    def __getattr__(name):\n"
+        "        return lazy_getattr(name)\n"
+        "    return __getattr__\n",
+        wrapper.__dict__,
+    )
+    fake_package.__getattr__ = wrapper.wrap(fake_package.__getattr__)
+
+    with pytest.raises(ImportError) as exc_info:
+        from fake_lazy_pkg import Missing  # noqa: F401
+
+    assert isinstance(exc_info.value.__cause__, AttributeError) is marked
+
+
+def test_get_static_import_names(tmp_path) -> None:
+    """Check the names bound by the ``if TYPE_CHECKING:`` block of a package."""
+    path = tmp_path / "__init__.py"
+    path.write_text(
+        "from typing import TYPE_CHECKING\n"
+        "if TYPE_CHECKING:\n"
+        "    import a.b\n"
+        "    from c import D as E\n"
+        "    F = G = 1\n"
+        "    H, (I, *J) = 1, (2, 3)\n"
+        "    [K] = [1]\n"
+        "    L: int = 1\n"
+        "    M: int\n"
+        "    N.attribute = 1\n"
+        "    O[0]: int = 1\n"
+        "if typing.TYPE_CHECKING:\n"
+        "    Q = 1\n"
+        "if other:\n"
+        "    R = 1\n"
+        "print(P)\n",
+        encoding="utf-8",
+    )
+    package = ModuleType("package")
+    package.__file__ = str(path)
+
+    static_names, referenced_names = _get_static_import_names(package)
+
+    assert static_names == set("aEFGHIJKLMQ")
+    assert referenced_names == {
+        "TYPE_CHECKING",
+        "int",
+        "N",
+        "O",
+        "typing",
+        "other",
+        "print",
+        "P",
+    }
+
+
+def test_reexport_is_lazy_detects_an_eager_binding(tmp_path, monkeypatch) -> None:
+    """Check that a name bound eagerly by the package fails the laziness test."""
+    package_dir = tmp_path / "eager_tmp_pkg"
+    package_dir.mkdir()
+    (package_dir / "__init__.py").write_text(
+        "from gemseo.util.package_import import install_lazy_reexport\n"
+        "_name_to_location = {'Foo': 'sub'}\n"
+        "install_lazy_reexport(globals(), _name_to_location)\n"
+        "Foo = 1\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(tmp_path)
+    monkeypatch.delitem(sys.modules, "eager_tmp_pkg", raising=False)
+    package = import_module("eager_tmp_pkg")
+    monkeypatch.setitem(sys.modules, "eager_tmp_pkg", package)
+
+    test_reexport_is_lazy = make_lazy_reexport_tests(package)["test_reexport_is_lazy"]
+
+    with pytest.raises(AssertionError):
+        test_reexport_is_lazy()
+
+
+def test_get_location_module_name() -> None:
+    """Check the full name of the module of absolute and relative locations."""
+    assert get_location_module_name("pkg", "sub.module:A.b") == "pkg.sub.module"
+    assert get_location_module_name("pkg", "gemseo.module") == "gemseo.module"
 
 
 def _get_package_names() -> list[str]:
