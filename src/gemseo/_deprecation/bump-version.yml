@@ -1653,6 +1653,20 @@ classes:
       use_design_space_order: use_space_order
     convert_dict_to_array:
       design_values: variable_values
+    # Renamed in GEMSEO 7, which keeps the old names as deprecated aliases (changelog
+    # 1801); the out argument of the methods of vectors was removed, as it was not used
+    # (changelog 1673). A ParameterSpace removes them instead (see ParameterSpace).
+    normalize: name_to_normalization_mask
+    unnormalize_grad: denormalize_grad
+    unnormalize_vect:
+      __name__: denormalize_vect
+      out: null
+    normalize_vect:
+      out: null
+    transform_vect:
+      out: null
+    untransform_vect:
+      out: null
     # In a driver library, problem.input_space is the working space, already
     # normalized when normalize_design_space is set, so a point of it is clipped to
     # its bounds with normalized=False; normalized=True would clip every component
@@ -1750,6 +1764,7 @@ classes:
     # bounds are a DesignSpace notion; the bounds of a random variable are the
     # limits of the support of its distribution and are read-only, through
     # space.variables[name].lower_bound and upper_bound.
+    normalize: null
     normalize_grad: null
     unnormalize_grad: null
     round_vect: null
@@ -2685,9 +2700,10 @@ classes:
       group_functions: null
     # GEMSEO 7 returns early when the function is already of a constraint type,
     # ignoring value and positive, which GEMSEO 6 applied: the codemod cannot tell
-    # the type of the function, so a call passing either is marked.
+    # the type of the function, so a call passing either is marked, unless it builds
+    # the function in sight with the default function type, e.g. MDOFunction(f, "c").
     add_constraint:
-      value: &constraint-of-constraint-type TODO if the function was created with a constraint type (ConstraintType.EQ or INEQ as its function type), value and positive are now ignored without warning; create it with the default function type, or apply the offset and the sign to the function itself
+      value: &constraint-of-constraint-type TODO[function.f_type] if the function was created with a constraint type (ConstraintType.EQ or INEQ as its function type), value and positive are now ignored without warning; create it with the default function type, or apply the offset and the sign to the function itself
       positive: *constraint-of-constraint-type
 
   # Jacobian checkers (changelog 747)
@@ -3065,7 +3081,7 @@ functions:
 
   # normalize_ds is removed (changelog 1528): a driver normalizes the space itself.
   get_value_and_bounds:
-    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation); a library that builds its problem from the coefficients and the bounds of the functions, e.g. a linear one reading their coefficients, which are not normalized, must instead set the class attribute _iterates_on_working_problem = False, as ScipyMILP and ScipyLinprog do
+    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation); the other way round, the problem a library is given (self._problem, and the argument of _pre_run and _run) is the working problem, so what refers to the problem of the user, such as points the user gives (an initial design as an array or a dataset, the database) and the flags of its space read in _pre_run (enable_integer_variables_normalization), must be read from self._original_problem.input_space; a library that builds its problem from the coefficients and the bounds of the functions, e.g. a linear one reading their coefficients, which are not normalized, must instead set the class attribute _iterates_on_working_problem = False, as ScipyMILP and ScipyLinprog do
 
 # The factories returning an object of the class one of their arguments names, by
 # the name of that parameter: the codemod applies the rules of that class, which the
