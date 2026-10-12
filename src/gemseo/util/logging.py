@@ -36,6 +36,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import PrivateAttr
 from pydantic import model_validator
 
 from gemseo.util.constant import _logging_date_format
@@ -71,7 +72,8 @@ class LoggingConfiguration(BaseModel, validate_assignment=True):
 When `True`,
 the root logger is configured with the same handlers, level and formatting
 as the GEMSEO loggers,
-so that logs from client code and third-party libraries are emitted too.""",
+so that logs from client code and third-party libraries are emitted too.
+Once `True`, it cannot be set back to `False`.""",
     )
 
     date_format: str = Field(
@@ -108,6 +110,22 @@ Values can either be
     message_format: str = Field(
         default=_logging_message_format, description="The logging message format."
     )
+
+    _root_logger_configured_once: bool = PrivateAttr(default=False)
+    """Whether the root logger has been configured at least once.
+
+    Once configured, the root logger cannot be unconfigured:
+    its previous handlers have been removed.
+    """
+
+    @model_validator(mode="after")
+    def __forbid_disabling_root_logger(self) -> Self:
+        if self.configure_root_logger:
+            self._root_logger_configured_once = True
+        elif self._root_logger_configured_once:
+            msg = "The root logger configuration cannot be disabled once it is enabled."
+            raise ValueError(msg)
+        return self
 
     @model_validator(mode="after")
     def __validate(self) -> Self:
