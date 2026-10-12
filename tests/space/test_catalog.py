@@ -1441,22 +1441,25 @@ def test_check_hdf_writable_rejects_a_dtype_hdf_cannot_store(dtype, snapshot) ->
 
 
 @pytest.mark.parametrize(
-    "property_values",
+    "properties",
     [
-        pytest.param(array([{"a": 1}, {"b": 2}], dtype=object), id="objects"),
-        pytest.param([None, None], id="blank"),
+        pytest.param(
+            {"spec": array([{"a": 1}, {"b": 2}], dtype=object), "mass": [2.7, 7.8]},
+            id="objects",
+        ),
+        pytest.param({"spec": [None, None], "mass": [2.7, 7.8]}, id="blank"),
+        pytest.param({"spec": [None, None]}, id="only-blank"),
     ],
 )
-def test_check_hdf_writable_rejects_an_object_property(
-    property_values, snapshot
-) -> None:
+def test_check_hdf_writable_rejects_an_object_property(properties, snapshot) -> None:
     """Check that a property holding Python objects is rejected.
 
     Such a property carries no dtype an HDF file could store, and is named as
     holding objects rather than by its opaque `object` dtype;
-    the error suggests cleaning the catalog when the property holds no value.
+    the error suggests cleaning the catalog when the property holds no value,
+    unless no property holds a value, since cleaning would then leave none.
     """
-    catalog = Catalog(properties={"spec": property_values, "mass": [2.7, 7.8]})
+    catalog = Catalog(properties=properties)
     with assert_exception(ValueError, snapshot):
         catalog.check_hdf_writable()
 

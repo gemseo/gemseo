@@ -60,6 +60,9 @@
 # name: test_check_hdf_writable_rejects_an_object_property[objects]
   "The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file."
 # ---
+# name: test_check_hdf_writable_rejects_an_object_property[only-blank]
+  "The property 'spec' of the catalog holds Python objects and cannot be written to an HDF file."
+# ---
 # name: test_check_hdf_writable_reports_every_offender_at_once
   '''
   The catalog cannot be written to an HDF file:

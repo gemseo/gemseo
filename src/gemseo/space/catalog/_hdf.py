@@ -62,7 +62,9 @@ _hdf_writable_dtype_kinds: Final[frozenset[str]] = frozenset({
 """The kinds of dtype of a property that an HDF file can store."""
 
 
-def find_hdf_writing_error(name: str, property_values: ndarray) -> str:
+def find_hdf_writing_error(
+    name: str, property_values: ndarray, can_be_cleaned: bool
+) -> str:
     """Return why a property cannot be written to an HDF file.
 
     Only the first reason is returned for a given property,
@@ -72,6 +74,8 @@ def find_hdf_writing_error(name: str, property_values: ndarray) -> str:
     Args:
         name: The name of the property.
         property_values: The property.
+        can_be_cleaned: Whether another property of the catalog holds a value,
+            so that cleaning the catalog would leave a property.
 
     Returns:
         The reason why the property cannot be written to an HDF file,
@@ -97,9 +101,10 @@ def find_hdf_writing_error(name: str, property_values: ndarray) -> str:
             f"The property {name!r} of the catalog holds Python objects "
             "and cannot be written to an HDF file."
         )
-        if is_blank_property(property_values):
+        if can_be_cleaned and is_blank_property(property_values):
             # A property of missing values only, e.g. [None, None], is an array
-            # of Python objects, but it holds no value: dropping it is the fix.
+            # of Python objects, but it holds no value: dropping it is the fix,
+            # unless no other property holds a value, since clean() then raises.
             message += (
                 " It holds no value: use Catalog.clean() "
                 "to drop the properties holding no value."

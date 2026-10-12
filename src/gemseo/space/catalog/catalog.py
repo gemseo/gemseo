@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from itertools import starmap
 from typing import TYPE_CHECKING
 from typing import Annotated
 from typing import Any
@@ -46,6 +45,7 @@ from gemseo.space.catalog._input import CatalogFormatter
 from gemseo.space.catalog._input import CatalogInput
 from gemseo.space.catalog._input import clean_catalog_data
 from gemseo.space.catalog._input import freeze_property_array
+from gemseo.space.catalog._input import is_blank_property
 from gemseo.space.catalog._input import labels_field
 from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog._input import raise_errors
@@ -470,10 +470,14 @@ label naming a single row, not an absence of labels.""",
                 encoded to UTF-8, or if a label cannot be encoded to UTF-8;
                 every offender is named at once, one reason per property.
         """
+        # Advising clean() is pointless when it would raise for lack of property.
+        can_be_cleaned = not all(map(is_blank_property, self.properties.values()))
         error_messages = [
             message
-            for message in starmap(find_hdf_writing_error, self.properties.items())
-            if message
+            for name, property_values in self.properties.items()
+            if (
+                message := find_hdf_writing_error(name, property_values, can_be_cleaned)
+            )
         ]
         if (label := find_unencodable_utf8_value(self.labels)) is not None:
             error_messages.append(
