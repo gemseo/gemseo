@@ -345,10 +345,11 @@ the steps run in this order:
 5. every property, and the labels, must hold the same number of elements.
    An input with an empty property describes no row and is refused.
    Empty labels count as no labels.
-   Without labels, the error is that a catalog must have at least one row.
-   With labels, the error is that the properties and the labels
+   When every property given as a sequence is empty and there are no labels,
+   the error is that a catalog must have at least one row.
+   Otherwise, the error is that the properties
    do not have the same number of elements,
-   since the labels name at least one row;
+   since another property, or the labels, name at least one row;
 6. a property given as a scalar is repeated over the rows;
 7. there must be at least one property;
 8. the arrays are copied and made read-only.
@@ -423,6 +424,7 @@ Changing a catalog means declaring a new variable.
     - [CatalogVariable][gemseo.space.variable.CatalogVariable]
     - [Catalog][gemseo.space.catalog.catalog.Catalog]
     - [Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+    - [Catalog.clean()][gemseo.space.catalog.catalog.Catalog.clean]
 
 ## Integer relaxation { #concept-integer-relaxation }
 

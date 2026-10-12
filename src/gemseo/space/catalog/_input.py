@@ -136,11 +136,11 @@ class CatalogFormatter:
        which defines the number of rows;
        the input is rejected if there is no row,
        i.e. if a property is empty:
-       without labels, or with empty labels,
+       when every sequence property is empty
+       and there are no labels, or empty labels,
        the error states that a catalog must have at least one row,
-       while with labels, which name at least one row,
-       the error states that the properties and the labels
-       do not have the same length,
+       while otherwise, another property or the labels naming at least one row,
+       the error states that the properties do not have the same length,
        since the empty property contradicts them.
     6. **Broadcast the scalars**: a scalar property is repeated over the rows.
     7. **Check the non-emptiness**: there must be at least one property.

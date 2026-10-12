@@ -512,7 +512,7 @@ class DesignSpace(
                 or if the value is a label naming no alternative or several ones.
 
         Note:
-            The properties of the catalog are kept as they are;
+            The labels and the properties of the catalog are kept as they are;
             pass a cleaned `Catalog` to clean them,
             see [clean][gemseo.space.catalog.catalog.Catalog.clean].
         """
