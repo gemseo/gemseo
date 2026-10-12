@@ -26,6 +26,7 @@ from numpy import array
 from numpy import float64
 from numpy import int64
 from numpy.testing import assert_array_equal
+from pandas import DataFrame
 from scipy.sparse import csr_array
 
 from gemseo.space.design import DesignSpace
@@ -327,10 +328,20 @@ def test_categorical_cells(n_categories, unit_value, position) -> None:
         )
 
 
-def test_categorical_cells_only_variable() -> None:
-    """Check the denormalization of a design space with a categorical variable only."""
+@pytest.mark.parametrize(
+    ("method", "domain"),
+    [
+        ("add_categorical_variable", ["a", "b", "c"]),
+        ("add_catalog_variable", DataFrame({"p": [1, 2, 3]}, index=["a", "b", "c"])),
+    ],
+)
+def test_categorical_cells_only_variable(method, domain) -> None:
+    """Check the denormalization of a design space with a categorical variable only.
+
+    A catalog variable is a categorical variable.
+    """
     design_space = DesignSpace()
-    design_space.add_categorical_variable("c", ["a", "b", "c"], "a")
+    getattr(design_space, method)("c", domain, "a")
     with design_space._prepare_untransformation(True):
         samples = design_space.untransform_vect(
             array([[0.0], [0.5], [1.0]]), no_check=True

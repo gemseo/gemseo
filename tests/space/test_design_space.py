@@ -2600,25 +2600,6 @@ def test_round_vect_catalog_variable_gives_a_member(catalog_integer_real_space) 
 
 
 @pytest.mark.parametrize(
-    ("minus_lb", "expected"), [(True, [1.0, 0.5]), (False, [1.4, 0.5])]
-)
-def test_denormalize_vect_catalog_variable(minus_lb, expected) -> None:
-    """Check that denormalizing rounds a catalog position only with the lower bound.
-
-    A catalog position is not normalized,
-    but it is rounded when the lower bounds are added back,
-    the way the components of an integer variable are.
-    """
-    space = DesignSpace()
-    space.add_catalog_variable("c", {"property": [1.0, 2.0, 3.0]})
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-
-    assert_array_equal(
-        space.denormalize_vect(array([1.4, 0.5]), minus_lb=minus_lb), expected
-    )
-
-
-@pytest.mark.parametrize(
     "variables",
     [
         (),
@@ -3829,21 +3810,6 @@ def test_has_catalog_variables(catalog_design_space) -> None:
     assert not DesignSpace().variables.has_variables_of_type(VariableType.CATALOG)
 
 
-def test_catalog_variable_derived_bounds(catalog_design_space) -> None:
-    """Check that the bounds of a catalog variable span the catalog."""
-    assert_array_equal(catalog_design_space.variables["m"].lower_bound, array([0]))
-    assert_array_equal(catalog_design_space.variables["m"].upper_bound, array([2]))
-
-
-@pytest.mark.parametrize("setter", ["set_lower_bound", "set_upper_bound"])
-def test_catalog_variable_bounds_are_not_settable(
-    catalog_design_space, setter, snapshot
-) -> None:
-    """Check that the bounds of a catalog variable cannot be set."""
-    with assert_exception(ValidationError, snapshot):
-        getattr(catalog_design_space, setter)("m", 1)
-
-
 def test_catalog_variable_scalar_value_shape(catalog_design_space) -> None:
     """Check that a scalar value is stored as a shape-(1,) integer array."""
     value = catalog_design_space.get_current_value(["m"])
@@ -3884,7 +3850,6 @@ def test_catalog_variable_is_rounded(catalog_design_space) -> None:
         array([1.5]),
         array([-1]),
         array(["1"]),
-        array(["steel"], dtype=object),
     ],
 )
 def test_catalog_variable_rejects_a_non_position(
@@ -3938,9 +3903,21 @@ def test_add_catalog_variable_with_a_wrong_label(snapshot) -> None:
 
 
 def test_set_current_variable_with_a_label(catalog_design_space) -> None:
-    """Check that the current value of a catalog variable can be set by label."""
+    """Check that the current value of a catalog variable can be set by label.
+
+    A mapping can give labels too, and the reference value gives them back.
+    """
     catalog_design_space.set_current_variable("m", "titanium")
     assert_array_equal(catalog_design_space.get_current_value(["m"]), array([2]))
+
+    catalog_design_space.set_current_value({
+        "x": array([0.5]),
+        "t": array([0.55]),
+        "m": "steel",
+        "s": "aluminium",
+    })
+    assert_array_equal(catalog_design_space.get_current_value(["m", "s"]), [1, 0])
+    assert_array_equal(catalog_design_space.reference_value["m"], ["steel"])
 
 
 @pytest.mark.parametrize(

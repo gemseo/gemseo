@@ -41,6 +41,7 @@ from gemseo.space._design.constants import ub_group
 from gemseo.space._design.constants import value_group
 from gemseo.space._design.constants import var_type_group
 from gemseo.space.catalog.catalog import Catalog
+from gemseo.space.variable import BaseCategoricalVariable
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import VariableType
@@ -402,8 +403,10 @@ def to_hdf(
                 # before the file was opened.
                 variable.catalog.write_hdf(variable_group.create_group(catalog_group))
 
-            is_categorical = variable.type == VariableType.CATEGORICAL
-            if is_categorical:
+            # The categories of a catalog variable are the labels of its catalog,
+            # which is stored above.
+            is_categorical = isinstance(variable, BaseCategoricalVariable)
+            if variable.type == VariableType.CATEGORICAL:
                 # The labels may be non-ASCII, hence variable-length UTF-8 strings.
                 write_dataset(
                     variable_group,
@@ -545,6 +548,15 @@ def from_hdf(
                 )
                 continue
 
+            if catalog_hdf_group is not None:
+                labels = get_strings(variable_group, value_group)
+                design_space.add_catalog_variable(
+                    name,
+                    Catalog.read_hdf(catalog_hdf_group),
+                    None if labels is None else labels[0],
+                )
+                continue
+
             value = get_dataset(variable_group, value_group)
             if choices is not None:
                 # The bounds of a discrete variable are derived from its choices,
@@ -552,16 +564,6 @@ def from_hdf(
                 design_space._register_variable(
                     name,
                     deterministic_variable_factory.create(var_type, choices=choices),
-                    value,
-                )
-            elif catalog_hdf_group is not None:
-                # Likewise, the bounds of a catalog variable are derived
-                # from its catalog.
-                design_space._register_variable(
-                    name,
-                    deterministic_variable_factory.create(
-                        var_type, catalog=Catalog.read_hdf(catalog_hdf_group)
-                    ),
                     value,
                 )
             else:

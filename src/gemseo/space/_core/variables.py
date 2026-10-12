@@ -240,7 +240,8 @@ class Variables(
         """Return whether the components of the full vector are integer.
 
         A component is integer when it belongs to an integer variable
-        or to a catalog variable, whose value is a position in its catalog.
+        or to a categorical variable, e.g. a catalog variable,
+        whose coordinate is the position of a label.
 
         Returns:
             Whether the components of the full vector are integer

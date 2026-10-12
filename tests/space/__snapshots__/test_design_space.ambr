@@ -9,7 +9,7 @@
   "The variable 'x' already exists."
 # ---
 # name: test_add_catalog_variable_with_a_wrong_label
-  "The catalog has no alternative labelled 'gold'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
+  "'gold' is not a category of the variable; the categories are ['aluminium', 'steel', 'titanium']."
 # ---
 # name: test_add_variable_when_already_exists
   "The variable 'varname' already exists."
@@ -201,20 +201,6 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_catalog_variable_bounds_are_not_settable[set_lower_bound]
-  '''
-  1 validation error for CatalogVariable
-    Value error, lower_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog': Catalog(3 alt...lier), 'lower_bound': 1}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
-# name: test_catalog_variable_bounds_are_not_settable[set_upper_bound]
-  '''
-  1 validation error for CatalogVariable
-    Value error, upper_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog': Catalog(3 alt...lier), 'upper_bound': 1}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
 # name: test_catalog_variable_csv_is_refused
   'A design space holding catalog variables cannot be exported to CSV because the catalogs of m and s do not fit in a CSV cell; use to_hdf instead.'
 # ---
@@ -264,19 +250,16 @@
   "The property 'mass' of the catalog holds Python objects and cannot be written to an HDF file."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value0]
-  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 3."
+  "The variable m is categorical with the categories ['aluminium', 'steel', 'titanium']; got the coordinate m[0] = 3, which is not the position of a category."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value1]
-  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 1.5."
+  "The variable m is categorical with the categories ['aluminium', 'steel', 'titanium']; got the coordinate m[0] = 1.5, which is not the position of a category."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value2]
-  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = -1."
+  "The variable m is categorical with the categories ['aluminium', 'steel', 'titanium']; got the coordinate m[0] = -1, which is not the position of a category."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value3]
-  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 1."
-# ---
-# name: test_catalog_variable_rejects_a_non_position[value4]
-  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = steel."
+  "'1' is not a category of the variable; the categories are ['aluminium', 'steel', 'titanium']."
 # ---
 # name: test_catalog_variable_view
   '''
@@ -285,8 +268,8 @@
   +------+-------------+-------+-------------+----------+
   | x    |      0      |  0.5  |      1      | real     |
   | t    |     0.45    |  0.55 |     0.72    | discrete |
-  | m    |      0      |   1   |      2      | catalog  |
-  | s    |      0      |  None |      2      | catalog  |
+  | m    |             | steel |             | catalog  |
+  | s    |             |  None |             | catalog  |
   +------+-------------+-------+-------------+----------+
   '''
 # ---
@@ -802,10 +785,10 @@
   'The variable i is of type integer; got i[0] = 2.7.'
 # ---
 # name: test_set_current_variable_with_a_wrong_label[m-gold-ValueError]
-  "The catalog has no alternative labelled 'gold'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
+  "'gold' is not a category of the variable; the categories are ['aluminium', 'steel', 'titanium']."
 # ---
 # name: test_set_current_variable_with_a_wrong_label[x-steel-TypeError]
-  "The variable 'x' is neither a catalog nor a categorical variable and cannot be set with a label."
+  "The variable 'x' is not categorical and cannot be set with a label."
 # ---
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'

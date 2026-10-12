@@ -34,7 +34,6 @@ from typing import Final
 from typing import Literal
 from typing import overload
 
-from numpy import array
 from numpy import array_equal
 from numpy import atleast_1d
 from numpy import full
@@ -53,6 +52,7 @@ from gemseo.space._design.normalizer import Normalizer
 from gemseo.space._design.value import Value
 from gemseo.space._design.variables import DesignVariables
 from gemseo.space.base import BaseVariableSpace
+from gemseo.space.variable import BaseCategoricalVariable
 from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import CatalogVariable
@@ -488,10 +488,13 @@ class DesignSpace(
     ) -> None:
         """Add a catalog variable to the design space.
 
-        Such a variable chooses one alternative in a catalog;
-        its value is the position of that alternative in the catalog,
-        from 0 to the number of alternatives minus one,
-        which are its lower and upper bounds.
+        Such a variable is a categorical variable
+        choosing one alternative in a catalog;
+        its categories are the labels of the catalog.
+        A discipline receives the label,
+        while the current value, the design vector and the database
+        store the position of the alternative in the catalog,
+        from 0 to the number of alternatives minus one.
 
         Args:
             name: The name of the variable.
@@ -501,15 +504,14 @@ class DesignSpace(
                 to a sequence or a scalar, a scalar being repeated over the rows.
             value: The default value of the variable,
                 either the position of an alternative in the catalog
-                or a label naming exactly one alternative,
-                see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
+                or its label.
                 If `None`, do not use a default value.
 
         Raises:
             ValueError: Either if the variable already exists,
                 if the catalog is wrong,
                 if the value is not the position of an alternative,
-                or if the value is a label naming no alternative or several ones.
+                or if the value is a label naming no alternative.
 
         Note:
             The labels and the properties of the catalog are kept as they are;
@@ -517,10 +519,9 @@ class DesignSpace(
             see [clean][gemseo.space.catalog.catalog.Catalog.clean].
         """
         variable = CatalogVariable(catalog=catalog)
-        if isinstance(value, str):
-            value = variable.catalog.get_position(value)
-
-        self._register_variable(name, variable, value)
+        self._register_variable(
+            name, variable, variable.encode(value) if isinstance(value, str) else value
+        )
 
     def add_categorical_variable(
         self,
@@ -573,7 +574,8 @@ class DesignSpace(
         so that a partially valued design space is not seen
         as defining a reference value.
 
-        The value of a categorical variable is its label,
+        The value of a categorical variable, e.g. a catalog variable,
+        is its label,
         while its current value is the position of this label.
         """
         if not self.has_current_value:
@@ -581,7 +583,7 @@ class DesignSpace(
 
         name_to_value = self.get_current_value(as_dict=True)
         for name, variable in self._variables.items():
-            if variable.type == VariableType.CATEGORICAL:
+            if isinstance(variable, BaseCategoricalVariable):
                 name_to_value[name] = variable.decode(name_to_value[name])
 
         return name_to_value
@@ -590,7 +592,8 @@ class DesignSpace(
         """Return whether the components of the design vector are integer.
 
         A component is integer when it belongs to an integer variable
-        or to a catalog variable, whose value is a position in its catalog.
+        or to a categorical variable, e.g. a catalog variable,
+        whose coordinate is the position of a label.
 
         Returns:
             Whether the components of the design vector are integer
@@ -1003,8 +1006,8 @@ class DesignSpace(
     def round_vect(self, x_vect: ndarray, copy: bool = True) -> ndarray:
         """Round the vector where variables are of integer type.
 
-        The position of a catalog variable is rounded too,
-        as it is a whole number.
+        The coordinate of a categorical variable, e.g. a catalog variable,
+        is rounded too, as it is a whole number.
 
         Args:
             x_vect: The values to be rounded.
@@ -1049,8 +1052,9 @@ class DesignSpace(
                 a NumPy array nor an
                 [OptimizationResult][gemseo.optimization.result.OptimizationResult].
         """
-        if isinstance(value, Mapping) and self._variables.has_variables_of_type(
-            VariableType.CATEGORICAL
+        if isinstance(value, Mapping) and any(
+            isinstance(variable, BaseCategoricalVariable)
+            for variable in self._variables.values()
         ):
             value = {
                 name: self.__encode_labels(name, val)
@@ -1103,7 +1107,7 @@ class DesignSpace(
             otherwise the value.
         """
         variable = self._variables[name]
-        if variable.type != VariableType.CATEGORICAL or value is None:
+        if not isinstance(variable, BaseCategoricalVariable) or value is None:
             return value
 
         array_value = atleast_1d(value)
@@ -1123,33 +1127,26 @@ class DesignSpace(
             name: The name of the variable.
             current_value: The current value of the variable,
                 or `None` to mark the variable as having no value.
-                The value of a catalog variable can also be a label
-                naming exactly one alternative of its catalog,
-                see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
-                For a categorical variable,
+                For a categorical variable, e.g. a catalog variable,
                 it can be given as labels instead of coordinates.
 
         Raises:
             ValueError: If the value does not match the size of the variable,
                 if a component of the value falls outside the domain
                 of the kind of the variable,
-                or if the value is a label naming no alternative or several ones.
+                or if the value is a label that is not a category.
             TypeError: If the value is a label
-                but the variable is neither a catalog nor a categorical variable.
+                but the variable is not categorical.
         """
         variable = self._variables[name]
-        if isinstance(current_value, str) and variable.type != VariableType.CATEGORICAL:
-            if not isinstance(variable, CatalogVariable):
-                msg = (
-                    f"The variable {name!r} is neither a catalog "
-                    "nor a categorical variable and cannot be set with a label."
-                )
-                raise TypeError(msg)
-
-            current_value = array(
-                [variable.catalog.get_position(current_value)],
-                dtype=variable.coordinate_type,
+        if isinstance(current_value, str) and not isinstance(
+            variable, BaseCategoricalVariable
+        ):
+            msg = (
+                f"The variable {name!r} is not categorical "
+                "and cannot be set with a label."
             )
+            raise TypeError(msg)
 
         if current_value is not None:
             current_value = self.__encode_labels(name, current_value)

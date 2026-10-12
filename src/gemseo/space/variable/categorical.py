@@ -12,10 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Categorical variable."""
+"""Categorical variables."""
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -25,6 +26,8 @@ from numpy import array
 from numpy import asarray
 from numpy import atleast_1d
 from numpy import int64
+from numpy import isfinite
+from numpy import isreal
 from pydantic import Field
 from pydantic import model_validator
 
@@ -64,13 +67,13 @@ _max_displayed_categories: Final[int] = 6
 """The number of categories displayed in an error message."""
 
 
-class CategoricalVariable(BaseDeterministicVariable):
-    r"""A scalar categorical variable.
+class BaseCategoricalVariable(BaseDeterministicVariable):
+    r"""The base class of a scalar categorical variable.
 
     Its domain is a finite set of unordered labels, called categories,
     e.g. materials.
-    The categories are the only input of the variable;
-    they are strings, without duplication, in the order of your choice.
+    The categories are strings, without duplication;
+    a subclass defines them.
 
     A categorical variable is neither bounded nor castable to a NumPy type.
     A discipline reads its value as a label,
@@ -83,53 +86,22 @@ class CategoricalVariable(BaseDeterministicVariable):
     as for the variables on which this function does not depend.
     """
 
-    type: ClassVar[VariableType] = VariableType.CATEGORICAL
-
     coordinate_type: ClassVar[CoordinateDType] = int64
     """The NumPy type of the coordinate of the variable.
 
     The coordinate of a category is its position among the categories.
     """
 
-    categories: tuple[str, ...] = Field(
-        description="""The labels that the variable can take.
+    if TYPE_CHECKING:
+        # This member is declared for static typing only;
+        # see [BaseVariable][gemseo.space.variable.base.BaseVariable].
 
-    The position of a label is its index in this tuple.
-    """
-    )
+        @property
+        def categories(self) -> tuple[str, ...]:
+            """The labels that the variable can take.
 
-    @model_validator(mode="after")
-    def __validate_categorical_variable(self) -> Self:
-        """Validate the variable.
-
-        Returns:
-            The instance.
-
-        Raises:
-            ValueError: If there is no category
-                or if a category appears several times.
-        """
-        categories = self.categories
-        if not categories:
-            msg = "A categorical variable must have at least one category."
-            raise ValueError(msg)
-
-        seen = set()
-        duplicates = set()
-        for category in categories:
-            if category in seen:
-                duplicates.add(category)
-
-            seen.add(category)
-        if duplicates:
-            plural = len(duplicates) > 1
-            msg = (
-                f"The following categor{'ies appear' if plural else 'y appears'} "
-                f"several times: {pretty_repr(duplicates)}."
-            )
-            raise ValueError(msg)
-
-        return self
+            The position of a label is its index in this tuple.
+            """
 
     @property
     def size(self) -> int:
@@ -158,6 +130,18 @@ class CategoricalVariable(BaseDeterministicVariable):
         coordinate_0 = atleast_1d(coordinate)[0]
         if coordinate_0 is None:
             return set()
+
+        # A label, or any other non-numeric value, is never a coordinate;
+        # return early to avoid the raw numpy error that
+        # `.real` or `isfinite` would otherwise raise on it.
+        if not isreal(coordinate_0):
+            return {0}
+
+        coordinate_0 = coordinate_0.real
+        # An infinite or NaN coordinate is never the position of a category;
+        # return early to avoid the RuntimeWarning that `%` would emit on it.
+        if not isfinite(coordinate_0):
+            return {0}
 
         if 0 <= coordinate_0 <= len(self.categories) - 1 and coordinate_0 % 1 == 0:
             return set()
@@ -238,13 +222,13 @@ class CategoricalVariable(BaseDeterministicVariable):
 
         return self.__category_array[coordinates.astype(self.coordinate_type)]
 
+    @abstractmethod
     def _format_categories(self) -> str:
         """Return a readable representation of the categories for an error message.
 
         Returns:
             The representation of the categories.
         """
-        return format_elided(self.categories, "categories", _max_displayed_categories)
 
     def _get_out_of_domain_message(
         self, name: str, value: NumberArray, indices: Iterable[int]
@@ -268,3 +252,56 @@ class CategoricalVariable(BaseDeterministicVariable):
             f"got the coordinate {name}[{index}] = {value_i}, "
             f"which is not the position of a category."
         )
+
+
+class CategoricalVariable(BaseCategoricalVariable):
+    """A scalar categorical variable defined by its categories.
+
+    The categories are the only input of the variable;
+    they are strings, without duplication, in the order of your choice.
+    """
+
+    type: ClassVar[VariableType] = VariableType.CATEGORICAL
+
+    categories: tuple[str, ...] = Field(
+        description="""The labels that the variable can take.
+
+    The position of a label is its index in this tuple.
+    """
+    )
+
+    @model_validator(mode="after")
+    def __validate_categorical_variable(self) -> Self:
+        """Validate the variable.
+
+        Returns:
+            The instance.
+
+        Raises:
+            ValueError: If there is no category
+                or if a category appears several times.
+        """
+        categories = self.categories
+        if not categories:
+            msg = "A categorical variable must have at least one category."
+            raise ValueError(msg)
+
+        seen = set()
+        duplicates = set()
+        for category in categories:
+            if category in seen:
+                duplicates.add(category)
+
+            seen.add(category)
+        if duplicates:
+            plural = len(duplicates) > 1
+            msg = (
+                f"The following categor{'ies appear' if plural else 'y appears'} "
+                f"several times: {pretty_repr(duplicates)}."
+            )
+            raise ValueError(msg)
+
+        return self
+
+    def _format_categories(self) -> str:
+        return format_elided(self.categories, "categories", _max_displayed_categories)

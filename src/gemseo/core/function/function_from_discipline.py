@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
-from gemseo.space.variable import VariableType
+from gemseo.space.variable import BaseCategoricalVariable
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.function.discipline_adapter import DisciplineAdapter
     from gemseo.formulation.core.base import BaseFormulation
-    from gemseo.space.variable import CategoricalVariable
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
 
@@ -204,7 +203,7 @@ class FunctionFromDiscipline(ArrayFunction):
     @staticmethod
     def __get_name_to_categorical_variable(
         formulation: BaseFormulation,
-    ) -> dict[str, CategoricalVariable]:
+    ) -> dict[str, BaseCategoricalVariable]:
         """Return the categorical design variables.
 
         Args:
@@ -217,7 +216,7 @@ class FunctionFromDiscipline(ArrayFunction):
         return {
             name: variable
             for name, variable in formulation.input_space.variables.items()
-            if variable.type == VariableType.CATEGORICAL
+            if isinstance(variable, BaseCategoricalVariable)
         }
 
     @classmethod

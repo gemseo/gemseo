@@ -17,10 +17,13 @@
 from __future__ import annotations
 
 import pickle
+import warnings
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import int64
+from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
@@ -100,23 +103,32 @@ def test_normalization_mask_is_read_only(snapshot) -> None:
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
-        (0, set()),
-        (2, set()),
-        (2.0, set()),
-        (None, set()),
-        (3, {0}),
-        (-1, {0}),
-        (0.5, {0}),
-        (float("nan"), {0}),
+        (array([0]), set()),
+        (array([2]), set()),
+        (array([2.0]), set()),
+        (array([None]), set()),
+        (array([3]), {0}),
+        (array([-1]), {0}),
+        (array([0.5]), {0}),
+        (array([nan]), {0}),
+        (array([inf]), {0}),
+        (array([-inf]), {0}),
+        (array(["b"]), {0}),
+        (array([b"b"]), {0}),
+        (array(["b"], dtype=object), {0}),
     ],
 )
 def test_find_components_outside_domain(value, expected) -> None:
-    """Check that only the position of a category is in the domain."""
+    """Check that only the position of a category is in the domain.
+
+    `None` stands for a value that is not set yet,
+    and a label is not a coordinate;
+    neither a label nor a non-finite value raises or warns.
+    """
     variable = CategoricalVariable(categories=["a", "b", "c"])
-    dtype = object if value is None else float
-    assert variable.find_components_outside_domain(array([value], dtype=dtype)) == (
-        expected
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert variable.find_components_outside_domain(value) == expected
 
 
 def test_default_value() -> None:

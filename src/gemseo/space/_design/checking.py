@@ -28,6 +28,7 @@ from numpy import ndarray
 from numpy import vectorize
 
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import BaseCategoricalVariable
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import VariableType
 from gemseo.space.variable._formatting import format_components
@@ -49,8 +50,7 @@ _types_checked_per_variable: Final[frozenset[VariableType]] = frozenset({
 """The types of the variables whose domain the bounds do not describe.
 
 The bounds of a discrete variable are derived from its choices,
-those of a catalog variable from its catalog,
-and a categorical variable has none,
+and a categorical variable, e.g. a catalog variable, has none,
 so the vectorized bound comparison cannot tell a non-candidate value
 lying inside the bounds from a candidate one;
 a design space holding such a variable asks each variable about its own domain.
@@ -254,7 +254,8 @@ def are_full_values_surely_valid(
     whole_number_indices = [
         index
         for name, variable in variables.items()
-        if variable.type in {VariableType.CATEGORICAL, VariableType.INTEGER}
+        if isinstance(variable, BaseCategoricalVariable)
+        or variable.type == VariableType.INTEGER
         for index in variables.name_to_indices[name]
     ]
     return bool(

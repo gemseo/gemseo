@@ -34,7 +34,7 @@ from numpy import clip
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
-from gemseo.space.variable import VariableType
+from gemseo.space.variable import BaseCategoricalVariable
 from gemseo.util.discipline import update_default_input_values
 from gemseo.util.logging import LoggingContext
 from gemseo.util.name_generator import NameGenerator
@@ -285,7 +285,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                 bounds = {
                     f"{name}{suffix}": val
                     for name, val in bounds.items()
-                    if design_space.variables[name].type != VariableType.CATEGORICAL
+                    if not isinstance(
+                        design_space.variables[name], BaseCategoricalVariable
+                    )
                 }
                 defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
@@ -344,8 +346,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             bounds_grammar.update_from_data({
                 variable_name + suffix: variable_value
                 for variable_name, variable_value in current_value.items()
-                if design_space.variables[variable_name].type
-                != VariableType.CATEGORICAL
+                if not isinstance(
+                    design_space.variables[variable_name], BaseCategoricalVariable
+                )
                 for suffix in {
                     self.lower_bnd_suffix,
                     self.upper_bnd_suffix,
@@ -406,7 +409,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             upper_bound_suffix = self.upper_bnd_suffix
             for name, variable in design_space.variables.items():
                 # A categorical variable has no bounds.
-                if variable.type == VariableType.CATEGORICAL:
+                if isinstance(variable, BaseCategoricalVariable):
                     continue
 
                 design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
@@ -423,7 +426,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                 dv_values = {
                     **{
                         name: value
-                        if variables[name].type == VariableType.CATEGORICAL
+                        if isinstance(variables[name], BaseCategoricalVariable)
                         else clip(
                             value,
                             variables[name].lower_bound,
@@ -529,7 +532,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         data_converter = self.io.output_grammar.data_converter
         for name, value in current_value.items():
             variable = design_space.variables[name]
-            if name in self._output_names and variable.type == VariableType.CATEGORICAL:
+            if name in self._output_names and isinstance(
+                variable, BaseCategoricalVariable
+            ):
                 current_value[name] = data_converter.convert_array_to_value(
                     name, variable.decode(value)
                 )

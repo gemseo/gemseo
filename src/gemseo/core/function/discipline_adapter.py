@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.space.variable import CategoricalVariable
+    from gemseo.space.variable import BaseCategoricalVariable
     from gemseo.util.typing import JacobianData
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import StrKeyMapping
@@ -73,7 +73,7 @@ class DisciplineAdapter(ArrayFunction):
     measured and stored by this sibling, as if they had been given.
     """
 
-    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    __name_to_categorical_variable: Mapping[str, BaseCategoricalVariable]
     """The map from the name of a categorical input to its variable."""
 
     differentiated_input_names_substitute: Sequence[str]
@@ -93,7 +93,7 @@ class DisciplineAdapter(ArrayFunction):
         name_to_size: MutableMapping[str, int] = read_only_empty_dict,
         differentiated_input_names_substitute: Sequence[str] = (),
         name_to_categorical_variable: Mapping[
-            str, CategoricalVariable
+            str, BaseCategoricalVariable
         ] = read_only_empty_dict,
     ) -> None:
         """

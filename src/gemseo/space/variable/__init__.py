@@ -28,6 +28,9 @@ from gemseo.space.variable._legacy import Variable as Variable
 from gemseo.space.variable.base import BaseVariable as BaseVariable
 from gemseo.space.variable.base import VariableType as VariableType  # noqa: TC001
 from gemseo.space.variable.catalog import CatalogVariable
+from gemseo.space.variable.categorical import (
+    BaseCategoricalVariable as BaseCategoricalVariable,
+)
 from gemseo.space.variable.categorical import CategoricalVariable
 from gemseo.space.variable.deterministic import (
     BaseDeterministicVariable as BaseDeterministicVariable,
@@ -77,6 +80,7 @@ install_lazy_reexport(
     _name_to_location,
     extra_all=[
         "variable_type_to_numpy_type",
+        "BaseCategoricalVariable",
         "BaseDeterministicVariable",
         "BaseIntervalVariable",
         "BaseNumericVariable",
