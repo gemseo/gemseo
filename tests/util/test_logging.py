@@ -28,6 +28,7 @@ import pytest
 from gemseo.util.logging import LoggingConfiguration
 from gemseo.util.logging import LoggingContext
 from gemseo.util.logging import OneLineLogging
+from gemseo.util.testing.helper import assert_exception
 
 
 def test_default() -> None:
@@ -205,3 +206,14 @@ def test_configure_root_logger_disables_gemseo_propagation(root_logger):
 
     LoggingConfiguration(configure_root_logger=False)
     assert gemseo_logger.propagate
+
+
+def test_cannot_disable_root_logger(root_logger, snapshot):
+    """The root logger configuration cannot be disabled once it is enabled."""
+    configuration = LoggingConfiguration(configure_root_logger=True)
+
+    with assert_exception(ValueError, snapshot):
+        configuration.configure_root_logger = False
+
+    # The loggers are not reconfigured.
+    assert not getLogger("gemseo").propagate

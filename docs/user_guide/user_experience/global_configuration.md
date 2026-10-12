@@ -25,6 +25,7 @@ By default, it does not configure the root logger nor the loggers of client code
 in line with the [Python recommendation for library logging](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
 To see logs from your own code, configure your own loggers, for instance with [`logging.basicConfig`](https://docs.python.org/3/library/logging.html#logging.basicConfig),
 or set `logging.configure_root_logger = True` to let GEMSEO configure the root logger as well.
+Once enabled, it cannot be disabled for the rest of the process.
 
 ## Default configuration { #concept-default-configuration }
 
