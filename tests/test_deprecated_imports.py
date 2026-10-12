@@ -210,6 +210,23 @@ def test_renamed_module_level_constant():
     assert infinite_int == C_LONG_MAX
 
 
+def test_renamed_module_level_constant_of_a_redirected_private_module():
+    """A constant of a private module redirected as a whole is not a submodule.
+
+    `gemseo.algos._variable` is redirected to `gemseo.space.variable`, so without its
+    own entry `TYPE_MAP` would be looked up as the submodule
+    `gemseo.space.variable.TYPE_MAP`.
+    """
+    from gemseo.space.variable import variable_type_to_numpy_type
+
+    with pytest.warns(
+        DeprecationWarning, match="'gemseo.space.variable.variable_type_to_numpy_type'"
+    ):
+        from gemseo.algos._variable import TYPE_MAP
+
+    assert TYPE_MAP is variable_type_to_numpy_type
+
+
 def test_moved_module_level_constant():
     """A constant moved to another module is reachable from the old path."""
     from gemseo.util.constant import epsilon
