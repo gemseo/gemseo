@@ -303,7 +303,7 @@ label naming a single row, not an absence of labels.""",
         # whose representation is quoted,
         # unlike the one of a NumPy string, e.g. "np.str_('steel')".
         return format_elided(
-            [repr(label) for label in self.labels.tolist()], "labels", max_length
+            self.labels, "labels", max_length, lambda label: repr(str(label))
         )
 
     def get_position(self, label: str) -> int:

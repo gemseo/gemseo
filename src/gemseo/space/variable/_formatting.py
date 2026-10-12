@@ -22,6 +22,7 @@ from typing import Any
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Sequence
 
@@ -45,7 +46,12 @@ def format_components(array: ndarray, indices: Iterable[int]) -> str:
     )
 
 
-def format_elided(values: Sequence[Any] | ndarray, noun: str, max_length: int) -> str:
+def format_elided(
+    values: Sequence[Any] | ndarray,
+    noun: str,
+    max_length: int,
+    format_value: Callable[[Any], Any] | None = None,
+) -> str:
     """Return a readable representation of values, elided when there are many.
 
     Beyond `max_length` values,
@@ -59,23 +65,41 @@ def format_elided(values: Sequence[Any] | ndarray, noun: str, max_length: int) -
             the representation is elided.
             A value below `1` is read as `1`,
             since an elided representation keeps at least one value.
+        format_value: The function formatting a value,
+            applied only to the values kept in the representation.
+            If `None`, represent the values as they are.
 
     Returns:
         The representation of the values,
         e.g. `"[2.0, 4.0, 6.0, ..., 96.0, 98.0, 100.0] (50 choices)"`.
     """
+
+    def join(kept_values: Sequence[Any] | ndarray) -> str:
+        """Join the values kept in the representation.
+
+        Args:
+            kept_values: The values kept in the representation.
+
+        Returns:
+            The values separated by commas.
+        """
+        if format_value is not None:
+            kept_values = [format_value(value) for value in kept_values]
+
+        return pretty_str(kept_values, sort=False, use_and=False)
+
     max_length = max(max_length, 1)
     if len(values) <= max_length:
-        return f"[{pretty_str(values, sort=False, use_and=False)}]"
+        return f"[{join(values)}]"
 
     n_head = max_length // 2
     n_tail = max_length - n_head
-    tail = pretty_str(values[-n_tail:], sort=False, use_and=False)
+    tail = join(values[-n_tail:])
     if not n_head:
         # The head is empty, and `values[-0:]` would be every value,
         # so render the tail alone rather than an empty leading element
         # followed by the whole list.
         return f"[..., {tail}] ({len(values)} {noun})"
 
-    head = pretty_str(values[:n_head], sort=False, use_and=False)
+    head = join(values[:n_head])
     return f"[{head}, ..., {tail}] ({len(values)} {noun})"
