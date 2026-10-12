@@ -3909,24 +3909,19 @@ _RAW_PROPERTIES = {"supplier": [" ACME ", "B"], "note": ["", ""]}
 
 
 @pytest.mark.parametrize(
-    ("catalog", "expected"),
+    ("clean", "expected"),
     [
-        pytest.param(_RAW_PROPERTIES, _RAW_PROPERTIES, id="raw"),
-        pytest.param(
-            Catalog(properties=_RAW_PROPERTIES).clean(),
-            {"supplier": ["ACME", "B"]},
-            id="cleaned",
-        ),
+        pytest.param(False, _RAW_PROPERTIES, id="raw"),
+        pytest.param(True, {"supplier": ["ACME", "B"]}, id="cleaned"),
     ],
 )
-def test_add_catalog_variable_keeps_the_properties_as_they_are(
-    catalog, expected
-) -> None:
+def test_add_catalog_variable_keeps_the_properties_as_they_are(clean, expected) -> None:
     """Check that the properties are not cleaned, unless the catalog is.
 
     `add_catalog_variable` does not clean the catalog it builds,
     while a cleaned catalog is passed as it is.
     """
+    catalog = Catalog(properties=_RAW_PROPERTIES).clean() if clean else _RAW_PROPERTIES
     design_space = DesignSpace()
     design_space.add_catalog_variable("m", catalog)
 
