@@ -115,7 +115,8 @@ def test_clean_strips_the_strings(values, expected) -> None:
     but a scalar byte-string property is broadcast as a single value over the rows,
     the way a scalar `str` property is,
     not exploded into one row per byte.
-    The stripped labels are as wide as the labels of a catalog built from them.
+    The stripped labels and properties are as wide as
+    the ones of a catalog built from them.
     """
     catalog = Catalog(
         properties={"supplier": values, "mass": [2.7, 7.8]}, labels=[" alu", "steel "]
@@ -128,6 +129,10 @@ def test_clean_strips_the_strings(values, expected) -> None:
     assert cleaned_catalog is not catalog
     assert cleaned_catalog == expected_catalog
     assert cleaned_catalog.labels.dtype == expected_catalog.labels.dtype
+    assert (
+        cleaned_catalog.properties["supplier"].dtype
+        == expected_catalog.properties["supplier"].dtype
+    )
 
 
 _MERGED_LABELS_MESSAGE = (

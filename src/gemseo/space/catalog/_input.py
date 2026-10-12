@@ -731,7 +731,7 @@ def clean_catalog_data(
         if is_blank_property(stripped_property):
             dropped_names.append(name)
         else:
-            cleaned_properties[name] = freeze_property_array(stripped_property)
+            cleaned_properties[name] = _freeze_stripped_strings(stripped_property)
 
     if dropped_names and not cleaned_properties:
         msg = (
@@ -758,10 +758,28 @@ def clean_catalog_data(
             pretty_str(merged_labels, sort=False),
         )
 
-    # Stripping keeps the width of the data type of the labels,
-    # so they are rebuilt at the width of their longest stripped label,
-    # as the constructor would build them.
-    return _freeze(stripped_labels.tolist(), str_), ReadOnlyMapping(cleaned_properties)
+    cleaned_labels = _freeze_stripped_strings(stripped_labels)
+    return cleaned_labels, ReadOnlyMapping(cleaned_properties)
+
+
+def _freeze_stripped_strings(stripped_values: ndarray) -> ndarray:
+    """Freeze an array whose strings have been stripped.
+
+    Stripping keeps the width of the data type of an array of strings,
+    so such an array is rebuilt at the width of its longest stripped string,
+    as the constructor of a catalog would build it.
+
+    Args:
+        stripped_values: The array whose strings have been stripped.
+
+    Returns:
+        The frozen array.
+    """
+    dtype = stripped_values.dtype
+    if dtype.kind in "US":
+        return _freeze(stripped_values.tolist(), dtype.type)
+
+    return freeze_property_array(stripped_values)
 
 
 def _find_merged_labels(labels: ndarray, stripped_labels: ndarray) -> list[str]:
