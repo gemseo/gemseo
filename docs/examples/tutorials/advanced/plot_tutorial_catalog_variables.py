@@ -23,7 +23,7 @@ the material of a panel, picked among aluminium, steel and titanium.
 You will gather these alternatives and their properties in a
 [Catalog][gemseo.space.catalog.catalog.Catalog],
 declare a catalog variable in a [DesignSpace][gemseo.space.design.DesignSpace]
-whose value is the position of the chosen alternative,
+whose value is the label of the chosen alternative,
 and save the design space to disk.
 Keep in mind what a catalog variable cannot do yet:
 no optimizer and no DOE algorithm handles it.
@@ -56,8 +56,8 @@ from gemseo.space import DesignSpace
 # it is a row of properties.
 #
 # A catalog variable handles this case:
-# it chooses one row of a table,
-# and its value is the **position** of that row, from 0 to 2 here.
+# it is a categorical variable choosing one row of a table,
+# and its value is the **label** of that row.
 # The model then reads the properties of the chosen row.
 
 # %%
@@ -132,7 +132,8 @@ design_space.add_real_variable("thickness", lower_bound=1.0, upper_bound=5.0, va
 design_space.add_catalog_variable("material", materials, value="steel")
 
 # %%
-# The label is replaced by the position of the alternative it names, here `1`;
+# The current value stores the position of the alternative, here `1`,
+# while a discipline receives the label;
 # `value=1` would have done the same.
 # A label naming no alternative is rejected.
 design_space.get_current_value(["material"])
@@ -150,8 +151,8 @@ design_space.initialize_missing_current_values()
 design_space
 
 # %%
-# The bounds of a catalog variable are 0 and the number of alternatives minus one;
-# they are derived from the catalog and cannot be set.
+# The table shows the label of a catalog variable,
+# which has no bounds.
 # A catalog variable is scalar:
 # a panel made of two materials needs two catalog variables.
 #
@@ -185,7 +186,7 @@ reloaded.variables["material"].catalog.to_dataframe()
 
 # %%
 # !!! warning
-#     Since the stored values are positions in the catalogs,
+#     Since a stored database holds positions in the catalogs,
 #     appending to an HDF file, or loading a database from one,
 #     requires the catalogs to be those stored in the file;
 #     otherwise, a `ValueError` is raised and the file is left untouched.
@@ -195,8 +196,8 @@ reloaded.variables["material"].catalog.to_dataframe()
 #
 # - A catalog variable chooses one alternative in a catalog,
 #   a table with one row per alternative and one column per property.
-# - Its value is the position of the alternative;
-#   its bounds are derived from the catalog, which cannot be changed.
+# - It is a categorical variable whose categories are the labels of the catalog,
+#   which cannot be changed.
 # - No optimizer and no DOE algorithm handles a catalog variable yet.
 # - A design space holding a catalog variable is saved to HDF, not to CSV.
 #
