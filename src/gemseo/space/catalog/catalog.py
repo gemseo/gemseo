@@ -101,8 +101,8 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     A `str`, `bytes`, `bytearray` or zero-dimensional array is a single label,
     so `labels="alu"` builds a one-row catalog labelled `"alu"`,
     and `labels=""` names a single row rather than meaning no labels.
-    Duplicate labels are accepted,
-    since an alternative is chosen by its position.
+    The labels must be distinct once converted to strings, whitespace included,
+    since a label names a single alternative.
 
     [DesignSpace.add_catalog_variable][gemseo.space.design.DesignSpace.add_catalog_variable]
     and [CatalogVariable][gemseo.space.variable.catalog.CatalogVariable]
@@ -134,6 +134,7 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     The input is rejected
     if a property is an unordered collection, e.g. a `set`, or a `DataFrame`,
     if a property, or the labels, is not one-dimensional,
+    if two labels are equal,
     if the properties and the labels do not have the same number of elements,
     if there is no row or no property,
     if two column names of a `DataFrame` are equal once converted to strings,
@@ -262,17 +263,15 @@ label naming a single row, not an absence of labels.""",
         A property holds no value when each of its elements
         is a missing value or an empty string;
         `0` and `False` are values, so their properties are kept.
-        The labels that differ only by their leading and trailing whitespace
-        are duplicates once stripped,
-        which a catalog accepts,
-        and are named in a log warning.
 
         Returns:
             The cleaned catalog.
 
         Raises:
             ValueError: If every property holds no value,
-                since cleaning would leave none.
+                since cleaning would leave none,
+                or if labels differ only by their leading and trailing whitespace,
+                since they would name several alternatives once stripped.
         """
         labels, properties = clean_catalog_data(self.labels, self.properties)
         # The data of the catalog are valid and cleaning them keeps them so:
@@ -321,25 +320,16 @@ label naming a single row, not an absence of labels.""",
             The position of the alternative.
 
         Raises:
-            ValueError: If no alternative or several alternatives
-                have this label.
+            ValueError: If no alternative has this label.
         """
         positions = flatnonzero(self.labels == label)
-        if len(positions) == 1:
+        if len(positions):
             return int(positions[0])
 
-        if not len(positions):
-            msg = (
-                f"The catalog has no alternative labelled {label!r}; "
-                f"its labels are {self.format_labels()}. "
-                "Pass the position of an alternative to choose it by row."
-            )
-            raise ValueError(msg)
-
         msg = (
-            f"The label {label!r} names several alternatives of the catalog, "
-            f"at positions {pretty_str(positions.tolist(), sort=False)}; "
-            "pass the position of the alternative to choose one of them."
+            f"The catalog has no alternative labelled {label!r}; "
+            f"its labels are {self.format_labels()}. "
+            "Pass the position of an alternative to choose it by row."
         )
         raise ValueError(msg)
 

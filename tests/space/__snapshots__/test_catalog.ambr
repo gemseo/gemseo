@@ -71,11 +71,45 @@
   - The label '\ud800' of the catalog cannot be encoded to UTF-8 and cannot be written to an HDF file.
   '''
 # ---
+# name: test_clean_rejects_the_labels_made_duplicates[labels0-mass0]
+  "The following labels of the catalog differ only by their leading and trailing whitespace, so cleaning the catalog would make them duplicates: 'a'."
+# ---
+# name: test_clean_rejects_the_labels_made_duplicates[labels1-mass1]
+  "The following labels of the catalog differ only by their leading and trailing whitespace, so cleaning the catalog would make them duplicates: 'a' and 'b'."
+# ---
+# name: test_clean_rejects_the_labels_made_duplicates[labels2-mass2]
+  '''
+  The catalog cannot be cleaned:
+  - Every property of the catalog is blank, i.e. holds only missing values or empty strings, so cleaning the catalog would leave no property: mass.
+  - The following labels of the catalog differ only by their leading and trailing whitespace, so cleaning the catalog would make them duplicates: 'a'.
+  '''
+# ---
 # name: test_duplicate_column_labels
   '''
   1 validation error for Catalog
     Value error, The properties of the catalog do not have distinct names once converted to strings: 'mass' names more than one property. [type=value_error, input_value={'properties':    mass  m...  1     2
   1     3     4}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_duplicate_labels[labels0]
+  '''
+  1 validation error for Catalog
+    Value error, The following label names several alternatives of the catalog: 'alu'. [type=value_error, input_value={'properties': {'mass': 2...labels': ['alu', 'alu']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_duplicate_labels[labels1]
+  '''
+  1 validation error for Catalog
+    Value error, The following labels name several alternatives of the catalog: 'alu' and 'ti'. [type=value_error, input_value={'properties': {'mass': 2...lu', 'ti', 'alu', 'ti']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_duplicate_labels[labels2]
+  '''
+  1 validation error for Catalog
+    Value error, The following label names several alternatives of the catalog: '1'. [type=value_error, input_value={'properties': {'mass': 2.7}, 'labels': [1, '1']}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -167,9 +201,6 @@
 # ---
 # name: test_frozen_arrays_cannot_be_thawed_through_their_base.1
   'cannot set WRITEABLE flag to True of this array'
-# ---
-# name: test_get_position_duplicate_label
-  "The label 'steel' names several alternatives of the catalog, at positions 1 and 3; pass the position of the alternative to choose one of them."
 # ---
 # name: test_get_position_unknown_label[Steel]
   "The catalog has no alternative labelled 'Steel'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."

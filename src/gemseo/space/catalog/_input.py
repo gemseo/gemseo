@@ -131,6 +131,9 @@ class CatalogFormatter:
        because normalizing a `DataFrame` column of equal-length sequences
        turns it from an opaque 1-D object array
        into a plain nested list that reveals its true shape.
+       The labels must also be distinct once converted to strings,
+       whitespace included,
+       since a label names a single alternative.
     5. **Check the rectangularity**: every sequence property, and the labels,
        must hold the same number of elements,
        which defines the number of rows;
@@ -179,6 +182,7 @@ class CatalogFormatter:
                 or if a property is an unordered collection or a table,
                 or if a byte-string label is not valid UTF-8,
                 or if a property, or the labels, is not one-dimensional,
+                or if two labels are equal once converted to strings,
                 naming every such error at once,
                 or if there is no row,
                 or if the properties and the labels do not have the same length,
@@ -206,6 +210,14 @@ class CatalogFormatter:
                 None if decoding_error_messages else labels, properties
             )
         )
+        # Undecoded or multi-dimensional labels are already reported.
+        if (
+            labels is not None
+            and not decoding_error_messages
+            and asarray(labels).ndim == 1
+        ):
+            error_messages.extend(_find_duplicate_label_errors(labels))
+
         # These steps do not depend on one another's success,
         # so their errors are reported together, in one pass,
         # whereas the next steps rely on a well-formed input.
@@ -482,6 +494,42 @@ def raise_errors(header: str, error_messages: Sequence[str]) -> None:
     raise ValueError(msg)
 
 
+def _find_duplicate_label_errors(labels: Sequence[Any]) -> list[str]:
+    """Find the labels naming several alternatives.
+
+    The labels are compared once converted to strings,
+    as the catalog stores them,
+    so that `1` and `"1"` are the same label.
+
+    Args:
+        labels: The one-dimensional labels.
+
+    Returns:
+        The error message naming each duplicate label once,
+        empty when the labels are distinct.
+    """
+    seen = set()
+    duplicates = []
+    for label in map(str, labels):
+        if label not in seen:
+            seen.add(label)
+        elif label not in duplicates:
+            duplicates.append(label)
+
+    if not duplicates:
+        return []
+
+    plural = len(duplicates) > 1
+    # The labels are quoted, so that their whitespace is visible.
+    return [
+        (
+            f"The following label{'s name' if plural else ' names'} "
+            "several alternatives of the catalog: "
+            f"{pretty_str(map(repr, duplicates), sort=False)}."
+        )
+    ]
+
+
 def _compute_property_lengths(properties: Mapping[str, Any]) -> dict[str, int]:
     """Return the number of elements of each sized property, by name.
 
@@ -704,10 +752,6 @@ def clean_catalog_data(
     then the properties holding no value are dropped
     and named in a log warning,
     see [is_blank_property][gemseo.space.catalog._input.is_blank_property].
-    The labels that differ only by their leading and trailing whitespace
-    become duplicates once stripped,
-    which a catalog accepts,
-    so they are named in a log warning too.
 
     The data of a catalog are already valid,
     and cleaning them keeps them so,
@@ -722,7 +766,10 @@ def clean_catalog_data(
 
     Raises:
         ValueError: If every property holds no value,
-            since cleaning would leave none.
+            since cleaning would leave none,
+            or if labels differ only by their leading and trailing whitespace,
+            since they would name several alternatives once stripped,
+            naming every such error at once.
     """
     cleaned_properties = {}
     dropped_names = []
@@ -733,29 +780,30 @@ def clean_catalog_data(
         else:
             cleaned_properties[name] = _freeze_stripped_strings(stripped_property)
 
+    error_messages = []
     if dropped_names and not cleaned_properties:
-        msg = (
+        error_messages.append(
             "Every property of the catalog is blank, "
             "i.e. holds only missing values or empty strings, "
             "so cleaning the catalog would leave no property: "
             f"{pretty_str(dropped_names, sort=False)}."
         )
-        raise ValueError(msg)
 
+    stripped_labels = _strip_strings(labels)
+    if merged_labels := _find_merged_labels(labels, stripped_labels):
+        error_messages.append(
+            "The following labels of the catalog differ only "
+            "by their leading and trailing whitespace, "
+            "so cleaning the catalog would make them duplicates: "
+            f"{pretty_str(merged_labels, sort=False)}."
+        )
+
+    raise_errors("The catalog cannot be cleaned:", error_messages)
     if dropped_names:
         logger.warning(
             "The following properties of the catalog hold no value "
             "and were dropped: %s.",
             pretty_str(dropped_names, sort=False),
-        )
-
-    stripped_labels = _strip_strings(labels)
-    if merged_labels := _find_merged_labels(labels, stripped_labels):
-        logger.warning(
-            "The following labels of the catalog differed only "
-            "by their leading and trailing whitespace "
-            "and are duplicates once stripped: %s.",
-            pretty_str(merged_labels, sort=False),
         )
 
     cleaned_labels = _freeze_stripped_strings(stripped_labels)
@@ -784,9 +832,6 @@ def _freeze_stripped_strings(stripped_values: ndarray) -> ndarray:
 
 def _find_merged_labels(labels: ndarray, stripped_labels: ndarray) -> list[str]:
     """Return the stripped labels that stripping made duplicates.
-
-    A label already duplicated before stripping is not named,
-    unless a label differing from it only by its whitespace joins it.
 
     Args:
         labels: The labels.

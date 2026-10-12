@@ -135,35 +135,21 @@ def test_clean_strips_the_strings(values, expected) -> None:
     )
 
 
-_MERGED_LABELS_MESSAGE = (
-    "The following labels of the catalog differed only "
-    "by their leading and trailing whitespace "
-    "and are duplicates once stripped: {}."
-)
-"""The warning naming the labels that stripping makes duplicates."""
-
-
 @pytest.mark.parametrize(
-    ("labels", "messages"),
+    ("labels", "mass"),
     [
-        (["a", "a ", "b"], (_MERGED_LABELS_MESSAGE.format("'a'"),)),
-        ([" a", "a", "b", "b\t"], (_MERGED_LABELS_MESSAGE.format("'a' and 'b'"),)),
-        (["a", "a", "a "], (_MERGED_LABELS_MESSAGE.format("'a'"),)),
-        (["a", "a", " b"], ()),
+        (["a", "a ", "b"], [2.7, 7.8, 4.5]),
+        ([" a", "a", "b", "b\t"], [2.7, 7.8, 4.5, 1.0]),
+        (["a", "a "], [nan, nan]),
     ],
 )
-def test_clean_names_the_labels_made_duplicates(labels, messages, caplog) -> None:
-    """Check that clean names the labels that stripping makes duplicates.
+def test_clean_rejects_the_labels_made_duplicates(labels, mass, snapshot) -> None:
+    """Check that clean rejects the labels that stripping makes duplicates.
 
-    Duplicate labels are accepted, so they are not rejected,
-    but labels already duplicated before stripping are not named.
+    A blank property is reported with them.
     """
-    catalog = Catalog(properties={"mass": [2.7] * len(labels)}, labels=labels)
-    with caplog.at_level(logging.WARNING):
-        cleaned_catalog = catalog.clean()
-
-    assert_array_equal(cleaned_catalog.labels, array([s.strip() for s in labels]))
-    assert tuple(record.getMessage() for record in caplog.records) == messages
+    with assert_exception(ValueError, snapshot):
+        Catalog(properties={"mass": mass}, labels=labels).clean()
 
 
 _blank_properties = (
@@ -833,10 +819,13 @@ def test_to_dataframe_is_isolated(table) -> None:
     assert catalog.to_dataframe() is not dataframe
 
 
-def test_duplicate_labels() -> None:
-    """Check that duplicate labels are accepted, since the value is the position."""
-    catalog = Catalog(properties={"mass": [2.7, 2.7]}, labels=["alu", "alu"])
-    assert len(catalog) == 2
+@pytest.mark.parametrize(
+    "labels", [["alu", "alu"], ["alu", "ti", "alu", "ti"], [1, "1"]]
+)
+def test_duplicate_labels(labels, snapshot) -> None:
+    """Check that labels equal once converted to strings are rejected."""
+    with assert_exception(ValueError, snapshot):
+        Catalog(properties={"mass": 2.7}, labels=labels)
 
 
 @pytest.mark.parametrize(
@@ -1175,16 +1164,6 @@ def test_get_position_unknown_label(table, labels, label, snapshot) -> None:
     """
     with assert_exception(ValueError, snapshot):
         Catalog(properties=table, labels=labels).get_position(label)
-
-
-def test_get_position_duplicate_label(snapshot) -> None:
-    """Check that a label naming several alternatives is rejected."""
-    catalog = Catalog(
-        properties={"mass": [2.7, 7.8, 4.5, 7.9]},
-        labels=["aluminium", "steel", "titanium", "steel"],
-    )
-    with assert_exception(ValueError, snapshot):
-        catalog.get_position("steel")
 
 
 @pytest.mark.parametrize(

@@ -272,7 +272,7 @@ and what distinguishes them are their properties.
 A catalog is a table:
 one row per alternative,
 one column per property,
-and one index label naming each alternative.
+and one distinct index label naming each alternative.
 It is built from a `pandas` table or from a mapping
 from a property name to a sequence of values.
 
@@ -293,8 +293,7 @@ Its value can also be given by label,
 e.g. `"steel"` for $1$,
 both to [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
 and to [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable];
-a label naming no alternative, or several ones, is rejected,
-and the position must then be given instead,
+a label naming no alternative is rejected,
 while a label given to a variable that is neither a catalog
 nor a categorical variable
 raises a `TypeError`.
@@ -366,10 +365,10 @@ then a property holding no value is dropped and named in a log warning —
 a property holds no value when each of its elements
 is missing or an empty string;
 a property of zeros holds values and is kept.
-Labels differing only by their leading and trailing whitespace
-are duplicates once stripped.
-They are named in a log warning.
-A catalog whose every property holds no value cannot be cleaned,
+A catalog cannot be cleaned
+if its labels differ only by their leading and trailing whitespace,
+since they would become duplicates,
+or if every property holds no value,
 since no property would be left.
 `add_catalog_variable()` does not clean a catalog,
 so pass it a cleaned one to declare a variable over cleaned data.

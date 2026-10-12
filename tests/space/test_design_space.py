@@ -3928,21 +3928,11 @@ def test_add_catalog_variable_keeps_the_properties_as_they_are(clean, expected) 
     assert design_space.variables["m"].catalog == Catalog(properties=expected)
 
 
-@pytest.mark.parametrize(
-    "catalog",
-    [
-        CATALOG,
-        Catalog(
-            properties={"mass": [2.7, 7.8, 7.9]},
-            labels=["aluminium", "gold", "gold"],
-        ),
-    ],
-)
-def test_add_catalog_variable_with_a_wrong_label(catalog, snapshot) -> None:
-    """Check that a label naming no or several alternatives is rejected."""
+def test_add_catalog_variable_with_a_wrong_label(snapshot) -> None:
+    """Check that a label naming no alternative is rejected."""
     design_space = DesignSpace()
     with assert_exception(ValueError, snapshot):
-        design_space.add_catalog_variable("m", catalog, value="gold")
+        design_space.add_catalog_variable("m", CATALOG, value="gold")
 
     assert "m" not in design_space
 

@@ -134,10 +134,7 @@ design_space.add_catalog_variable("material", materials, value="steel")
 # %%
 # The label is replaced by the position of the alternative it names, here `1`;
 # `value=1` would have done the same.
-# A label naming no alternative is rejected,
-# and so is a label naming several ones,
-# since a catalog accepts duplicate labels:
-# pass the position of the alternative then.
+# A label naming no alternative is rejected.
 design_space.get_current_value(["material"])
 
 # %%
