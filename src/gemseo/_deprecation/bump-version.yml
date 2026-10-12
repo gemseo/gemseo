@@ -950,6 +950,11 @@ attributes:
   gemseo.algos._unsuitability_reason._LINEAR_SOLVER_TEMPLATE: gemseo.core.algorithm._unsuitability_reason._linear_solver_template
   gemseo.algos._unsuitability_reason._OPTIMIZER_TEMPLATE: gemseo.core.algorithm._unsuitability_reason._optimizer_template
   gemseo.algos._variable.ScalarBoundType: gemseo.space.variable.numeric.ScalarBoundType
+  # A plain redirect on purpose: the new map is read-only, keyed by
+  # gemseo.space.variable.VariableType (REAL replaces "float") and has more keys, but
+  # indexing it with a member of the old DataType, as gemseo did, still works, whereas
+  # a TODO value would make every import fail.
+  gemseo.algos._variable.TYPE_MAP: gemseo.space.variable.variable_type_to_numpy_type
   gemseo.algos.doe.doe_quality._DEFAULT_DISCREPANCY_TYPE_NAME: gemseo.doe.doe_quality._default_discrepancy_type_name
   gemseo.algos.doe.doe_quality._DEFAULT_POWER: gemseo.doe.doe_quality._default_power
   gemseo.algos.doe.openturns._algos.ot_axial_doe.LOGGER: gemseo.doe.openturns._algorithm.ot_axial_doe.logger
