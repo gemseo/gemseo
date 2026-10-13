@@ -392,14 +392,18 @@ def test_full_factorial_on_an_integer_variable_records_integral_samples() -> Non
     assert all(int(sample) == sample for sample in samples)
 
 
-def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline() -> None:
+@pytest.mark.parametrize("value", [None, 5])
+def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline(
+    value,
+) -> None:
     """Check that a DOE scenario runs when a discipline declares an integer input.
 
     A DOE handles integer variables,
     so the driver leaves `x` as declared,
     and the discipline receives an integer,
     consistent with its grammar,
-    instead of the `InvalidDataError` a relaxed float would raise.
+    instead of the `InvalidDataError` a relaxed float would raise,
+    whether or not `x` has a current value.
     """
 
     class _IntegerDisc(Discipline):
@@ -412,7 +416,7 @@ def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline() -> Non
             return {"y": array([float(input_data["x"])])}
 
     design_space = DesignSpace()
-    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=value)
 
     scenario = create_scenario(
         [_IntegerDisc()],

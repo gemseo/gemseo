@@ -33,6 +33,7 @@ from gemseo.space.variable import BaseNumericVariable
 from gemseo.util._numpy import complex128_dtype
 from gemseo.util._numpy import float64_dtype
 from gemseo.util._numpy import get_common_dtype as _compute_common_dtype
+from gemseo.util._numpy import int64_dtype
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.string import pretty_str
 
@@ -222,8 +223,10 @@ class Value(RegistryDerivedData):
         """The common dtype of the current variable values.
 
         The dtype is derived and refreshed only when the variables or the
-        values changed. Without a complete current value, the default float
-        dtype is returned.
+        values changed. Without a complete current value, the dtype is derived
+        from the types of the variables: the integer dtype when the space is
+        not empty and every variable has integer coordinates, the float dtype
+        otherwise.
         """
         self._refresh("common_dtype")
         return self.__common_dtype
@@ -231,11 +234,15 @@ class Value(RegistryDerivedData):
     def _refresh_common_dtype(self) -> None:
         """Recompute the common dtype of the current variable values."""
         self.__update_status()
-        self.__common_dtype = (
-            _compute_common_dtype(self.__name_to_value.values())
-            if self.__has_value
-            else float64_dtype
-        )
+        if self.__has_value:
+            self.__common_dtype = _compute_common_dtype(self.__name_to_value.values())
+        elif self._variables and all(
+            variable.coordinate_type == int64_dtype
+            for variable in self._variables.values()
+        ):
+            self.__common_dtype = int64_dtype
+        else:
+            self.__common_dtype = float64_dtype
 
     def set(
         self,

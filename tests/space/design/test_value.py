@@ -29,6 +29,7 @@ from gemseo.space._design.integer_rounder import IntegerRounder
 from gemseo.space._design.normalizer import Normalizer
 from gemseo.space._design.value import Value
 from gemseo.space._design.variables import DesignVariables
+from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
@@ -82,6 +83,32 @@ def _resize(variables: DesignVariables, name: str, size: int) -> None:
 def value() -> Value:
     """A Value over a single real variable with bounds [0, 1]."""
     return _build_value("x")[1]
+
+
+@pytest.mark.parametrize(
+    ("variable_names", "expected"),
+    [
+        ((), float64),
+        (("integer",), int64),
+        (("categorical",), int64),
+        (("integer", "categorical"), int64),
+        (("integer", "real"), float64),
+        (("real",), float64),
+    ],
+)
+def test_common_dtype_without_value(variable_names, expected) -> None:
+    """Check that the common dtype without current value derives from the types."""
+    name_to_variable = {
+        "integer": IntegerVariable(size=1, lower_bound=-10, upper_bound=10),
+        "categorical": CategoricalVariable(categories=("a", "b")),
+        "real": RealVariable(size=1, lower_bound=0.0, upper_bound=1.0),
+    }
+    variables = DesignVariables()
+    for name in variable_names:
+        variables[name] = name_to_variable[name]
+    bounds = Bounds(variables)
+    normalizer = Normalizer(variables, bounds, IntegerRounder(variables))
+    assert Value(variables, bounds, normalizer).common_dtype == expected
 
 
 def test_set_variable_unknown_name(value, snapshot) -> None:
