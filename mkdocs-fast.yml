@@ -48,11 +48,11 @@ plugins:
       - docs/gen_ref_nav.py
       - docs/_scripts/credits.py
       - docs/_scripts/learning_paths.py
+      - docs/_scripts/global_configuration.py
   include-markdown: { }
   literate-nav:
     nav_file: SUMMARY.md
   macros: { }
-  markdown-exec: { }
   mike:
     canonical_version: latest
     # Gitlab pages expects the docs in this directory.
@@ -209,6 +209,7 @@ nav:
       - Multi-objective: generated/examples/howtos/multi_objective
       - Uncertainty: generated/examples/howtos/uncertainty
       - Ordinary differential equations: generated/examples/howtos/ode
+      - Global configuration: generated/examples/howtos/configuration
       - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/
