@@ -164,6 +164,12 @@ central settings package.
   `gemseo.settings` are derived from `modules:`); `classes:` is read too, but
   only its scalar entries (renamed class attributes and methods) — nested
   method-parameter blocks and `null` targets are for the external codemod only.
+  A `classes:` value that is the complete `gemseo.` dotted path of an object
+  (`Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`) is an
+  attribute moved out of its class: the runtime installs a read-only descriptor
+  resolving the old name to that object. An `attributes:` key of a class attribute
+  (`...sobol_analysis.SobolAnalysis.Method`, whose parent is another entry's key)
+  is skipped by the runtime, for the codemod only.
 - `aliases.py` computes the old→new tables from that file at import time.
 - `install()` registers a `MetaPathFinder` that redirects old imports, adds a module
   `__getattr__` when only a class was renamed, and sets data descriptors for renamed

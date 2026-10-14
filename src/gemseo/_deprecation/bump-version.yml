@@ -6,9 +6,16 @@
 # The `classes:` section is read at runtime too, but only its scalar entries (a
 # class's own renamed attributes and methods, and the dotted renamed attributes of a
 # class nested in it, e.g. `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`
-# for an enumeration member); the nested method-parameter blocks and the entries whose
-# target is `null` remain codemod-only. A `<new name> TODO <text>` scalar entry is read
-# as the rename to `<new name>`.
+# for an enumeration member); the nested method-parameter blocks, the YAML aliases
+# (`Foo: *anchor`, `<<: *anchor`), the expressions and the entries whose target is
+# `null` remain codemod-only. A scalar entry whose value is the complete `gemseo.`
+# dotted path of an object, e.g.
+# `Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, is an attribute
+# moved out of its class: the codemod replaces the attribute by the object, imported
+# from that path, and the runtime installs a read-only descriptor on the class
+# resolving the old name to the object, with a DeprecationWarning, provided the path
+# is in the module defining the class or in one of its parent packages. A
+# `<new name> TODO <text>` scalar entry is read as the rename to `<new name>`.
 
 # The `modules:` and `attributes:` sections below share the same syntax: each entry
 # is `old_qualified_name: new_qualified_name`, where the new value is always
@@ -62,7 +69,11 @@
 #
 # An `attributes:` key outside GEMSEO and its plugins (e.g. `strenum.StrEnum`, a
 # third-party name gemseo 6.3.2 required) is for the codemod only: the runtime never
-# sees the old name, since it only redirects the `gemseo` modules.
+# sees the old name, since it only redirects the `gemseo` modules. So is an
+# `attributes:` key of a class attribute, e.g.
+# `gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.Method`, whose parent
+# is the key of another entry: the runtime skips it, and aliases the attribute
+# through the `classes:` section instead.
 #
 # Some public 6.3.2 names are mapped to a private target (a path with a segment
 # starting with `_`, e.g. gemseo.post._engine.colormap): this is deliberate, for the
