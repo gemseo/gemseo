@@ -75,6 +75,26 @@
 # is the key of another entry: the runtime skips it, and aliases the attribute
 # through the `classes:` section instead.
 #
+# The `classes:` and `functions:` sections, which only the codemod reads in full,
+# also accept two forms in the rule of a parameter, i.e. in the nested block of a
+# method or a function, e.g. `__init__:`:
+# - `TODO[<guard>] <text>`, alone or ending what a ` TODO <text>` may end (`null`, a
+#   position, a new name or both), restricts the marking of the calls by the
+#   codemod: `[<Class>]` marks only a call whose argument for the parameter is of
+#   the class, `[!<Class>]` (e.g. `[!str]`, `[!Iterable]`) a call unless its argument
+#   is known to be of the class, and `[<param>.<field>]` (e.g.
+#   `[function.f_type]`) a call unless its argument for `<param>` is built in sight
+#   by a constructor leaving its `<field>` to the default; `<text>` follows the rules
+#   of a `TODO <text>` value.
+# - `IF[<Class>] <Entry>`, in the block of a constructor, gives a call passing an
+#   instance of `<Class>` for the parameter the `__init__` rules of the `classes:`
+#   entry `<Entry>`, the call then building that class, e.g. a DOEScenario over a
+#   ParameterSpace becoming an EvaluationScenario.
+# Both are codemod-only, and allowed only where the runtime does not read them, the
+# nested blocks: under `modules:` or `attributes:`, which are split on ` TODO `, not
+# on ` TODO[`, such a value would be checked as a new name and make `import gemseo`
+# fail.
+#
 # Some public 6.3.2 names are mapped to a private target (a path with a segment
 # starting with `_`, e.g. gemseo.post._engine.colormap): this is deliberate, for the
 # plugins that used these names, which may rely on private API.
