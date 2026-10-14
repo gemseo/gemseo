@@ -42,6 +42,9 @@ package; the rename map that also drives the external codemod):
   submodules, for the old packages that have no rename of their own and no longer exist
   in the tree, but whose submodules were renamed. They are derived from
   `module_renames`, not listed in the configuration.
+- `reexported_old_modules`: (last segment of an old module name, new module name) ->
+  the old module name, for the modules a package may re-export under their own name,
+  derived from `module_renames`, `attribute_renames` and `unmigrated_attributes`.
 - `class_attribute_renames`: class name -> {old attribute: new attribute}, from the
   `classes:` section, keyed by the class's current name (resolved through
   `attribute_renames` when the class itself was also renamed). An old attribute name
@@ -557,6 +560,35 @@ def _find_live_modules(
     )
 
 
+def _find_reexported_old_modules(
+    module_renames: Mapping[str, str], *module_names: Iterable[str]
+) -> MappingProxyType[tuple[str, str], str]:
+    """Find the old paths of the modules a package may re-export under their own name.
+
+    E.g. `gemseo.mda.base_parallel_mda_settings` for
+    `gemseo.base_parallel_mda_settings`, whose rule gives the new module of the former.
+
+    Args:
+        module_renames: The old module name -> new module name mapping.
+        *module_names: The fully-qualified old module names.
+
+    Returns:
+        The last segment of the old name of a module and its new name -> the only old
+        module of `module_names` that is so named and redirected; a pair matching
+        several old modules is left out.
+    """
+    old_modules: dict[tuple[str, str], set[str]] = {}
+    for names in module_names:
+        for old in names:
+            name = old.rpartition(".")[2]
+            new = _resolve(old, module_renames)
+            if new != old and name != old:
+                old_modules.setdefault((name, new), set()).add(old)
+    return MappingProxyType({
+        key: next(iter(olds)) for key, olds in old_modules.items() if len(olds) == 1
+    })
+
+
 def _build() -> tuple[
     Mapping[str, str],
     Mapping[str, Mapping[str, str]],
@@ -693,6 +725,19 @@ dissolved_packages: Final[Mapping[str, tuple[str, ...]]] = _find_dissolved_packa
 Old package name -> the ordered new locations of its former submodules. Derived from
 `module_renames`, used to import the old package itself as a stand-in through which its
 submodules are redirected.
+"""
+
+reexported_old_modules: Final[Mapping[tuple[str, str], str]] = (
+    _find_reexported_old_modules(
+        module_renames, module_renames, attribute_renames, unmigrated_attributes
+    )
+)
+"""The last segment of an old module name and its new name -> the old module name.
+
+For the modules a package may re-export under their own name, e.g.
+`gemseo.base_parallel_mda_settings`, whose old path is
+`gemseo.mda.base_parallel_mda_settings`. A pair matching several old modules is left
+out.
 """
 
 class_attribute_renames: Final[Mapping[str, Mapping[str, str]]] = _tables[3]

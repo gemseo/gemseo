@@ -406,17 +406,36 @@ def test_find_reexported_old_module(monkeypatch, module_renames, expected):
     """The old path of a re-exported module is the only one named and redirected so.
 
     Args:
-        monkeypatch: Fixture to patch the tables of the renames.
+        monkeypatch: Fixture to patch the table of the re-exported modules.
         module_renames: The old module name -> new module name mapping.
         expected: The expected old path.
     """
     from gemseo import _deprecation
+    from gemseo._deprecation import aliases
 
-    monkeypatch.setattr(_deprecation, "module_renames", module_renames)
-    monkeypatch.setattr(_deprecation, "attribute_renames", {})
-    monkeypatch.setattr(_deprecation, "unmigrated_attributes", {})
+    monkeypatch.setattr(
+        _deprecation,
+        "reexported_old_modules",
+        aliases._find_reexported_old_modules(module_renames, module_renames, {}),
+    )
 
     assert _deprecation._find_reexported_old_module("module", "gemseo.new") == expected
+
+
+def test_find_reexported_old_module_of_a_module_with_attribute_rules():
+    """The old path of a re-exported module may be that of a module of attributes."""
+    from gemseo._deprecation import aliases
+
+    old_modules = aliases._find_reexported_old_modules(
+        {"gemseo.old": "gemseo.new"},
+        {"gemseo.old": "gemseo.new"},
+        {"gemseo.old.module": {}, "gemseo.live.module": {}, "strenum": {}},
+    )
+
+    assert old_modules == {
+        ("old", "gemseo.new"): "gemseo.old",
+        ("module", "gemseo.new.module"): "gemseo.old.module",
+    }
 
 
 def test_renamed_attribute_to_a_module_not_imported_yet(monkeypatch):

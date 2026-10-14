@@ -90,6 +90,7 @@ from gemseo._deprecation.aliases import find_ancestor
 from gemseo._deprecation.aliases import live_aliased_modules
 from gemseo._deprecation.aliases import manual_migrations
 from gemseo._deprecation.aliases import module_renames
+from gemseo._deprecation.aliases import reexported_old_modules
 from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
@@ -320,20 +321,10 @@ def _find_reexported_old_module(name: str, new_module_name: str) -> str | None:
 
     Returns:
         The only old module with a rule that is named `name` and redirected to
-        `new_module_name`, or `None` if there is none or several.
+        `new_module_name`, or `None` if there is none or several (see
+        [reexported_old_modules][gemseo._deprecation.aliases.reexported_old_modules]).
     """
-    suffix = f".{name}"
-    old_module_names = {
-        old_module_name
-        for old_module_name in (
-            *module_renames,
-            *attribute_renames,
-            *unmigrated_attributes,
-        )
-        if old_module_name.endswith(suffix)
-        and _resolve_new_name(old_module_name) == new_module_name
-    }
-    return old_module_names.pop() if len(old_module_names) == 1 else None
+    return reexported_old_modules.get((name, new_module_name))
 
 
 def _get_new_object(
@@ -405,10 +396,10 @@ class _DeprecatedModule(ModuleType):
             try:
                 return getattr(target, name)
             except AttributeError:
-                # The target has the name but cannot resolve it,
+                # The target exports the name but cannot resolve it,
                 # e.g. a lazily re-exported name with a wrong location:
                 # its error tells why.
-                if name in dir(target):
+                if name in getattr(target, "__all__", ()):
                     raise
                 msg = f"module {self.__name__!r} has no attribute {name!r}"
                 raise AttributeError(msg) from None
