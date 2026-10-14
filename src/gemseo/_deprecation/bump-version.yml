@@ -2617,7 +2617,7 @@ classes:
   CallableParallelExecution:
     MULTI_PROCESSING_START_METHOD: multi_processing_start_method
     execute:
-      exec_callback: exec_callbacks
+      exec_callback: exec_callbacks TODO[!Iterable] exec_callbacks takes an iterable of callables only; wrap a single callable in a list, e.g. exec_callbacks=[callback]
 
   DirectoryCreator:
     __init__:
