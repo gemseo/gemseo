@@ -2006,6 +2006,30 @@ def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
     assert NewSobolAnalysis.Method is OwnMethod
 
 
+@pytest.mark.parametrize(
+    "old_name", ["_reset_x0_before_opt", "_set_x0_before_opt", "_set_bounds_before_opt"]
+)
+def test_renamed_instance_attribute_of_the_scenario_adapter_warns_and_resolves(
+    old_name,
+):
+    """The protected attributes of the scenario adapter resolve under their old names.
+
+    Their new names are set in `__init__` only, and declared on the class.
+
+    Args:
+        old_name: The old name of the attribute.
+    """
+    from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
+
+    new_name = old_name.replace("_opt", "_exec")
+    adapter = MDOScenarioAdapter.__new__(MDOScenarioAdapter)
+    setattr(adapter, new_name, True)
+    with pytest.warns(DeprecationWarning, match=f"'{old_name}'"):
+        old_value = getattr(adapter, old_name)
+
+    assert old_value is True
+
+
 def test_renamed_class_attribute_skips_an_unrelated_class_of_the_same_name():
     """A `classes:` entry is not applied to a different class sharing its name.
 
