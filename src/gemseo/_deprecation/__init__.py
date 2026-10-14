@@ -40,7 +40,10 @@ old name (e.g. `OLD = value` in the class statement) is remapped to the new name
 old name of an enumeration member is also resolved by the lookup by name, e.g.
 `Enum["OLD"]`, but is not listed among the members. A dotted entry, e.g.
 `DifferentiationMethod.USER_GRAD`, aliases the attribute of a class nested in the
-class, e.g. the member of an enumeration.
+class, e.g. the member of an enumeration. An entry whose new name is the complete
+dotted path of an object, e.g.
+`gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod` for the `Method` of
+`SobolAnalysis`, aliases an attribute moved out of the class to that object.
 The one path this does not cover is an assignment on the class object itself after
 it is defined, e.g. `Cls.OLD = value` or `monkeypatch.setattr(Cls, "OLD", ...)`: this
 silently shadows the descriptor instead of going through it, so patch the new name
@@ -87,6 +90,7 @@ from gemseo._deprecation.aliases import attribute_renames
 from gemseo._deprecation.aliases import class_attribute_renames
 from gemseo._deprecation.aliases import dissolved_packages
 from gemseo._deprecation.aliases import find_ancestor
+from gemseo._deprecation.aliases import is_moved_class_attribute
 from gemseo._deprecation.aliases import live_aliased_modules
 from gemseo._deprecation.aliases import manual_migrations
 from gemseo._deprecation.aliases import module_renames
@@ -597,6 +601,27 @@ class _RenamedClassAttribute:
         setattr(instance, self._new_name, value)
 
 
+class _MovedClassAttribute(_RenamedClassAttribute):
+    """A data descriptor resolving the old name of a class attribute moved elsewhere.
+
+    The new name is the complete dotted path of the object the attribute moved to,
+    e.g. a nested enumeration made a module-level class, whose module is imported on
+    access only.
+    """
+
+    def __get__(self, instance: Any, owner: type | None = None) -> Any:
+        _warn_class_attribute_rename(self._class_name, self._old_name, self._new_name)
+        module_name, _, name = self._new_name.rpartition(".")
+        return getattr(import_module(module_name), name)
+
+    def __set__(self, instance: Any, value: Any) -> None:
+        msg = (
+            f"The attribute {self._old_name!r} of the class {self._class_name!r} "
+            f"moved to {self._new_name!r} and cannot be set."
+        )
+        raise AttributeError(msg)
+
+
 # A dict, as the enumeration's own member map, not a slower UserDict.
 class _AliasingMemberMap(dict[str, Enum]):  # noqa: FURB189
     """The member map of an enumeration, resolving the old names of renamed members.
@@ -639,6 +664,12 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
     tells apart a `classes:` table entry meant for `cls` from one that was written
     for an unrelated class that merely happens to share `cls`'s name.
 
+    An attribute moved out of the class, whose name is the complete dotted path of
+    an object (see
+    [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]),
+    counts as declared when the object is in the module defining the class, without
+    importing it.
+
     Args:
         cls: The class to inspect.
         name: The attribute name to look for.
@@ -646,6 +677,8 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
     Returns:
         Whether `cls` declares `name`.
     """
+    if is_moved_class_attribute(name):
+        return name.rpartition(".")[0] == cls.__module__
     with warnings.catch_warnings():
         # Only checking declaration, not a real access to the name; guarded all the
         # same so a warning raised by some unrelated custom `__getattr__` cannot be
@@ -725,7 +758,12 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
         if old_name_is_live:
             # The old name is still live: a stale table entry must not shadow it.
             continue
-        setattr(cls, old_name, _RenamedClassAttribute(cls.__name__, old_name, new_name))
+        descriptor_class = (
+            _MovedClassAttribute
+            if is_moved_class_attribute(new_name)
+            else _RenamedClassAttribute
+        )
+        setattr(cls, old_name, descriptor_class(cls.__name__, old_name, new_name))
 
     if member_renames:
         member_map = cls._member_map_  # type: ignore[attr-defined]
@@ -748,7 +786,13 @@ def _chain_init_subclass(cls: type, renames: Mapping[str, str]) -> None:
     def __init_subclass__(subclass: type, **kwargs: Any) -> None:  # noqa: N807
         subclass_vars = vars(subclass)
         for old_name, new_name in renames.items():
-            if old_name in subclass_vars and new_name not in subclass_vars:
+            # A subclass binding the old name of an attribute moved out of the class
+            # defines an attribute of its own.
+            if (
+                old_name in subclass_vars
+                and new_name not in subclass_vars
+                and not is_moved_class_attribute(new_name)
+            ):
                 _warn_class_attribute_rename(cls.__name__, old_name, new_name)
                 setattr(subclass, new_name, subclass_vars[old_name])
         if previous is not None:

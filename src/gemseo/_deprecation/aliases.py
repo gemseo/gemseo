@@ -20,7 +20,10 @@ package; the rename map that also drives the external codemod):
 - `module_renames`: old fully-qualified module (or package) name -> new one, fully
   resolved (ancestor package renames applied), from the `modules:` section.
 - `attribute_renames`: old module fully-qualified name -> {old attribute: new
-  attribute}, from the `attributes:` entries that rename a name.
+  attribute}, from the `attributes:` entries that rename a name. An entry of an
+  attribute of a class, e.g. `gemseo.x.module.Class.Method`, whose parent is the old
+  name of another entry, is left out of every table of the `attributes:` section; the
+  `classes:` section aliases it.
 - `attribute_renames` and `module_renames` also hold the entries whose value is
   `<new name> TODO <text>`: a rename to `<new name>`, like the plain one, which the
   external codemod also marks with `<text>`; the runtime ignores the text.
@@ -49,7 +52,11 @@ package; the rename map that also drives the external codemod):
   `classes:` section, keyed by the class's current name (resolved through
   `attribute_renames` when the class itself was also renamed). An old attribute name
   may be dotted, e.g. `DifferentiationMethod.USER_GRAD`, for the renamed attribute of
-  a class nested in the class, e.g. a member of an enumeration.
+  a class nested in the class, e.g. a member of an enumeration. A new attribute name
+  may be the complete dotted path of a GEMSEO object, e.g.
+  `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, for an attribute moved
+  out of the class (see
+  [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]).
 
 Accumulation across releases is achieved by keeping the old entries in
 `bump-version.yml` until their scheduled removal.
@@ -406,7 +413,10 @@ def _is_aliasable_class_entry(old_name: str, new_name: str) -> bool:
     Either both names are plain identifiers, for an attribute of the class itself, or
     both are dotted paths of identifiers differing only by their last segment, for an
     attribute of a class nested in the class, e.g. the member of an enumeration:
-    `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`.
+    `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`, or the old name is a
+    plain identifier and the new one the complete dotted path of a GEMSEO object, for
+    an attribute moved out of the class, e.g. a nested enumeration made a module-level
+    class: `Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`.
 
     Args:
         old_name: The old name of the attribute.
@@ -415,11 +425,27 @@ def _is_aliasable_class_entry(old_name: str, new_name: str) -> bool:
     Returns:
         Whether the entry is an aliasable rename.
     """
+    if is_moved_class_attribute(new_name):
+        return old_name.isidentifier()
     old_path = old_name.split(".")
     new_path = new_name.split(".")
     return old_path[:-1] == new_path[:-1] and all(
         segment.isidentifier() for segment in (*old_path, new_path[-1])
     )
+
+
+def is_moved_class_attribute(new_name: str) -> bool:
+    """Return whether the new name of a class attribute is that of an object.
+
+    Args:
+        new_name: The new name of the class attribute, from the `classes:` section.
+
+    Returns:
+        Whether `new_name` is the complete dotted path of a GEMSEO object, e.g.
+        `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, rather than the
+        name of an attribute of the class.
+    """
+    return new_name.startswith(_package_prefix) and _is_dotted(new_name)
 
 
 def _find_dissolved_packages(
@@ -624,7 +650,16 @@ def _build() -> tuple[
         if new != old:
             module_renames[old] = new
 
+    # An entry whose parent is the old name of another entry, e.g.
+    # `gemseo.x.module.Class.Method`, is that of an attribute of a class, not of a
+    # module: the runtime aliases it through the `classes:` section instead, as the
+    # module of the class cannot be told apart from the class in its old name.
     all_attribute_entries = _parse_section(text, "attributes")
+    all_attribute_entries = {
+        old: value
+        for old, value in all_attribute_entries.items()
+        if _parent(old) not in all_attribute_entries
+    }
     manual_entries = {
         old: todo_text
         for old, value in all_attribute_entries.items()

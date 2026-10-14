@@ -1929,6 +1929,83 @@ def test_renamed_protected_class_attribute_warns_and_resolves():
     assert old_value is Serializable._attr_not_to_serialize
 
 
+@pytest.mark.parametrize(
+    ("old_module_name", "class_name", "new_module_name"),
+    [
+        ("correlation_analysis", "CorrelationAnalysis", "correlation"),
+        ("hsic_analysis", "HSICAnalysis", "hsic"),
+        ("morris_analysis", "MorrisAnalysis", "morris"),
+        ("sobol_analysis", "SobolAnalysis", "sobol"),
+    ],
+)
+def test_class_attribute_moved_out_of_its_class_warns_and_resolves(
+    old_module_name, class_name, new_module_name
+):
+    """The nested enumeration moved out of its class resolves through the class.
+
+    Args:
+        old_module_name: The name of the old module of the class.
+        class_name: The name of the class.
+        new_module_name: The name of the module of the class and its enumeration.
+    """
+    package_name = "gemseo.uncertainty.sensitivity"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        cls = getattr(
+            importlib.import_module(f"{package_name}.{old_module_name}"), class_name
+        )
+    new_module = importlib.import_module(f"{package_name}.{new_module_name}")
+
+    with pytest.warns(DeprecationWarning, match="'Method' of the class") as records:
+        old_value = cls.Method
+
+    assert old_value is getattr(new_module, f"{class_name}Method")
+    assert str(records[0].message).endswith(
+        f"use '{package_name}.{new_module_name}.{class_name}Method' instead."
+    )
+
+
+def test_class_attribute_moved_out_of_its_class_resolves_through_an_instance():
+    """The nested enumeration moved out of its class resolves through an instance."""
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
+
+    analysis = SobolAnalysis.__new__(SobolAnalysis)
+    with pytest.warns(DeprecationWarning, match="'Method'"):
+        old_value = analysis.Method
+
+    assert old_value is SobolAnalysisMethod
+
+
+def test_class_attribute_moved_out_of_its_class_cannot_be_set(snapshot):
+    """The old name of an attribute moved out of its class cannot be set.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+
+    analysis = SobolAnalysis.__new__(SobolAnalysis)
+    with assert_exception(AttributeError, snapshot):
+        analysis.Method = None
+
+
+def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
+    """A subclass body binding the old name of a moved attribute keeps its own."""
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+
+    class OwnMethod(StrEnum):
+        FIRST = "first"
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+
+        class NewSobolAnalysis(SobolAnalysis):
+            Method = OwnMethod
+
+    assert NewSobolAnalysis.Method is OwnMethod
+
+
 def test_renamed_class_attribute_skips_an_unrelated_class_of_the_same_name():
     """A `classes:` entry is not applied to a different class sharing its name.
 

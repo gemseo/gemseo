@@ -341,6 +341,43 @@ def test_build_checks_the_head_of_a_rename_and_todo_value(
         aliases._build()
 
 
+def test_build_leaves_out_the_attribute_entries_of_a_class(tmp_path, monkeypatch):
+    """`_build` leaves out of the module tables an `attributes:` entry of a class.
+
+    Such an entry is aliased through the `classes:` section instead, and is not the
+    rename of a class which this section is keyed on.
+
+    Args:
+        tmp_path: Fixture giving a temporary directory for the configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_path / "bump-version.yml"
+    config.write_text(
+        "attributes:\n"
+        "  gemseo.old_pkg.Cls.Method: gemseo.new_pkg.ClsMethod\n"
+        "  gemseo.old_pkg.Cls.Gone: null\n"
+        "  gemseo.old_pkg.Cls: gemseo.new_pkg.Cls\n"
+        "classes:\n"
+        "  Cls:\n"
+        "    Method: gemseo.new_pkg.ClsMethod\n"
+        "  Method:\n"
+        "    OLD: new\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    _, attribute_renames, _, class_attribute_renames, _, removed_attributes = (
+        aliases._build()
+    )
+
+    assert attribute_renames == {"gemseo.old_pkg": {"Cls": "gemseo.new_pkg.Cls"}}
+    assert not removed_attributes
+    assert class_attribute_renames == {
+        "Cls": {"Method": "gemseo.new_pkg.ClsMethod"},
+        "Method": {"OLD": "new"},
+    }
+
+
 def test_build_does_not_rename_a_todo_value(tmp_path, monkeypatch):
     """`_build` reads a `TODO <text>` value of `attributes:` as a manual migration.
 
@@ -788,6 +825,23 @@ def test_parse_classes_section_keeps_renames_of_nested_classes():
         "    Enum.BAD: Enum.not an identifier\n"
     )
     assert aliases._parse_classes_section(text) == {"Foo": {"Enum.OLD": "Enum.NEW"}}
+
+
+def test_parse_classes_section_keeps_attributes_moved_out_of_their_class():
+    """An entry whose new name is the complete path of a GEMSEO object is kept.
+
+    Its old name must be an identifier.
+    """
+    text = (
+        "classes:\n"
+        "  Foo:\n"
+        "    Method: gemseo.x.FooMethod\n"
+        "    Enum.OLD: gemseo.x.FooMethod\n"
+        "    Other: enum.StrEnum\n"
+    )
+    assert aliases._parse_classes_section(text) == {
+        "Foo": {"Method": "gemseo.x.FooMethod"}
+    }
 
 
 def test_parse_classes_section_drops_null_targets():

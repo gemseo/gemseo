@@ -11,6 +11,9 @@
 # name: test_attribute_renamed_to_a_missing_plugin_raises_when_imported_from_its_module[stand-in]
   "The attribute 'Old' of the module 'gemseo.fake_old_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
 # ---
+# name: test_class_attribute_moved_out_of_its_class_cannot_be_set
+  "The attribute 'Method' of the class 'SobolAnalysis' moved to 'gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod' and cannot be set."
+# ---
 # name: test_dissolved_package_unknown_attribute
   "module 'gemseo.settings' has no attribute 'does_not_exist'"
 # ---
