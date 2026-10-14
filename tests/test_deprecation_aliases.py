@@ -323,7 +323,7 @@ def test_build_renames_a_rename_and_todo_value(tmp_path, monkeypatch):
     ids=["module-relative", "module-third-party", "attribute-relative"],
 )
 def test_build_checks_the_head_of_a_rename_and_todo_value(
-    section, value, tmp_path, monkeypatch
+    section, value, tmp_path, monkeypatch, snapshot
 ):
     """`_build` rejects a `<new name> TODO <text>` value whose new name is invalid.
 
@@ -332,12 +332,13 @@ def test_build_checks_the_head_of_a_rename_and_todo_value(
         value: The rule value.
         tmp_path: Fixture giving a temporary directory for the configuration.
         monkeypatch: Fixture to patch the path of the configuration.
+        snapshot: Fixture to compare the error message with a snapshot.
     """
     config = tmp_path / "bump-version.yml"
     config.write_text(f"{section}:\n  gemseo.a.b: {value}\n", encoding="utf-8")
     monkeypatch.setattr(aliases, "_config_path", config)
 
-    with pytest.raises(ValueError, match="must be the complete new dotted path"):
+    with assert_exception(ValueError, snapshot):
         aliases._build()
 
 
