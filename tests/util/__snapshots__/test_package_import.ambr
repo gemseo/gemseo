@@ -23,6 +23,12 @@
 # name: test_from_import_module_import_error[Typo-ModuleNotFoundError]
   "No module named 'lazy_tmp_pkg.typo'"
 # ---
+# name: test_from_import_through_third_party_wrapper[marked]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_through_third_party_wrapper[unmarked]
+  "cannot import name 'Missing' from 'fake_lazy_pkg' (unknown location)"
+# ---
 # name: test_module_import_error_propagates[Broken-AttributeError]
   'Raised while importing broken.'
 # ---

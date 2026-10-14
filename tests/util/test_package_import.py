@@ -238,7 +238,9 @@ def test_deprecated_module_unknown_name(deprecated_module, snapshot) -> None:
 
 
 @pytest.mark.parametrize("marked", [False, True], ids=["unmarked", "marked"])
-def test_from_import_through_third_party_wrapper(fake_package, marked) -> None:
+def test_from_import_through_third_party_wrapper(
+    fake_package, marked, snapshot
+) -> None:
     """Check that a wrapper module setting the marker is seen through.
 
     Without the marker, the frame of the wrapper is taken for the one looking the
@@ -256,7 +258,7 @@ def test_from_import_through_third_party_wrapper(fake_package, marked) -> None:
     )
     fake_package.__getattr__ = wrapper.wrap(fake_package.__getattr__)
 
-    with pytest.raises(ImportError) as exc_info:
+    with assert_exception(ImportError, snapshot) as exc_info:
         from fake_lazy_pkg import Missing  # noqa: F401
 
     assert isinstance(exc_info.value.__cause__, AttributeError) is marked
