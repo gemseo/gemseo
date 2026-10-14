@@ -33,9 +33,11 @@ package; the rename map that also drives the external codemod):
   migrate by hand, e.g. `use gemseo.x.New instead`, which ends the message of the error
   raised for the old name.
 - `removed_modules`: the old fully-qualified names of the modules (and packages)
-  removed with no replacement, the `modules:` entries whose value is `null`.
+  removed with no replacement, the `modules:` entries whose value is `null`, or
+  `null TODO <text>`, the text being for the external codemod only.
 - `removed_attributes`: old module fully-qualified name -> its attributes removed with
-  no replacement, the `attributes:` entries whose value is `null`.
+  no replacement, the `attributes:` entries whose value is `null`, or
+  `null TODO <text>`.
 - `unmigrated_attributes`: old module fully-qualified name -> its attributes that raise
   instead of resolving, those of `removed_attributes` and `manual_migrations`.
 - `live_aliased_modules`: the modules of `attribute_renames`, `removed_attributes` and
@@ -633,15 +635,16 @@ def _build() -> tuple[
     """
     text = _config_path.read_text(encoding="utf-8")
 
-    module_entries = _parse_section(text, "modules")
+    # The `TODO <text>` tail of a value is cut first, so that a `null TODO <text>`
+    # value is a removal like `null`.
+    module_entries = {
+        old: _split_rename_todo(value)
+        for old, value in _parse_section(text, "modules").items()
+    }
     removed_modules = frozenset(
         old for old, value in module_entries.items() if value == _removed
     )
-    raw = {
-        old: _split_rename_todo(value)
-        for old, value in module_entries.items()
-        if value != _removed
-    }
+    raw = {old: value for old, value in module_entries.items() if value != _removed}
     for old, value in raw.items():
         _check_rule_value("modules", old, value)
     module_renames: dict[str, str] = {}
@@ -656,7 +659,7 @@ def _build() -> tuple[
     # module of the class cannot be told apart from the class in its old name.
     all_attribute_entries = _parse_section(text, "attributes")
     all_attribute_entries = {
-        old: value
+        old: _split_rename_todo(value)
         for old, value in all_attribute_entries.items()
         if _parent(old) not in all_attribute_entries
     }
@@ -667,7 +670,7 @@ def _build() -> tuple[
     }
     # Neither a removal nor a manual migration is a rename.
     attribute_entries = {
-        old: _split_rename_todo(value)
+        old: value
         for old, value in all_attribute_entries.items()
         if value != _removed and old not in manual_entries
     }

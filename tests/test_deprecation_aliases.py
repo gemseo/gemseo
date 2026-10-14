@@ -341,6 +341,39 @@ def test_build_checks_the_head_of_a_rename_and_todo_value(
         aliases._build()
 
 
+def test_build_removes_a_null_and_todo_value(tmp_path, monkeypatch):
+    """`_build` reads a `null TODO <text>` value as a removal, in both sections.
+
+    Args:
+        tmp_path: Fixture giving a temporary directory for the configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_path / "bump-version.yml"
+    config.write_text(
+        "modules:\n"
+        "  gemseo.old_pkg: null TODO use another package\n"
+        "attributes:\n"
+        "  gemseo.other_pkg.Old: null TODO use another class\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    (
+        module_renames,
+        attribute_renames,
+        manual_migrations,
+        _,
+        removed_modules,
+        removed_attributes,
+    ) = aliases._build()
+
+    assert removed_modules == {"gemseo.old_pkg"}
+    assert removed_attributes == {"gemseo.other_pkg": {"Old"}}
+    assert not module_renames
+    assert not attribute_renames
+    assert not manual_migrations
+
+
 def test_build_leaves_out_the_attribute_entries_of_a_class(tmp_path, monkeypatch):
     """`_build` leaves out of the module tables an `attributes:` entry of a class.
 
