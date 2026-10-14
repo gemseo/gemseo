@@ -2007,6 +2007,42 @@ def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
 
 
 @pytest.mark.parametrize(
+    ("class_module_name", "new_name", "expected"),
+    [
+        ("gemseo.fake_package.module", "gemseo.fake_package.module.Method", True),
+        # A package re-exporting the object.
+        ("gemseo.fake_package.module", "gemseo.fake_package.Method", True),
+        ("gemseo.fake_package.module", "gemseo.Method", True),
+        # A homonym class of another package.
+        ("gemseo.fake_package.module", "gemseo.other_package.Method", False),
+        ("gemseo.fake_package.module", "gemseo.fake_package.module_2.Method", False),
+        ("gemseo.fake_package.module", "gemseo.fake_package.module.sub.Method", False),
+    ],
+)
+def test_attribute_moved_out_of_its_class_is_declared_by_its_module_or_package(
+    class_module_name, new_name, expected
+):
+    """An attribute moved out of a class is aliased when its path is the class's.
+
+    The path of the object is that of the module of the class or of one of its parent
+    packages.
+
+    Args:
+        class_module_name: The name of the module defining the class.
+        new_name: The complete dotted path of the object.
+        expected: Whether the attribute is aliased on the class.
+    """
+    from gemseo._deprecation import _alias_class_attributes
+    from gemseo._deprecation import _MovedClassAttribute
+
+    cls = type("Analysis", (), {"__module__": class_module_name})
+
+    _alias_class_attributes(cls, {"Method": new_name})
+
+    assert isinstance(cls.__dict__.get("Method"), _MovedClassAttribute) is expected
+
+
+@pytest.mark.parametrize(
     "old_name", ["_reset_x0_before_opt", "_set_x0_before_opt", "_set_bounds_before_opt"]
 )
 def test_renamed_instance_attribute_of_the_scenario_adapter_warns_and_resolves(

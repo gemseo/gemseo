@@ -667,8 +667,10 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
     An attribute moved out of the class, whose name is the complete dotted path of
     an object (see
     [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]),
-    counts as declared when the object is in the module defining the class, without
-    importing it.
+    counts as declared when the path of the object is in the module defining the
+    class or in one of its parent packages, e.g. one re-exporting the object; neither
+    the object nor its module is imported, and whether the object exists there is not
+    checked.
 
     Args:
         cls: The class to inspect.
@@ -678,7 +680,10 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
         Whether `cls` declares `name`.
     """
     if is_moved_class_attribute(name):
-        return name.rpartition(".")[0] == cls.__module__
+        object_module_name = name.rpartition(".")[0]
+        return cls.__module__ == object_module_name or cls.__module__.startswith(
+            f"{object_module_name}."
+        )
     with warnings.catch_warnings():
         # Only checking declaration, not a real access to the name; guarded all the
         # same so a warning raised by some unrelated custom `__getattr__` cannot be
