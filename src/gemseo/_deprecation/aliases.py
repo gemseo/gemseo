@@ -380,7 +380,9 @@ def _parse_classes_section(text: str) -> dict[str, dict[str, str]]:
       instead, so that the entries following it are not misattributed.
     - A line indented exactly 4 spaces of the form `old_name: new_name` is an
       attribute rename for the current class, unless there is none, and the entry is
-      aliasable (see
+      aliasable, once a `TODO <text>` tail of `new_name` is cut, as for the other
+      sections (see
+      [_split_rename_todo][gemseo._deprecation.aliases._split_rename_todo]; see
       [_is_aliasable_class_entry][gemseo._deprecation.aliases._is_aliasable_class_entry];
       a YAML anchor or alias reference, and a codemod-only value-conversion note, are
       not, and are dropped like a removal is).
@@ -420,7 +422,7 @@ def _parse_classes_section(text: str) -> dict[str, dict[str, str]]:
             continue
         old_name, _, value = stripped.partition(":")
         old_name = old_name.strip()
-        value = value.strip()
+        value = _split_rename_todo(value.strip())
         if value == _removed or not _is_aliasable_class_entry(old_name, value):
             continue
         current[old_name] = value

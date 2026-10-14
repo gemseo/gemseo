@@ -7,7 +7,8 @@
 # class's own renamed attributes and methods, and the dotted renamed attributes of a
 # class nested in it, e.g. `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`
 # for an enumeration member); the nested method-parameter blocks and the entries whose
-# target is `null` remain codemod-only.
+# target is `null` remain codemod-only. A `<new name> TODO <text>` scalar entry is read
+# as the rename to `<new name>`.
 
 # The `modules:` and `attributes:` sections below share the same syntax: each entry
 # is `old_qualified_name: new_qualified_name`, where the new value is always

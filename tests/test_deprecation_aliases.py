@@ -886,6 +886,21 @@ def test_parse_classes_section_keeps_attributes_moved_out_of_their_class():
     }
 
 
+def test_parse_classes_section_keeps_a_rename_and_todo_value():
+    """An entry `old: new TODO <text>` is the rename to `new`, as in the other sections.
+
+    A `TODO <text>` entry, and a `TODO[<guard>] <text>` one, are not renames.
+    """
+    text = (
+        "classes:\n"
+        "  Foo:\n"
+        "    OLD: new TODO check the values\n"
+        "    MANUAL: TODO use other instead\n"
+        "    GUARDED: new TODO[!str] check the values\n"
+    )
+    assert aliases._parse_classes_section(text) == {"Foo": {"OLD": "new"}}
+
+
 def test_ot_parametric_statistics_gets_only_the_enumerations_of_the_fitter():
     """`OTParametricStatistics` shares the enumerations of `OTDistributionFitter`.
 
