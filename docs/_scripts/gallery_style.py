@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
 _ink = "#7f7f7f"
@@ -72,7 +73,7 @@ both backgrounds, and re-mapping a colormap would change what a figure means.
 """
 
 
-def reset_style(gallery_conf: dict[str, Any], fname: Path) -> None:
+def reset_style(gallery_conf: Mapping[str, Any], fname: Path) -> None:
     """Apply the scheme-neutral style, undoing the ``plt.rcdefaults()`` of the gallery.
 
     Args:

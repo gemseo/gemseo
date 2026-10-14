@@ -64,9 +64,13 @@ def _patch_gallery():
     from mkdocs_gallery.scrapers import _reset_dict
 
     sys.path.append(str(file_dir_path / "_scripts"))
+    import gallery_configuration
     import gallery_logging
     import gallery_style
 
+    _reset_dict["gallery_configuration.reset_configuration"] = (
+        gallery_configuration.reset_configuration
+    )
     _reset_dict["gallery_logging.reset_logging"] = gallery_logging.reset_logging
     _reset_dict["gallery_style.reset_style"] = gallery_style.reset_style
 
@@ -355,7 +359,13 @@ conf = {
     # As a precaution, keep the already defined reset modules.
     # `gallery_style.reset_style` must come after the built-in "matplotlib" one,
     # which resets the rcParams to their defaults.
+    # `gallery_configuration.reset_configuration` must come before
+    # `gallery_logging.reset_logging`, which routes the GEMSEO logs to the gallery.
     "reset_modules": DEFAULT_GALLERY_CONF["reset_modules"]
-    + ("gallery_logging.reset_logging", "gallery_style.reset_style"),
+    + (
+        "gallery_configuration.reset_configuration",
+        "gallery_logging.reset_logging",
+        "gallery_style.reset_style",
+    ),
     "within_subsection_order": _LeakyLastSortKey,
 }

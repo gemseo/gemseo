@@ -258,6 +258,7 @@ iteration, execution time and objective value.""",
         description="""Whether to record the evaluations of a run
 a second time, in the coordinates the algorithm works on,
 which a driver leaves in the `working_database` of the problem.
+
 This is a debugging aid: nothing of GEMSEO reads that store,
 and a run gives the same results whether it is enabled or not.
 An algorithm building sub-problems and handing them to a sub-driver

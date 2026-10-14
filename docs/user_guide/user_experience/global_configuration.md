@@ -1,7 +1,7 @@
 ---
 reading_time: true
 complexity: intermediate
-description: ""
+description: "The global configuration of GEMSEO: what each option changes, the fast mode, and where the values come from."
 tags: ['user_guide']
 search:
   boost: 2
@@ -18,59 +18,121 @@ search:
 
 # Global configuration { #concept-global-configuration }
 
-## Introduction { #concept-introduction }
+GEMSEO offers options to change the behaviour of various features.
+This global configuration can be accessed via `gemseo.configuration`,
+an instance of [GlobalConfiguration][gemseo.util.global_configuration.GlobalConfiguration].
 
-The logging configuration applies to GEMSEO and its plugins only (any logger whose name starts with `gemseo_`).
-By default, it does not configure the root logger nor the loggers of client code or third-party libraries,
-in line with the [Python recommendation for library logging](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
-To see logs from your own code, configure your own loggers, for instance with [`logging.basicConfig`](https://docs.python.org/3/library/logging.html#logging.basicConfig),
-or set `logging.configure_root_logger = True` to let GEMSEO configure the root logger as well.
-Once enabled, it cannot be disabled for the rest of the process.
+The following sections describe these options.
 
-## Default configuration { #concept-default-configuration }
+## Disciplines { #global-configuration-disciplines }
 
-<!-- TODO: replace by automatic print of pydantic model. -->
+`enable_discipline_cache` sets the default cache type of the disciplines.
+`True` gives a simple cache, `False` no cache.
+A discipline chooses its cache when it is created.
+A discipline created before the change keeps its cache.
+This option does not apply to the MDAs.
+They keep a simple cache by default.
+See [Cache][concept-cache] for more details.
 
-- `check_desvars_bounds`, default: `True` - Whether to check the membership of design variables in the bounds when evaluating the functions in [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem].
-- `enable_discipline_cache`, default: `True` - Whether to enable the discipline cache.
-- `enable_discipline_statistics`, default: `False` - Whether to record execution statistics of the disciplines such as the execution time, the number of executions and the number of linearizations.
-- `enable_discipline_status`, default: `False` - Whether to enable discipline statuses.
-- `enable_function_statistics`, default: `False` - Whether to record the statistics attached to the functions, in charge of counting their number of evaluations.
-- `enable_parallel_execution`, default: `True` - Whether to let GEMSEO use parallelism (multi-processing or multi-threading) by default. When `False`, the default number of threads/processes of the parallel MDAs, of [ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain] and of [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution] is 1.
-- `enable_progress_bar`, default: `True` - Whether to enable the progress bar attached to the drivers, in charge to log the execution of the process: iteration, execution time and objective value.
-- `enable_working_database`, default: `False` - Whether to record the evaluations of a run a second time, in the coordinates the algorithm works on, which a driver leaves in the `working_database` of the problem. This is a debugging aid: nothing of GEMSEO reads that store, and a run gives the same results whether it is enabled or not. An algorithm building sub-problems and handing them to a sub-driver leaves it at `None`, working in the coordinates you declared itself. It is written by the process performing the evaluation, so a parallel run records the evaluations of its own process only.
-- `logging`, default: enabled - The logging configuration of type [LoggingConfiguration][gemseo.util.logging.LoggingConfiguration]; use `logging.enable = False` to disable logging.
-- `validate_input_data`, default: `True` - Whether to validate the input data of a discipline before execution.
-- `validate_output_data`, default: `True` - Whether to validate the output data of a discipline after execution.
-- `directory_manager`, default: disabled - The directory manager configuration; use `settings.enable = True` to enable the directory manager. Once enabled, it cannot be disabled for the rest of the process.
+`validate_input_data` sets whether a discipline checks its input data
+against its input grammar before execution.
+`validate_output_data` does the same for the output data after execution.
+They are read at each execution,
+so they also apply to the disciplines already created.
+Without validation,
+an input of a wrong type reaches the discipline unchecked.
+The discipline may then fail with a less explicit error.
 
-## Changing configuration { #concept-changing-configuration }
+`enable_discipline_status` sets whether the disciplines record their execution status.
+`enable_discipline_statistics` sets whether they record their execution statistics:
+number of executions, number of linearizations and execution time.
+Both are read at each execution.
 
-<!-- TODO: make howtos -->
+!!! how-to
+    - [Count the executions of disciplines and the evaluations of functions][]
 
-The global configuration can be changed in different ways that are detailed below.
+## Problems, functions and drivers { #global-configuration-problems }
 
-### Python { #concept-python }
+`check_desvars_bounds` sets whether an
+[EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem]
+checks that the design variables are within their bounds
+when it evaluates its functions.
+It also applies to the problems already created.
 
-The global configuration can be changed with the `gemseo.configuration` variable, e.g.,
+`enable_working_database` sets whether a driver records the evaluations of a run a second time.
+This second record uses the coordinates the algorithm works on.
+It is stored in the `working_database` of the problem.
+It is a debugging aid: nothing of GEMSEO reads it,
+and a run gives the same results with or without it.
+An algorithm building sub-problems and handing them to a sub-driver leaves it at `None`.
+It is written by the process performing the evaluation,
+so a parallel run records the evaluations of its own process only.
+See [Database][concept-database] for more details.
 
-```python
-from gemseo import configuration
+`enable_function_statistics` sets whether the functions of a problem
+count their evaluations.
 
-configuration.validate_input_data = False
-configuration.validate_output_data = False
-configuration.logging.enable = False
-```
+`enable_progress_bar` sets whether the drivers log a progress bar.
+The drivers include the optimizers and the samplers.
+The progress bar is shown only when logging is enabled.
+The setting `enable_progress_bar` of a driver takes precedence over this option.
 
-You can also use the fast mode, suitable for inexpensive disciplines:
+!!! how-to
+    - [Evaluate the functions outside the bounds of the design space][]
+    - [Record the evaluations in the coordinates of the algorithm][]
 
-```python
-from gemseo import configuration
+## Parallel execution { #global-configuration-parallel-execution }
 
-configuration.enable_fast_mode()
-```
+`enable_parallel_execution` sets whether GEMSEO uses
+multi-processing or multi-threading by default.
+When `False`,
+the default number of threads or processes is 1 for the parallel MDAs,
+[ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain]
+and
+[CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution].
+An MDA created before the change keeps its number of processes.
 
-This disables the options that cost time at every evaluation:
+!!! how-to
+    - [Disable the parallel execution][]
+
+## Logging { #global-configuration-logging }
+
+The `logging` option groups the settings of the GEMSEO loggers:
+level, message and date formats, log file and file mode.
+`logging.enable = False` disables the GEMSEO logs.
+
+These settings apply to the logger `gemseo`
+and to the loggers of its plugins, whose names start with `gemseo`.
+A plugin logger gets them only if it exists when they are applied.
+A plugin imported after `gemseo` gets them at the next change of `logging`.
+By default,
+they leave the root logger and the loggers of other libraries alone.
+This follows the [Python recommendation for library logging](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
+To see the logs of your own code,
+configure your own loggers.
+You can also set `logging.configure_root_logger` to `True`:
+GEMSEO then configures the root logger with the same settings.
+Once enabled,
+it cannot be disabled for the rest of the process.
+
+!!! how-to
+    - [Configure the GEMSEO logs][]
+
+## Directory manager { #global-configuration-directory-manager }
+
+The `directory_manager` option groups the settings of the
+[directory manager][the-directory-manager].
+The directory manager is disabled by default.
+Once enabled,
+it cannot be disabled for the rest of the process.
+
+!!! how-to
+    - [Using the DirectoryManager][]
+
+## Fast mode { #global-configuration-fast }
+
+The method `enable_fast_mode()` configures GEMSEO for inexpensive disciplines.
+It disables the options that cost time at every evaluation:
 
 - `check_desvars_bounds`,
 - `enable_discipline_cache`,
@@ -82,72 +144,42 @@ This disables the options that cost time at every evaluation:
 - `validate_input_data`,
 - `validate_output_data`.
 
-`enable_progress_bar` is deliberately left alone,
-as the progress bar is user feedback and not a per-evaluation overhead.
-The cache of the MDAs is not disabled either,
-neither by the fast mode nor by `enable_discipline_cache`,
-as an MDA without cache re-executes its disciplines at every residual evaluation.
+It does not disable the progress bar,
+which is user feedback and not a per-evaluation overhead.
+It does not disable the cache of the MDAs either.
 
-An option assigned after `configuration.enable_fast_mode()` keeps the value assigned,
-and calling `configuration.enable_fast_mode()` again applies the eight options again,
-which restores the fast mode
-after one of the class attributes that they drive has been changed directly.
+An option set after `enable_fast_mode()` keeps the value set.
+The method `disable_fast_mode()` resets these options
+to their built-in default values.
+This holds even for an option set from an environment variable or a `.env` file.
 
-```python
-configuration.disable_fast_mode()
-```
+!!! how-to
+    - [Speed up a process made of inexpensive disciplines][]
 
-resets these options to their default values,
-so the five that are enabled by default are enabled again
-while `enable_discipline_statistics`, `enable_discipline_status`
-and `enable_function_statistics` remain disabled.
-These default values are the built-in ones,
-so an option set from an environment variable or from a dotenv file
-is reset to the built-in default too,
-and not to the value read at start-up.
+## Where the values come from { #global-configuration-sources }
 
-### Environment variables { #concept-environment-variables }
+The configuration is created when `gemseo` is imported.
+Its values come from, by order of precedence:
 
-The global configuration can also be changed using one of these environment variables:
+1. the environment variables,
+2. a file named `.env` in the current working directory,
+3. the default values.
 
-- GEMSEO_CHECK_DESVARS_BOUNDS,
-- GEMSEO_ENABLE_DISCIPLINE_CACHE,
-- GEMSEO_ENABLE_DISCIPLINE_STATISTICS,
-- GEMSEO_ENABLE_DISCIPLINE_STATUS,
-- GEMSEO_ENABLE_FUNCTION_STATISTICS,
-- GEMSEO_ENABLE_PARALLEL_EXECUTION,
-- GEMSEO_ENABLE_PROGRESS_BAR,
-- GEMSEO_ENABLE_WORKING_DATABASE,
-- GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER
-- GEMSEO_LOGGING_DATE_FORMAT
-- GEMSEO_LOGGING_ENABLE
-- GEMSEO_LOGGING_LEVEL
-- GEMSEO_LOGGING_FILE_PATH
-- GEMSEO_LOGGING_FILE_MODE
-- GEMSEO_LOGGING_MESSAGE_FORMAT
-- GEMSEO_VALIDATE_INPUT_DATA,
-- GEMSEO_VALIDATE_OUTPUT_DATA.
+The environment variable of an option is named
+`GEMSEO_` followed by the name of the option in upper case.
+The variable of `logging.level` is `GEMSEO_LOGGING_LEVEL`.
+An environment variable set after the import of `gemseo` has no effect.
 
-### Dotenv (.env) support { #concept-dotenv-env-support }
+After the import,
+you can change an option at any time
+by setting the attribute of `gemseo.configuration`.
 
-The global configuration can also be defined in a dotenv file named `.env` looking like this:
+!!! how-to
+    - [Configure GEMSEO without changing the code][]
 
-```bash
-GEMSEO_CHECK_DESVARS_BOUNDS = True
-GEMSEO_ENABLE_DISCIPLINE_CACHE = True
-GEMSEO_ENABLE_DISCIPLINE_STATISTICS = False
-GEMSEO_ENABLE_DISCIPLINE_STATUS = False
-GEMSEO_ENABLE_FUNCTION_STATISTICS = False
-GEMSEO_ENABLE_PARALLEL_EXECUTION = True
-GEMSEO_ENABLE_PROGRESS_BAR = True
-GEMSEO_ENABLE_WORKING_DATABASE = False
-GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER = False
-GEMSEO_LOGGING_DATE_FORMAT = %H:%M:%S
-GEMSEO_LOGGING_ENABLE = False
-GEMSEO_LOGGING_LEVEL = 20
-GEMSEO_LOGGING_FILE_PATH =
-GEMSEO_LOGGING_FILE_MODE = a
-GEMSEO_LOGGING_MESSAGE_FORMAT = %(levelname)8s - %(asctime)s: %(message)s
-GEMSEO_VALIDATE_INPUT_DATA = True
-GEMSEO_VALIDATE_OUTPUT_DATA = True
-```
+## Options { #global-configuration-options }
+
+The list below gives the options,
+their environment variables and their default values.
+
+<!-- global-configuration-options -->

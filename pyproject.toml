@@ -81,7 +81,6 @@ doc = [
     "click",
     "griffe-fieldz",
     "griffe-inherited-docstrings",
-    "markdown-exec[ansi]",
     "mike",
     "mkdocs <2",
     "mkdocs-bibtex",
