@@ -286,7 +286,7 @@ def _get_renamed_attribute(
     [_get_new_object][gemseo._deprecation._get_new_object]. When it is a module
     re-exported by a package, the stand-in of the old path of the module is returned
     instead, if any (see
-    [_find_reexported_old_module][gemseo._deprecation._find_reexported_old_module]),
+    [reexported_old_modules][gemseo._deprecation.aliases.reexported_old_modules]),
     as the old package re-exported the old module, whose old names the new module
     does not resolve.
 
@@ -311,7 +311,7 @@ def _get_renamed_attribute(
     """
     new_object = _get_new_object(module, module_name, name, new_name)
     if isinstance(new_object, ModuleType):
-        old_module_name = _find_reexported_old_module(name, new_object.__name__)
+        old_module_name = reexported_old_modules.get((name, new_object.__name__))
         if old_module_name is not None:
             with warnings.catch_warnings():
                 # The warning of the old name already points at the new module; the
@@ -323,24 +323,6 @@ def _get_renamed_attribute(
                 )
                 return import_module(old_module_name)
     return new_object
-
-
-def _find_reexported_old_module(name: str, new_module_name: str) -> str | None:
-    """Return the old path of a module re-exported by a package under its own name.
-
-    E.g. `gemseo.mda.base_parallel_mda_settings` for
-    `gemseo.base_parallel_mda_settings`, whose rule gives the new module of the former.
-
-    Args:
-        name: The old name of the re-exported module in the package.
-        new_module_name: The new fully-qualified name of the re-exported module.
-
-    Returns:
-        The only old module with a rule that is named `name` and redirected to
-        `new_module_name`, or `None` if there is none or several (see
-        [reexported_old_modules][gemseo._deprecation.aliases.reexported_old_modules]).
-    """
-    return reexported_old_modules.get((name, new_module_name))
 
 
 def _get_new_object(

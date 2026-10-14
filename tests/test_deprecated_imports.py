@@ -402,24 +402,20 @@ def test_renamed_attribute_of_a_top_level_reexport_of_a_module(old_name, new_nam
         ),
     ],
 )
-def test_find_reexported_old_module(monkeypatch, module_renames, expected):
+def test_find_reexported_old_module(module_renames, expected):
     """The old path of a re-exported module is the only one named and redirected so.
 
     Args:
-        monkeypatch: Fixture to patch the table of the re-exported modules.
         module_renames: The old module name -> new module name mapping.
         expected: The expected old path.
     """
-    from gemseo import _deprecation
     from gemseo._deprecation import aliases
 
-    monkeypatch.setattr(
-        _deprecation,
-        "reexported_old_modules",
-        aliases._find_reexported_old_modules(module_renames, module_renames, {}),
+    old_modules = aliases._find_reexported_old_modules(
+        module_renames, module_renames, {}
     )
 
-    assert _deprecation._find_reexported_old_module("module", "gemseo.new") == expected
+    assert old_modules.get(("module", "gemseo.new")) == expected
 
 
 def test_reexported_old_module_keeps_the_other_deprecation_warnings(monkeypatch):
