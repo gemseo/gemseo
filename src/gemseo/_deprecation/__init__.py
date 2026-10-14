@@ -43,7 +43,9 @@ old name of an enumeration member is also resolved by the lookup by name, e.g.
 class, e.g. the member of an enumeration. An entry whose new name is the complete
 dotted path of an object, e.g.
 `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod` for the `Method` of
-`SobolAnalysis`, aliases an attribute moved out of the class to that object.
+`SobolAnalysis`, aliases an attribute moved out of the class to that object; a
+subclass body still assigning its old name keeps its own binding, which the class no
+longer reads, and a `DeprecationWarning` says so.
 The one path this does not cover is an assignment on the class object itself after
 it is defined, e.g. `Cls.OLD = value` or `monkeypatch.setattr(Cls, "OLD", ...)`: this
 silently shadows the descriptor instead of going through it, so patch the new name
@@ -791,13 +793,21 @@ def _chain_init_subclass(cls: type, renames: Mapping[str, str]) -> None:
     def __init_subclass__(subclass: type, **kwargs: Any) -> None:  # noqa: N807
         subclass_vars = vars(subclass)
         for old_name, new_name in renames.items():
-            # A subclass binding the old name of an attribute moved out of the class
-            # defines an attribute of its own.
-            if (
-                old_name in subclass_vars
-                and new_name not in subclass_vars
-                and not is_moved_class_attribute(new_name)
-            ):
+            if old_name not in subclass_vars or new_name in subclass_vars:
+                continue
+            if is_moved_class_attribute(new_name):
+                # The binding is an attribute of the subclass of its own, which the
+                # class no longer reads, e.g. a nested enumeration overriding the one
+                # made a module-level class.
+                warnings.warn(
+                    f"The attribute {old_name!r} of the class {cls.__name__!r} is "
+                    f"deprecated; it moved to {new_name!r}, and the class "
+                    f"{cls.__name__!r} no longer reads the one the class "
+                    f"{subclass.__name__!r} defines.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+            else:
                 _warn_class_attribute_rename(cls.__name__, old_name, new_name)
                 setattr(subclass, new_name, subclass_vars[old_name])
         if previous is not None:

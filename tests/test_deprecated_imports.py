@@ -1991,19 +1991,27 @@ def test_class_attribute_moved_out_of_its_class_cannot_be_set(snapshot):
 
 
 def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
-    """A subclass body binding the old name of a moved attribute keeps its own."""
+    """A subclass body binding the old name of a moved attribute keeps its own.
+
+    A warning tells that the class no longer reads it.
+    """
     from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 
     class OwnMethod(StrEnum):
         FIRST = "first"
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", DeprecationWarning)
+    message = (
+        "The attribute 'Method' of the class 'SobolAnalysis' is deprecated; it moved "
+        "to 'gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod', and the class "
+        "'SobolAnalysis' no longer reads the one the class 'NewSobolAnalysis' defines."
+    )
+    with pytest.warns(DeprecationWarning, match=re.escape(message)) as records:
 
         class NewSobolAnalysis(SobolAnalysis):
             Method = OwnMethod
 
     assert NewSobolAnalysis.Method is OwnMethod
+    assert [str(record.message) for record in records] == [message]
 
 
 @pytest.mark.parametrize(
