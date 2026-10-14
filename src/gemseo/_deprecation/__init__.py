@@ -103,6 +103,7 @@ from gemseo._deprecation.aliases import reexported_old_modules
 from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
+from gemseo.util.package_import import getattr_wrapper_marker
 from gemseo.util.package_import import raise_unresolvable_attribute
 from gemseo.util.string import pretty_repr
 
@@ -118,12 +119,10 @@ _plugin_prefix: Final[str] = "gemseo_"
 
 _installed: bool = False
 
-_gemseo_getattr_wrapper: Final[bool] = True
-"""Whether this module looks attributes up for its callers.
-
-Its module-level `__getattr__` wraps the lazy one of the re-exporting packages
-(see [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker]).
-"""
+# This module looks attributes up for its callers: its module-level `__getattr__`
+# wraps the lazy one of the re-exporting packages (see
+# [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker]).
+globals()[getattr_wrapper_marker] = True
 
 _module_rename_message: Final[str] = r"The module 'gemseo\..*' is deprecated"
 """The pattern of the message of the warning of a renamed or dissolved module."""

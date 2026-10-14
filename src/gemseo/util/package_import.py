@@ -44,11 +44,8 @@ of this module, set it;
 a plugin wrapping a module-level `__getattr__` can set it too.
 """
 
-_gemseo_getattr_wrapper: Final[bool] = True
-"""Whether this module looks attributes up for its callers.
-
-See [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker].
-"""
+# This module looks attributes up for its callers.
+globals()[getattr_wrapper_marker] = True
 
 
 def is_imported_from() -> bool:
