@@ -77,7 +77,7 @@
 # through the `classes:` section instead.
 #
 # The `classes:` and `functions:` sections, which only the codemod reads in full,
-# also accept two forms in the rule of a parameter, i.e. in the nested block of a
+# also accept three forms in the rule of a parameter, i.e. in the nested block of a
 # method or a function, e.g. `__init__:`:
 # - `TODO[<guard>] <text>`, alone or ending what a ` TODO <text>` may end (`null`, a
 #   position, a new name or both), restricts the marking of the calls by the
@@ -91,10 +91,20 @@
 #   instance of `<Class>` for the parameter the `__init__` rules of the `classes:`
 #   entry `<Entry>`, the call then building that class, e.g. a DOEScenario over a
 #   ParameterSpace becoming an EvaluationScenario.
-# Both are codemod-only, and allowed only where the runtime does not read them, the
+# - `KEEP_DEFAULT`, for a parameter whose default changed, makes the codemod pass the
+#   old default, read from the GEMSEO 6 API, to a call not passing the argument, e.g.
+#   `use_and=False` to `pretty_str`.
+# These are codemod-only, and allowed only where the runtime does not read them, the
 # nested blocks: under `modules:` or `attributes:`, which are split on ` TODO `, not
 # on ` TODO[`, such a value would be checked as a new name and make `import gemseo`
 # fail.
+#
+# A scalar entry of a class in `classes:` may end with ` TODO <text>`: after a new
+# name, the codemod renames the attribute and marks an assignment or a deletion of it
+# with the text, e.g. for a property with no setter; after an expression of
+# `{receiver}`, e.g. `"{receiver}.target_class_name TODO <text>"`, the codemod
+# replaces a read through an instance by the expression and marks any other use; the
+# runtime reads the first as the rename to the new name and skips the second.
 #
 # Some public 6.3.2 names are mapped to a private target (a path with a segment
 # starting with `_`, e.g. gemseo.post._engine.colormap): this is deliberate, for the
@@ -2245,8 +2255,11 @@ classes:
   #### Misc
   BaseSettings:
     # The target class name is now derived from the name of the settings class,
-    # X_Settings targeting X, and read with the target_class_name property.
-    _TARGET_CLASS_NAME: TODO read it with the target_class_name property of a settings instance; in a settings class, the value is now derived from the name of the class (X_Settings targets X), so remove the assignment if its value is the name of the class without _Settings, else rename the class to <value>_Settings first, or it would target another class
+    # X_Settings targeting X, and read with the target_class_name property. A read
+    # through an instance becomes a read of the property; the codemod removes the
+    # assignment in the body of a settings class when the derived name is right, and
+    # marks it otherwise; any other use is marked with the text below.
+    _TARGET_CLASS_NAME: "{receiver}.target_class_name TODO _TARGET_CLASS_NAME is no longer read, the target class name being derived from the name of the settings class (X_Settings targets X); read it with the target_class_name property of a settings instance, or, for a class, remove the suffix _Settings from its name"
   PCERegressor_Settings:
     __init__:
       probability_space: null
@@ -2314,6 +2327,9 @@ classes:
   # from churning user code that is already correct.
   BaseScenario:
     design_space: input_space
+    # The settings of the driver, which BaseScenario.Settings gathered with its name
+    # (algo_name, algo_settings), are now the settings model execute is given.
+    _settings: TODO _settings was replaced by _algorithm_settings, the settings model of the driver given to execute, or None before; read its target_class_name for algo_name and its fields for the items of algo_settings
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     _ALGO_FACTORY_CLASS: _algo_factory_class
     _opt_hist_backup_path: _backup_file_path
@@ -2486,6 +2502,10 @@ classes:
       design_space: *formulation-problem
       minimize_objective: *formulation-problem
       settings_model: settings
+    # GEMSEO 7 iterates the output names, so a single name gives its characters;
+    # EvaluationScenario.add_observable still takes a single name.
+    add_observable:
+      output_names: TODO[str] add_observable of a formulation takes an iterable of output names and no longer a single one, which it would iterate character by character; wrap it in a list, e.g. add_observable([output_name])
   BiLevel_Settings:
     apply_cstr_tosub_scenarios: apply_constraints_to_sub_scenarios
     apply_cstr_to_system: apply_constraints_to_system
@@ -2502,6 +2522,9 @@ classes:
     Settings: settings_class
     execute:
       settings_model: settings
+      # GEMSEO 7 takes a settings model only: the keywords **settings catches go to
+      # settings=<the post-processor class>_Settings(...).
+      settings: settings={__class__}_Settings(**{settings})
     _USE_JACOBIAN_DATA: _use_jacobian_data
   PostFactory:
     execute:
@@ -2732,8 +2755,9 @@ classes:
       # the history never used it.
 
   OptimizationProblem:
-    # See the comment above BaseScenario.
-    design_space: design_space
+    # See the comment above BaseScenario. GEMSEO 7 makes it a property with no setter,
+    # so an assignment of it, which the codemod cannot rewrite, is marked.
+    design_space: design_space TODO design_space is a read-only property in GEMSEO 7, the input space of the problem; change the variables of the existing space instead, e.g. with add_variable and remove_variable, or create the problem with the new space
     __init__:
       design_space: design_space
       # The linearity of the problem is now deduced from its functions.
@@ -3146,6 +3170,12 @@ functions:
     options: settings={distribution_name}_Settings(**{options})
   write_design_space:
     header_char: null
+  # The default of use_and is now True (changelog 1874): a call not passing it passes
+  # the old default, use_and=False, to keep its formatting.
+  pretty_repr:
+    use_and: KEEP_DEFAULT
+  pretty_str:
+    use_and: KEEP_DEFAULT
   # See SurrogateDiscipline in classes:.
   create_surrogate: *create-surrogate
   generate_xdsm:
