@@ -422,6 +422,48 @@ def test_find_reexported_old_module(monkeypatch, module_renames, expected):
     assert _deprecation._find_reexported_old_module("module", "gemseo.new") == expected
 
 
+def test_reexported_old_module_keeps_the_other_deprecation_warnings(monkeypatch):
+    """Importing the old path of a re-exported module only silences its own warning.
+
+    The other deprecation warnings, e.g. of a first import of the new module, are
+    kept.
+
+    Args:
+        monkeypatch: Fixture to patch the import and the re-exported modules.
+    """
+    from gemseo import _deprecation
+
+    package = ModuleType("gemseo.fake_package")
+    package.module = ModuleType("gemseo.fake_package.module")
+    old_module = ModuleType("gemseo.fake_old_package.module")
+
+    def import_module(name: str) -> ModuleType:
+        warnings.warn(
+            f"The module {name!r} is deprecated; use 'gemseo.fake_package.module' "
+            "instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        warnings.warn("Another deprecation.", DeprecationWarning, stacklevel=2)
+        return old_module
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    monkeypatch.setattr(
+        _deprecation,
+        "reexported_old_modules",
+        {("module", package.module.__name__): old_module.__name__},
+    )
+
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        module = _deprecation._get_renamed_attribute(
+            package, "gemseo.fake_old_package", "module", package.module.__name__
+        )
+
+    assert module is old_module
+    assert [str(record.message) for record in records] == ["Another deprecation."]
+
+
 def test_find_reexported_old_module_of_a_module_with_attribute_rules():
     """The old path of a re-exported module may be that of a module of attributes."""
     from gemseo._deprecation import aliases

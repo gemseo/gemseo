@@ -125,6 +125,9 @@ Its module-level `__getattr__` wraps the lazy one of the re-exporting packages
 (see [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker]).
 """
 
+_module_rename_message: Final[str] = r"The module 'gemseo\..*' is deprecated"
+"""The pattern of the message of the warning of a renamed or dissolved module."""
+
 
 def _resolve_new_name(old_name: str) -> str | None:
     """Return the new module name for an old one, or `None` if it is not renamed.
@@ -312,8 +315,13 @@ def _get_renamed_attribute(
         old_module_name = _find_reexported_old_module(name, new_object.__name__)
         if old_module_name is not None:
             with warnings.catch_warnings():
-                # The warning of the old name already points at the new module.
-                warnings.simplefilter("ignore", DeprecationWarning)
+                # The warning of the old name already points at the new module; the
+                # other warnings, e.g. of a first import of the new module, are kept.
+                warnings.filterwarnings(
+                    "ignore",
+                    message=_module_rename_message,
+                    category=DeprecationWarning,
+                )
                 return import_module(old_module_name)
     return new_object
 
@@ -995,9 +1003,7 @@ def install() -> None:
         return
     if not sys.warnoptions:
         warnings.filterwarnings(
-            "once",
-            message=r"The module 'gemseo\..*' is deprecated",
-            category=DeprecationWarning,
+            "once", message=_module_rename_message, category=DeprecationWarning
         )
         warnings.filterwarnings(
             "once",
