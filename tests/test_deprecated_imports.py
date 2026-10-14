@@ -635,6 +635,73 @@ def test_missing_dependency_of_a_redirected_module_is_reraised(monkeypatch, new_
     assert exc_info.value is error
 
 
+@pytest.mark.parametrize(
+    "error",
+    [
+        ModuleNotFoundError("No module named 'syrupy'", name="syrupy"),
+        ImportError("cannot import name 'x' from 'syrupy'"),
+    ],
+    ids=["missing-module", "import-error"],
+)
+def test_import_error_of_a_redirected_module_gets_the_text_of_its_rule(
+    monkeypatch, error
+):
+    """The text of a `<new name> TODO <text>` module rule is added to its import error.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module and the texts.
+        error: The error raised when importing the new module.
+    """
+    from gemseo import _deprecation
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    monkeypatch.setattr(
+        _deprecation, "module_rename_notes", {"gemseo.fake_old_module": "add syrupy"}
+    )
+    loader = _deprecation._DeprecatedModuleLoader(
+        "gemseo.fake_old_module", "gemseo.fake_new_module"
+    )
+
+    with pytest.raises(ImportError) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value is error
+    assert exc_info.value.__notes__ == [
+        (
+            "The module 'gemseo.fake_old_module' moved to 'gemseo.fake_new_module'; "
+            "add syrupy."
+        )
+    ]
+
+
+def test_import_error_of_a_redirected_module_without_text_has_no_note(monkeypatch):
+    """The import error of a module whose rule has no text gets no note.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module.
+    """
+    from gemseo import _deprecation
+
+    error = ImportError("cannot import name 'x' from 'syrupy'")
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    loader = _deprecation._DeprecatedModuleLoader(
+        "gemseo.fake_old_module", "gemseo.fake_new_module"
+    )
+
+    with pytest.raises(ImportError) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value is error
+    assert not hasattr(exc_info.value, "__notes__")
+
+
 def test_user_warning_filters_are_not_overridden():
     """`install` leaves the warning filters alone when the user configured them."""
     helper = "from gemseo.scenarios.mdo_scenario import MDOScenario\n"

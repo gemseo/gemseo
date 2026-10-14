@@ -304,6 +304,7 @@ def test_build_renames_a_rename_and_todo_value(tmp_path, monkeypatch):
         _,
         removed_modules,
         removed_attributes,
+        module_rename_notes,
     ) = aliases._build()
 
     assert module_renames == {"gemseo.old_pkg": "gemseo.new_pkg"}
@@ -311,6 +312,8 @@ def test_build_renames_a_rename_and_todo_value(tmp_path, monkeypatch):
     assert not manual_migrations
     assert not removed_modules
     assert not removed_attributes
+    # The text of a module rename is kept, to explain an error of the new module.
+    assert module_rename_notes == {"gemseo.old_pkg": "check the module TODO twice"}
 
 
 @pytest.mark.parametrize(
@@ -366,6 +369,7 @@ def test_build_removes_a_null_and_todo_value(tmp_path, monkeypatch):
         _,
         removed_modules,
         removed_attributes,
+        module_rename_notes,
     ) = aliases._build()
 
     assert removed_modules == {"gemseo.old_pkg"}
@@ -373,6 +377,8 @@ def test_build_removes_a_null_and_todo_value(tmp_path, monkeypatch):
     assert not module_renames
     assert not attribute_renames
     assert not manual_migrations
+    # The text of a removal is for the codemod only.
+    assert not module_rename_notes
 
 
 def test_build_leaves_out_the_attribute_entries_of_a_class(tmp_path, monkeypatch):
@@ -400,7 +406,7 @@ def test_build_leaves_out_the_attribute_entries_of_a_class(tmp_path, monkeypatch
     )
     monkeypatch.setattr(aliases, "_config_path", config)
 
-    _, attribute_renames, _, class_attribute_renames, _, removed_attributes = (
+    _, attribute_renames, _, class_attribute_renames, _, removed_attributes, _ = (
         aliases._build()
     )
 
@@ -440,6 +446,7 @@ def test_build_does_not_rename_a_todo_value(tmp_path, monkeypatch):
         class_attribute_renames,
         removed_modules,
         removed_attributes,
+        _,
     ) = aliases._build()
 
     assert manual_migrations == {
@@ -606,6 +613,7 @@ def test_build_from_synthetic_config(tmp_path, monkeypatch):
         class_attribute_renames,
         removed_modules,
         removed_attributes,
+        _,
     ) = aliases._build()
 
     assert module_renames["gemseo.old_pkg"] == "gemseo.new_pkg"

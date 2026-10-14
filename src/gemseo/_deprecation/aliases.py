@@ -26,7 +26,12 @@ package; the rename map that also drives the external codemod):
   `classes:` section aliases it.
 - `attribute_renames` and `module_renames` also hold the entries whose value is
   `<new name> TODO <text>`: a rename to `<new name>`, like the plain one, which the
-  external codemod also marks with `<text>`; the runtime ignores the text.
+  external codemod also marks with `<text>`. The runtime ignores the text of an
+  `attributes:` entry.
+- `module_rename_notes`: old module fully-qualified name -> the text of its
+  `<new name> TODO <text>` rule of the `modules:` section, which is added as a note to
+  the `ImportError` raised when importing the new module through the old one, e.g.
+  for a dependency the new module requires.
 - `manual_migrations`: old module fully-qualified name -> {old attribute: how to
   migrate}, from the `attributes:` entries whose value is `TODO <text>`, for the names
   whose migration cannot be automated. The text is an instruction telling how to
@@ -187,12 +192,25 @@ def _split_rename_todo(value: str) -> str:
     Returns:
         The new name, or `value` if it is not a `<new name> TODO <text>` value.
     """
-    if _get_todo_text(value):
-        return value
-    head, separator, text = value.partition(f" {_todo_prefix}")
-    if separator and text.strip():
-        return head.strip()
+    if _get_rename_todo_text(value):
+        return value.partition(f" {_todo_prefix}")[0].strip()
     return value
+
+
+def _get_rename_todo_text(value: str) -> str:
+    """Return the text of a `<new name> TODO <text>` value of a rule.
+
+    Args:
+        value: The value of a rule.
+
+    Returns:
+        The text following the first ` TODO `, stripped, or an empty string if `value`
+        is not a `<new name> TODO <text>` value (see
+        [_split_rename_todo][gemseo._deprecation.aliases._split_rename_todo]).
+    """
+    if _get_todo_text(value):
+        return ""
+    return value.partition(f" {_todo_prefix}")[2].strip()
 
 
 def _check_rule_value(section: str, old_name: str, new_value: str) -> None:
@@ -624,22 +642,28 @@ def _build() -> tuple[
     Mapping[str, Mapping[str, str]],
     frozenset[str],
     Mapping[str, frozenset[str]],
+    Mapping[str, str],
 ]:
     """Build the alias tables from the configuration.
 
     Returns:
         The resolved module renames, the attribute renames grouped by old module,
         the manual migrations grouped by old module, the class-attribute renames
-        grouped by the class's current name, the removed modules and the removed
-        attributes grouped by old module.
+        grouped by the class's current name, the removed modules, the removed
+        attributes grouped by old module and the texts of the module renames.
     """
     text = _config_path.read_text(encoding="utf-8")
 
     # The `TODO <text>` tail of a value is cut first, so that a `null TODO <text>`
     # value is a removal like `null`.
+    raw_module_entries = _parse_section(text, "modules")
     module_entries = {
-        old: _split_rename_todo(value)
-        for old, value in _parse_section(text, "modules").items()
+        old: _split_rename_todo(value) for old, value in raw_module_entries.items()
+    }
+    module_notes = {
+        old: note
+        for old, value in raw_module_entries.items()
+        if module_entries[old] != _removed and (note := _get_rename_todo_text(value))
     }
     removed_modules = frozenset(
         old for old, value in module_entries.items() if value == _removed
@@ -701,6 +725,7 @@ def _build() -> tuple[
         }),
         removed_modules,
         _group_removed_attributes(all_attribute_entries),
+        MappingProxyType(module_notes),
     )
 
 
@@ -712,11 +737,19 @@ _tables: Final[
         Mapping[str, Mapping[str, str]],
         frozenset[str],
         Mapping[str, frozenset[str]],
+        Mapping[str, str],
     ]
 ] = _build()
 
 module_renames: Final[Mapping[str, str]] = _tables[0]
 """Old fully-qualified module name -> new one (fully resolved)."""
+
+module_rename_notes: Final[Mapping[str, str]] = _tables[6]
+"""Old fully-qualified module name -> the text of its `<new name> TODO <text>` rule.
+
+It is added as a note to the `ImportError` raised when importing the new module
+through the old one.
+"""
 
 attribute_renames: Final[Mapping[str, Mapping[str, str]]] = _tables[1]
 """Old module name -> {old attribute name: new attribute name}."""

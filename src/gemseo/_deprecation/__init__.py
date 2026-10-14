@@ -29,7 +29,9 @@ resolving the old attribute names in that module's own namespace.
 The names whose `attributes:` value is `TODO <text>` are the exception: their migration
 cannot be automated, as the new name does not behave as the old one on its own, so
 importing one raises an `ImportError` ending with the text, which tells how to migrate,
-instead of silently resolving to a name of a different meaning.
+instead of silently resolving to a name of a different meaning. The text of a
+`modules:` value `<new name> TODO <text>` is added as a note to the `ImportError`
+raised when importing the new module through the old one.
 
 Renamed class attributes (see the `classes:` section of `bump-version.yml` and
 [class_attribute_renames][gemseo._deprecation.aliases.class_attribute_renames]) are
@@ -95,6 +97,7 @@ from gemseo._deprecation.aliases import find_ancestor
 from gemseo._deprecation.aliases import is_moved_class_attribute
 from gemseo._deprecation.aliases import live_aliased_modules
 from gemseo._deprecation.aliases import manual_migrations
+from gemseo._deprecation.aliases import module_rename_notes
 from gemseo._deprecation.aliases import module_renames
 from gemseo._deprecation.aliases import reexported_old_modules
 from gemseo._deprecation.aliases import removed_attributes
@@ -434,7 +437,17 @@ class _DeprecatedModuleLoader(Loader):
     def create_module(self, spec: ModuleSpec) -> ModuleType:  # noqa: D102
         try:
             target = import_module(self._new_name)
-        except ModuleNotFoundError as error:
+        except ImportError as error:
+            # The text of a `<new name> TODO <text>` rule may explain the error, e.g.
+            # a dependency of the new module that the old one did not have.
+            note = module_rename_notes.get(self._old_name)
+            if note:
+                error.add_note(
+                    f"The module {self._old_name!r} moved to {self._new_name!r}; "
+                    f"{note}."
+                )
+            if not isinstance(error, ModuleNotFoundError):
+                raise
             msg = _get_missing_plugin_message(
                 f"The module {self._old_name!r}", self._new_name, error
             )
