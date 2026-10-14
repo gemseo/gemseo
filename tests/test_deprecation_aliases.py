@@ -878,6 +878,22 @@ def test_parse_classes_section_keeps_attributes_moved_out_of_their_class():
     }
 
 
+def test_ot_parametric_statistics_gets_only_the_enumerations_of_the_fitter():
+    """`OTParametricStatistics` shares the enumerations of `OTDistributionFitter`.
+
+    It does not get the protected attribute of the latter.
+    """
+    fitter_renames = aliases.class_attribute_renames["OTDistributionFitter"]
+    statistics_renames = aliases.class_attribute_renames["OTParametricStatistics"]
+
+    assert statistics_renames == {
+        old_name: new_name
+        for old_name, new_name in fitter_renames.items()
+        if not old_name.startswith("_")
+    }
+    assert len(statistics_renames) == len(fitter_renames) - 1
+
+
 def test_parse_classes_section_drops_null_targets():
     """An entry whose value is `null` is dropped, as a removal cannot be aliased."""
     text = "classes:\n  Foo:\n    OLD: new\n    REMOVED: null\n"
