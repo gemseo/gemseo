@@ -384,9 +384,14 @@ class _KKTChecker:
 
         if check_kkt:
             if not self.__kkt_tester.kkt_norm:
-                self.__kkt_tester.kkt_norm = kkt_residual_computation(
+                kkt_norm = kkt_residual_computation(
                     self.__problem, input_value, self.__kkt_tester.ineq_tolerance
                 )
+                # A non-finite residual, e.g. following a NaN constraint value,
+                # must never become the reference norm: until a finite one is
+                # found, only the absolute KKT tolerance can stop the algorithm.
+                if numpy.isfinite(kkt_norm):
+                    self.__kkt_tester.kkt_norm = kkt_norm
 
             self.__kkt_tester.check(
                 self.__problem, raise_exception=True, input_vector=input_value

@@ -16,16 +16,21 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
+from numpy import nan
 from numpy import ones
 from numpy import zeros
 
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.core.base_optimization_library import _KKTChecker
 from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.termination_criteria import is_kkt_residual_norm_reached
 from gemseo.optimization.termination_criteria import kkt_residual_norm
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
 
 
 @pytest.mark.parametrize("is_optimum", [False, True])
@@ -132,3 +137,52 @@ def test_stale_kkt_checker_does_not_shortcut_a_tighter_run() -> None:
     )
 
     assert result.f_opt == pytest.approx(reference_result.f_opt, abs=1e-10)
+
+
+def test_kkt_checker_does_not_cache_an_infinite_reference_norm() -> None:
+    """A NaN constraint value must not make the KKT checker stop too early.
+
+    Regression test:
+    the first residual computed by the `_KKTChecker`,
+    here infinite because of a NaN constraint value,
+    was cached unconditionally as the reference KKT norm;
+    the relative criterion `residual <= kkt_tolerance_rel * reference_norm`
+    then always held (`inf <= inf`),
+    so `KKTReached` was raised at an infeasible point
+    instead of only at a converged one.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=-10.0, upper_bound=10.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([x.sum()]), name="f", jac=lambda x: array([[1.0, 1.0]])
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([2.0, nan]),
+            name="g",
+            jac=lambda x: array([[0.0, 0.0], [0.0, 0.0]]),
+        ),
+        constraint_type="ineq",
+    )
+
+    x_vect = array([0.0, 0.0])
+    objective_name = problem.standardized_objective_name
+    constraint_name = problem.constraints.get_names()[0]
+    database = problem.database
+    database.store(
+        x_vect,
+        {
+            objective_name: problem.objective.evaluate(x_vect),
+            database.get_gradient_name(objective_name): problem.objective.jac(x_vect),
+            constraint_name: problem.constraints[0].evaluate(x_vect),
+            database.get_gradient_name(constraint_name): problem.constraints[0].jac(
+                x_vect
+            ),
+        },
+    )
+
+    kkt_checker = _KKTChecker(
+        problem, kkt_abs_tol=1e-5, kkt_rel_tol=1e-2, ineq_tolerance=1e-6
+    )
+    kkt_checker(x_vect)  # Must not raise KKTReached.

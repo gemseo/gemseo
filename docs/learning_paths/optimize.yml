@@ -75,6 +75,9 @@ resources:
     desc: Restart a local algorithm from several points of the design space.
     path: generated/examples/howtos/optimizers/plot_howto_multistart/
   - type: howto
+    desc: See which constraints a point violates, by how much, and which are missing.
+    path: generated/examples/howtos/optimizers/plot_howto_assess_constraints/
+  - type: howto
     desc: Persist the history and restart without re-evaluating known points.
     path: generated/examples/howtos/database/plot_howto_backup_history/
   - type: howto

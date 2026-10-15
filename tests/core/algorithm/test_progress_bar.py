@@ -44,6 +44,7 @@ from gemseo.optimization.core.base_optimizer_settings import BaseOptimizerSettin
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
+from gemseo.util.hashable_ndarray import HashableNdarray
 
 tick = 0.1
 """The duration in seconds of a call to the function to be evaluated."""
@@ -252,3 +253,26 @@ def test_feasibility(caplog, n_processes):
     assert "feas=True, obj=404" in caplog.text
     assert "feas=False, obj=6.5" in caplog.text
     assert "feas=True, obj=58.5" in caplog.text
+
+
+def test_feasibility_missing_constraint_value() -> None:
+    """The feasibility is "Not evaluated" when a constraint value is missing.
+
+    Regression test:
+    `ProgressBarData` used to call `check_design_point_is_feasible`,
+    which stopped checking at the first missing constraint
+    and returned what had been accumulated so far --
+    `(True, 0.0)` for a point where only the objective had been evaluated --
+    hence `feas=True`,
+    instead of the "Not evaluated" message
+    already used for the objective in the same situation.
+    """
+    problem = Rosenbrock()
+    problem.add_constraint(
+        ArrayFunction(sum, name="g"), value=0.0, constraint_type="ineq"
+    )
+    x = array([-1.0, -1.0])
+    problem.database.store(x, {"rosen": problem.objective.evaluate(x)})
+
+    data = ProgressBarData(problem).get(HashableNdarray(x))
+    assert data["feas"] == "Not evaluated"

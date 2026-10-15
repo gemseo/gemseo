@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-from numpy import abs as np_abs
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d
@@ -46,6 +45,7 @@ from scipy.optimize import nnls
 from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
+    from gemseo.optimization.core.constraints_assessment import ConstraintsAssessment
     from gemseo.optimization.problem import OptimizationProblem
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,10 @@ class LagrangeMultipliers:
 
     constraint_violation: float | None
     """The maximum constraint violation (taking tolerances into account), `None` if
-    not computed."""
+    not computed.
+
+    It is `inf` when a constraint value contains NaN.
+    """
 
     lower_bounds: Final[str] = "lower_bounds"
     upper_bounds: Final[str] = "upper_bounds"
@@ -148,13 +151,12 @@ class LagrangeMultipliers:
         """
         logger.info("Computation of Lagrange multipliers")
 
-        # Check feasibility
-        self._check_feasibility(x_vect)
+        assessment = self._check_feasibility(x_vect)
+        self.constraint_violation = assessment.max_violation
         # get jacobian of objective
         rhs = -self.get_objective_jacobian(x_vect).T
         # get jacobian of all active constraints, and an
         # ordered list of their name
-        self.__compute_constraint_violation(x_vect)
         jac_act, _ = self._get_jac_act(x_vect, ineq_tolerance)
         if jac_act is None:
             # There is no active constraint
@@ -218,11 +220,14 @@ class LagrangeMultipliers:
         self.kkt_residual = solution.cost
         return solution.x
 
-    def _check_feasibility(self, x_vect: ndarray) -> None:
+    def _check_feasibility(self, x_vect: ndarray) -> ConstraintsAssessment:
         """Check that a point is in the design space and satisfies all the constraints.
 
         Args:
             x_vect: The point at which the Lagrange multipliers are to be computed.
+
+        Returns:
+            The assessment of the constraints at the point.
         """
         problem = self.optimization_problem
         self.__check_membership(problem, x_vect)
@@ -247,8 +252,11 @@ class LagrangeMultipliers:
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
-        if not self.optimization_problem.constraints.is_point_feasible(values):
+        assessment = self.optimization_problem.constraints.assess(values)
+        if not assessment.are_satisfied:
             logger.warning("Infeasible point, Lagrange multipliers may not exist.")
+
+        return assessment
 
     @staticmethod
     def __check_membership(problem: OptimizationProblem, x_vect: ndarray) -> None:
@@ -378,27 +386,6 @@ class LagrangeMultipliers:
                     ]
         jac = concatenate(jac) if jac else None
         return jac, names
-
-    def __compute_constraint_violation(self, x_vect: ndarray) -> None:
-        """Compute the maximum constraint violation.
-
-        Args:
-            x_vect: The point where the maximum constraint violation is to be computed.
-        """
-        self.constraint_violation = 0.0
-        if self.__normalized:
-            x_vect = self.optimization_problem.input_space.normalize_vect(x_vect)
-        for constraint in self.optimization_problem.constraints:
-            value = constraint.evaluate(x_vect)
-            if constraint.f_type == constraint.ConstraintType.EQ:
-                value = np_abs(value) - self.optimization_problem.tolerances.equality
-            else:
-                value = value - self.optimization_problem.tolerances.inequality
-            if isinstance(value, ndarray):
-                value = value.max()
-            self.constraint_violation = max(self.constraint_violation, value)
-
-        self.constraint_violation = max(self.constraint_violation, 0.0)
 
     def _get_act_eq_jac(self, x_vect: ndarray) -> tuple[ndarray, list[str]]:
         """Return The Jacobian of the active equality constraints.

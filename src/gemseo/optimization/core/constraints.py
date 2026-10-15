@@ -23,7 +23,6 @@ from typing import ClassVar
 from typing import Final
 
 from numpy import abs as np_abs
-from numpy import absolute
 from numpy import all as np_all
 from numpy import atleast_1d
 
@@ -40,6 +39,9 @@ from gemseo.optimization.aggregation.aggregation_func import (
 )
 from gemseo.optimization.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.optimization.aggregation.aggregation_func import aggregate_upper_bound_ks
+from gemseo.optimization.core.constraint_assessment import ConstraintAssessment
+from gemseo.optimization.core.constraint_assessment import _missing_assessment
+from gemseo.optimization.core.constraints_assessment import ConstraintsAssessment
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
@@ -347,6 +349,20 @@ class Constraints(Functions):
     ) -> bool:
         """Determine if an evaluation satisfies a constraint within a given tolerance.
 
+        This is the reference form of the satisfaction rule:
+        code that only needs the yes/no answer,
+        without the value of the violation,
+        either calls this method directly
+        or uses the equivalent, `bool`-returning
+        [Constraints.is_point_feasible]
+        [gemseo.optimization.core.constraints.Constraints.is_point_feasible].
+        [ConstraintAssessment.from_value]
+        [gemseo.optimization.core.constraint_assessment.ConstraintAssessment.from_value],
+        which reports the value of the violation as well,
+        uses the same comparison.
+        A complex value, e.g. from the complex-step method,
+        is assessed on its real part.
+
         Args:
             constraint_type: The type of the constraint.
             constraint_value: The value of the constraint.
@@ -355,9 +371,9 @@ class Constraints(Functions):
             Whether a value satisfies a constraint.
         """
         if constraint_type == ArrayFunction.ConstraintType.EQ:
-            return np_all(np_abs(constraint_value) <= self.__tolerances.equality)
+            return np_all(np_abs(constraint_value.real) <= self.__tolerances.equality)
 
-        return np_all(constraint_value <= self.__tolerances.inequality)
+        return np_all(constraint_value.real <= self.__tolerances.inequality)
 
     def is_point_feasible(
         self,
@@ -367,7 +383,8 @@ class Constraints(Functions):
 
         Note:
             If the value of a constraint is absent from this point,
-            then this constraint will be considered unsatisfied.
+            then this constraint will be considered unsatisfied
+            and the point is not feasible.
 
         Args:
             point: An optimization point defined by variable values.
@@ -385,6 +402,53 @@ class Constraints(Functions):
 
         return feasible
 
+    def __get_tolerance(self, constraint_type: ArrayFunction.ConstraintType) -> float:
+        """Return the tolerance of a type of constraint, with the current tolerances.
+
+        Args:
+            constraint_type: The type of the constraint.
+
+        Returns:
+            The tolerance.
+        """
+        if constraint_type == ArrayFunction.ConstraintType.EQ:
+            return self.__tolerances.equality
+
+        return self.__tolerances.inequality
+
+    def assess(
+        self,
+        point: Mapping[str, RealOrComplexArray],
+    ) -> ConstraintsAssessment:
+        """Assess the constraints at a point, with the current tolerances.
+
+        Args:
+            point: The map from a constraint name to a constraint value.
+
+        Returns:
+            The assessment of the constraints at the point.
+
+        Note:
+            If the value of a constraint is absent from this point,
+            then this constraint is assessed as missing, with an infinite violation.
+            If the value of a constraint contains NaN,
+            then this constraint is assessed as violated, with an infinite violation.
+        """
+        name_to_assessment = {}
+        for constraint in self._functions:
+            constraint_value = point.get(constraint.name)
+            if constraint_value is None:
+                assessment = _missing_assessment
+            else:
+                assessment = ConstraintAssessment.from_value(
+                    constraint_value,
+                    constraint.f_type,
+                    self.__get_tolerance(constraint.f_type),
+                )
+            name_to_assessment[constraint.name] = assessment
+
+        return ConstraintsAssessment(name_to_assessment)
+
     def get_number_of_unsatisfied_constraints(
         self,
         values: Mapping[str, float | RealArray] = read_only_empty_dict,
@@ -396,19 +460,9 @@ class Constraints(Functions):
 
         Returns:
             The number of unsatisfied scalar constraints.
+
+        Note:
+            A NaN component is not satisfied;
+            a constraint absent from `values` is ignored.
         """
-        n_unsatisfied = 0
-        for constraint in self._functions:
-            if constraint.name not in values:
-                continue
-
-            value = atleast_1d(values[constraint.name])
-            if constraint.f_type == ArrayFunction.ConstraintType.EQ:
-                value = absolute(value)
-                tolerance = self.__tolerances.equality
-            else:
-                tolerance = self.__tolerances.inequality
-
-            n_unsatisfied += sum(value > tolerance)
-
-        return n_unsatisfied
+        return self.assess(values).n_violated_components

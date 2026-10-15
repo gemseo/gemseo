@@ -29,7 +29,11 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 _not_evaluated_message: Final[str] = "Not evaluated"
-"""The message to be logged instead of the objective value when not evaluated."""
+"""The message to be logged instead of a value that was not evaluated.
+
+It replaces the objective value when this value is missing,
+and the feasibility when a constraint value is missing.
+"""
 
 
 class ProgressBarData(BaseProgressBarData):
@@ -75,12 +79,29 @@ class ProgressBarData(BaseProgressBarData):
 
         return obj
 
+    def __get_feasibility_value(self, input_value: HashableNdarray) -> str:
+        """Return the feasibility value.
+
+        Args:
+            input_value: The input value related to this feasibility value.
+
+        Returns:
+            The feasibility value.
+        """
+        output_name_to_value = self._problem.database.get(input_value, {})
+        constraints = self._problem.constraints
+        if any(
+            constraint.name not in output_name_to_value for constraint in constraints
+        ):
+            return _not_evaluated_message
+
+        return str(constraints.is_point_feasible(output_name_to_value))
+
     def get(self, input_value: HashableNdarray | None) -> StrKeyMapping:  # noqa: D102
         if input_value is None or not self._problem.database:
             return {}
 
-        feasible = self._problem.history.check_design_point_is_feasible(input_value)[0]
         return {
             self.__obj_key: self.__get_objective_value(input_value),
-            self.__feas_key: str(feasible),
+            self.__feas_key: self.__get_feasibility_value(input_value),
         }
