@@ -52,7 +52,7 @@ repos:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.0
+    rev: v0.17.1
     hooks:
       # The markdown files are handled by rumdl,
       # which itself delegates the code blocks to ruff,
