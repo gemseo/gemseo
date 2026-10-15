@@ -17,6 +17,8 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy import nan
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.constraint_tolerances import ConstraintTolerances
@@ -47,6 +49,9 @@ def constraints(problem) -> Constraints:
         ({"c1": 1.0}, 1),
         ({"c1": 1.0, "c2": 0.0}, 1),
         ({"c1": 1.0, "c2": 1.0}, 2),
+        # A NaN component is not satisfied.
+        ({"c1": nan}, 1),
+        ({"c1": array([0.0, nan])}, 1),
     ],
 )
 def test_get_number_of_unsatisfied_constraints(constraints, values, expected_number):

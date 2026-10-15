@@ -195,6 +195,7 @@ nav:
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Optimization problem: generated/examples/howtos/optimizers/plot_howto_optimization_problem.md
           - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
+          - Assess the constraints: generated/examples/howtos/optimizers/plot_howto_assess_constraints.md
       - Formulations: generated/examples/howtos/formulations
       - Design of experiments (DOE): generated/examples/howtos/doe
       - Post-processing: generated/examples/howtos/post_process

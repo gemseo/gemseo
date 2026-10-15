@@ -30,6 +30,7 @@ from typing import Final
 from numpy import all as np_all
 from numpy import allclose
 from numpy import average
+from numpy import isfinite
 from numpy.linalg import norm
 
 # The generic termination criteria are also re-exported
@@ -198,9 +199,13 @@ class KKTConditionsTester(BaseToleranceTester):
     """The reference KKT norm."""
 
     def _check(self, problem: OptimizationProblem, input_vector: ndarray) -> bool:  # noqa: D102
-        return kkt_residual_computation(
-            problem, input_vector, self.ineq_tolerance
-        ) <= max(self.absolute, self.relative * self.kkt_norm)
+        residual = kkt_residual_computation(problem, input_vector, self.ineq_tolerance)
+        # A non-finite reference norm would make the relative tolerance infinite,
+        # so only the absolute tolerance applies.
+        if not isfinite(self.kkt_norm):
+            return residual <= self.absolute
+
+        return residual <= max(self.absolute, self.relative * self.kkt_norm)
 
 
 def kkt_residual_computation(

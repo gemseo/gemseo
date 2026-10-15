@@ -31,11 +31,9 @@ from typing import NamedTuple
 from numpy import argmin
 from numpy import array
 from numpy import inf
-from numpy import isnan
 from numpy import ndarray
 from numpy.linalg import norm
 
-from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.typing import RealArray
@@ -128,7 +126,7 @@ class OptimizationHistory:
 
         $$
            \lVert\max(g(x)-\varepsilon_{\text{ineq}},0)\rVert_2^2
-           +\lVert|\max(|h(x)|-\varepsilon_{\text{eq}},0)\rVert_2^2
+           +\lVert\max(|h(x)|-\varepsilon_{\text{eq}},0)\rVert_2^2
         $$
 
         where $\|.\|_2$ is the Euclidean norm,
@@ -141,7 +139,8 @@ class OptimizationHistory:
 
         If the design point is feasible, the constraint violation measure is 0.
 
-        If the design point is missing the value of a constraint,
+        If the design point is missing the value of a constraint
+        or this value contains NaN,
         it is considered infeasible,
         with an infinite constraint violation measure.
 
@@ -156,35 +155,8 @@ class OptimizationHistory:
             ValueError: When the database is empty.
         """
         self.__raise_when_database_is_empty()
-        violation = 0.0
-        x_vect_is_feasible = True
-        output_name_to_value = self.database.get(x_vect)
-        constraints = self.__constraints
-        for constraint in constraints:
-            constraint_value = output_name_to_value.get(constraint.name)
-            if constraint_value is None:
-                return False, inf
-
-            f_type = constraint.f_type
-            if constraints.is_constraint_satisfied(f_type, constraint_value):
-                continue
-
-            x_vect_is_feasible = False
-            if isnan(constraint_value).any():
-                return x_vect_is_feasible, inf
-
-            if f_type == ArrayFunction.ConstraintType.INEQ:
-                tolerance = constraints.tolerances.inequality
-            else:
-                tolerance = constraints.tolerances.equality
-                constraint_value = abs(constraint_value)
-
-            if isinstance(constraint_value, ndarray):
-                constraint_value = constraint_value[constraint_value > tolerance]
-
-            violation += norm(constraint_value - tolerance) ** 2
-
-        return x_vect_is_feasible, violation
+        assessment = self.__constraints.assess(self.database.get(x_vect))
+        return assessment.are_satisfied, assessment.squared_violation
 
     def __get_best_infeasible_point(self) -> BestInfeasiblePointType:
         """Returns the best infeasible point within a given tolerance.

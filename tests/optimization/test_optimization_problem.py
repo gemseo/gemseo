@@ -2401,26 +2401,31 @@ def test_is_mono_objective_without_objective(snapshot) -> None:
         OptimizationProblem(design_space).is_mono_objective  # noqa: B018
 
 
-def test_check_design_point_is_feasible_missing_constraint() -> None:
+@pytest.mark.parametrize("reverse_constraints", [False, True])
+def test_check_design_point_is_feasible_missing_constraint(
+    reverse_constraints,
+) -> None:
     """Check that a design point missing a constraint value is infeasible.
 
     A design point missing the value of a constraint used to be considered
     feasible with a violation measure computed only from the constraints
-    evaluated before the missing one.
+    evaluated before the missing one, so the result depended on the order in
+    which the constraints were added to the problem: this must not happen
+    whatever that order.
     """
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="obj")
-    problem.add_constraint(
-        ArrayFunction(lambda x: x, name="cstr1"),
-        constraint_type=ArrayFunction.ConstraintType.INEQ,
-    )
-    problem.add_constraint(
-        ArrayFunction(lambda x: x, name="cstr2"),
-        constraint_type=ArrayFunction.ConstraintType.INEQ,
-    )
+    names = ["cstr1", "cstr2"]
+    if reverse_constraints:
+        names.reverse()
+    for name in names:
+        problem.add_constraint(
+            ArrayFunction(lambda x: x, name=name),
+            constraint_type=ArrayFunction.ConstraintType.INEQ,
+        )
 
     x_vect = array([1.0])
     # cstr1 would be satisfied on its own, but cstr2 is missing altogether.

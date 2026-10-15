@@ -205,6 +205,44 @@ def test_lagrange_store(problem) -> None:
     lagrange._store_multipliers(-1 * np.ones(10))
 
 
+@pytest.mark.parametrize(
+    ("constraint_value", "expected_violation"),
+    [
+        (array([2.0, np.nan]), float("inf")),
+        (array([-1.0, -1.0]), 0.0),
+    ],
+)
+def test_constraint_violation_nan(constraint_value, expected_violation) -> None:
+    """A NaN component makes the constraint violation infinite.
+
+    Regression test:
+    `LagrangeMultipliers` used to compute, for each constraint,
+    `value = value - tolerance`,
+    then `value.max()` (which propagates NaN),
+    then `max(self.constraint_violation, value)` (which silently discards it):
+    `constraint_violation` ended up `0.0`
+    for `[nan]`, `[nan, 2.0]`, `[2.0, nan]` and `[nan, nan]`,
+    losing the real violation of 2.0 in the `[2.0, nan]` case too.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=-10, upper_bound=10)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([x.sum()]), name="f", jac=lambda x: array([[1.0, 1.0]])
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: constraint_value,
+            name="g",
+            jac=lambda x: array([[0.0, 0.0], [0.0, 0.0]]),
+        ),
+        constraint_type="ineq",
+    )
+    lagrange = LagrangeMultipliers(problem)
+    lagrange.compute(array([0.0, 0.0]))
+    assert lagrange.constraint_violation == expected_violation
+
+
 def test_lagrange_negative_lower_bound_warning(problem, caplog) -> None:
     """Check the warning logged for negative multipliers on active lower bounds."""
     options = deepcopy(slsqp_options)

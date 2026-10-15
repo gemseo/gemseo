@@ -46,6 +46,18 @@ They are internally rewritten in the general form mentioned above.
 Feasibility is checked against configurable
 [ConstraintTolerances][gemseo.optimization.constraint_tolerances.ConstraintTolerances]
 accessible through the `tolerances` attribute.
+A point is feasible when every constraint is satisfied within its tolerance.
+A constraint value containing NaN is violated,
+and a missing constraint value makes the point infeasible.
+[assess()][gemseo.optimization.core.constraints.Constraints.assess],
+called on the `constraints` attribute,
+returns a [ConstraintsAssessment][gemseo.optimization.core.constraints_assessment.ConstraintsAssessment]
+detailing each constraint at a point:
+its status,
+its squared and maximum violations,
+its number of violated components,
+as well as the missing constraints.
+See [how to assess the constraints at a point](../../../generated/examples/howtos/optimizers/plot_howto_assess_constraints.md).
 
 An optimization algorithm is typically used to solve an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem],
 even though a [design of experiments (DOE)][concept-samplers-doe] can be used for a preliminary trade-off analysis.

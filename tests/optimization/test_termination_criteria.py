@@ -20,11 +20,15 @@
 from __future__ import annotations
 
 import pytest
+from numpy import inf
 from numpy import ones
+from numpy import zeros
 
 from gemseo import execute_algo
+from gemseo.optimization.termination_criteria import KKTConditionsTester
 from gemseo.optimization.termination_criteria import is_f_tol_reached
 from gemseo.optimization.termination_criteria import is_x_tol_reached
+from gemseo.optimization.termination_criteria import kkt_residual_norm
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 
 from .problem.constant import Constant
@@ -84,3 +88,20 @@ def test_n_stop_crit_x(n_stop_crit_x, enable_function_statistics) -> None:
         stop_crit_n_x=n_stop_crit_x,
     )
     assert res.n_obj_call == n_stop_crit_x + 1
+
+
+@pytest.mark.parametrize(
+    ("residual", "is_reached"),
+    [(1e-6, True), (1.0, False)],
+    ids=["below_absolute_tolerance", "above_absolute_tolerance"],
+)
+def test_kkt_conditions_tester_check_with_infinite_reference_norm(
+    residual, is_reached
+) -> None:
+    """Check that an infinite reference KKT norm leaves only the absolute tolerance."""
+    problem = Rosenbrock()
+    input_vector = zeros(2)
+    problem.database.store(input_vector, {kkt_residual_norm: residual})
+    tester = KKTConditionsTester(absolute=1e-5, relative=1e-2, kkt_norm=inf)
+
+    assert tester.check(problem, input_vector=input_vector) == is_reached
