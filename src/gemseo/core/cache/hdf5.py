@@ -29,6 +29,7 @@ from typing import overload
 
 from gemseo.core.cache._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.core.cache.base_full import BaseFullCache
+from gemseo.core.cache.util import hash_data
 from gemseo.util.data_conversion import nest_flat_bilevel_dict
 from gemseo.util.lock import synchronized
 
@@ -88,6 +89,16 @@ class HDF5Cache(BaseFullCache):
             architecture. The method
             [MDOScenario.set_backup_settings()][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
             is recommended as an alternative.
+
+            A file written by GEMSEO 6 or earlier
+            is rewritten in place when it is opened,
+            with the hashes of its entries computed again;
+            GEMSEO 6 and earlier can no longer open it.
+            This rewrite is not safe when several processes open the file
+            at the same time,
+            so such a file shall be opened once by a single process first.
+            A file that cannot be written is left unchanged
+            and the hashes of its entries are computed whenever it is opened.
         """  # noqa: D205, D212, D415
         super().__init__(tolerance, name or hdf_node_path)
         self.__input_data_converter = input_data_converter
@@ -183,6 +194,22 @@ class HDF5Cache(BaseFullCache):
         elif group == self.Group.JACOBIAN:
             data = nest_flat_bilevel_dict(data, separator=self._jacobian_separator)
         return data
+
+    def _hash_input_data(
+        self,
+        input_data: StrKeyMapping,
+    ) -> int:
+        # The file stores the hashes of the input data converted to arrays,
+        # which its update and the read-only fallback compute again
+        # from the input data stored in the file,
+        # so the lookups hash the input data in the same form.
+        if self.__input_data_converter is not None:
+            to_array = self.__input_data_converter.convert_value_to_array
+            input_data = {
+                name: to_array(name, value) for name, value in input_data.items()
+            }
+
+        return hash_data(input_data)
 
     def _write_data(
         self,

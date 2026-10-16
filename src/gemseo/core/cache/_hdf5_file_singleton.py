@@ -21,9 +21,11 @@
 
 from __future__ import annotations
 
+import logging
 from contextlib import contextmanager
 from enum import StrEnum
 from genericpath import exists
+from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -55,6 +57,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
 
+logger = logging.getLogger(__name__)
+
+
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     """Singleton to access an HDF file.
 
@@ -75,14 +80,31 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     hash_tag: ClassVar[str] = "hash"
     """The label for the hash."""
 
-    file_format_version: ClassVar[int] = 2
-    """The version of the file format."""
+    file_format_version: ClassVar[int] = 3
+    """The version of the file format.
+
+    The version 3, introduced by GEMSEO 7,
+    marks the files whose hashes have been computed by
+    [hash_data][gemseo.core.cache.util.hash_data]
+    from the canonical form of the input data;
+    the files of an older version,
+    written by GEMSEO 6 or earlier,
+    store hashes computed from the raw input data,
+    which are computed again when such a file is opened.
+    """
 
     __keep_open: bool
     """Whether to keep the file open when leaving `_open()` context manager."""
 
     __file: File | None
     """The hdf5 file handle."""
+
+    __compute_hashes: bool
+    """Whether to compute the hashes of the entries instead of reading them.
+
+    This is the case of a file of an older version that cannot be updated,
+    whose stored hashes may have been computed by another hash function.
+    """
 
     class __SparseMatricesAttribute(StrEnum):  # noqa: N801
         """Attribute name required to store sparse matrices in CSR format."""
@@ -102,8 +124,11 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """  # noqa: D205, D212, D415
         self.__keep_open = False
         self.__file = None
+        self.__compute_hashes = False
         self.hdf_file_path = hdf_file_path
-        self.__check_file_format_version()
+        if self.__get_file_format_version() < self.file_format_version:
+            self.__update_file_format()
+
         self._lock = get_multi_processing_manager().RLock()
 
     @property
@@ -317,7 +342,10 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
             for index, entry in root.items():
                 index = int(index)
-                hash_ = int(array(entry[self.hash_tag])[0])
+                if self.__compute_hashes:
+                    hash_ = self.__compute_hash(entry)
+                else:
+                    hash_ = int(array(entry[self.hash_tag])[0])
                 indices = hash_to_indices.get(hash_)
 
                 if indices is None:
@@ -343,37 +371,75 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             assert self.__file is not None
             del self.__file[hdf_node_path]
 
-    def __check_file_format_version(self) -> None:
-        """Make sure the file can be handled.
+    def __get_file_format_version(self) -> int:
+        """Return the version of the file format, checking that it can be handled.
+
+        Returns:
+            The version of the file format,
+            which is the current one for a file that does not exist or is empty.
 
         Raises:
             ValueError: If the version of the file format is missing or
                 greater than the current one.
         """
         if not Path(self.hdf_file_path).exists():
-            return
+            return self.file_format_version
 
         with self.__open():
             assert self.__file is not None
             if not len(self.__file):
-                return
+                return self.file_format_version
             version = self.__file.attrs.get("version")
 
         if version is None:
             msg = (
                 f"The file {self.hdf_file_path} cannot be used because it has no file "
-                "format version: see HDFCache.update_file_format to convert it."
+                "format version: see HDF5Cache.update_file_format to convert it."
             )
             raise ValueError(msg)
 
         if version > self.file_format_version:
+            # update_file_format cannot convert a file to an older version.
             msg = (
                 f"The file {self.hdf_file_path} cannot be used because its file "
-                f"format version is {version}"
+                f"format version is {version} "
                 f"while the expected version is {self.file_format_version}: "
-                "see HDFCache.update_file_format to convert it."
+                f"a version of GEMSEO newer than {metadata.version('gemseo')} "
+                "is needed to use it."
             )
             raise ValueError(msg)
+
+        return int(version)
+
+    def __update_file_format(self) -> None:
+        """Update the format of a file of an older version.
+
+        The hashes stored by an older version have been computed
+        with another hash function, so they would never be found again.
+        A file that cannot be written, e.g. a read-only reference cache,
+        is left unchanged and the hashes of its entries are computed when read.
+
+        Warning:
+            The update is not safe when several processes open the same file
+            at the same time: nothing serializes them across processes.
+        """
+        logger.info(
+            "Updating the format of the file %s to the version %s.",
+            self.hdf_file_path,
+            self.file_format_version,
+        )
+        try:
+            self.update_file_format(self.hdf_file_path)
+        except OSError:
+            logger.warning(
+                "The format of the file %s cannot be updated, "
+                "so the hashes of all its entries are computed "
+                "whenever it is opened, "
+                "including by each process of a parallel execution; "
+                "make it writable and open it once to avoid this cost.",
+                self.hdf_file_path,
+            )
+            self.__compute_hashes = True
 
     @classmethod
     def __set_file_format_version(
@@ -400,18 +466,72 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         In particular,
         GEMSEO 3.2.0 fixed the hashing of the data dictionaries.
 
+        The hashes of the entries are computed again,
+        as the hashing of the data has changed since,
+        and the file is marked with the current version of the file format.
+
         Args:
             hdf_file_path: A HDF5 file path.
         """
         with h5py.File(str(hdf_file_path), "a") as h5file:
+            # A node can be passed as a path `root_name/.../node_name`,
+            # so the entries are looked for at any depth;
+            # they are collected first, as the file is not modified while visited.
+            entry_names = []
+            h5file.visititems(
+                lambda name, obj: (
+                    entry_names.append(name) if cls.__is_entry(name, obj) else None
+                )
+            )
+            for entry_name in entry_names:
+                entry = h5file[entry_name]
+                data_hash = array([cls.__compute_hash(entry)], dtype="bytes")
+                # The dataset has the width of the old hash,
+                # which cuts a longer new hash if assigned into it.
+                # It can be missing after an update interrupted at this point.
+                if cls.hash_tag in entry:
+                    del entry[cls.hash_tag]
+
+                entry.create_dataset(cls.hash_tag, data=data_hash)
+
+            # The version is set last,
+            # so that a failure leaves the file at its old version.
             cls.__set_file_format_version(h5file)
-            for value in h5file.values():
-                if isinstance(value, h5py.Group):
-                    for sample_value in value.values():
-                        data = sample_value[BaseCache.Group.INPUTS]
-                        data = {key: array(val) for key, val in data.items()}
-                        data_hash = array([hash_data(data)], dtype="bytes")
-                        sample_value[cls.hash_tag][0] = data_hash
+
+    @staticmethod
+    def __compute_hash(entry: h5py.Group) -> int:
+        """Compute the hash of an entry from its input data.
+
+        Args:
+            entry: The entry.
+
+        Returns:
+            The hash of the entry.
+        """
+        data = entry[BaseCache.Group.INPUTS]
+        return hash_data({key: array(val) for key, val in data.items()})
+
+    @classmethod
+    def __is_entry(cls, name: str, obj: h5py.Group | h5py.Dataset) -> bool:
+        """Return whether an object of an HDF file is an entry of a cache.
+
+        An entry is a group named after its index and holding input data.
+        Its hash is not required,
+        so that an update interrupted between its deletion and its creation
+        can be completed.
+
+        Args:
+            name: The path of the object in the file.
+            obj: The object.
+
+        Returns:
+            Whether the object is an entry of a cache.
+        """
+        return (
+            isinstance(obj, h5py.Group)
+            and name.rpartition("/")[2].isdigit()
+            and BaseCache.Group.INPUTS in obj
+        )
 
     @contextmanager
     def __open(self, mode: str = "r") -> Generator[None, None, None]:

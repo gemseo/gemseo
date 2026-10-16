@@ -35,6 +35,7 @@ from gemseo.core.cache.base import BaseCache
 from gemseo.core.cache.cache_entry import CacheEntry
 from gemseo.core.cache.cache_item import CacheItem
 from gemseo.core.cache.util import hash_data
+from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.data_conversion import flatten_nested_bilevel_dict
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
 from gemseo.util.lock import synchronized
@@ -120,7 +121,7 @@ class BaseFullCache(BaseCache):
         Returns:
             Whether `input_data` exists.
         """
-        data_hash = hash_data(input_data)
+        data_hash = self._hash_input_data(input_data)
 
         # Check if there is an entry with this hash in the cache.
         indices = self._hash_to_indices.get(data_hash)
@@ -149,6 +150,20 @@ class BaseFullCache(BaseCache):
         self._hash_to_indices[data_hash] = append(indices, self._max_index.value)
         self._initialize_entry(self._max_index.value)
         return False
+
+    def _hash_input_data(
+        self,
+        input_data: StrKeyMapping,
+    ) -> int:
+        """Hash input data in the form in which the cache stores their hash.
+
+        Args:
+            input_data: The input data.
+
+        Returns:
+            The hash of the input data.
+        """
+        return hash_data(input_data)
 
     def _initialize_entry(
         self,
@@ -319,8 +334,10 @@ class BaseFullCache(BaseCache):
         # Only need synchronization if we are in a multiprocessing context.
         if parent_process() is None:
             indices = self._hash_to_indices.get(data_hash)
-        with self.__hashes_lock:
-            indices = self._hash_to_indices.get(data_hash)
+        else:
+            with self.__hashes_lock:
+                indices = self._hash_to_indices.get(data_hash)
+
         return array([], dtype="int") if indices is None else indices
 
     @synchronized
@@ -329,27 +346,49 @@ class BaseFullCache(BaseCache):
         input_data: StrKeyMapping,
     ) -> CacheEntry:
         if self._tolerance == 0.0:
-            data_hash = hash_data(input_data)
-            indices = self.__get_indices(data_hash)
-            for index in indices:
+            for index in self.__get_indices(self._hash_input_data(input_data)):
                 if self.compare_dict_of_arrays(
                     input_data, self._read_data(index, self.Group.INPUTS)
                 ):
-                    output_data = self._read_data(index, self.Group.OUTPUTS)
-                    jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-                    return CacheEntry(output_data, jacobian_data)
+                    return self.__read_entry(index)
 
+            if self.compare_dict_of_arrays is compare_dict_of_arrays:
+                # The input data are hashed as compare_dict_of_arrays compares them,
+                # ignoring the data type and the sign of the zeros,
+                # and in the form in which the cache stores their hash,
+                # so two equal input data have the same hash
+                # and the entries indexed by another hash cannot be equal to this one.
+                return CacheEntry({}, {})
+
+        # Two input data close to each other can have different hashes,
+        # as can two input data equal for a comparator replacing the default one,
+        # so all the entries have to be compared to this one.
         for indices in self._hash_to_indices.values():
             for index in indices:
                 cached_input_data = self._read_data(index, self.Group.INPUTS)
                 if self.compare_dict_of_arrays(
                     input_data, cached_input_data, self._tolerance
                 ):
-                    output_data = self._read_data(index, self.Group.OUTPUTS)
-                    jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-                    return CacheEntry(output_data, jacobian_data)
+                    return self.__read_entry(index)
 
         return CacheEntry({}, {})
+
+    def __read_entry(
+        self,
+        index: int,
+    ) -> CacheEntry:
+        """Read the output and Jacobian data of an entry.
+
+        Args:
+            index: The index of the entry.
+
+        Returns:
+            The output and Jacobian data of the entry.
+        """
+        return CacheEntry(
+            self._read_data(index, self.Group.OUTPUTS),
+            self._read_data(index, self.Group.JACOBIAN),
+        )
 
     @property
     def _all_groups(self) -> list[int]:

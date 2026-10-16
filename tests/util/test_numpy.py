@@ -23,10 +23,12 @@ from numpy import int32
 from numpy import int64
 from numpy import ndarray
 from numpy import shares_memory
+from numpy import signbit
 from numpy import uint32
 from numpy import uint64
 from numpy.testing import assert_equal
 
+from gemseo.util._numpy import _canonicalize
 from gemseo.util._numpy import freeze_array
 from gemseo.util._numpy import hash_array
 from gemseo.util.testing.helper import assert_exception
@@ -135,17 +137,74 @@ def test_frozen_array_is_a_plain_array() -> None:
 @pytest.mark.parametrize(("dtype_32", "dtype_64"), [(int32, int64), (uint32, uint64)])
 def test_hash_array_32_bit_integers(dtype_32, dtype_64) -> None:
     """Check that a 32-bit integer array is hashed as its 64-bit equivalent."""
-    assert hash_array(array([1, 2], dtype=dtype_32)) == hash_array(
-        array([1, 2], dtype=dtype_64)
+    assert hash_array(array([1, 2], dtype=dtype_32), canonicalize=False) == hash_array(
+        array([1, 2], dtype=dtype_64), canonicalize=False
     )
 
 
 @pytest.mark.parametrize("dtype_", [int32, int64, uint32, uint64])
 def test_hash_array_integer_reference_value(dtype_) -> None:
     """Check the platform-independent hash of an integer array."""
-    assert hash_array(array([1, 2], dtype=dtype_)) == "07ee86c281446bef"
+    assert hash_array(array([1, 2], dtype=dtype_), canonicalize=False) == (
+        "07ee86c281446bef"
+    )
 
 
 def test_hash_array_default_integer_dtype() -> None:
     """Check that the default integer type is hashed as 64-bit on all platforms."""
-    assert hash_array(array([1, 2])) == "07ee86c281446bef"
+    assert hash_array(array([1, 2]), canonicalize=False) == "07ee86c281446bef"
+
+
+@pytest.mark.parametrize(
+    "other",
+    [array([1]), array([1.0 + 0.0j]), array([1.0], dtype="float32")],
+    ids=["int", "complex", "float32"],
+)
+def test_hash_array_equal_values(other) -> None:
+    """Check that arrays equal in value are hashed equal by default."""
+    assert hash_array(other) == hash_array(array([1.0]))
+
+
+def test_hash_array_negative_zero() -> None:
+    """Check that a negative zero is hashed as a positive one by default only."""
+    assert hash_array(array([-0.0])) == hash_array(array([0.0]))
+    assert hash_array(array([-0.0]), canonicalize=False) != hash_array(
+        array([0.0]), canonicalize=False
+    )
+
+
+def test_hash_array_without_canonicalization() -> None:
+    """Check that arrays of different data types are hashed apart without it."""
+    assert hash_array(array([1]), canonicalize=False) != hash_array(
+        array([1.0]), canonicalize=False
+    )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        array([1.0, 0.0, -2.0]),
+        array([1.0 + 1.0j, -2.0 - 1.0j]),
+        array([None], dtype=object),
+    ],
+    ids=["real", "complex", "object"],
+)
+def test_canonicalize_does_not_copy(value) -> None:
+    """Check that a value without negative zero is not copied.
+
+    A value that is neither a number, a text nor a time is returned as it is.
+    """
+    assert _canonicalize(value) is value
+
+
+@pytest.mark.parametrize(
+    "value",
+    [array([1.0, -0.0]), array([complex(1.0, -0.0), complex(-0.0, 1.0)])],
+    ids=["real", "complex"],
+)
+def test_canonicalize_turns_negative_zeros_positive(value) -> None:
+    """Check that the negative zeros of a value are turned into positive ones."""
+    canonical = _canonicalize(value)
+
+    assert canonical is not value
+    assert not signbit(canonical.view(float64)).any()

@@ -64,7 +64,9 @@ Use HDF5 caches to persist the discipline output on the disk.
 
 ## Error when using a HDF5 cache
 
-In GEMSEO 3.2.0, the storage of the data hashes in the HDF5 cache has been fixed and the previous cache files are no longer valid. If you get an error like `The file cache.h5 cannot be used because it has no file format version: see HDF5Cache.update_file_format for converting it.`, please use [HDF5Cache.update_file_format()][gemseo.core.cache.hdf5.HDF5Cache.update_file_format] to update the format of the file and fix the data hashes.
+In GEMSEO 3.2.0, the storage of the data hashes in the HDF5 cache has been fixed and the previous cache files are no longer valid. If you get an error like `The file cache.h5 cannot be used because it has no file format version: see HDF5Cache.update_file_format to convert it.`, please use [HDF5Cache.update_file_format()][gemseo.core.cache.hdf5.HDF5Cache.update_file_format] to update the format of the file and fix the data hashes.
+
+A file with an older file format version is rewritten in place when it is opened by an [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache], with the hashes of its entries computed again, and earlier versions of GEMSEO can no longer open it. This rewrite is not safe when several processes open the file at the same time, so such a file shall be opened once by a single process first, e.g. before a parallel execution. A file that cannot be written is left unchanged and the hashes of its entries are computed whenever it is opened.
 
 ## GEMSEO fails with openturns
 

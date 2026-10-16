@@ -38,6 +38,13 @@ def hash_data(
 ) -> int:
     """Hash data using xxh3_64 from the xxhash library.
 
+    The values are hashed in a canonical form,
+    regardless of their numeric data types, of the signs of their zeros,
+    of the lengths of their text data types and of the units of their times,
+    so that two data equal for
+    [compare_dict_of_arrays][gemseo.util.comparison.compare_dict_of_arrays]
+    have the same hash value.
+
     Args:
         data: The data to hash.
 
