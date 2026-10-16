@@ -116,3 +116,14 @@ def test_non_contiguous_database_key() -> None:
     assert database[x_vect] == {"f": 1.0}
     assert database.get_iteration(x_vect) == 1
     assert (database.get_x_vect(1) == x_vect).all()
+
+
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [(array([1]), array([1.0])), (array([-0.0]), array([0.0]))],
+    ids=["dtype", "negative_zero"],
+)
+def test_equal_values(first, second) -> None:
+    """Check that wrappers of arrays equal in value are equal and hashed equal."""
+    assert HashableNdarray(first) == HashableNdarray(second)
+    assert hash(HashableNdarray(first)) == hash(HashableNdarray(second))

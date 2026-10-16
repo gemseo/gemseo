@@ -21,8 +21,11 @@ from __future__ import annotations
 
 import logging
 import shutil
+from errno import EACCES
+from itertools import count
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import h5py
 import pytest
@@ -35,6 +38,8 @@ from scipy.sparse import eye as speye
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.core.cache import _hdf5_file_singleton
+from gemseo.core.cache import base_full
 from gemseo.core.cache._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.core.cache.cache_entry import CacheEntry
 from gemseo.core.cache.cache_item import CacheItem
@@ -52,12 +57,16 @@ from gemseo.util._numpy import int64_dtype
 from gemseo.util._numpy import uint32_dtype
 from gemseo.util._numpy import uint64_dtype
 from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.singleton import SingleInstancePerFileAttribute
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    from numpy import ndarray
+
     from gemseo.core.cache.memory_full import MemoryFullCache
+    from gemseo.util.typing import StrKeyMapping
 
 dir_path = Path(__file__).parent
 
@@ -305,6 +314,11 @@ def func(x):
         ("int_linux.h5", array([1, 2, 3]), array([1, 2, 3])),
         ("float_win.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
         ("float_linux.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
+        # The hashes of the files above are computed again when they are opened,
+        # as their version is older; these ones are read as they are stored,
+        # and hashed the same way on every platform.
+        ("int_v3.h5", array([1, 2, 3]), array([1, 2, 3])),
+        ("float_v3.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
     ],
 )
 def test_det_hash(
@@ -542,13 +556,183 @@ def test_check_version_missing(h5_file, snapshot) -> None:
         HDF5FileSingleton(cache_file_name)
 
 
-def test_check_version_greater(h5_file, snapshot) -> None:
+def test_check_version_greater(h5_file, snapshot, monkeypatch) -> None:
     """Verify that a non-empty file with greater file format version raises."""
     h5_file["foo"] = "bar"
     h5_file.attrs["version"] = HDF5FileSingleton.file_format_version + 1
+    # The message names the running version of GEMSEO,
+    # which changes with every commit of a development version.
+    monkeypatch.setattr(_hdf5_file_singleton.metadata, "version", lambda _: "7.0.0")
 
     with assert_exception(ValueError, snapshot):
         HDF5FileSingleton(cache_file_name)
+
+
+def _find_input_data_with_long_hash() -> dict[str, ndarray]:
+    """Return input data whose hash has 20 digits, the most for a 64-bit hash.
+
+    Returns:
+        The input data.
+    """
+    for index in count():
+        input_data = {"x": array([float(index)])}
+        if len(str(hash_data(input_data))) == 20:
+            return input_data
+
+    return {}  # pragma: no cover
+
+
+def _write_older_file(
+    file_path: str, hdf_node_path: str, input_data: StrKeyMapping
+) -> None:
+    """Write an entry in an HDF5 file looking like one of an older version.
+
+    Its stored hash has 19 digits, as if computed by another hash function,
+    in a dataset of type `S19` that cannot hold the 20 digits of its current hash.
+
+    Args:
+        file_path: The path to the HDF5 file.
+        hdf_node_path: The path to the node of the entry.
+        input_data: The input data of the entry.
+    """
+    cache = HDF5Cache(hdf_file_path=file_path, hdf_node_path=hdf_node_path)
+    cache.cache_outputs(input_data, {"y": array([2.0])})
+    with h5py.File(file_path, "a") as h5_file:
+        h5_file.attrs["version"] = HDF5FileSingleton.file_format_version - 1
+        entry = h5_file[hdf_node_path]["1"]
+        del entry[HDF5FileSingleton.hash_tag]
+        entry.create_dataset(HDF5FileSingleton.hash_tag, data=array([b"1" * 19]))
+
+
+def _forget_file_singletons(monkeypatch) -> None:
+    """Make the next caches use new file singletons, for the current test only.
+
+    The process-wide registry of the singletons is replaced, not emptied,
+    so that the other tests of the same process keep their singletons.
+
+    Args:
+        monkeypatch: The pytest fixture restoring the registry.
+    """
+    monkeypatch.setattr(SingleInstancePerFileAttribute, "instances", {})
+
+
+def test_check_version_older(tmp_wd, monkeypatch) -> None:
+    """Verify that the hashes of a file of an older version are computed again."""
+    input_data = _find_input_data_with_long_hash()
+    _write_older_file(cache_file_name, "node", input_data)
+
+    _forget_file_singletons(monkeypatch)
+    new_cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
+
+    # The entry is found again although its stored hash was stale,
+    # and its new hash is stored in full, although longer than the old one.
+    assert len(new_cache) == 1
+    assert compare_dict_of_arrays(new_cache[input_data].outputs, {"y": array([2.0])})
+    with h5py.File(cache_file_name, "r") as h5_file:
+        stored_hash = h5_file["node"]["1"][HDF5FileSingleton.hash_tag][0]
+    assert int(stored_hash) == hash_data(input_data)
+
+
+def test_check_version_older_with_nested_node(tmp_wd, monkeypatch) -> None:
+    """Verify that the hashes of the entries at a nested node are computed again."""
+    input_data = _find_input_data_with_long_hash()
+    _write_older_file(cache_file_name, "flat", input_data)
+    _write_older_file(cache_file_name, "root/sub/node", input_data)
+
+    _forget_file_singletons(monkeypatch)
+    caches = [
+        HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path=hdf_node_path)
+        for hdf_node_path in ("flat", "root/sub/node")
+    ]
+
+    for cache in caches:
+        assert compare_dict_of_arrays(cache[input_data].outputs, {"y": array([2.0])})
+    with h5py.File(cache_file_name, "r") as h5_file:
+        assert h5_file.attrs["version"] == HDF5FileSingleton.file_format_version
+
+
+def test_check_version_older_read_only(tmp_wd, caplog, monkeypatch) -> None:
+    """Verify that a file of an older version that cannot be written can be used."""
+    input_data = _find_input_data_with_long_hash()
+    _write_older_file(cache_file_name, "node", input_data)
+
+    # The file is made read-only for h5py rather than for the operating system,
+    # whose permissions do not apply to root, the user running the CI jobs.
+    open_file = h5py.File
+
+    def open_read_only(name, mode="r", *args, **kwargs):
+        if mode != "r":
+            raise PermissionError(EACCES, "Permission denied", name)
+        return open_file(name, mode, *args, **kwargs)
+
+    monkeypatch.setattr(h5py, "File", open_read_only)
+    _forget_file_singletons(monkeypatch)
+    cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
+
+    # The hashes are computed from the input data, without writing them.
+    assert compare_dict_of_arrays(cache[input_data].outputs, {"y": array([2.0])})
+    with h5py.File(cache_file_name, "r") as h5_file:
+        version = h5_file.attrs["version"]
+    assert version == HDF5FileSingleton.file_format_version - 1
+    assert "cannot be updated" in caplog.text
+
+
+def test_check_version_older_with_missing_hash(tmp_wd, monkeypatch) -> None:
+    """Verify that the update repairs an entry whose hash is missing.
+
+    An update interrupted between the deletion of a hash and its creation
+    leaves such an entry.
+    """
+    cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
+    first_input_data = {"x": array([1.0])}
+    second_input_data = {"x": array([2.0])}
+    cache.cache_outputs(first_input_data, {"y": array([1.0])})
+    cache.cache_outputs(second_input_data, {"y": array([2.0])})
+    with h5py.File(cache_file_name, "a") as h5_file:
+        h5_file.attrs["version"] = HDF5FileSingleton.file_format_version - 1
+        del h5_file["node"]["2"][HDF5FileSingleton.hash_tag]
+
+    _forget_file_singletons(monkeypatch)
+    new_cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
+
+    assert len(new_cache) == 2
+    for input_data, output_value in [(first_input_data, 1.0), (second_input_data, 2.0)]:
+        cache_entry = new_cache[input_data]
+        assert compare_dict_of_arrays(cache_entry.outputs, {"y": array([output_value])})
+    with h5py.File(cache_file_name, "r") as h5_file:
+        stored_hash = h5_file["node"]["2"][HDF5FileSingleton.hash_tag][0]
+    assert int(stored_hash) == hash_data(second_input_data)
+
+
+def test_check_version_older_with_node_named_inputs(tmp_wd, monkeypatch) -> None:
+    """Verify that a node named like the input data of an entry is not an entry."""
+    input_data = _find_input_data_with_long_hash()
+    _write_older_file(cache_file_name, "root/inputs", input_data)
+
+    _forget_file_singletons(monkeypatch)
+    cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="root/inputs")
+
+    assert compare_dict_of_arrays(cache[input_data].outputs, {"y": array([2.0])})
+    with h5py.File(cache_file_name, "r") as h5_file:
+        assert HDF5FileSingleton.hash_tag not in h5_file["root"]
+
+
+def test_update_file_format_failure_keeps_the_version(tmp_wd, monkeypatch) -> None:
+    """Verify that a file whose update fails keeps its old version."""
+    _write_older_file(cache_file_name, "node", {"x": array([1.0])})
+
+    def fail(data):
+        msg = "Something went wrong."
+        raise ValueError(msg)
+
+    monkeypatch.setattr("gemseo.core.cache._hdf5_file_singleton.hash_data", fail)
+
+    with pytest.raises(ValueError):  # noqa: PT011
+        HDF5FileSingleton.update_file_format(cache_file_name)
+
+    with h5py.File(cache_file_name, "r") as h5_file:
+        version = h5_file.attrs["version"]
+    assert version == HDF5FileSingleton.file_format_version - 1
 
 
 def test_update_file_format(tmp_wd) -> None:
@@ -722,3 +906,239 @@ def test_dict_comparator():
     cache.cache_outputs({"i": arange(1)}, {"o": arange(1)})
     with pytest.raises(RuntimeError):
         cache.get("i")
+
+
+def _count_comparisons(cache, monkeypatch) -> list[int]:
+    """Count the comparisons of input data done by a cache.
+
+    The input data of an entry are read to be compared,
+    so the reads are counted rather than the calls to the comparator,
+    which the cache would no longer take for the default one if it were replaced.
+
+    Args:
+        cache: The cache to spy on.
+        monkeypatch: The pytest fixture restoring the method.
+
+    Returns:
+        A single-item list containing the number of comparisons.
+    """
+    n_comparisons = [0]
+    read_data = cache._read_data
+
+    def count(index, group):
+        if group == cache.Group.INPUTS:
+            n_comparisons[0] += 1
+        return read_data(index, group)
+
+    monkeypatch.setattr(cache, "_read_data", count)
+    return n_comparisons
+
+
+def _fill(cache, n_entries: int = 10) -> None:
+    """Cache the outputs of several input data.
+
+    Args:
+        cache: The cache to fill.
+        n_entries: The number of entries to cache.
+    """
+    for index in range(n_entries):
+        cache.cache_outputs({"x": array([index])}, {"y": array([index])})
+
+
+def test_getitem_does_not_compare_the_entries(memory_full_cache, monkeypatch) -> None:
+    """Check that a missing entry is not compared to the entries of the cache."""
+    _fill(memory_full_cache)
+    n_comparisons = _count_comparisons(memory_full_cache, monkeypatch)
+
+    # The hash of the input data is enough to conclude that the entry is missing.
+    assert not memory_full_cache[{"x": array([10])}].outputs
+
+    assert n_comparisons[0] == 0
+
+
+def test_getitem_returns_the_entry_found(memory_full_cache) -> None:
+    """Check that a lookup returns the entry of the input data."""
+    _fill(memory_full_cache)
+
+    cache_entry = memory_full_cache[{"x": array([5])}]
+
+    assert compare_dict_of_arrays(cache_entry.outputs, {"y": array([5])})
+
+
+def test_getitem_compares_the_entries_with_a_tolerance(
+    memory_full_cache, monkeypatch
+) -> None:
+    """Check that all the entries are compared when the tolerance is not zero."""
+    _fill(memory_full_cache)
+    memory_full_cache.tolerance = 1e-6
+    n_comparisons = _count_comparisons(memory_full_cache, monkeypatch)
+
+    # Input data close to each other can have different hashes,
+    # so all the entries are compared to the missing one.
+    assert not memory_full_cache[{"x": array([10.5])}].outputs
+    assert n_comparisons[0] == 10
+
+
+def test_getitem_in_a_child_process(memory_full_cache, monkeypatch) -> None:
+    """Check that a lookup from a child process finds the entry of the input data."""
+    _fill(memory_full_cache)
+    monkeypatch.setattr(base_full, "parent_process", object)
+
+    cache_entry = memory_full_cache[{"x": array([5])}]
+
+    assert compare_dict_of_arrays(cache_entry.outputs, {"y": array([5])})
+
+
+def _compare_names_and_shapes(dict_of_arrays, other_dict_of_arrays, tolerance=0.0):
+    """Compare two dictionaries of arrays from their names and shapes only.
+
+    Args:
+        dict_of_arrays: A dictionary of arrays.
+        other_dict_of_arrays: Another dictionary of arrays.
+        tolerance: The tolerance, ignored.
+
+    Returns:
+        Whether the dictionaries have the same names and shapes.
+    """
+    return {name: value.shape for name, value in dict_of_arrays.items()} == {
+        name: value.shape for name, value in other_dict_of_arrays.items()
+    }
+
+
+def test_getitem_with_another_comparator(memory_full_cache, monkeypatch) -> None:
+    """Check that a lookup finds an entry equal for a comparator replacing the default.
+
+    Two input data equal for such a comparator can have different hashes,
+    so the hash of the input data is not enough to conclude that the entry is missing.
+    """
+    memory_full_cache.cache_outputs({"x": array([1.0])}, {"y": array([1.0])})
+    monkeypatch.setattr(
+        memory_full_cache, "compare_dict_of_arrays", _compare_names_and_shapes
+    )
+
+    cache_entry = memory_full_cache[{"x": array([2.0])}]
+
+    assert compare_dict_of_arrays(cache_entry.outputs, {"y": array([1.0])})
+
+
+@pytest.mark.parametrize(
+    ("value", "other_value"),
+    [
+        (array([1]), array([1.0])),
+        (array([1.0]), array([1.0 + 0.0j])),
+        (array([1.0], dtype="float32"), array([1.0])),
+        (array([True]), array([1])),
+        (array([0.0]), array([-0.0])),
+        (array([complex(1.0, -0.0)]), array([1.0])),
+        (array([1.0 + 1.0j]), array([1.0 + 1.0j])),
+        (array(["a"]), array(["a"], dtype="<U5")),
+        (array([b"\xe9"]), array([b"\xe9"], dtype="S5")),
+        (
+            array(["2020-01-01"], dtype="datetime64[D]"),
+            array(["2020-01-01"], dtype="datetime64[s]"),
+        ),
+        (
+            array(["3000-01-01"], dtype="datetime64[D]"),
+            array(["3000-01-01"], dtype="datetime64[s]"),
+        ),
+        (array([1], dtype="timedelta64[D]"), array([24], dtype="timedelta64[h]")),
+    ],
+    ids=[
+        "integer",
+        "complex",
+        "single",
+        "boolean",
+        "signed zero",
+        "complex signed zero",
+        "complex imaginary",
+        "text",
+        "non-ASCII bytes",
+        "datetime unit",
+        "datetime out of the nanosecond range",
+        "timedelta unit",
+    ],
+)
+def test_hash_data_of_equal_values(value, other_value) -> None:
+    """Check that data equal for a cache have the same hash."""
+    data = {"x": value}
+    other_data = {"x": other_value}
+    assert compare_dict_of_arrays(data, other_data)
+    assert hash_data(data) == hash_data(other_data)
+
+
+@pytest.mark.parametrize(
+    ("value", "other_value"),
+    [
+        (array([1]), array([2])),
+        (array([1.0]), array([1.0 + 1.0j])),
+        (array([1.0 + 1.0j]), array([1.0 + 2.0j])),
+        (array(["a"]), array(["ab"])),
+        (array(["ab", "c"]), array(["a", "bc"])),
+    ],
+    ids=["integer", "complex", "complex imaginary", "text", "text items"],
+)
+def test_getitem_of_different_values(memory_full_cache, value, other_value) -> None:
+    """Check that data differing in value are not mistaken for one another."""
+    memory_full_cache.cache_outputs({"x": value}, {"y": array([1.0])})
+
+    assert not memory_full_cache[{"x": other_value}].outputs
+
+
+@pytest.mark.parametrize(
+    ("value", "other_value"),
+    [
+        (array([1]), array([1.0])),
+        (array([0.0]), array([-0.0])),
+        (
+            array(["2020-01-01"], dtype="datetime64[D]"),
+            array(["2020-01-01"], dtype="datetime64[s]"),
+        ),
+    ],
+    ids=["integer", "signed zero", "datetime unit"],
+)
+def test_getitem_of_another_data_type(memory_full_cache, value, other_value) -> None:
+    """Check that an entry is found with input data of another data type."""
+    output_data = {"y": array([2.0])}
+    memory_full_cache.cache_outputs({"x": value}, output_data)
+
+    cache_entry = memory_full_cache[{"x": other_value}]
+
+    assert compare_dict_of_arrays(cache_entry.outputs, output_data)
+
+
+class _ColorConverter:
+    """A data converter of color names to numbers."""
+
+    colors: ClassVar[tuple[str, ...]] = ("red", "green")
+    """The colors, whose numbers are their positions."""
+
+    def convert_value_to_array(self, name: str, value: str) -> ndarray:  # noqa: D102
+        return array([float(self.colors.index(value))])
+
+    def convert_array_to_value(self, name: str, value: ndarray) -> str:  # noqa: D102
+        return self.colors[int(value[0])]
+
+
+def test_reopen_with_input_data_converter(tmp_wd, monkeypatch) -> None:
+    """Check that an entry is found again in a reopened file with input converter.
+
+    The file stores the hash of the input data converted to arrays.
+    """
+    converter = _ColorConverter()
+    cache = HDF5Cache(
+        hdf_file_path=cache_file_name,
+        hdf_node_path="node",
+        input_data_converter=converter,
+    )
+    cache.cache_outputs({"color": "red"}, {"y": array([2.0])})
+
+    _forget_file_singletons(monkeypatch)
+    new_cache = HDF5Cache(
+        hdf_file_path=cache_file_name,
+        hdf_node_path="node",
+        input_data_converter=converter,
+    )
+
+    assert len(new_cache) == 1
+    cache_entry = new_cache[{"color": "red"}]
+    assert compare_dict_of_arrays(cache_entry.outputs, {"y": array([2.0])})
