@@ -2429,11 +2429,22 @@ def test_get_current_value_order() -> None:
     )
 
 
-def test_export_import_with_none_value(tmp_wd) -> None:
-    """Check that a design space exported without default value can be imported."""
+@pytest.mark.parametrize("fields", [(), ""])
+def test_export_import_with_none_value(tmp_wd, fields) -> None:
+    """Check that a design space exported without default value can be imported.
+
+    Empty fields export all the fields.
+    """
     design_space = DesignSpace()
     design_space.add_real_variable("x")
-    design_space.to_csv("foo.csv")
+    design_space.to_csv("foo.csv", fields=fields)
+    assert Path("foo.csv").read_text().splitlines()[0].split() == [
+        "name",
+        "lower_bound",
+        "value",
+        "upper_bound",
+        "type",
+    ]
     txt_design_space = DesignSpace.from_csv("foo.csv")
     assert txt_design_space == design_space
 
@@ -2788,11 +2799,18 @@ def test_add_variable_with_a_legacy_variable_type(variable_type) -> None:
 
 
 def test_from_csv_with_a_legacy_variable_type() -> None:
-    """Check that a CSV file storing the variable type value of 6.3 is read."""
-    with pytest.deprecated_call(match="The variable type 'float' is deprecated"):
+    """Check that a CSV file storing the variable type value of 6.3 is read.
+
+    The deprecation is warned once, not once per component.
+    """
+    with pytest.deprecated_call(
+        match="The variable type 'float' is deprecated"
+    ) as records:
         space = DesignSpace.from_csv(current_dir / "design_space_legacy_type.csv")
 
+    assert len(records) == 1
     assert space.variables["x_shared"].type == real_type
+    assert space.variables["x_shared"].size == 2
 
 
 def test_from_hdf_with_a_legacy_variable_type(tmp_wd) -> None:
@@ -3555,158 +3573,6 @@ def test_from_hdf_with_discrete_type_and_no_choices(tmp_wd, snapshot) -> None:
         DesignSpace.from_hdf(file_path)
 
 
-def test_discrete_variable_csv(tmp_wd, discrete_design_space) -> None:
-    """Check that a CSV round-trip preserves the choices."""
-    file_path = Path("ds.csv")
-    discrete_design_space.to_csv(file_path)
-    header = file_path.read_text().splitlines()[0]
-
-    assert header.split()[-1] == "choices"
-
-    design_space = DesignSpace.from_csv(file_path)
-
-    assert design_space == discrete_design_space
-    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
-
-
-def test_discrete_variable_csv_with_explicit_fields(
-    tmp_wd, discrete_design_space
-) -> None:
-    """Check that an explicit fields list still allows a lossless round trip."""
-    file_path = Path("ds.csv")
-    discrete_design_space.to_csv(
-        file_path, fields=["name", "lower_bound", "value", "upper_bound", "type"]
-    )
-    header = file_path.read_text().splitlines()[0]
-
-    assert header.split()[-1] == "choices"
-
-    design_space = DesignSpace.from_csv(file_path)
-
-    assert design_space == discrete_design_space
-    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
-
-
-def test_discrete_variable_csv_with_explicit_fields_without_type(
-    tmp_wd, discrete_design_space
-) -> None:
-    """Check that a fields list missing "type" still allows a lossless round trip."""
-    file_path = Path("ds.csv")
-    discrete_design_space.to_csv(
-        file_path, fields=["name", "lower_bound", "value", "upper_bound"]
-    )
-    header = file_path.read_text().splitlines()[0].split()
-
-    assert header[-2:] == ["choices", "type"]
-
-    design_space = DesignSpace.from_csv(file_path)
-
-    assert design_space == discrete_design_space
-    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
-
-
-def test_discrete_variable_csv_with_choices_in_fields(
-    tmp_wd, discrete_design_space
-) -> None:
-    """Check that an explicit "choices" field is not duplicated."""
-    file_path = Path("ds.csv")
-    discrete_design_space.to_csv(
-        file_path, fields=["name", "lower_bound", "value", "upper_bound", "choices"]
-    )
-    header = file_path.read_text().splitlines()[0].split()
-
-    assert header == ["name", "lower_bound", "value", "upper_bound", "choices", "type"]
-
-    design_space = DesignSpace.from_csv(file_path)
-
-    assert design_space == discrete_design_space
-    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
-
-
-def test_discrete_variable_csv_with_explicit_fields_including_choices(
-    tmp_wd, discrete_design_space
-) -> None:
-    """Check that a fields list already containing "choices" is not duplicated."""
-    file_path = Path("ds.csv")
-    discrete_design_space.to_csv(
-        file_path,
-        fields=["name", "lower_bound", "value", "upper_bound", "type", "choices"],
-    )
-    header = file_path.read_text().splitlines()[0].split()
-
-    assert header.count("choices") == 1
-    assert header == ["name", "lower_bound", "value", "upper_bound", "type", "choices"]
-
-    design_space = DesignSpace.from_csv(file_path)
-
-    assert design_space == discrete_design_space
-    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
-
-
-def test_from_csv_rejects_inconsistent_choices(tmp_wd, snapshot) -> None:
-    """Check that a populated choices cell outside a discrete row raises."""
-    file_path = Path("ds.csv")
-    file_path.write_text(
-        "name lower_bound value upper_bound type choices\n"
-        "t 1.0 None 3.0 real 1.0|2.0|3.0\n"
-    )
-    with assert_exception(ValueError, snapshot):
-        DesignSpace.from_csv(file_path)
-
-
-def test_from_csv_with_discrete_type_and_no_choices(tmp_wd, snapshot) -> None:
-    """Check that a discrete row with an empty choices cell raises."""
-    file_path = Path("ds.csv")
-    file_path.write_text(
-        "name lower_bound value upper_bound type choices\n"
-        "t 1.0 None 3.0 discrete None\n"
-    )
-    with assert_exception(ValueError, snapshot):
-        DesignSpace.from_csv(file_path)
-
-
-def test_discrete_variable_csv_with_the_separator_as_delimiter(
-    tmp_wd, discrete_design_space, snapshot
-) -> None:
-    """Check that a delimiter colliding with the separator raises."""
-    with assert_exception(ValueError, snapshot):
-        discrete_design_space.to_csv(Path("ds.csv"), delimiter="|")
-
-
-def test_csv_without_discrete_variable_is_unchanged(tmp_wd, design_space) -> None:
-    """Check that a space with no discrete variable exports five columns."""
-    file_path = Path("ds.csv")
-    design_space.to_csv(file_path)
-
-    assert file_path.read_text().splitlines()[0].split() == [
-        "name",
-        "lower_bound",
-        "value",
-        "upper_bound",
-        "type",
-    ]
-
-
-def test_to_csv_with_choices_field_and_no_discrete_variable(
-    tmp_wd, design_space
-) -> None:
-    """Check that requesting choices without a discrete variable works.
-
-    A bare pandas KeyError must not be raised;
-    the column is silently dropped, consistent with get_pretty_table().
-    """
-    file_path = Path("ds.csv")
-    design_space.to_csv(
-        file_path, fields=["name", "lower_bound", "upper_bound", "choices"]
-    )
-
-    assert file_path.read_text().splitlines()[0].split() == [
-        "name",
-        "lower_bound",
-        "upper_bound",
-    ]
-
-
 def test_discrete_variable_pretty_table(discrete_design_space, snapshot) -> None:
     """Check that the tabular view does not show the choices."""
     discrete_design_space.initialize_missing_current_values()
@@ -4356,36 +4222,292 @@ def test_from_hdf_rejects_a_catalog_variable_without_catalog(tmp_wd, snapshot) -
         DesignSpace.from_hdf(file_path)
 
 
-def test_catalog_variable_csv_is_refused(
-    tmp_wd, catalog_design_space, snapshot
+@pytest.mark.parametrize(
+    "variables",
+    [
+        (("add_catalog_variable", ("m", CATALOG)),),
+        (
+            ("add_discrete_variable", ("t", [0.72, 0.45, 0.55])),
+            ("add_catalog_variable", ("m", CATALOG)),
+            ("add_catalog_variable", ("s", CATALOG)),
+            ("add_categorical_variable", ("c", ("steel", "aluminium"))),
+        ),
+    ],
+    ids=["one", "several"],
+)
+@pytest.mark.parametrize("method", ["to_csv", "to_file"])
+def test_to_csv_refuses_variables_neither_real_nor_integer(
+    tmp_wd, method, variables, snapshot
 ) -> None:
-    """Check that a space holding a catalog variable cannot be exported to CSV."""
-    with assert_exception(ValueError, snapshot):
-        catalog_design_space.to_csv(Path("ds.csv"))
+    """Check that a CSV file refuses the variables neither real nor integer.
 
-
-def test_single_catalog_variable_csv_is_refused(tmp_wd, snapshot) -> None:
-    """Check that the CSV refusal is worded in the singular for one variable."""
-    design_space = DesignSpace()
-    design_space.add_catalog_variable("m", CATALOG)
-
-    with assert_exception(ValueError, snapshot):
-        design_space.to_csv(Path("ds.csv"))
-
-
-def test_catalog_variable_csv_refusal_keeps_the_declaration_order(
-    tmp_wd, snapshot
-) -> None:
-    """Check that the CSV refusal names the variables in the order of the space.
-
-    The names are not alphabetised, although `pretty_str` sorts by default.
+    All of them are named at once, in the order of the design space.
     """
     design_space = DesignSpace()
-    design_space.add_catalog_variable("s", CATALOG)
-    design_space.add_catalog_variable("m", CATALOG)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
+    for method_name, args in variables:
+        getattr(design_space, method_name)(*args)
 
     with assert_exception(ValueError, snapshot):
-        design_space.to_csv(Path("ds.csv"))
+        getattr(design_space, method)("ds.csv")
+
+    assert not Path("ds.csv").exists()
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        ("name", "lower_bound", "upper_bound", "choices", "foo"),
+        ("name", "lower_bound", "upper_bound", "name"),
+        ("value", "foo", "value", "type", "type"),
+    ],
+    ids=["several-unknown", "repeated", "all"],
+)
+def test_to_csv_with_invalid_fields(tmp_wd, design_space, fields, snapshot) -> None:
+    """Check that to_csv refuses the unknown, repeated and missing name fields.
+
+    All the problems are reported at once.
+    """
+    with assert_exception(ValueError, snapshot):
+        design_space.to_csv("ds.csv", fields=fields)
+
+    assert not Path("ds.csv").exists()
+
+
+@pytest.mark.parametrize(
+    ("variable_type", "header"),
+    [
+        (VariableType.REAL, ["name", "lower_bound", "value", "upper_bound"]),
+        (VariableType.INTEGER, ["name", "lower_bound", "value", "upper_bound", "type"]),
+    ],
+)
+def test_to_csv_without_the_type_field(tmp_wd, variable_type, header) -> None:
+    """Check that to_csv adds the type field when a variable is not real.
+
+    Otherwise, from_csv would read every variable back as real.
+    """
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable(
+        "n", type_=variable_type, lower_bound=0, upper_bound=3, value=1
+    )
+    design_space.to_csv("ds.csv", fields=header[:4])
+
+    assert Path("ds.csv").read_text().splitlines()[0].split() == header
+    assert DesignSpace.from_csv("ds.csv") == design_space
+
+
+@pytest.mark.parametrize(
+    ("fields", "header"),
+    [
+        (("name", "value", "upper_bound"), ["name", "value", "upper_bound"]),
+        ("name", ["name"]),
+    ],
+    ids=["sequence", "string"],
+)
+def test_to_csv_without_bounds(tmp_wd, fields, header, snapshot) -> None:
+    """Check that to_csv writes a file without bounds, as the past releases did.
+
+    A string is read as one field.
+    As in the past releases, from_csv cannot read such a file back.
+    """
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.to_csv("ds.csv", fields=fields)
+
+    assert Path("ds.csv").read_text().splitlines()[0].split() == header
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv")
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        "t 0.45 0.55 0.72 discrete\nm 0 1 2 catalog\nc None None None categorical\n",
+        "y 0.0 0.5 1.0 reel\n",
+        "y 0.0 0.5 1.0 real\ny 0.0 0.5 1.0 discrete\n",
+        (
+            "y 0.0 0.5 1.0 reel\n"
+            "z 0.0 0.5 1.0 foo\n"
+            "u 0.0 0.5 1.0 real\n"
+            "u 0.0 0.5 1.0 integer\n"
+            "w 0.0 0.5 1.0 integer\n"
+            "w 0.0 0.5 1.0 foo\n"
+            "t 0.45 0.55 0.72 discrete\n"
+        ),
+    ],
+    ids=["several-unsupported", "unknown", "mixed", "all"],
+)
+def test_from_csv_refuses_invalid_variable_types(tmp_wd, rows, snapshot) -> None:
+    """Check that a CSV file with variables of invalid types is refused.
+
+    A type is invalid when it names no variable type,
+    differs from the type of another row of the same variable
+    or is neither real nor integer.
+    All the invalid variables are reported at once,
+    a variable mixing a valid and an unknown type for both reasons.
+    """
+    Path("ds.csv").write_text(
+        f"name lower_bound value upper_bound type\nx 0.0 0.5 1.0 real\n{rows}"
+    )
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv")
+
+
+@pytest.mark.parametrize("container", [tuple, iter, array])
+def test_from_csv_with_a_header_and_a_single_row(tmp_wd, container) -> None:
+    """Check that from_csv reads a single row when the header is passed.
+
+    The header can be an iterator, although it is read several times,
+    or a NumPy array, which has no truth value.
+    """
+    Path("ds.csv").write_text("x 0 1 2 integer\n")
+    design_space = DesignSpace.from_csv(
+        "ds.csv",
+        header=container(("name", "lower_bound", "value", "upper_bound", "type")),
+    )
+
+    expected = DesignSpace()
+    expected.add_integer_variable("x", lower_bound=0, upper_bound=2, value=1)
+    assert design_space == expected
+
+
+def test_from_csv_with_a_header_longer_than_the_rows(tmp_wd, snapshot) -> None:
+    """Check that from_csv refuses a header with more fields than the file's columns."""
+    Path("ds.csv").write_text("x\ny\n")
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv", header=("name", "lower_bound", "upper_bound"))
+
+
+def test_from_csv_with_a_string_header(tmp_wd, snapshot) -> None:
+    """Check that from_csv reads a string header as a single field."""
+    Path("ds.csv").write_text("x\ny\n")
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv", header="name")
+
+
+def test_from_csv_with_rows_of_different_lengths(tmp_wd, snapshot) -> None:
+    """Check that from_csv names the file and the rows of a different length."""
+    Path("ds.csv").write_text(
+        "name lower_bound upper_bound value type\nx 0 1 None\ny 0 1 None real 2\n"
+    )
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv")
+
+
+def test_from_csv_with_a_header_shorter_than_the_rows(tmp_wd) -> None:
+    """Check that from_csv ignores the columns after the last field of the header."""
+    Path("ds.csv").write_text("x 0 0.5 1 integer\n")
+    design_space = DesignSpace.from_csv(
+        "ds.csv", header=("name", "lower_bound", "value", "upper_bound")
+    )
+
+    expected = DesignSpace()
+    expected.add_real_variable("x", lower_bound=0, upper_bound=1, value=0.5)
+    assert design_space == expected
+
+
+@pytest.mark.parametrize("header", [(), ("name", "lower_bound", "upper_bound")])
+def test_from_csv_without_variable(tmp_wd, header) -> None:
+    """Check that from_csv reads a file without variable as an empty design space.
+
+    Such a file is the one that to_csv writes for an empty design space,
+    or an empty file when the header is passed.
+    """
+    if header:
+        Path("ds.csv").write_text("")
+    else:
+        DesignSpace().to_csv("ds.csv")
+
+    assert DesignSpace.from_csv("ds.csv", header=header) == DesignSpace()
+
+
+@pytest.mark.parametrize("content", ["", "x 0 1\n"], ids=["empty", "single-row"])
+def test_from_csv_without_header(tmp_wd, content, snapshot) -> None:
+    """Check that from_csv refuses a file without header when none is passed.
+
+    The only row of a file without header row is read as a header without the
+    minimal fields.
+    """
+    Path("ds.csv").write_text(content)
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv")
+
+
+@pytest.mark.parametrize(
+    ("value_cells", "type_cell", "value", "padding"),
+    [
+        (("", ""), "real", None, ""),
+        ((" None ", "None"), "real", None, ""),
+        (("0.5", "0.25"), "", (0.5, 0.25), ""),
+        (("0.5", "0.25"), " real ", (0.5, 0.25), ""),
+        (("0.5", "0.25"), "real", (0.5, 0.25), " "),
+    ],
+    ids=[
+        "empty-value",
+        "padded-none-value",
+        "empty-type",
+        "padded-type",
+        "padded-header-and-name",
+    ],
+)
+def test_from_csv_with_empty_cells(
+    tmp_wd, value_cells, type_cell, value, padding
+) -> None:
+    """Check that from_csv reads empty and padded cells.
+
+    A variable with an empty or padded `"None"` value cell has no value,
+    a variable with empty type cells is real
+    and a padded cell is read without its spaces.
+    """
+    fields = ("name", "lower_bound", "value", "upper_bound", "type")
+    Path("ds.csv").write_text(
+        ",".join(f"{padding}{field}{padding}" for field in fields)
+        + "\n"
+        + "".join(
+            f"{padding}x{padding},0,{cell},1,{type_cell}\n" for cell in value_cells
+        )
+    )
+    expected = DesignSpace()
+    expected.add_real_variable("x", size=2, lower_bound=0, upper_bound=1, value=value)
+    assert DesignSpace.from_csv("ds.csv", delimiter=",") == expected
+
+
+@pytest.mark.parametrize(
+    ("row", "cause"),
+    [("x,1,0.5,0,real", ValidationError), ("x,0,2,1,real", ValueError)],
+    ids=["inverted-bounds", "value-out-of-bounds"],
+)
+def test_from_csv_with_an_invalid_variable(tmp_wd, row, cause, snapshot) -> None:
+    """Check that from_csv names the file and the variable with invalid cells."""
+    Path("ds.csv").write_text(f"name,lower_bound,value,upper_bound,type\n{row}\n")
+    with assert_exception(ValueError, snapshot) as error:
+        DesignSpace.from_csv("ds.csv", delimiter=",")
+
+    assert type(error.value.__cause__) is cause
+
+
+@pytest.mark.parametrize(
+    "rows",
+    [
+        "x,,0.5,1,real\n",
+        "x,0,abc,1,real\n",
+        "x,1_0,0.5,20,real\n",
+        "x,abc,0.5,None,real\nx,0,1,2,real\ny,0,1_0,20,real\n",
+        "x,0,0.5,1,real\nx,0,,1,real\nx,0,None,1,real\ny,0,abc,1,real\n",
+    ],
+    ids=["empty-bound", "invalid-value", "underscore", "several", "partial-value"],
+)
+def test_from_csv_with_cells_that_are_not_numbers(tmp_wd, rows, snapshot) -> None:
+    """Check that from_csv names every cell that is not a number by its text.
+
+    A bound cell must be a number, a value cell can also mean no value,
+    but in every row of the variable or in none,
+    and a cell with an underscore is not a number, although float() reads it.
+    """
+    Path("ds.csv").write_text(f"name,lower_bound,value,upper_bound,type\n{rows}")
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv("ds.csv", delimiter=",")
 
 
 def test_catalog_variable_view(catalog_design_space, snapshot) -> None:

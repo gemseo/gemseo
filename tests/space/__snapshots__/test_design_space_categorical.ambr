@@ -39,15 +39,6 @@
 # name: test_categorical_check_membership_error[value7]
   'The component x[0] of the given array (2.5) is greater than the upper bound (2.0) by 5.0e-01.'
 # ---
-# name: test_categorical_variable_cannot_be_exported_to_csv[to_csv]
-  "The design space has the categorical variables 'material', 'colour', which cannot be exported to a CSV file; use an HDF file instead."
-# ---
-# name: test_categorical_variable_cannot_be_exported_to_csv[to_file]
-  "The design space has the categorical variables 'material', 'colour', which cannot be exported to a CSV file; use an HDF file instead."
-# ---
-# name: test_categorical_variable_cannot_be_imported_from_csv
-  "The variable 'material' of the file ds.csv is categorical, which cannot be imported from a CSV file; use an HDF file instead."
-# ---
 # name: test_categorical_variable_has_no_bounds[set-lower-bound]
   'The categorical variable material has no bounds.'
 # ---

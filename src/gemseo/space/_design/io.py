@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from operator import itemgetter
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING
@@ -25,13 +26,18 @@ import h5py
 from numpy import array
 from numpy import bytes_
 from numpy import float64
+from numpy import full
 from numpy import genfromtxt
+from numpy import isin
+from numpy import nan
+from numpy import where
+from numpy.char import find
 from pandas import DataFrame
+from pydantic import ValidationError
 
 from gemseo.space._design.constants import catalog_group
 from gemseo.space._design.constants import categories_group
 from gemseo.space._design.constants import choices_group
-from gemseo.space._design.constants import choices_separator
 from gemseo.space._design.constants import design_space_group
 from gemseo.space._design.constants import lb_group
 from gemseo.space._design.constants import names_group
@@ -47,6 +53,7 @@ from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util._numpy import int64_dtype
 from gemseo.util.hdf5 import get_hdf5_group
+from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -59,11 +66,17 @@ if TYPE_CHECKING:
 
     from gemseo.space.base import BaseVariableSpace
     from gemseo.space.design import DesignSpace
-    from gemseo.space.variable import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
 minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
 """The minimal fields required in a design space CSV file."""
+
+_csv_variable_types: Final[tuple[VariableType, ...]] = (
+    VariableType.REAL,
+    VariableType.INTEGER,
+)
+"""The types of the variables that a CSV file can store."""
 
 _domain_payload_nouns: Final[Mapping[VariableType, tuple[str, str]]] = (
     MappingProxyType({
@@ -580,61 +593,106 @@ def from_hdf(
     return design_space
 
 
-def format_choices_cell(variable: BaseDeterministicVariable) -> str:
-    """Return the CSV cell storing the choices of a variable.
+def _inflect(count: int, singular: str, plural: str) -> str:
+    """Return the form of a phrase agreeing with a number of items.
 
     Args:
-        variable: The variable.
+        count: The number of items.
+        singular: The phrase for a single item.
+        plural: The phrase for several items.
 
     Returns:
-        The choices separated by `choices_separator`,
-        or `"None"` when the variable is not discrete.
+        The singular phrase if there is a single item, otherwise the plural one.
     """
-    if not isinstance(variable, DiscreteVariable):
-        # An empty cell would make a whitespace-delimited file unreadable.
-        return "None"
-
-    return choices_separator.join(str(value) for value in variable.choices)
+    return singular if count == 1 else plural
 
 
-def to_dataframe(design_space: DesignSpace) -> DataFrame:
-    """Export a design space to a pandas `DataFrame`.
+def _get_unsupported_variables_sentence(
+    variable_types: Mapping[str, VariableType],
+    subject: str,
+    advice: str,
+    plural_advice: str = "",
+) -> str:
+    """Return the sentence naming the variables that a CSV file cannot store.
 
     Args:
-        design_space: The design space.
+        variable_types: The type of each variable, in declaration order.
+        subject: The subject of the sentence, e.g. `"The design space"`.
+        advice: The end of the sentence telling what to do.
+        plural_advice: The end of the sentence telling what to do
+            when there are several such variables.
+            If empty, use `advice`.
 
     Returns:
-        The design space as a `DataFrame` with one row per scalar component.
+        The sentence naming every variable that a CSV file cannot store,
+        if any, otherwise an empty string.
     """
-    variable_names: list[str] = []
-    variable_values: list = []
-    lower_bounds: list = []
-    upper_bounds: list = []
-    variable_types: list[str] = []
-    choices: list[str] = []
-    for name, variable in design_space.variables.items():
-        curr = design_space._current_value.get(name)
-        cell = format_choices_cell(variable)
-        for i in range(variable.size):
-            variable_names.append(name)
-            variable_types.append(variable.type)
-            lower_bounds.append(variable.lower_bound[i])
-            upper_bounds.append(variable.upper_bound[i])
-            choices.append(cell)
-            # Strip the imaginary part of a complex-step perturbation.
-            value = None if curr is None else curr[i].real
-            variable_values.append(value)
-    data = {
-        "name": variable_names,
-        "value": variable_values,
-        "lower_bound": lower_bounds,
-        "upper_bound": upper_bounds,
-        "type": variable_types,
-    }
-    if design_space.variables.has_variables_of_type(VariableType.DISCRETE):
-        # Do not add a column that every variable would leave empty.
-        data[choices_group] = choices
-    return DataFrame(data)
+    unsupported_variables = tuple(
+        f"{name!r} ({variable_type})"
+        for name, variable_type in variable_types.items()
+        if variable_type not in _csv_variable_types
+    )
+    if not unsupported_variables:
+        return ""
+
+    n_unsupported_variables = len(unsupported_variables)
+    variables = _inflect(
+        n_unsupported_variables, "a variable that is", "variables that are"
+    )
+    return (
+        f"{subject} has {variables} neither {' nor '.join(_csv_variable_types)}: "
+        f"{pretty_str(unsupported_variables, sort=False)}; "
+        f"{_inflect(n_unsupported_variables, advice, plural_advice or advice)}"
+    )
+
+
+def _get_fields_sentences(fields: Sequence[str]) -> tuple[str, ...]:
+    """Return the sentences naming the problems of the fields to export to CSV.
+
+    Args:
+        fields: The fields to export.
+
+    Returns:
+        The sentences naming the unknown fields, the missing `"name"` field
+        and the repeated fields,
+        each one being an empty string when there is no such problem.
+    """
+    if not fields:
+        return ()
+
+    unknown_fields = tuple(
+        dict.fromkeys(repr(field) for field in fields if field not in table_names)
+    )
+    unknown_sentence = ""
+    if unknown_fields:
+        unknown_sentence = (
+            "A design space CSV file has no "
+            f"{_inflect(len(unknown_fields), 'field', 'fields')} "
+            f"{pretty_str(unknown_fields, sort=False)}; its fields are "
+            f"{pretty_str(tuple(repr(field) for field in table_names), sort=False)}."
+        )
+
+    # As in the past releases, a file without bounds is written,
+    # although from_csv cannot read it back;
+    # a file without names would not even name its variables.
+    name_field = minimal_fields[0]
+    missing_sentence = ""
+    if name_field not in fields:
+        missing_sentence = f"A design space CSV file requires the field {name_field!r}."
+
+    repeated_fields = tuple(
+        dict.fromkeys(repr(field) for field in fields if fields.count(field) > 1)
+    )
+    repeated_sentence = ""
+    if repeated_fields:
+        n_repeated_fields = len(repeated_fields)
+        repeated_sentence = (
+            f"The {_inflect(n_repeated_fields, 'field', 'fields')} "
+            f"{pretty_str(repeated_fields, sort=False)} "
+            f"{_inflect(n_repeated_fields, 'is', 'are')} given more than once."
+        )
+
+    return unknown_sentence, missing_sentence, repeated_sentence
 
 
 def to_csv(
@@ -648,101 +706,132 @@ def to_csv(
     Args:
         design_space: The design space.
         output_file: The path to the CSV file.
-        fields: The fields to be exported. If empty, export all fields.
+        fields: The fields to be exported, without repetition,
+            including `"name"`;
+            `"type"` is added when a variable is not real.
+            If empty, export all fields.
         delimiter: The string used to separate values.
 
     Raises:
-        ValueError: If the design space has a catalog or categorical variable,
-            which an HDF file can store but a CSV file cannot.
+        ValueError: If the design space has a variable
+            that is neither real nor integer,
+            as only an HDF file can store it,
+            if a field is unknown or repeated,
+            or if `"name"` is not a field.
     """
-    if design_space.variables.has_variables_of_type(VariableType.CATEGORICAL):
-        names = ", ".join(
-            repr(name)
-            for name, variable in design_space.variables.items()
-            if variable.type == VariableType.CATEGORICAL
-        )
-        msg = (
-            f"The design space has the categorical variables {names}, "
-            "which cannot be exported to a CSV file; use an HDF file instead."
-        )
+    # A string is a sequence of strings, which would be read as one field per letter.
+    fields = tuple(convert_strings_to_iterable(fields)) if fields else ()
+    sentences = (
+        _get_unsupported_variables_sentence(
+            {name: variable.type for name, variable in design_space.variables.items()},
+            "The design space",
+            "save the design space to an HDF file instead.",
+        ),
+        *_get_fields_sentences(fields),
+    )
+    msg = " ".join(sentence for sentence in sentences if sentence)
+    if msg:
         raise ValueError(msg)
 
-    separator = delimiter or " "
+    variable_names: list[str] = []
+    variable_values: list = []
+    lower_bounds: list = []
+    upper_bounds: list = []
+    variable_types: list[str] = []
+    for name, variable in design_space.variables.items():
+        curr = design_space._current_value.get(name)
+        for i in range(variable.size):
+            variable_names.append(name)
+            variable_types.append(variable.type)
+            lower_bounds.append(variable.lower_bound[i])
+            upper_bounds.append(variable.upper_bound[i])
+            # Strip the imaginary part of a complex-step perturbation.
+            value = None if curr is None else curr[i].real
+            variable_values.append(value)
+
     columns = list(fields) if fields else list(table_names)
-    if design_space.variables.has_variables_of_type(VariableType.CATALOG):
-        names = tuple(
-            name
-            for name, variable in design_space.variables.items()
-            if isinstance(variable, CatalogVariable)
-        )
-        plural = len(names) > 1
-        variables = "catalog variables" if plural else "a catalog variable"
-        catalogs = "catalogs" if plural else "catalog"
-        verb = "do" if plural else "does"
-        msg = (
-            f"A design space holding {variables} cannot be exported "
-            f"to CSV because the {catalogs} of {pretty_str(names, sort=False)} "
-            f"{verb} not fit in a CSV cell; use to_hdf instead."
-        )
-        raise ValueError(msg)
+    type_field = table_names[-1]
+    if type_field not in columns and any(
+        variable.type != VariableType.REAL
+        for variable in design_space.variables.values()
+    ):
+        # from_csv reads a variable as real when the file has no type.
+        columns.append(type_field)
 
-    if design_space.variables.has_variables_of_type(VariableType.DISCRETE):
-        if separator == choices_separator:
-            msg = (
-                "A design space holding a discrete variable cannot be exported "
-                f"with {choices_separator!r} as delimiter, "
-                "which separates the choices within a cell."
-            )
-            raise ValueError(msg)
-
-        # A file written by to_csv must always be readable back by from_csv,
-        # whichever way fields was supplied.
-        if choices_group not in columns:
-            columns.append(choices_group)
-
-        type_field = table_names[-1]
-        if type_field not in columns:
-            columns.append(type_field)
-    elif choices_group in columns:
-        # to_dataframe() below does not emit this column when there is no
-        # discrete variable; drop it here instead of letting DataFrame.to_csv()
-        # raise a bare pandas KeyError for an explicitly requested column.
-        columns = [column for column in columns if column != choices_group]
-
-    dataframe = to_dataframe(design_space)
-    dataframe.to_csv(
+    DataFrame({
+        "name": variable_names,
+        "value": variable_values,
+        "lower_bound": lower_bounds,
+        "upper_bound": upper_bounds,
+        "type": variable_types,
+    }).to_csv(
         Path(output_file),
-        sep=separator,
+        sep=delimiter or " ",
         index=False,
         columns=columns,
         na_rep="None",
     )
 
 
-def read_choices_cell(
-    str_data: ndarray, col_map: dict[str, int], row: int
-) -> list[float] | None:
-    """Read the choices of a variable from a CSV row.
+_no_value_cells: Final[tuple[str, str]] = ("", "None")
+"""The CSV cells meaning that a variable has no value."""
+
+
+def _convert_cells_to_floats(
+    cells: ndarray, no_value_rows: ndarray | None = None
+) -> tuple[RealArray, ndarray]:
+    """Convert CSV cells to floats as `float` does, except for underscores.
 
     Args:
-        str_data: The CSV data read as strings.
-        col_map: The map from a field name to its column index.
-        row: The index of the row of the variable.
+        cells: The cells.
+        no_value_rows: Whether the cell of a row means no value.
+            If `None`, every cell must be a number.
 
     Returns:
-        The choices,
-        or `None` when the file has no such column
-        or the variable is not discrete.
+        The floats, NaN for a cell that is not a number,
+        and whether a cell is invalid,
+        i.e. neither a number nor, if `no_value_rows` is given, a cell meaning no value.
     """
-    index = col_map.get(choices_group)
-    if index is None:
-        return None
+    # float() reads "1_0" as 10, which hides a typing error in the file.
+    is_invalid = find(cells, "_") >= 0
+    is_masked = is_invalid if no_value_rows is None else is_invalid | no_value_rows
+    # Masking the cells that are not numbers lets a single cast convert the others.
+    cells = where(is_masked, "nan", cells)
+    try:
+        # A cast from strings to floats converts each string as float() does.
+        floats = cells.astype(float64)
+    except ValueError:
+        # Another cell is not a number, so convert them one by one.
+        floats = full(len(cells), nan)
+        for row, cell in enumerate(cells.tolist()):
+            try:
+                floats[row] = float(cell)
+            except ValueError:
+                is_invalid[row] = True
 
-    cell = str_data[row, index]
-    if not cell or cell == "None":
-        return None
+    return floats, is_invalid
 
-    return [float(value) for value in cell.split(choices_separator)]
+
+def _check_minimal_fields(file_path: str | Path, header: tuple[str, ...]) -> None:
+    """Check that the header of a CSV file has the minimal fields.
+
+    Args:
+        file_path: The path to the CSV file.
+        header: The names of the fields saved in the file.
+
+    Raises:
+        ValueError: If the header does not have the minimal fields.
+    """
+    missing_fields = tuple(
+        repr(field) for field in minimal_fields if field not in header
+    )
+    if missing_fields:
+        msg = (
+            f"The file {file_path} lacks the "
+            f"{_inflect(len(missing_fields), 'field', 'fields')} "
+            f"{pretty_str(missing_fields, sort=False)}."
+        )
+        raise ValueError(msg)
 
 
 def from_csv(
@@ -764,95 +853,270 @@ def from_csv(
         The design space.
 
     Raises:
-        ValueError: If the file does not contain the minimal variables in
-            its header,
-            or if it has a categorical variable,
-            which an HDF file can store but a CSV file cannot.
+        ValueError: If the header of the file lacks a minimal field,
+            if the file has fewer columns than `header` has fields,
+            if the rows of a variable are not consecutive,
+            if a variable has an unknown type,
+            if the rows of a variable have different types,
+            if the rows of the file have different numbers of cells,
+            if a variable is neither real nor integer,
+            as only an HDF file can store it,
+            if a bound or value cell is not a number,
+            if only some value cells of a variable mean no value,
+            or if a variable has invalid bounds or an invalid value.
     """
+    # The header is read several times, which would exhaust an iterator;
+    # its truth value is not evaluated, as a NumPy array has none.
+    # A string is an iterable of strings, which would be read as one field per letter.
+    header = (
+        tuple(map(str, convert_strings_to_iterable(header)))
+        if header is not None
+        else ()
+    )
     design_space = cls()
-    float_data = genfromtxt(file_path, delimiter=delimiter or None, dtype="float")
-    str_data = genfromtxt(file_path, delimiter=delimiter or None, dtype="str")
-    if header:
-        start_read = 0
-    else:
-        header = str_data[0, :].tolist()
-        start_read = 1
-    if not set(minimal_fields).issubset(set(header)):
+    # Without ndmin, a file with a single row or column is read as a 1D array.
+    # A cell can be padded with spaces when the delimiter is not a whitespace.
+    try:
+        str_data = genfromtxt(
+            file_path,
+            delimiter=delimiter or None,
+            dtype="str",
+            ndmin=2,
+            autostrip=True,
+        )
+    except ValueError as error:
+        # NumPy names the rows whose number of cells differs from the first row,
+        # one per line after a heading line.
+        bad_rows = "; ".join(line.strip() for line in str(error).splitlines()[1:])
         msg = (
-            f"Malformed DesignSpace input file {file_path} does not contain "
-            f"minimal variables in header:{minimal_fields}; got instead: {header}."
+            f"The file {file_path} has rows with different numbers of cells: "
+            f"{bad_rows}."
+        )
+        raise ValueError(msg) from error
+    if not header:
+        if str_data.size:
+            header = tuple(str_data[0, :].tolist())
+            str_data = str_data[1:]
+    # The columns after the last field of the header are ignored.
+    elif str_data.size and (n_fields := len(header)) > (n_columns := str_data.shape[1]):
+        msg = (
+            f"The file {file_path} has {n_columns} "
+            f"{_inflect(n_columns, 'column', 'columns')} but the header has "
+            f"{n_fields} {_inflect(n_fields, 'field', 'fields')}: "
+            f"{pretty_str(tuple(repr(field) for field in header), sort=False)}."
         )
         raise ValueError(msg)
+
+    _check_minimal_fields(file_path, header)
+    if not str_data.size:
+        # to_csv writes a design space without variable as a header-only file.
+        return design_space
+
     col_map = {field: i for i, field in enumerate(header)}
     name_field = minimal_fields[0]
-    var_names = str_data[start_read:, col_map[name_field]].tolist()
-    unique_names: list[str] = []
+    var_names = str_data[:, col_map[name_field]].tolist()
+    # The map from a variable name to its first row and its number of rows.
+    name_to_rows: dict[str, tuple[int, int]] = {}
     prev_name: str | None = None
-    for name in var_names:
-        if name not in unique_names:
-            unique_names.append(name)
-            prev_name = name
-        elif prev_name != name:
+    for row, name in enumerate(var_names):
+        if name == prev_name:
+            first_row, size = name_to_rows[name]
+            name_to_rows[name] = (first_row, size + 1)
+        elif name in name_to_rows:
             msg = (
                 f"Malformed DesignSpace input file {file_path} contains some "
                 f"variables ({name}) in a non-consecutive order."
             )
             raise ValueError(msg)
+        else:
+            name_to_rows[name] = (row, 1)
+            prev_name = name
 
-    k = start_read
-    lower_bounds_field = minimal_fields[1]
-    upper_bounds_field = minimal_fields[2]
-    value_field = table_names[2]
     var_type_field = table_names[-1]
-    for name in unique_names:
-        size = var_names.count(name)
-        l_b = float_data[k : k + size, col_map[lower_bounds_field]]
-        u_b = float_data[k : k + size, col_map[upper_bounds_field]]
-        if value_field in col_map:
-            value = float_data[k : k + size, col_map[value_field]]
-            if "None" in str_data[k : k + size, col_map[value_field]]:
-                value = None
-        else:
-            value = None
-        if var_type_field in col_map:
-            var_type = str_data[k, col_map[var_type_field]]
-        else:
-            var_type = cls.DesignVariableType.REAL
-        if var_type == VariableType.CATEGORICAL:
-            msg = (
-                f"The variable {name!r} of the file {file_path} is categorical, "
-                "which cannot be imported from a CSV file; use an HDF file instead."
-            )
-            raise ValueError(msg)
+    type_column = col_map.get(var_type_field)
+    raw_to_type: dict[str, VariableType | str] = {}
+    if type_column is not None:
+        type_cells = str_data[:, type_column].tolist()
+        # A file written by a past release may store a legacy type value;
+        # each distinct value is resolved once, so as to warn once.
+        # An empty type means real, as a file without types does.
+        raw_to_type = {
+            raw_type: VariableType._resolve_value(raw_type)
+            if raw_type
+            else cls.DesignVariableType.REAL
+            for raw_type in dict.fromkeys(type_cells)
+        }
 
-        choices = read_choices_cell(str_data, col_map, k)
-        if choices is not None and var_type != cls.DesignVariableType.DISCRETE:
-            msg = (
-                f"Malformed DesignSpace input file {file_path} has choices "
-                f"for the variable {name!r} of type {str(var_type)!r} "
-                f"instead of {cls.DesignVariableType.DISCRETE.value!r}."
-            )
-            raise ValueError(msg)
+    variable_types: dict[str, VariableType] = {}
+    unknown_variables: list[str] = []
+    mixed_variables: list[str] = []
+    for name, (k, size) in name_to_rows.items():
+        if type_column is None:
+            variable_types[name] = cls.DesignVariableType.REAL
+            continue
 
-        if choices is None:
-            if var_type == cls.DesignVariableType.DISCRETE:
-                msg = (
-                    f"Malformed DesignSpace input file {file_path} has no "
-                    f"choices for the variable {name!r} of type "
-                    f"{cls.DesignVariableType.DISCRETE.value!r}."
+        row_types = tuple(
+            dict.fromkeys(
+                raw_to_type[raw_type] for raw_type in type_cells[k : k + size]
+            )
+        )
+        # A variable whose rows mix a valid and an unknown type is reported twice,
+        # lest the user fix the mix toward the unknown type.
+        unknown_types = tuple(
+            row_type for row_type in row_types if not isinstance(row_type, VariableType)
+        )
+        if unknown_types:
+            unknown_variables.append(
+                f"{name!r} ({pretty_str(unknown_types, sort=False)})"
+            )
+
+        if len(row_types) > 1:
+            mixed_variables.append(f"{name!r} ({pretty_str(row_types, sort=False)})")
+        elif not unknown_types:
+            variable_types[name] = row_types[0]
+
+    # Every variable is checked before any is added,
+    # so that all the invalid ones are reported at once.
+    subject = f"The file {file_path}"
+    unknown_sentence = ""
+    if unknown_variables:
+        variables = _inflect(
+            len(unknown_variables),
+            "a variable of unknown type",
+            "variables of unknown types",
+        )
+        unknown_sentence = (
+            f"{subject} has {variables}: "
+            f"{pretty_str(unknown_variables, sort=False)}; "
+            "a CSV file only stores "
+            f"{pretty_str(_csv_variable_types, sort=False)} variables."
+        )
+
+    # Each column is converted once, then sliced for each variable.
+    value_field = table_names[2]
+    field_to_floats: dict[str, RealArray] = {}
+    # The rows and the descriptions of the cells that are not numbers.
+    invalid_cells: list[tuple[int, str]] = []
+    no_value_rows = None
+    for field in (*minimal_fields[1:], value_field):
+        column = col_map.get(field)
+        if column is None:
+            continue
+
+        cells = str_data[:, column]
+        is_value_field = field == value_field
+        if is_value_field:
+            no_value_rows = isin(cells, _no_value_cells)
+
+        floats, is_invalid = _convert_cells_to_floats(
+            cells, no_value_rows if is_value_field else None
+        )
+        field_to_floats[field] = floats
+        # The cells of a variable already refused for its type are not reported.
+        invalid_cells.extend(
+            (row, f"{str(cells[row])!r} ({field!r} of {name!r})")
+            for row in is_invalid.nonzero()[0].tolist()
+            if variable_types.get(name := var_names[row]) in _csv_variable_types
+        )
+
+    invalid_sentence = ""
+    if invalid_cells:
+        # A stable sort keeps the order of the fields within a row.
+        invalid_cells.sort(key=itemgetter(0))
+        cells_that_are = _inflect(
+            len(invalid_cells),
+            "a cell that is not a number",
+            "cells that are not numbers",
+        )
+        invalid_sentence = (
+            f"{subject} has {cells_that_are}: "
+            f"{pretty_str(tuple(cell for _, cell in invalid_cells), sort=False)}."
+        )
+
+    partial_sentence = ""
+    if no_value_rows is not None:
+        # A value cell meaning no value among numbers is likely a typing error,
+        # so the other numbers are not dropped silently.
+        partial_variables = []
+        for name, (k, size) in name_to_rows.items():
+            variable_no_value_rows = no_value_rows[k : k + size]
+            if (
+                variable_types.get(name) in _csv_variable_types
+                and variable_no_value_rows.any()
+                and not variable_no_value_rows.all()
+            ):
+                row_numbers = tuple((variable_no_value_rows.nonzero()[0] + 1).tolist())
+                partial_variables.append(
+                    f"{name!r} ({_inflect(len(row_numbers), 'row', 'rows')} "
+                    f"{pretty_str(row_numbers, sort=False)})"
                 )
-                raise ValueError(msg)
 
-            design_space.add_variable(name, size, var_type, l_b, u_b, value)
-        else:
-            # The bounds of a discrete variable are derived from its choices,
-            # so the persisted ones are informational.
-            design_space._register_variable(
+        if partial_variables:
+            variables = _inflect(len(partial_variables), "a variable", "variables")
+            partial_sentence = (
+                f"{subject} has {variables} with a value in some rows only: "
+                f"{pretty_str(partial_variables, sort=False)}; "
+                "a variable has a value in every row or in none."
+            )
+
+    mixed_sentence = ""
+    if mixed_variables:
+        mixed_sentence = (
+            f"{subject} has {_inflect(len(mixed_variables), 'a variable', 'variables')}"
+            " whose rows have different types: "
+            f"{pretty_str(mixed_variables, sort=False)}; "
+            "the rows of a variable must have the same type."
+        )
+
+    sentences = (
+        unknown_sentence,
+        mixed_sentence,
+        _get_unsupported_variables_sentence(
+            variable_types,
+            subject,
+            "only an HDF file can store it.",
+            "only an HDF file can store them.",
+        ),
+        partial_sentence,
+        invalid_sentence,
+    )
+    msg = " ".join(sentence for sentence in sentences if sentence)
+    if msg:
+        raise ValueError(msg)
+
+    lower_bounds = field_to_floats[minimal_fields[1]]
+    upper_bounds = field_to_floats[minimal_fields[2]]
+    values = field_to_floats.get(value_field)
+    for name, (k, size) in name_to_rows.items():
+        rows = slice(k, k + size)
+        value = None
+        # The value cells of a variable all mean no value or none does.
+        if values is not None and not no_value_rows[k]:
+            value = values[rows]
+
+        try:
+            design_space.add_variable(
                 name,
-                deterministic_variable_factory.create(var_type, choices=choices),
+                size,
+                variable_types[name],
+                lower_bounds[rows],
+                upper_bounds[rows],
                 value,
             )
-        k += size
+        except ValueError as error:
+            # The bounds or the value of the variable are invalid,
+            # as its name is unique and its type is valid.
+            if isinstance(error, ValidationError):
+                reason = " ".join(
+                    str(details.get("ctx", {}).get("error", details["msg"]))
+                    for details in error.errors()
+                )
+            else:
+                reason = str(error)
+
+            msg = f"The file {file_path} has an invalid variable {name!r}. {reason}"
+            raise ValueError(msg) from error
+
     design_space.check()
     return design_space
 
@@ -868,8 +1132,9 @@ def to_file(
 
     Args:
         design_space: The design space.
-        file_path: The path to the file. An `.hdf`/`.h5` extension selects HDF,
-            otherwise CSV is used.
+        file_path: The path to the file.
+            An extension starting with `".hdf"` or `".h5"`, e.g. `".hdf5"`,
+            selects HDF, otherwise CSV is used.
         delimiter: The string used to separate values for CSV files.
         append: If `False`, the file is truncated
             and the design space is exported.
@@ -878,18 +1143,26 @@ def to_file(
             and the rest of the file is left untouched.
             If `True` and the file already contains a design space,
             both design spaces must have the same structure
-            (variables, sizes and types);
+            (variables, sizes and types)
+            and the same catalogs;
             the bounds are overwritten,
             and the current value is overwritten,
             or removed when the exported design space has none.
             This argument is ignored for CSV files.
-        fields: The fields to be exported for CSV files. If empty, export all.
+        fields: The fields to be exported for CSV files, without repetition,
+            including `"name"`;
+            `"type"` is added when a variable is not real.
+            If empty, export all.
 
     Raises:
         ValueError: If the HDF file already stores a design space with a
             different structure,
-            or if the design space has a categorical variable
-            and the file is not an HDF file.
+            or, if `append` is `True`, with different catalogs
+            for the catalog variables,
+            or, if the file is not an HDF file,
+            if the design space has a variable that is neither real nor integer,
+            if a field is unknown or repeated,
+            or if `"name"` is not a field.
     """
     file_path = Path(file_path)
     if file_path.suffix.startswith((".hdf", ".h5")):

@@ -186,6 +186,10 @@ tells whether the design space holds a discrete variable.
     e.g. `[2, 4, 6, 8]`,
     has `2.0` as first choice.
 
+!!! note
+    A design space with a discrete variable can only be saved to an HDF file,
+    not to a CSV file.
+
 ??? abstract "API"
 
     - [add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
@@ -379,7 +383,7 @@ Changing a catalog means declaring a new variable.
 !!! note
     A design space holding a catalog variable
     cannot be exported to CSV,
-    since a catalog does not fit in a CSV cell;
+    since a CSV file only stores real and integer variables;
     [to_hdf()][gemseo.space.design.DesignSpace.to_hdf] writes it,
     and [from_hdf()][gemseo.space.design.DesignSpace.from_hdf] reads it back.
     Appending to an HDF file, or loading one,
@@ -442,7 +446,9 @@ where $l_b(x)$ and $u_b(x)$ are the lower and upper bounds of the variable $x$.
 
 A design space can be persisted to a file and reloaded later,
 which is useful for sharing a problem definition or reusing a previous initial point.
-Two formats are supported: [CSV](https://fr.wikipedia.org/wiki/Comma-separated_values) for human-readable exchange, and [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) for binary storage.
+Two formats are supported: [CSV](https://en.wikipedia.org/wiki/Comma-separated_values) for human-readable exchange, and [HDF](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) for binary storage.
+A CSV file only stores real and integer variables.
+A design space with a discrete, catalog or categorical variable must be saved to an HDF file.
 
 !!! how-to
     - [How to import and export a design space from disk][]
