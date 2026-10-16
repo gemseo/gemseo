@@ -24,6 +24,7 @@ from typing import Final
 from gemseo.core.base_factory import BaseFactory
 from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
+from gemseo.space.variable.interval import BaseIntervalVariable
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -41,12 +42,59 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
     _class: ClassVar[type[BaseDeterministicVariable]] = BaseDeterministicVariable
     _package_names: ClassVar[tuple[str, ...]] = ("gemseo.space.variable",)
 
+    __interval_variable_types: tuple[VariableType, ...]
+    """The variable types of the variables whose domain is an interval,
+    the real one first, then the others in alphabetical order,
+    empty until resolved from the discovered classes."""
+
     __variable_type_to_class_name: dict[VariableType, str]
-    """The map from a variable type to the name of the class pinning it."""
+    """The map from a variable type to the name of the class pinning it,
+    empty until resolved from the discovered classes."""
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.__interval_variable_types = ()
         self.__variable_type_to_class_name = {}
+
+    def __resolve_variable_types(self) -> None:
+        """Resolve the variable types from the discovered classes, if not done yet.
+
+        Raises:
+            ValueError: If two variable classes pin the same variable type.
+        """
+        if self.__variable_type_to_class_name:
+            return
+
+        variable_type_to_class_name = {}
+        for class_name in self.class_names:
+            variable_type = self.get_class(class_name).type
+            other_class_name = variable_type_to_class_name.get(variable_type)
+            if other_class_name is not None:
+                msg = (
+                    f"The variable classes {other_class_name!r} and {class_name!r} "
+                    f"both pin the variable type {variable_type.value!r}."
+                )
+                raise ValueError(msg)
+
+            variable_type_to_class_name[variable_type] = class_name
+
+        # A message naming these types must not depend on the discovery order.
+        interval_variable_types = tuple(
+            sorted(
+                (
+                    variable_type
+                    for variable_type, class_name in variable_type_to_class_name.items()
+                    if issubclass(self.get_class(class_name), BaseIntervalVariable)
+                ),
+                key=lambda variable_type: (
+                    variable_type != VariableType.REAL,
+                    variable_type,
+                ),
+            )
+        )
+        # Both are set together, so that they are resolved or unset together.
+        self.__interval_variable_types = interval_variable_types
+        self.__variable_type_to_class_name = variable_type_to_class_name
 
     @property
     def _variable_type_to_class_name(self) -> dict[VariableType, str]:
@@ -55,22 +103,7 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
         Raises:
             ValueError: If two variable classes pin the same variable type.
         """
-        if not self.__variable_type_to_class_name:
-            variable_type_to_class_name = {}
-            for class_name in self.class_names:
-                variable_type = self.get_class(class_name).type
-                other_class_name = variable_type_to_class_name.get(variable_type)
-                if other_class_name is not None:
-                    msg = (
-                        f"The variable classes {other_class_name} and {class_name} "
-                        f"both pin the variable type {variable_type}."
-                    )
-                    raise ValueError(msg)
-
-                variable_type_to_class_name[variable_type] = class_name
-
-            self.__variable_type_to_class_name = variable_type_to_class_name
-
+        self.__resolve_variable_types()
         return self.__variable_type_to_class_name
 
     def create_from_settings(  # noqa: D102
@@ -85,6 +118,17 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
     def variable_types(self) -> tuple[VariableType, ...]:
         """The variable types pinned by the variable classes."""
         return tuple(self._variable_type_to_class_name)
+
+    @property
+    def interval_variable_types(self) -> tuple[VariableType, ...]:
+        """The variable types of the variables whose domain is an interval.
+
+        The real variable type comes first, as the default one,
+        then the others in alphabetical order,
+        whatever the order in which the classes are discovered.
+        """
+        self.__resolve_variable_types()
+        return self.__interval_variable_types
 
     def get_class_from_variable_type(
         self, variable_type: VariableType | str | bytes
@@ -146,7 +190,8 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
     def update(self) -> None:  # noqa: D102
         super().update()
         # The variable types are resolved from the discovered classes,
-        # so a rediscovery invalidates the map.
+        # so a rediscovery invalidates them.
+        self.__interval_variable_types = ()
         self.__variable_type_to_class_name = {}
 
 

@@ -160,7 +160,7 @@ design_space.variables.has_variables_of_type(VariableType.CATALOG)
 # %%
 # ## Step 4 — Save and reload the design space
 #
-# A catalog does not fit in a CSV cell,
+# A CSV file only stores real and integer variables,
 # so [to_csv()][gemseo.space.design.DesignSpace.to_csv] refuses a design space
 # holding a catalog variable:
 try:

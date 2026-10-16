@@ -54,7 +54,6 @@ from gemseo.space._design.value import Value
 from gemseo.space._design.variables import DesignVariables
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.variable import BaseDeterministicVariable
-from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DiscreteVariable
@@ -84,28 +83,6 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealOrComplexArrayT
     from gemseo.util.typing import StrPath
 logger = logging.getLogger(__name__)
-
-
-def _get_interval_variable_types() -> tuple[VariableType, ...]:
-    """Return the variable types of the variables whose domain is an interval.
-
-    These are the only variables that a caller can declare
-    from a variable type, a size and bounds;
-    a variable of another kind, e.g. a discrete one,
-    is defined by what its own kind takes as input
-    and so must be passed already built.
-
-    Returns:
-        The variable types of the variables whose domain is an interval.
-    """
-    factory = deterministic_variable_factory
-    return tuple(
-        variable_type
-        for variable_type in factory.variable_types
-        if issubclass(
-            factory.get_class_from_variable_type(variable_type), BaseIntervalVariable
-        )
-    )
 
 
 class DesignSpace(
@@ -312,10 +289,10 @@ class DesignSpace(
         # so that the message below names the valid ones.
         decoded_type_ = VariableType._resolve_value(decoded_type_)
 
-        interval_variable_types = _get_interval_variable_types()
+        interval_variable_types = deterministic_variable_factory.interval_variable_types
         if decoded_type_ not in interval_variable_types:
             msg = (
-                f"Only {pretty_str(interval_variable_types, use_and=True)} variables "
+                f"Only {pretty_str(interval_variable_types, sort=False)} variables "
                 "may be declared "
                 "through the type_ argument of add_variable; "
                 "use the add_<kind>_variable method instead."
@@ -1357,9 +1334,12 @@ class DesignSpace(
 
         Args:
             file_path: The path to the file.
-                If the extension starts with `"hdf"`,
-                the file will be considered as an HDF file.
-                A design space with a categorical variable requires an HDF file.
+                If the content of the file is in HDF format,
+                whatever the extension,
+                the file will be considered as an HDF file,
+                otherwise as a CSV file.
+                A design space with a variable that is neither real nor integer
+                requires an HDF file.
             hdf_node_path: The path of the HDF node from which
                 the database should be imported.
                 If empty, the root node is considered.
@@ -1370,6 +1350,18 @@ class DesignSpace(
 
         Returns:
             The design space defined in the file.
+
+        Raises:
+            ValueError: If the file is a CSV file
+                whose header lacks a minimal field,
+                that has fewer columns than `header` has fields,
+                a variable whose rows are not consecutive,
+                a variable of unknown type,
+                a variable whose rows have different types,
+                a variable that is neither real nor integer,
+                as only an HDF file can store it,
+                a bound or value cell that is not a number,
+                or a variable with invalid bounds or an invalid value.
         """
         return _design_space_io.from_file(
             cls,
@@ -1390,9 +1382,11 @@ class DesignSpace(
 
         Args:
             file_path: The file path to save the design space.
-                If the extension starts with `"hdf"`,
-                the design space will be saved in an HDF file.
-                A design space with a categorical variable requires an HDF file.
+                If the extension starts with `".hdf"` or `".h5"`, e.g. `".hdf5"`,
+                the design space will be saved in an HDF file,
+                otherwise in a CSV file.
+                A design space with a variable that is neither real nor integer
+                requires an HDF file.
             delimiter: The string used to separate values for CSV files.
             append: If `False`, the file is truncated
                 and the design space is exported.
@@ -1407,7 +1401,9 @@ class DesignSpace(
                 and the current value is overwritten,
                 or removed when the exported design space has none.
                 This argument is ignored for CSV files.
-            fields: The fields to be exported in the CSV fields.
+            fields: The fields to be exported in the CSV file, without repetition,
+                including `"name"`;
+                `"type"` is added when a variable is not real.
                 If empty, export all fields.
 
         Raises:
@@ -1415,8 +1411,10 @@ class DesignSpace(
                 different structure,
                 or, if `append` is `True`, with different catalogs
                 for the catalog variables,
-                or if the design space has a categorical variable
-                and the file is not an HDF file.
+                or, if the file is not an HDF file,
+                if the design space has a variable that is neither real nor integer,
+                if a field is unknown or repeated,
+                or if `"name"` is not a field.
         """
         _design_space_io.to_file(
             self, file_path, delimiter=delimiter, append=append, fields=fields
@@ -1429,13 +1427,18 @@ class DesignSpace(
 
         Args:
             output_file: The path to the file.
-            fields: The fields to be exported.
+            fields: The fields to be exported, without repetition,
+                including `"name"`;
+                `"type"` is added when a variable is not real.
                 If empty, export all fields.
             delimiter: The string used to separate values.
 
         Raises:
-            ValueError: If the design space has a categorical variable,
-                which requires an HDF file.
+            ValueError: If the design space has a variable
+                that is neither real nor integer,
+                as only an HDF file can store it,
+                if a field is unknown or repeated,
+                or if `"name"` is not a field.
         """
         _design_space_io.to_csv(self, output_file, fields=fields, delimiter=delimiter)
 
@@ -1456,10 +1459,15 @@ class DesignSpace(
             The design space defined in the file.
 
         Raises:
-            ValueError: If the file does not contain the minimal variables
-                in its header,
-                or if it has a categorical variable,
-                which requires an HDF file.
+            ValueError: If the header of the file lacks a minimal field,
+                if the file has fewer columns than `header` has fields,
+                if the rows of a variable are not consecutive,
+                if a variable has an unknown type,
+                if the rows of a variable have different types,
+                if a variable is neither real nor integer,
+                as only an HDF file can store it,
+                if a bound or value cell is not a number,
+                or if a variable has invalid bounds or an invalid value.
         """
         return _design_space_io.from_csv(
             cls, file_path, header=header, delimiter=delimiter

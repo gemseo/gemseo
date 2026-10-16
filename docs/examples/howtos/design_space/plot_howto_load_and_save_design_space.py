@@ -61,6 +61,9 @@ design_space
 #     -   You must provide the following minimal fields in the file defining the design space: `'name'`, `'lower_bound'` and `'upper_bound'`.
 #     -   For each variable `'name'`, the inequality `'lower_bound'` <= `'upper_bound'` must be satisfied.
 #     If given, the `'value'` must satisfy `'lower_bound'` <= `'value'` <= `'upper_bound'`.
+#     -   A `'value'` cell that is empty or `None` means no value; a variable has a value in every row or in none.
+#     -   A CSV file stores only real and integer variables.
+#     Use an HDF file for a design space with other variables, e.g. discrete or categorical ones.
 #
 # !!! note
 #
@@ -87,6 +90,13 @@ design_space
 # Then, you can export this design space by using the
 # [write_design_space()][gemseo.write_design_space] function.
 write_design_space(design_space, "new_design_space.csv")
+
+# %%
+# !!! note
+#
+#     The `fields` optional argument selects the fields to export.
+#     It must include `'name'` and must not repeat a field.
+#     The `'type'` field is added when a variable is not real.
 
 # %%
 #

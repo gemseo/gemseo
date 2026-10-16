@@ -94,10 +94,10 @@
   "The current value of variable 'n' (7) is not between the lower bound 0 and the upper bound 3."
 # ---
 # name: test_add_variable_with_catalog_type_raises
-  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
+  'Only real and integer variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_discrete_type_raises
-  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
+  'Only real and integer variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
@@ -131,7 +131,7 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
+  'Only real and integer variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
@@ -217,12 +217,6 @@
     Value error, upper_bound is read-only; the input of a CatalogVariable is catalog. [type=value_error, input_value={'catalog': Catalog(3 alt...lier), 'upper_bound': 1}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
-# ---
-# name: test_catalog_variable_csv_is_refused
-  'A design space holding catalog variables cannot be exported to CSV because the catalogs of m and s do not fit in a CSV cell; use to_hdf instead.'
-# ---
-# name: test_catalog_variable_csv_refusal_keeps_the_declaration_order
-  'A design space holding catalog variables cannot be exported to CSV because the catalogs of s and m do not fit in a CSV cell; use to_hdf instead.'
 # ---
 # name: test_catalog_variable_hdf_append_then_integer
   '''
@@ -389,9 +383,6 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_discrete_variable_csv_with_the_separator_as_delimiter
-  "A design space holding a discrete variable cannot be exported with '|' as delimiter, which separates the choices within a cell."
-# ---
 # name: test_discrete_variable_hdf_append_then_real
   '''
   The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
@@ -495,11 +486,53 @@
 # name: test_filter_with_an_unknown_variable
   "No variable named 'unknown_x'."
 # ---
-# name: test_from_csv_rejects_inconsistent_choices
-  "Malformed DesignSpace input file ds.csv has choices for the variable 't' of type 'real' instead of 'discrete'."
+# name: test_from_csv_refuses_invalid_variable_types[all]
+  "The file ds.csv has variables of unknown types: 'y' (reel), 'z' (foo) and 'w' (foo); a CSV file only stores real and integer variables. The file ds.csv has variables whose rows have different types: 'u' (real and integer) and 'w' (integer and foo); the rows of a variable must have the same type. The file ds.csv has a variable that is neither real nor integer: 't' (discrete); only an HDF file can store it."
 # ---
-# name: test_from_csv_with_discrete_type_and_no_choices
-  "Malformed DesignSpace input file ds.csv has no choices for the variable 't' of type 'discrete'."
+# name: test_from_csv_refuses_invalid_variable_types[mixed]
+  "The file ds.csv has a variable whose rows have different types: 'y' (real and discrete); the rows of a variable must have the same type."
+# ---
+# name: test_from_csv_refuses_invalid_variable_types[several-unsupported]
+  "The file ds.csv has variables that are neither real nor integer: 't' (discrete), 'm' (catalog) and 'c' (categorical); only an HDF file can store them."
+# ---
+# name: test_from_csv_refuses_invalid_variable_types[unknown]
+  "The file ds.csv has a variable of unknown type: 'y' (reel); a CSV file only stores real and integer variables."
+# ---
+# name: test_from_csv_with_a_header_longer_than_the_rows
+  "The file ds.csv has 1 column but the header has 3 fields: 'name', 'lower_bound' and 'upper_bound'."
+# ---
+# name: test_from_csv_with_a_string_header
+  "The file ds.csv lacks the fields 'lower_bound' and 'upper_bound'."
+# ---
+# name: test_from_csv_with_an_invalid_variable[inverted-bounds]
+  "The file ds.csv has an invalid variable 'x'. The upper bounds must be greater than or equal to the lower bounds."
+# ---
+# name: test_from_csv_with_an_invalid_variable[value-out-of-bounds]
+  "The file ds.csv has an invalid variable 'x'. The current value of variable 'x' (2.0) is not between the lower bound 0.0 and the upper bound 1.0."
+# ---
+# name: test_from_csv_with_cells_that_are_not_numbers[empty-bound]
+  "The file ds.csv has a cell that is not a number: '' ('lower_bound' of 'x')."
+# ---
+# name: test_from_csv_with_cells_that_are_not_numbers[invalid-value]
+  "The file ds.csv has a cell that is not a number: 'abc' ('value' of 'x')."
+# ---
+# name: test_from_csv_with_cells_that_are_not_numbers[partial-value]
+  "The file ds.csv has a variable with a value in some rows only: 'x' (rows 2 and 3); a variable has a value in every row or in none. The file ds.csv has a cell that is not a number: 'abc' ('value' of 'y')."
+# ---
+# name: test_from_csv_with_cells_that_are_not_numbers[several]
+  "The file ds.csv has cells that are not numbers: 'abc' ('lower_bound' of 'x'), 'None' ('upper_bound' of 'x') and '1_0' ('value' of 'y')."
+# ---
+# name: test_from_csv_with_cells_that_are_not_numbers[underscore]
+  "The file ds.csv has a cell that is not a number: '1_0' ('lower_bound' of 'x')."
+# ---
+# name: test_from_csv_with_rows_of_different_lengths
+  'The file ds.csv has rows with different numbers of cells: Line #2 (got 4 columns instead of 5); Line #3 (got 6 columns instead of 5).'
+# ---
+# name: test_from_csv_without_header[empty]
+  "The file ds.csv lacks the fields 'name', 'lower_bound' and 'upper_bound'."
+# ---
+# name: test_from_csv_without_header[single-row]
+  "The file ds.csv lacks the fields 'name', 'lower_bound' and 'upper_bound'."
 # ---
 # name: test_from_hdf_rejects_a_catalog_on_another_kind
   "Malformed DesignSpace input file ds.h5 has a catalog for the variable 'm' of type 'real' instead of 'catalog'."
@@ -813,11 +846,35 @@
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'
 # ---
-# name: test_single_catalog_variable_csv_is_refused
-  'A design space holding a catalog variable cannot be exported to CSV because the catalog of m does not fit in a CSV cell; use to_hdf instead.'
-# ---
 # name: test_to_complex_without_current_value
   "'There is no current value for the design variables: y.'"
+# ---
+# name: test_to_csv_refuses_variables_neither_real_nor_integer[to_csv-one]
+  "The design space has a variable that is neither real nor integer: 'm' (catalog); save the design space to an HDF file instead."
+# ---
+# name: test_to_csv_refuses_variables_neither_real_nor_integer[to_csv-several]
+  "The design space has variables that are neither real nor integer: 't' (discrete), 'm' (catalog), 's' (catalog) and 'c' (categorical); save the design space to an HDF file instead."
+# ---
+# name: test_to_csv_refuses_variables_neither_real_nor_integer[to_file-one]
+  "The design space has a variable that is neither real nor integer: 'm' (catalog); save the design space to an HDF file instead."
+# ---
+# name: test_to_csv_refuses_variables_neither_real_nor_integer[to_file-several]
+  "The design space has variables that are neither real nor integer: 't' (discrete), 'm' (catalog), 's' (catalog) and 'c' (categorical); save the design space to an HDF file instead."
+# ---
+# name: test_to_csv_with_invalid_fields[all]
+  "A design space CSV file has no field 'foo'; its fields are 'name', 'lower_bound', 'value', 'upper_bound' and 'type'. A design space CSV file requires the field 'name'. The fields 'value' and 'type' are given more than once."
+# ---
+# name: test_to_csv_with_invalid_fields[repeated]
+  "The field 'name' is given more than once."
+# ---
+# name: test_to_csv_with_invalid_fields[several-unknown]
+  "A design space CSV file has no fields 'choices' and 'foo'; its fields are 'name', 'lower_bound', 'value', 'upper_bound' and 'type'."
+# ---
+# name: test_to_csv_without_bounds[sequence]
+  "The file ds.csv lacks the field 'lower_bound'."
+# ---
+# name: test_to_csv_without_bounds[string]
+  "The file ds.csv lacks the fields 'lower_bound' and 'upper_bound'."
 # ---
 # name: test_to_hdf_appends_to_an_unknown_variable_type
   '''

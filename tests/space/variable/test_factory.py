@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pytest
 from numpy.testing import assert_array_equal
 
@@ -102,16 +104,21 @@ def test_create_for_unknown_variable_type(factory, snapshot) -> None:
 
 
 def test_update_invalidates_the_variable_types(factory, monkeypatch) -> None:
-    """Check that rediscovering the classes rebuilds the variable-type map."""
+    """Check that rediscovering the classes rebuilds the variable-type map.
+
+    The interval variable types derive from this map, so they are rebuilt too.
+    """
 
     class OtherIntegerVariable(IntegerVariable):
         """Another variable class pinning the integer variable type."""
 
     # Build the map from the classes discovered so far.
     assert isinstance(factory.create("integer"), IntegerVariable)
+    assert VariableType.REAL in factory.interval_variable_types
 
-    # Rediscover the classes with the integer variable type pinned by another class.
-    class_names = ("RealVariable", "OtherIntegerVariable")
+    # Rediscover the classes with the integer variable type pinned by another class
+    # and without the real variable type.
+    class_names = ("OtherIntegerVariable",)
     # IntegerVariable is still resolvable by name, but no longer discovered,
     # so that a stale map fails the assertion below instead of raising.
     name_to_class = {
@@ -132,6 +139,59 @@ def test_update_invalidates_the_variable_types(factory, monkeypatch) -> None:
     # Without the invalidation, the stale map would still resolve to IntegerVariable.
     variable = factory.create("integer")
     assert isinstance(variable, OtherIntegerVariable)
+    assert factory.variable_types == (VariableType.INTEGER,)
+    assert factory.interval_variable_types == (VariableType.INTEGER,)
+
+
+@pytest.mark.parametrize(
+    "class_names",
+    [
+        (
+            "RealVariable",
+            "IntegerVariable",
+            "DiscreteVariable",
+            "CategoricalIntervalVariable",
+        ),
+        (
+            "IntegerVariable",
+            "DiscreteVariable",
+            "CategoricalIntervalVariable",
+            "RealVariable",
+        ),
+    ],
+    ids=["real-first", "real-last"],
+)
+def test_interval_variable_types(factory, monkeypatch, class_names) -> None:
+    """Check the interval variable types and their order.
+
+    The real one comes first, then the others in alphabetical order,
+    whatever the order in which the classes are discovered.
+    """
+
+    class CategoricalIntervalVariable(IntegerVariable):
+        """An interval variable class pinning the categorical variable type."""
+
+        type: ClassVar[VariableType] = VariableType.CATEGORICAL
+
+    name_to_class = {
+        "RealVariable": RealVariable,
+        "IntegerVariable": IntegerVariable,
+        "DiscreteVariable": DiscreteVariable,
+        "CategoricalIntervalVariable": CategoricalIntervalVariable,
+    }
+    monkeypatch.setattr(
+        DeterministicVariableFactory, "class_names", property(lambda self: class_names)
+    )
+    monkeypatch.setattr(
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
+    )
+    assert factory.interval_variable_types == (
+        VariableType.REAL,
+        VariableType.CATEGORICAL,
+        VariableType.INTEGER,
+    )
 
 
 def test_duplicate_variable_type(factory, monkeypatch, snapshot) -> None:

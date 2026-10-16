@@ -3,5 +3,5 @@
   "There is no variable class of type 'complex'; the available types are: catalog, categorical, discrete, integer and real."
 # ---
 # name: test_duplicate_variable_type
-  'The variable classes RealVariable and OtherRealVariable both pin the variable type real.'
+  "The variable classes 'RealVariable' and 'OtherRealVariable' both pin the variable type 'real'."
 # ---

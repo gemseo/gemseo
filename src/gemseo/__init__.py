@@ -1262,6 +1262,12 @@ def read_design_space(
 
     Args:
         file_path: The path to the file.
+            If the content of the file is in HDF format,
+            whatever the extension,
+            the file will be considered as an HDF file,
+            otherwise as a CSV file.
+            A design space with a variable that is neither real nor integer
+            requires an HDF file.
         header: The names of the fields saved in the CSV file.
             If empty, read them in the first row of the CSV file.
         delimiter: The string used to separate values for CSV files. If empty, any
@@ -1269,6 +1275,18 @@ def read_design_space(
 
     Returns:
         The design space.
+
+    Raises:
+        ValueError: If the file is a CSV file
+            whose header lacks a minimal field,
+            that has fewer columns than `header` has fields,
+            a variable whose rows are not consecutive,
+            a variable of unknown type,
+            a variable whose rows have different types,
+            a variable that is neither real nor integer,
+            as only an HDF file can store it,
+            a bound or value cell that is not a number,
+            or a variable with invalid bounds or an invalid value.
     """
     from gemseo.space.design import DesignSpace
 
@@ -1287,11 +1305,16 @@ def write_design_space(
     Args:
         design_space: The design space to be saved.
         output_file: The path to the file.
-        fields: The fields to be exported in the CSV file.
+            If the extension starts with `".hdf"` or `".h5"`, e.g. `".hdf5"`,
+            the design space will be saved in an HDF file,
+            otherwise in a CSV file.
+            A design space with a variable that is neither real nor integer
+            requires an HDF file.
+        fields: The fields to be exported in the CSV file, without repetition,
+            including `"name"`;
+            `"type"` is added when a variable is not real.
             If empty, export all fields.
         delimiter: The string used to separate values for CSV files.
-            This argument is not compatible with `header_char` nor
-            `**table_options`.
         append: If `False`, the file is truncated
             and the design space is exported.
             If `True` and the file does not contain a design space,
@@ -1299,7 +1322,8 @@ def write_design_space(
             and the rest of the file is left untouched.
             If `True` and the file already contains a design space,
             both design spaces must have the same structure
-            (variables, sizes and types);
+            (variables, sizes and types)
+            and the same catalogs;
             the bounds are overwritten,
             and the current value is overwritten,
             or removed when the exported design space has none.
@@ -1307,7 +1331,13 @@ def write_design_space(
 
     Raises:
         ValueError: If the HDF file already stores a design space with a
-            different structure.
+            different structure,
+            or, if `append` is `True`, with different catalogs
+            for the catalog variables,
+            or, if the file is not an HDF file,
+            if the design space has a variable that is neither real nor integer,
+            if a field is unknown or repeated,
+            or if `"name"` is not a field.
     """
     design_space.to_file(output_file, fields=fields, delimiter=delimiter, append=append)
 

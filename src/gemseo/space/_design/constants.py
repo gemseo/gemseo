@@ -48,20 +48,10 @@ size_group: Final[str] = "size"
 """The name of the HDF dataset storing a variable size."""
 
 choices_group: Final[str] = _choices
-"""The name of the HDF dataset storing the choices of a variable.
-
-This is also the name of the CSV column.
-"""
+"""The name of the HDF dataset storing the choices of a variable."""
 
 categories_group: Final[str] = "categories"
 """The name of the HDF dataset storing the categories of a variable."""
-
-choices_separator: Final[str] = "|"
-"""The string separating the choices within a CSV cell.
-
-A CSV file is exported with a space delimiter by default,
-so the separator shall not be a whitespace.
-"""
 
 catalog_group: Final[str] = "catalog"
 """The name of the HDF group storing the catalog of a variable."""

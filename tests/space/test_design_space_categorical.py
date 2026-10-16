@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
-from pathlib import Path
 
 import h5py
 import pytest
@@ -589,38 +588,6 @@ def test_categorical_variable_hdf_labels(label, tmp_wd) -> None:
     assert_same_design_space(new_design_space, design_space)
     variable = new_design_space.variables["c"]
     assert variable.decode(new_design_space._current_value["c"])[0] == label
-
-
-@pytest.fixture
-def two_categorical_design_space() -> DesignSpace:
-    """A design space with two categorical variables."""
-    design_space = DesignSpace()
-    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
-    design_space.add_categorical_variable("material", ("steel", "aluminium"))
-    design_space.add_categorical_variable("colour", ("red", "blue"))
-    return design_space
-
-
-@pytest.mark.parametrize("method", ["to_csv", "to_file"])
-def test_categorical_variable_cannot_be_exported_to_csv(
-    two_categorical_design_space, tmp_wd, method, snapshot
-) -> None:
-    """Check that a design space with categorical variables is refused by CSV."""
-    with assert_exception(ValueError, snapshot):
-        getattr(two_categorical_design_space, method)("ds.csv")
-
-    assert not Path("ds.csv").exists()
-
-
-def test_categorical_variable_cannot_be_imported_from_csv(tmp_wd, snapshot) -> None:
-    """Check that a CSV file with a categorical variable is refused."""
-    Path("ds.csv").write_text(
-        "name lower_bound value upper_bound type\n"
-        "x 0.0 0.5 1.0 real\n"
-        "material None None None categorical\n"
-    )
-    with assert_exception(ValueError, snapshot):
-        DesignSpace.from_csv("ds.csv")
 
 
 def _add_categories_to_a_real_variable(h5file: h5py.File) -> None:
