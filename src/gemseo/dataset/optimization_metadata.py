@@ -54,3 +54,9 @@ class OptimizationMetadata:
     `None` when the problem has no optimum solution,
     e.g. when every feasible design has a `NaN` objective.
     """
+
+    objective_output_names: tuple[str, ...] = ()
+    """The names of the outputs of the objective.
+
+    Empty when unknown.
+    """

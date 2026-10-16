@@ -36,11 +36,11 @@ from numpy import abs as np_abs
 from numpy import arange
 from numpy import argmin
 from numpy import array
-from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import isnan
 from numpy import max as np_max
-from numpy import min as np_min
+from numpy import nanmax
+from numpy import nanmin
 from numpy import vstack
 from numpy.linalg import norm
 
@@ -87,13 +87,21 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     with a star on the x-axis and a dashed vertical line.
     A problem without an optimum solution,
     e.g. when every feasible design has a `NaN` objective,
-    has no best design:
+    and a multiobjective problem,
+    whose objectives are generally not optimal at the same design,
+    have no best design:
     its figures carry no such mark
     and the plot of the distance to the best design is not drawn.
     The figures of the objective and of the constraints
     also mark the iterations whose values are `NaN` with a cross on the x-axis
     and a dashed vertical line.
     The label of the x-axis mentions the marks that the figure draws.
+
+    The label of the y-axis of the objective plot is the name of the objective,
+    followed by "(relative to iteration i)" when `obj_relative` is `True`,
+    where i is the first iteration whose objective values are not `NaN`.
+    A multiobjective problem gets one curve per objective,
+    named in a legend.
     """
 
     settings_class: ClassVar[type[OptHistoryView_Settings]] = OptHistoryView_Settings
@@ -210,8 +218,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             self._optimization_metadata.standardized_objective_name, variable_names
         )
         optimum_iteration = self._optimization_metadata.optimum_iteration
-        if optimum_iteration is None:
+        if optimum_iteration is None or obj_history.size > n_iter:
             # The problem has no best design,
+            # or several objectives that no single best design can represent,
             # hence no iteration to mark and no distance to draw.
             x_xstar = None
             best_iteration = None
@@ -229,7 +238,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         )
 
         self._create_obj_plot(
-            atleast_1d(obj_history),
+            obj_history,
             n_iter,
             settings.fig_size,
             best_iteration,
@@ -392,6 +401,33 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         self._add_figure(fig, "variables")
 
+    def __get_objective_labels(
+        self, y_label: str, n_objectives: int, change_objective: bool
+    ) -> list[str]:
+        """Return the labels of the curves of the objective plot.
+
+        Args:
+            y_label: The name of the objective as plotted.
+            n_objectives: The number of components of the objective.
+            change_objective: Whether the plotted values are the opposite
+                of the standardized objective ones,
+                i.e. the original objective of a maximization.
+
+        Returns:
+            The labels of the curves.
+        """
+        metadata = self._optimization_metadata
+        output_names = metadata.objective_output_names
+        if len(output_names) != n_objectives:
+            return [
+                repr_variable(y_label, i, n_objectives) for i in range(n_objectives)
+            ]
+
+        # The plotted values are the opposite of the objective ones
+        # when the standardized objective of a maximization is plotted.
+        prefix = "-" if not change_objective and not metadata.minimize_objective else ""
+        return [f"{prefix}{name}" for name in output_names]
+
     def _create_obj_plot(
         self,
         obj_history: RealArray,
@@ -403,46 +439,76 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         obj_relative: bool,
         use_standardized_objective: bool,
     ) -> None:
-        """Creates the design variables plot.
+        """Create the objective plot.
 
         Args:
-            obj_history: The history of the objective function.
+            obj_history: The history of the objective function,
+                of shape `(n_iter,)` or `(n_iter, n_objectives)`.
             n_iter: The number of iterations.
-            obj_max: The maximum value for the objective in the plot.
-                If `None`, use the maximum value of the objective history.
-            obj_min: The minimum value for the objective in the plot.
-                If `None`, use the minimum value of the objective history.
-            obj_relative: If `True`, plot the objective value difference
-                with the initial value.
+            fig_size: The size of the figure.
             best_iteration: The iteration of the best design.
                 If `None`, the problem has no best design and the figure marks none.
+            obj_min: The minimum value for the objective in the plot.
+                If `None`, use the minimum value of the objective history.
+            obj_max: The maximum value for the objective in the plot.
+                If `None`, use the maximum value of the objective history.
+            obj_relative: If `True`, plot the objective value difference
+                with the value at the first iteration without `NaN` value.
             use_standardized_objective: Whether to use the standardized objective.
         """
-        if self._change_objective(use_standardized_objective):
+        metadata = self._optimization_metadata
+        change_objective = self._change_objective(use_standardized_objective)
+        y_label = (
+            metadata.objective_name
+            if change_objective
+            else metadata.standardized_objective_name
+        )
+        # One column per component of the objective.
+        obj_history = obj_history.reshape(n_iter, -1)
+        n_objectives = obj_history.shape[1]
+        if change_objective:
             obj_history = -obj_history
 
-        if obj_relative:
-            logger.info(
-                "Plot of optimization history "
-                "with relative variation compared to "
-                "initial point objective value = %s",
-                obj_history[0],
-            )
-            obj_history -= obj_history[0]
-
-        # Remove the NaN values. `idx_nan` is a mask, hence always non-empty: only
-        # `any` tells whether the history holds NaN values. The curve is drawn on the
-        # remaining iterations only, hence bridges the NaN ones with a straight segment
-        # that no value supports; the crosses on the x-axis mark those iterations.
-        x_absc = arange(len(obj_history))
+        # `idx_nan` is a mask, hence always non-empty: only `any` tells whether the
+        # history holds NaN values. It is computed before the relative variation,
+        # which would spread a NaN reference value over every iteration.
+        x_absc = arange(n_iter)
         idx_nan = isnan(obj_history)
-        has_nan = bool(idx_nan.any())
-        x_absc_nan = x_absc[idx_nan]
-        x_absc_not_nan = x_absc[~idx_nan]
-        obj_history = obj_history[~idx_nan]
+        idx_any_nan = idx_nan.any(axis=1)
+        has_nan = bool(idx_any_nan.any())
+        x_absc_nan = x_absc[idx_any_nan]
 
-        fmin = np_min(obj_history)
-        fmax = np_max(obj_history)
+        reference_iteration = None
+        if obj_relative:
+            # The reference is the first iteration whose values are not NaN.
+            non_nan_iterations = x_absc[~idx_any_nan]
+            if non_nan_iterations.size:
+                reference_iteration = int(non_nan_iterations[0])
+                reference_value = obj_history[reference_iteration]
+                logger.info(
+                    "Plot of optimization history "
+                    "with relative variation compared to "
+                    "the objective value at iteration %s = %s",
+                    reference_iteration + 1,
+                    reference_value[0] if n_objectives == 1 else reference_value,
+                )
+                obj_history = obj_history - reference_value
+            else:
+                logger.warning(
+                    "Every iteration has a NaN objective value; "
+                    "the objective is plotted instead of its relative variation."
+                )
+
+        # Mask the NaN values. Each curve is drawn on its own non-NaN iterations only,
+        # hence bridges the NaN ones with a straight segment that no value supports;
+        # the crosses on the x-axis mark the iterations where at least one component
+        # is NaN.
+        if idx_nan.all():
+            # There is no value to scale the y-axis on.
+            fmin, fmax = -1.0, 1.0
+        else:
+            fmin = nanmin(obj_history)
+            fmax = nanmax(obj_history)
 
         fig = plt.figure(figsize=fig_size)
         # objective function
@@ -450,8 +516,18 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             self.__get_x_axis_label(best_iteration is not None, has_nan),
             fontsize=self.__axis_label_size,
         )
-        plt.ylabel("Objective value", fontsize=self.__axis_label_size)
-        plt.plot(x_absc_not_nan, obj_history)
+        plt.ylabel(
+            y_label
+            if reference_iteration is None
+            else f"{y_label} (relative to iteration {reference_iteration + 1})",
+            fontsize=self.__axis_label_size,
+        )
+        labels = self.__get_objective_labels(y_label, n_objectives, change_objective)
+        for column, column_is_nan, label in zip(
+            obj_history.T, idx_nan.T, labels, strict=True
+        ):
+            plt.plot(x_absc[~column_is_nan], column[~column_is_nan], label=label)
+
         if best_iteration is not None:
             self.__mark_iterations(
                 plt.gca(), (best_iteration,), self.__best_iteration_marker
@@ -473,6 +549,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         ax1.set_xticklabels((x_absc + 1).tolist())
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
+        if n_objectives > 1:
+            plt.legend()
+
         plt.title("Evolution of the objective value")
 
         # Set window size

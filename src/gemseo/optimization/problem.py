@@ -1072,4 +1072,5 @@ class OptimizationProblem(EvaluationProblem[DesignSpace]):
             output_name_to_constraint_names=self.constraints.original_to_current_names,
             feasible_iterations=feasible_iterations,
             optimum_iteration=optimum_iteration,
+            objective_output_names=tuple(self.objective.output_names),
         )
