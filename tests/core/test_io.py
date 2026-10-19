@@ -172,6 +172,28 @@ def test_update_output_data(io: IO):
     assert io.output_data == {"n:output1": 0}
 
 
+def test_get_extra_output_names(io: IO):
+    """Check the names of output data that are not outputs."""
+    io.output_grammar.update_from_data({"output": 0})
+    assert io.get_extra_output_names({"output": 0, "input": 0, "dummy": 0}) == {
+        "input",
+        "dummy",
+    }
+
+
+def test_get_extra_output_names_none(io: IO):
+    """Check that no name is extra when all the names are outputs."""
+    io.output_grammar.update_from_data({"output": 0})
+    assert not io.get_extra_output_names({"output": 0})
+
+
+def test_get_extra_output_names_namespace(io: IO):
+    """Check that a name without its namespace prefix is not an extra name."""
+    io.output_grammar.update_from_data({"output": 0})
+    io.output_grammar.add_namespace("output", "n")
+    assert not io.get_extra_output_names({"output": 0, "n:output": 0})
+
+
 def test_update_output_data_no_mirror_for_auto_coupled():
     """Auto-coupled keys land in `_output_data` only after `update_output_data`."""
     io = IO(type, "io", GrammarType.SIMPLE)

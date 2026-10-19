@@ -365,6 +365,27 @@ class IO:
                 if key in out_names:
                     data[key] = value
 
+    def get_extra_output_names(self, output_data: StrKeyMapping) -> set[str]:
+        """Return the names of output data that are not outputs.
+
+        A name without namespace prefix is an output
+        if the output grammar has this name with a namespace prefix.
+
+        Args:
+            output_data: The output data.
+
+        Returns:
+            The names of the items of `output_data`
+            that [update_output_data][gemseo.core.discipline.io.IO.update_output_data]
+            would ignore.
+        """
+        output_grammar = self.output_grammar
+        return (
+            output_data.keys()
+            - output_grammar.keys()
+            - output_grammar.to_namespaced.keys()
+        )
+
     def initialize(self, input_data: StrKeyMapping, validate: bool) -> None:
         """Initialize the data from input data.
 

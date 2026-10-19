@@ -33,6 +33,7 @@ from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.discipline.io import IO
+from gemseo.core.grammar.error import InvalidDataError
 from gemseo.core.grammar.factory import GrammarType as _GrammarType
 from gemseo.util.constant import _enable_discipline_cache
 from gemseo.util.constant import _validate_input_data
@@ -175,6 +176,15 @@ class BaseDiscipline(BaseMonitoredProcess):
     _has_jacobian: bool
     """Whether the Jacobian has been set either by `_run()` or from the cache."""
 
+    forbid_extra_output_names: bool
+    """Whether to raise an error when `_run()` returns names not in the output grammar.
+
+    Otherwise, these names are ignored.
+
+    Only the disciplines using the default `_execute()` honour this setting;
+    the ones overriding it, such as the MDAs, ignore it.
+    """
+
     def __init__(
         self,
         name: str = "",
@@ -186,6 +196,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self._has_jacobian = False
+        self.forbid_extra_output_names = False
         self.cache = None
         self.io = IO(
             self.__class__,
@@ -423,6 +434,18 @@ class BaseDiscipline(BaseMonitoredProcess):
         if output_data is not None:
             if data_processor is not None:
                 output_data = data_processor.post_process_data(output_data)
+
+            if self.forbid_extra_output_names and (
+                extra_names := io.get_extra_output_names(output_data)
+            ):
+                msg = (
+                    f"The discipline {self.name} returned outputs "
+                    "that are not in its output grammar: "
+                    f"{pretty_str(extra_names)}. "
+                    "This strict check was enabled by setting "
+                    "forbid_extra_output_names attribute to True."
+                )
+                raise InvalidDataError(msg)
 
             io.update_output_data(output_data)
 
