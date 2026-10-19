@@ -41,6 +41,9 @@
 # name: test_diff_inputs_outputs.1
   'Cannot differentiate the discipline DummyDiscipline for variables that are not among the discipline outputs: [].'
 # ---
+# name: test_forbid_extra_output_names
+  'The discipline _DisciplineWithUnknownOutput returned outputs that are not in its output grammar: z. This strict check was enabled by setting forbid_extra_output_names attribute to True.'
+# ---
 # name: test_jac_set_optimal_fd_step_no_jac_approx
   'set_jacobian_approximation must be called before setting an optimal step.'
 # ---

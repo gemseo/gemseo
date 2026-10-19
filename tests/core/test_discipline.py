@@ -43,6 +43,7 @@ from numpy import ones
 from numpy import sin
 from numpy.linalg import norm
 from numpy.testing import assert_allclose
+from numpy.testing import assert_equal
 
 from gemseo import configuration
 from gemseo import create_discipline
@@ -52,6 +53,7 @@ from gemseo.core.cache.simple import SimpleCache
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
+from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.grammar.error import InvalidDataError
@@ -1608,3 +1610,50 @@ def test_local_data_deprecated() -> None:
         discipline.local_data = {"x": array([3.0])}
     with pytest.warns(DeprecationWarning, match=match):
         assert discipline.local_data == {"x": array([3.0])}
+
+
+class _DisciplineWithUnknownOutput(Discipline):
+    """A discipline whose `_run` returns a name not in its output grammar."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.output_grammar.update_from_names(["y"])
+
+    def _run(self, input_data):
+        return {"y": array([1.0]), "z": array([2.0])}
+
+
+def test_forbid_extra_output_names_default():
+    """Check that the names not in the output grammar are ignored by default."""
+    discipline = _DisciplineWithUnknownOutput()
+    assert not discipline.forbid_extra_output_names
+    assert_equal(dict(discipline.execute()), {"y": array([1.0])})
+
+
+def test_forbid_extra_output_names(snapshot):
+    """Check that a discipline forbidding extra output names raises."""
+    discipline = _DisciplineWithUnknownOutput()
+    discipline.forbid_extra_output_names = True
+    with assert_exception(InvalidDataError, snapshot):
+        discipline.execute()
+
+
+def test_forbid_extra_output_names_with_name_mapping():
+    """Check that the names mapped by a data processor are not extra names."""
+    discipline = _DisciplineWithUnknownOutput()
+    discipline.io.output_grammar.update_from_names(["z_global"])
+    discipline.io.data_processor = NameMapping({}, {"z_global": "z"})
+    discipline.forbid_extra_output_names = True
+    assert_equal(
+        dict(discipline.execute()), {"y": array([1.0]), "z_global": array([2.0])}
+    )
+
+
+def test_forbid_extra_output_names_status(monkeypatch):
+    """Check that the execution status is failed when extra names are returned."""
+    monkeypatch.setattr(ExecutionStatus, "is_enabled", True)
+    discipline = _DisciplineWithUnknownOutput()
+    discipline.forbid_extra_output_names = True
+    with pytest.raises(InvalidDataError):
+        discipline.execute()
+    assert discipline.execution_status.value == ExecutionStatus.Status.FAILED
