@@ -43,6 +43,7 @@ from numpy import inf
 from numpy import ndarray
 from numpy import where
 
+from gemseo.enum import VariableType
 from gemseo.optimization.result import OptimizationResult
 from gemseo.space._design import checking
 from gemseo.space._design import io as _design_space_io
@@ -53,14 +54,13 @@ from gemseo.space._design.normalizer import Normalizer
 from gemseo.space._design.value import Value
 from gemseo.space._design.variables import DesignVariables
 from gemseo.space.base import BaseVariableSpace
-from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
-from gemseo.space.variable import design_variable_type_to_numpy_type
+from gemseo.space.variable._coordinate_type import design_variable_type_to_numpy_type
+from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import pretty_str
@@ -75,8 +75,8 @@ if TYPE_CHECKING:
 
     from gemseo.space.catalog._input import CatalogPropertiesType
     from gemseo.space.catalog.catalog import Catalog
-    from gemseo.space.variable import BoundType
     from gemseo.space.variable.discrete import ChoicesType
+    from gemseo.space.variable.numeric import BoundType
     from gemseo.util.read_only_mapping import ReadOnlyMapping
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray

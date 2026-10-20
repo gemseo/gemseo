@@ -30,6 +30,7 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
 from gemseo.space.transformation._working import create_working_transformation
 from gemseo.space.transformation.base import BaseSpaceTransformation
@@ -37,7 +38,6 @@ from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.space.transformation.identity import SpaceIdentity
 from gemseo.space.transformation.normalization import SpaceNormalization
 from gemseo.space.transformation.relaxation import SpaceRelaxation
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:

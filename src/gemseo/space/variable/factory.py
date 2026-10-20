@@ -22,7 +22,7 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.space.variable.base import VariableType
+from gemseo.enum import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.interval import BaseIntervalVariable
 from gemseo.util.string import pretty_str

@@ -31,12 +31,12 @@ from pandas import DataFrame
 from pydantic import Field
 from pydantic import field_validator
 
+from gemseo.enum import VariableType
 from gemseo.space.catalog._input import CatalogPropertiesType
 from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util._numpy import freeze_array

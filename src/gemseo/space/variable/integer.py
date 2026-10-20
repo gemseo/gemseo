@@ -30,9 +30,9 @@ from numpy import isinf
 from numpy import logical_and
 from numpy import mod
 
+from gemseo.enum import VariableType
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.interval import BaseIntervalVariable
 from gemseo.util._numpy import freeze_array
 

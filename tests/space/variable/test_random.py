@@ -27,13 +27,13 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import BaseDeterministicVariable
-from gemseo.space.variable import BaseNumericVariable
-from gemseo.space.variable import BaseVariable
+from gemseo.enum import VariableType
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
-from gemseo.space.variable import VariableType
-from gemseo.space.variable import variable_type_to_numpy_type
+from gemseo.space.variable._coordinate_type import variable_type_to_numpy_type
+from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.deterministic import BaseDeterministicVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.space.variable.random import RandomVariable
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,

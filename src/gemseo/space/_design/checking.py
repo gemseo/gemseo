@@ -27,10 +27,10 @@ from numpy import isnan
 from numpy import ndarray
 from numpy import vectorize
 
+from gemseo.enum import VariableType
 from gemseo.space._design.constants import bound_atol
-from gemseo.space.variable import BaseNumericVariable
-from gemseo.space.variable import VariableType
 from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.space._design.bounds import Bounds
     from gemseo.space._design.variables import DesignVariables
-    from gemseo.space.variable import BaseDeterministicVariable
+    from gemseo.space.variable.deterministic import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
 
 _types_checked_per_variable: Final[frozenset[VariableType]] = frozenset({

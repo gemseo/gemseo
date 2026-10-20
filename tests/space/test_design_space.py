@@ -49,6 +49,7 @@ from scipy.sparse import csr_matrix
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
+from gemseo.enum import VariableType
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
@@ -57,7 +58,6 @@ from gemseo.space.design import DesignSpace
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
-from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import repr_html_wrapper

@@ -36,12 +36,12 @@ from openturns import RandomGenerator
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
+from gemseo.enum import VariableType
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.space._core.variables import UnknownVariableError
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.variable import VariableType
 from gemseo.space.variable.random import RandomVariable
 from gemseo.uncertainty.distribution.openturns.distribution_settings import (
     OTDistribution_Settings,

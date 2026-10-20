@@ -24,8 +24,8 @@ from numpy import abs as np_abs
 from numpy import asarray
 from numpy import float64
 
+from gemseo.enum import VariableType
 from gemseo.space.transformation.base import BaseSpaceTransformation
-from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 if TYPE_CHECKING:

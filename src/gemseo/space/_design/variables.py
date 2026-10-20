@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.space._core.variables import Variables
-from gemseo.space.variable import BaseDeterministicVariable
+from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.util._numpy import freeze_array
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.typing import BooleanArray

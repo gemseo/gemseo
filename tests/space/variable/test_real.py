@@ -22,8 +22,8 @@ from numpy import float64
 from numpy import inf
 from numpy.testing import assert_array_equal
 
+from gemseo.enum import VariableType
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 

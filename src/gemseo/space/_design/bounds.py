@@ -31,7 +31,7 @@ from numpy import zeros
 
 from gemseo.space._core.codec import concatenate_values
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
-from gemseo.space.variable import BaseNumericVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.space._design.variables import DesignVariables
-    from gemseo.space.variable import BaseDeterministicVariable
+    from gemseo.space.variable.deterministic import BaseDeterministicVariable
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
 

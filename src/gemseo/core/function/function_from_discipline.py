@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
-from gemseo.space.variable import VariableType
+from gemseo.enum import VariableType
 
 if TYPE_CHECKING:
     from collections.abc import Callable

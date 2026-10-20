@@ -26,8 +26,7 @@ from numpy import integer
 from numpy import issubdtype
 from numpy import zeros
 
-from gemseo.space.variable import BaseVariable
-from gemseo.space.variable import VariableType
+from gemseo.space.variable.base import BaseVariable
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
@@ -36,6 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
+    from gemseo.enum import VariableType
     from gemseo.util.typing import BooleanArray
 
 
@@ -71,7 +71,7 @@ def check_components(name: str, components: Sequence[int]) -> None:
 class Variables(
     MutableMapping[str, _VariableT], metaclass=ABCGoogleDocstringInheritanceMeta
 ):
-    """A registry of [BaseVariable][gemseo.space.variable.BaseVariable] objects.
+    """A registry of [BaseVariable][gemseo.space.variable.base.BaseVariable] objects.
 
     This registry is ordered and versioned.
 
@@ -94,7 +94,7 @@ class Variables(
 
     The registry is itself a
     [MutableMapping][collections.abc.MutableMapping] from a variable name to a
-    [BaseVariable][gemseo.space.variable.BaseVariable]:
+    [BaseVariable][gemseo.space.variable.base.BaseVariable]:
     read it with `registry[name]`, `.keys()`, `.values()`, `.items()`, `.get()`,
     iteration, membership and length;
     insert or replace a variable with `registry[name] = variable`

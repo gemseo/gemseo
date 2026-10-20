@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from prettytable import PrettyTable
 
-    from gemseo.space.variable import BaseVariable
+    from gemseo.space.variable.base import BaseVariable
     from gemseo.util.typing import IntegerArray
     from gemseo.util.typing import StrPath
 

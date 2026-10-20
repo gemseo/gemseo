@@ -28,7 +28,7 @@ from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import model_validator
 
-from gemseo.enum._variable_type import VariableType as VariableType  # noqa: TC001
+from gemseo.enum._variable_type import VariableType  # noqa: TC001
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:

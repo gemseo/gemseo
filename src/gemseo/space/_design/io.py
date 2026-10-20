@@ -35,6 +35,7 @@ from numpy.char import find
 from pandas import DataFrame
 from pydantic import ValidationError
 
+from gemseo.enum import VariableType
 from gemseo.space._design.constants import catalog_group
 from gemseo.space._design.constants import categories_group
 from gemseo.space._design.constants import choices_group
@@ -49,7 +50,6 @@ from gemseo.space._design.constants import var_type_group
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
-from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util._numpy import int64_dtype
 from gemseo.util.hdf5 import get_hdf5_group

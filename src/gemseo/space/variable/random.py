@@ -24,7 +24,7 @@ from typing import Final
 from pydantic import Field
 from pydantic import field_validator
 
-from gemseo.space.variable.base import VariableType
+from gemseo.enum import VariableType
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.uncertainty.distribution.core.base_settings import BaseDistributionSettings
 from gemseo.uncertainty.distribution.factory import distribution_factory

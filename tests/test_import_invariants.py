@@ -227,8 +227,8 @@ domain_core_packages: dict[str, str] = {
 # measured entry instead.
 domain_core_exceptions: dict[str, set[str]] = {
     # BaseDOELibrary exposes gemseo.optimization.result.OptimizationResult as
-    # its default result class.
-    "doe.core": {"optimization"},
+    # its default result class, and reads VariableType from gemseo.enum.
+    "doe.core": {"enum", "optimization"},
     # Constraints.AggregationFunction reuses AggregationFunction from
     # gemseo.enum._constraint_aggregation.
     "optimization.core": {"enum"},
@@ -368,6 +368,9 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         # gemseo.dataset.dataset.Dataset.
         "dataset",
         "doe",
+        # EvaluationScenario and the job scheduler wrapper read VariableType
+        # from gemseo.enum.
+        "enum",
         "formulation",
         "optimization",
         "post",

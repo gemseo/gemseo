@@ -64,28 +64,25 @@
 - `BaseVariableSpace.filter_dimensions` keeps a subset of dimensions of a variable in any space of variables. For a
   `RandomSpace`, the random variable is rebuilt from the settings of the marginal probability distributions of the kept
   components and the copula covering it, if any, is removed, so that the random variables it covered become independent.
-- The hierarchy of the variables of a space is public, in the `gemseo.space.variable` package. Every kind of variable
-  derives from the abstract `BaseVariable`, which defines a variable by a size and a variable type; a variable is
-  immutable and its fields are exactly what its kind takes as input, anything deriving from them being a read-only
-  property.
+- The hierarchy of the variables of a space is public, in the modules of the `gemseo.space.variable` package. Every kind
+  of variable derives from the abstract `gemseo.space.variable.base.BaseVariable`, which defines a variable by a size
+  and a variable type; a variable is immutable and its fields are exactly what its kind takes as input, anything
+  deriving from them being a read-only property.
   The arrays a variable hands out, e.g. the bounds of a `RealVariable` or the choices of a `DiscreteVariable`,
   are read-only views of what the variable stores: in-place mutation raises
   `ValueError: assignment destination is read-only`, the writeable flag cannot be re-enabled, and reassigning the
   shape, the strides or the data type of such an array, which NumPy allows on a read-only array, changes that array
   only.
-  Two abstract classes place a kind in this hierarchy: `BaseDeterministicVariable`, whose variables take a value that a
-  space can check and a driver can normalize, and `BaseNumericVariable`, whose components are numbers, hence ordered,
-  hence bounded. `RealVariable` and `IntegerVariable` derive from `BaseIntervalVariable`, whose domain is an
-  interval defined by a size and bounds supplied by the caller; `DiscreteVariable` derives its size and its bounds from
-  its choices; the `gemseo.space.variable.random.RandomVariable` of a `RandomSpace` derives its size, its type and its
-  bounds from the settings of the probability distributions of its components.
+  Two abstract classes place a kind in this hierarchy: `gemseo.space.variable.deterministic.BaseDeterministicVariable`,
+  whose variables take a value that a space can check and a driver can normalize, and
+  `gemseo.space.variable.numeric.BaseNumericVariable`, whose components are numbers, hence ordered, hence bounded.
+  `RealVariable` and `IntegerVariable` derive from `gemseo.space.variable.interval.BaseIntervalVariable`, whose domain
+  is an interval defined by a size and bounds supplied by the caller; `DiscreteVariable` derives its size and its bounds
+  from its choices; the `gemseo.space.variable.random.RandomVariable` of a `RandomSpace` derives its size, its type and
+  its bounds from the settings of the probability distributions of its components.
 - The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its variable
   type. A random variable is built from the settings of its probability distributions, not from a variable type, and so
   is out of the scope of this factory.
-- The read-only map `gemseo.space.variable.design_variable_type_to_numpy_type` gives the NumPy type of the coordinates
-  of a design variable from its `VariableType`; it replaces `gemseo.algos.design_space.TYPE_MAP`. The read-only map
-  `gemseo.space.variable.variable_type_to_numpy_type` does the same for every variable type, `VariableType.RANDOM`
-  included.
 - Passing a read-only member of a variable, e.g. the size of a scalar variable or a bound derived from the choices of a
   discrete variable, raises an error naming that member and what the kind of variable takes as input, e.g.
   `"lower_bound is read-only; the input of a DiscreteVariable is choices."`.

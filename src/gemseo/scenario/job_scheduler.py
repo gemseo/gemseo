@@ -20,7 +20,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.space.variable import VariableType
+from gemseo.enum import VariableType
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import pretty_repr
 

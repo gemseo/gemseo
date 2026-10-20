@@ -29,7 +29,7 @@ from gemseo.space._core.codec import split_full_value
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design import checking
 from gemseo.space._design.constants import bound_atol
-from gemseo.space.variable import BaseNumericVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util._numpy import complex128_dtype
 from gemseo.util._numpy import float64_dtype
 from gemseo.util._numpy import get_common_dtype as _compute_common_dtype
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from gemseo.space._design.bounds import Bounds
     from gemseo.space._design.normalizer import Normalizer
     from gemseo.space._design.variables import DesignVariables
-    from gemseo.space.variable import BaseDeterministicVariable
+    from gemseo.space.variable.deterministic import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
 
 

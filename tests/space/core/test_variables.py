@@ -17,18 +17,21 @@
 from __future__ import annotations
 
 from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy.testing import assert_array_equal
 
+from gemseo.enum import VariableType
 from gemseo.space._core.variables import Variables
-from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.space.variable.base import BaseVariable
 
 
 def _create_variable(name: str) -> BaseVariable:

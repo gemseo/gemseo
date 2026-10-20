@@ -57,9 +57,9 @@ from gemseo.core.function._blocks import iter_blocks
 from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
+from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import VariableType
-from gemseo.space.variable import variable_type_to_numpy_type
+from gemseo.space.variable._coordinate_type import variable_type_to_numpy_type
 from gemseo.util._compatibility.numpy import numpy_greater_than_2
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.ggobi_export import save_data_arrays_to_xml

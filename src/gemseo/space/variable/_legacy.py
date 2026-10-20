@@ -22,7 +22,7 @@ from warnings import warn
 from numpy import inf
 from pydantic import BaseModel
 
-from gemseo.space.variable.base import VariableType
+from gemseo.enum import VariableType
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 

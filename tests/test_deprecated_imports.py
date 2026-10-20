@@ -220,16 +220,37 @@ def test_renamed_type_map(old_module_name):
     own entry `TYPE_MAP` would be looked up as the submodule
     `gemseo.space.variable.TYPE_MAP`.
     """
-    from gemseo.space.variable import design_variable_type_to_numpy_type
+    from gemseo.space.variable._coordinate_type import (
+        design_variable_type_to_numpy_type,
+    )
 
     with pytest.warns(
         DeprecationWarning,
-        match="'gemseo.space.variable.design_variable_type_to_numpy_type'",
+        match="'gemseo.space.variable._coordinate_type.design_variable_type_to_numpy_type'",
     ):
         # As the statement from old_module_name import TYPE_MAP does.
         type_map = __import__(old_module_name, fromlist=["TYPE_MAP"]).TYPE_MAP
 
     assert type_map is design_variable_type_to_numpy_type
+
+
+@pytest.mark.parametrize("name", ["BoundArray", "BoundType", "ScalarBoundType"])
+def test_type_alias_of_a_redirected_private_module(name):
+    """A type alias of a private module redirected as a whole is not a submodule.
+
+    `gemseo.space.variable` does not re-export the type aliases of
+    `gemseo.algos._variable`, so without their own entries they would be looked up as
+    submodules of `gemseo.space.variable`.
+    """
+    from gemseo.space.variable import numeric
+
+    module = importlib.import_module("gemseo.algos._variable")
+    with pytest.warns(
+        DeprecationWarning, match=f"'gemseo.space.variable.numeric.{name}'"
+    ):
+        old_object = getattr(module, name)
+
+    assert old_object == getattr(numeric, name)
 
 
 def test_moved_module_level_constant():
@@ -1395,7 +1416,7 @@ def test_unknown_member_name_of_an_aliased_enumeration_raises(snapshot):
     Args:
         snapshot: Fixture to compare the error message with a snapshot.
     """
-    from gemseo.space.variable import VariableType
+    from gemseo.enum import VariableType
 
     with assert_exception(KeyError, snapshot):
         VariableType["DOES_NOT_EXIST"]
@@ -1734,7 +1755,7 @@ def test_renamed_enumeration_member_warns_and_resolves():
     members live in the class namespace, so the data descriptor must not disturb
     them.
     """
-    from gemseo.space.variable import VariableType
+    from gemseo.enum import VariableType
 
     with pytest.warns(DeprecationWarning, match="'DataType'"):
         from gemseo.algos._variable import DataType
