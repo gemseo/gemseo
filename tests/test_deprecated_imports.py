@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import importlib
+import importlib.abc
 import importlib.util
 import io
 import logging
@@ -1885,6 +1886,65 @@ def test_import_error_behind_an_exported_name_propagates_unchanged(monkeypatch):
             hasattr(module, "Name")
 
         assert excinfo.value is error
+
+
+def test_nested_unresolvable_name_behind_an_exported_name_propagates_unchanged(
+    monkeypatch,
+):
+    """An `ImportError` of a nested `from` statement is not turned into an error.
+
+    The module behind the exported name runs `from inner import Broken`, where
+    `Broken` cannot be resolved lazily: the `ImportError` it raises, chained to an
+    `AttributeError`, propagates unchanged through the stand-in, as through the new
+    package, so that `hasattr` does not hide it. Under a `from` statement, it is
+    still an `ImportError` chained to the original one.
+
+    Args:
+        monkeypatch: Fixture to register the fake modules.
+    """
+    from gemseo.util.package_import import install_lazy_reexport
+
+    inner = ModuleType("gemseo_fake_inner_package")
+    install_lazy_reexport(inner.__dict__, {"Broken": "gemseo.util.package_import:nope"})
+    monkeypatch.setitem(sys.modules, inner.__name__, inner)
+
+    package, stand_in = _create_stand_in_of_a_lazy_package("behind")
+    package.__path__ = []
+    behind_name = f"{package.__name__}.behind"
+    monkeypatch.setitem(sys.modules, package.__name__, package)
+
+    class Loader(importlib.abc.Loader):
+        def create_module(self, spec):
+            return None
+
+        def exec_module(self, module):
+            exec(  # noqa: S102
+                f"from {inner.__name__} import Broken\nName = 1", module.__dict__
+            )
+
+    class Finder(importlib.abc.MetaPathFinder):
+        def find_spec(self, name, path, target=None):
+            if name == behind_name:
+                return importlib.util.spec_from_loader(name, Loader())
+            return None
+
+    monkeypatch.setattr(sys, "meta_path", [Finder(), *sys.meta_path])
+    monkeypatch.setitem(sys.modules, stand_in.__name__, stand_in)
+
+    for module in (package, stand_in):
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved") as exc:
+            hasattr(module, "Name")
+
+        # The error is the one of the inner name, not of the exported one.
+        assert "gemseo_fake_old_lazy_package" not in str(exc.value)
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved"):
+            module.Name  # noqa: B018
+
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved"):
+            exec(f"from {module.__name__} import Name", {})  # noqa: S102
 
 
 @pytest.mark.parametrize("is_imported_from", [False, True])

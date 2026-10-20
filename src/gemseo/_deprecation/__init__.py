@@ -104,6 +104,7 @@ from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
 from gemseo.util.package_import import getattr_wrapper_marker
+from gemseo.util.package_import import is_imported_from
 from gemseo.util.package_import import raise_unresolvable_attribute
 from gemseo.util.string import pretty_repr
 
@@ -457,11 +458,17 @@ class _DeprecatedModule(ModuleType):
                 # The target exports the name but cannot resolve it,
                 # e.g. a lazily re-exported name with a wrong location:
                 # the error tells why, once it names the old module too.
-                # An `ImportError` that is not the one of an unresolvable name, i.e.
-                # raised while importing the module behind the name, propagates
-                # unchanged, as through the new package.
-                if isinstance(error, ImportError) and not isinstance(
-                    error.__cause__, AttributeError
+                # `raise_unresolvable_attribute` raises an `ImportError` only under a
+                # `from module import name` statement, and chains it to an
+                # `AttributeError`. Any other `ImportError`, e.g. the one of a
+                # module behind the name whose own `from module import name` fails,
+                # propagates unchanged, as through the new package, so that `hasattr`
+                # does not hide it. Under a `from` statement, the error of a nested
+                # failing `from` statement looks like the one of the name itself: it
+                # is wrapped as well, which keeps it an `ImportError` chained to the
+                # original one.
+                if isinstance(error, ImportError) and not (
+                    is_imported_from() and isinstance(error.__cause__, AttributeError)
                 ):
                     raise
                 msg = (
