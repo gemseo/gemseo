@@ -8,11 +8,8 @@
 # name: test_add_already_existing_variable
   "The variable 'x' already exists."
 # ---
-# name: test_add_catalog_variable_with_a_wrong_label[catalog0]
-  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
-# ---
-# name: test_add_catalog_variable_with_a_wrong_label[catalog1]
-  "The label 'gold' names several alternatives of the catalog, at positions 1 and 2; pass the position of the alternative to choose one of them."
+# name: test_add_catalog_variable_with_a_wrong_label
+  "The catalog has no alternative labelled 'gold'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
 # ---
 # name: test_add_variable_when_already_exists
   "The variable 'varname' already exists."
@@ -261,19 +258,19 @@
   "The property 'mass' of the catalog holds Python objects and cannot be written to an HDF file."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value0]
-  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 3.'
+  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 3."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value1]
-  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 1.5.'
+  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 1.5."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value2]
-  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = -1.'
+  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = -1."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value3]
-  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = 1.'
+  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = 1."
 # ---
 # name: test_catalog_variable_rejects_a_non_position[value4]
-  'The variable m is a catalog variable with the labels [aluminium, steel, titanium]; got m[0] = steel.'
+  "The variable m is a catalog variable with the labels ['aluminium', 'steel', 'titanium']; got m[0] = steel."
 # ---
 # name: test_catalog_variable_view
   '''
@@ -838,7 +835,7 @@
   'The variable i is of type integer; got i[0] = 2.7.'
 # ---
 # name: test_set_current_variable_with_a_wrong_label[m-gold-ValueError]
-  "The catalog has no alternative labelled 'gold'; its labels are [aluminium, steel, titanium]. Pass the position of an alternative to choose it by row."
+  "The catalog has no alternative labelled 'gold'; its labels are ['aluminium', 'steel', 'titanium']. Pass the position of an alternative to choose it by row."
 # ---
 # name: test_set_current_variable_with_a_wrong_label[x-steel-TypeError]
   "The variable 'x' is neither a catalog nor a categorical variable and cannot be set with a label."

@@ -3770,21 +3770,35 @@ def test_add_catalog_variable_with_a_label() -> None:
     assert value.dtype == int64
 
 
+_RAW_PROPERTIES = {"supplier": [" ACME ", "B"], "note": ["", ""]}
+"""Properties with strings to strip and a property holding no value."""
+
+
 @pytest.mark.parametrize(
-    "catalog",
+    ("clean", "expected"),
     [
-        CATALOG,
-        Catalog(
-            properties={"mass": [2.7, 7.8, 7.9]},
-            labels=["aluminium", "gold", "gold"],
-        ),
+        pytest.param(False, _RAW_PROPERTIES, id="raw"),
+        pytest.param(True, {"supplier": ["ACME", "B"]}, id="cleaned"),
     ],
 )
-def test_add_catalog_variable_with_a_wrong_label(catalog, snapshot) -> None:
-    """Check that a label naming no or several alternatives is rejected."""
+def test_add_catalog_variable_keeps_the_properties_as_they_are(clean, expected) -> None:
+    """Check that the properties are not cleaned, unless the catalog is.
+
+    `add_catalog_variable` does not clean the catalog it builds,
+    while a cleaned catalog is passed as it is.
+    """
+    catalog = Catalog(properties=_RAW_PROPERTIES).clean() if clean else _RAW_PROPERTIES
+    design_space = DesignSpace()
+    design_space.add_catalog_variable("m", catalog)
+
+    assert design_space.variables["m"].catalog == Catalog(properties=expected)
+
+
+def test_add_catalog_variable_with_a_wrong_label(snapshot) -> None:
+    """Check that a label naming no alternative is rejected."""
     design_space = DesignSpace()
     with assert_exception(ValueError, snapshot):
-        design_space.add_catalog_variable("m", catalog, value="gold")
+        design_space.add_catalog_variable("m", CATALOG, value="gold")
 
     assert "m" not in design_space
 

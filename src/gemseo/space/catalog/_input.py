@@ -30,6 +30,7 @@ from numpy import asarray
 from numpy import full
 from numpy import ndarray
 from numpy import str_
+from numpy.char import strip as strip_array
 from pandas import DataFrame
 from pandas import Index
 from pandas import MultiIndex
@@ -77,7 +78,11 @@ class CatalogInput(BaseModel, arbitrary_types_allowed=True):
 class CatalogFormatter:
     """The formatting of the input of a catalog into the arrays it holds.
 
-    The formatting steps are applied in this order,
+    The data are read as they are:
+    cleaning them is the job of
+    [clean_catalog_data][gemseo.space.catalog._input.clean_catalog_data].
+
+    The steps are applied in this order,
     which is part of the contract
     because each step changes what the next one sees:
 
@@ -100,10 +105,18 @@ class CatalogFormatter:
        because the order of the rows it would define is arbitrary,
        and so is a property given as a nested `DataFrame`,
        which is iterable over its column names rather than over values.
-    3. **Strip**: remove the leading and trailing whitespace of every string,
-       in the properties and in the labels,
-       and decode a byte-string label, given as labels or as the index of
-       a `DataFrame`, from UTF-8,
+    3. **Normalize the strings**, in the properties and in the labels,
+       without changing their characters:
+       a zero-dimensional string array is unwrapped into the string it holds,
+       a `bytearray` is converted into `bytes`,
+       whether it is a scalar or an element of a sequence,
+       and a sequence other than a NumPy array of a non-object dtype,
+       e.g. a tuple, a `Series` or an array of Python objects,
+       is converted into a list of its elements,
+       which reveals the true shape of a `DataFrame` column
+       of equal-length sequences;
+       then a byte-string label, given as labels
+       or as the index of a `DataFrame`, is decoded from UTF-8,
        the encoding a catalog writes its labels with to an HDF file;
        a byte-string label that is not valid UTF-8 is rejected.
     4. **Check the dimensionality**: every property, and the labels,
@@ -114,36 +127,32 @@ class CatalogFormatter:
        since such a label reads as a sub-frame rather than a column,
        but it is already rejected in the convert step, as two column labels
        that collide once converted to strings.
-       This runs after stripping,
-       because stripping a `DataFrame` column of equal-length sequences
+       This runs after the normalization,
+       because normalizing a `DataFrame` column of equal-length sequences
        turns it from an opaque 1-D object array
        into a plain nested list that reveals its true shape.
-    5. **Check the row count**: if every property is empty or blank
-       and no label is supplied,
-       the input describes properties without any row and is rejected.
-       An empty property beside a property that survives the next step,
-       e.g. a scalar property carrying a value,
-       is not rejected here and is dropped there.
-       This runs before the blank properties are dropped,
-       which would otherwise swallow every such property
-       and report the absence of a property instead.
-    6. **Drop the blank properties**: a property holding no element,
-       or whose every element is blank,
-       is discarded and named in a log warning.
-       An element is blank when it is a missing value
-       or, after stripping, an empty string;
-       `0` and `False` are values, so their properties are kept.
-    7. **Check the rectangularity**: every sequence property, and the labels,
+       The labels must also be distinct once converted to strings,
+       whitespace included,
+       since a label names a single alternative.
+    5. **Check the rectangularity**: every sequence property, and the labels,
        must hold the same number of elements,
-       which defines the number of rows.
-    8. **Broadcast the scalars**: a scalar property is repeated over the rows.
-    9. **Check the non-emptiness**: at least one property must be left.
-    10. **Freeze**: every array is copied and made read-only,
-        and a property of Python objects is deep-copied,
-        so that the catalog shares nothing mutable with the caller.
-        The data type of a property is inferred by NumPy from its values,
-        unless the property mixes strings and missing values,
-        which is kept as Python objects.
+       which defines the number of rows;
+       the input is rejected if there is no row,
+       i.e. if a property is empty:
+       when every sequence property is empty
+       and there are no labels, or empty labels,
+       the error states that a catalog must have at least one row,
+       while otherwise, another property or the labels naming at least one row,
+       the error states that the properties do not have the same length,
+       since the empty property contradicts them.
+    6. **Broadcast the scalars**: a scalar property is repeated over the rows.
+    7. **Check the non-emptiness**: there must be at least one property.
+    8. **Freeze**: every array is copied and made read-only,
+       and a property of Python objects is deep-copied,
+       so that the catalog shares nothing mutable with the caller.
+       The data type of a property is inferred by NumPy from its values,
+       unless the property mixes strings and missing values,
+       which is kept as Python objects.
 
     The errors of the steps 1 to 4 are reported together, in one pass,
     since none of these steps needs the others to succeed;
@@ -173,10 +182,11 @@ class CatalogFormatter:
                 or if a property is an unordered collection or a table,
                 or if a byte-string label is not valid UTF-8,
                 or if a property, or the labels, is not one-dimensional,
+                or if two labels are equal once converted to strings,
                 naming every such error at once,
                 or if there is no row,
                 or if the properties and the labels do not have the same length,
-                or if there is no property left.
+                or if there is no property.
         """
         labels, properties, error_messages = cls.__convert(properties, raw_labels)
         error_messages.extend(cls.__find_property_kind_errors(properties))
@@ -187,25 +197,26 @@ class CatalogFormatter:
             for name, property_values in properties.items()
             if not isinstance(property_values, (DataFrame, AbstractSet))
         }
-        labels, decoding_error_messages = _decode_labels(_strip(labels))
+        labels, decoding_error_messages = _decode_labels(_normalize_strings(labels))
         error_messages.extend(decoding_error_messages)
         properties = {
-            name: _strip(property_values)
+            name: _normalize_strings(property_values)
             for name, property_values in properties.items()
         }
         # Undecoded labels are already reported,
         # and NumPy cannot read byte strings that are not ASCII.
-        error_messages.extend(
-            cls.__find_dimension_errors(
-                None if decoding_error_messages else labels, properties
-            )
+        labels_ndim = (
+            None if labels is None or decoding_error_messages else asarray(labels).ndim
         )
+        error_messages.extend(cls.__find_dimension_errors(labels_ndim, properties))
+        # Undecoded or multi-dimensional labels are already reported.
+        if labels_ndim == 1:
+            error_messages.extend(_find_duplicate_label_errors(labels))
+
         # These steps do not depend on one another's success,
         # so their errors are reported together, in one pass,
         # whereas the next steps rely on a well-formed input.
         raise_errors("The input of the catalog is invalid:", error_messages)
-        cls.__check_row_count(labels, properties)
-        properties = cls.__drop_blank_properties(properties)
         n_rows = cls.__compute_row_count(labels, properties)
         properties = {
             name: full(n_rows, property_values)
@@ -300,15 +311,7 @@ class CatalogFormatter:
             ]
 
         str_names = tuple(str(name) for name in properties.columns)
-        seen_names = set()
-        duplicate_names = []
-        for str_name in str_names:
-            if str_name not in seen_names:
-                seen_names.add(str_name)
-            elif str_name not in duplicate_names:
-                duplicate_names.append(str_name)
-
-        if duplicate_names:
+        if duplicate_names := _find_duplicates(str_names):
             plural = len(duplicate_names) > 1
             msg = (
                 "The properties of the catalog do not have distinct names "
@@ -376,7 +379,7 @@ class CatalogFormatter:
 
     @staticmethod
     def __find_dimension_errors(
-        labels: list[Any] | None, properties: Mapping[str, Any]
+        labels_ndim: int | None, properties: Mapping[str, Any]
     ) -> list[str]:
         """Find the properties, and the labels, that are not one-dimensional.
 
@@ -394,7 +397,8 @@ class CatalogFormatter:
         as two column labels that collide once converted to strings.
 
         Args:
-            labels: The labels, `None` if not supplied.
+            labels_ndim: The dimension of the labels,
+                `None` if they are not supplied or cannot be read.
             properties: The properties.
 
         Returns:
@@ -408,86 +412,12 @@ class CatalogFormatter:
             for name, property_values in properties.items()
             if asarray(property_values).ndim > 1
         ]
-        if labels is not None and asarray(labels).ndim > 1:
+        if labels_ndim is not None and labels_ndim > 1:
             error_messages.append(
                 "The labels of the catalog have a dimension greater than 1."
             )
 
         return error_messages
-
-    @staticmethod
-    def __check_row_count(
-        labels: list[Any] | None, properties: Mapping[str, Any]
-    ) -> None:
-        """Check that the properties describe at least one row.
-
-        An empty property is blank,
-        so every property of a mapping describing no row at all
-        would be dropped as blank
-        and the catalog would be rejected for having no property,
-        which misdescribes the input:
-        the caller did supply properties, but without any row.
-        An empty property alongside a property that survives the blank-property step
-        is left to that step, which drops it,
-        so only an input whose every property would be dropped is rejected here.
-
-        Args:
-            labels: The labels, `None` if not supplied.
-            properties: The properties.
-
-        Raises:
-            ValueError: If every property is empty or blank,
-                naming the disagreement with the labels when there are labels.
-        """
-        name_to_length = _compute_property_lengths(properties)
-        if not name_to_length or any(name_to_length.values()):
-            return
-
-        if any(
-            _is_scalar(property_values) and not _is_blank(property_values)
-            for property_values in properties.values()
-        ):
-            # A scalar property carrying a value survives the blank-property step
-            # and defines the single row of the catalog, so the empty properties
-            # beside it are dropped as blank rather than making the input
-            # rowless; this is how the same table spelled with a blank scalar
-            # property, e.g. {"a": "", "b": 5}, is already read.
-            return
-
-        if labels is not None:
-            # The labels name rows that the empty properties contradict,
-            # so report that disagreement rather than the absence of a row.
-            _raise_length_mismatch(labels, name_to_length)
-
-        msg = "A catalog must have at least one row."
-        raise ValueError(msg)
-
-    @staticmethod
-    def __drop_blank_properties(properties: dict[str, Any]) -> dict[str, Any]:
-        """Drop the properties holding no value and log a warning naming them.
-
-        Args:
-            properties: The properties.
-
-        Returns:
-            The properties holding at least one value.
-        """
-        kept_properties = {}
-        dropped_names = []
-        for name, property_values in properties.items():
-            if _is_blank_property(property_values):
-                dropped_names.append(name)
-            else:
-                kept_properties[name] = property_values
-
-        if dropped_names:
-            logger.warning(
-                "The following properties of the catalog hold no value "
-                "and were dropped: %s.",
-                pretty_str(dropped_names, sort=False),
-            )
-
-        return kept_properties
 
     @staticmethod
     def __compute_row_count(
@@ -503,7 +433,8 @@ class CatalogFormatter:
             The number of rows.
 
         Raises:
-            ValueError: If the properties and the labels do not have the same length.
+            ValueError: If the properties and the labels do not have the same length,
+                or if there is no row.
         """
         name_to_length = _compute_property_lengths(properties)
         lengths = set(name_to_length.values())
@@ -516,7 +447,12 @@ class CatalogFormatter:
         # Without any sized property nor label, e.g. with scalar properties only,
         # nothing defines the number of rows,
         # but the catalog is still well formed and has a single row.
-        return lengths.pop() if lengths else 1
+        n_rows = lengths.pop() if lengths else 1
+        if not n_rows:
+            msg = "A catalog must have at least one row."
+            raise ValueError(msg)
+
+        return n_rows
 
 
 def raise_errors(header: str, error_messages: Sequence[str]) -> None:
@@ -544,6 +480,56 @@ def raise_errors(header: str, error_messages: Sequence[str]) -> None:
     errors = "\n".join(f"- {error_message}" for error_message in error_messages)
     msg = f"{header}\n{errors}"
     raise ValueError(msg)
+
+
+def _find_duplicate_label_errors(labels: Sequence[Any]) -> list[str]:
+    """Find the labels naming several alternatives.
+
+    The labels are compared once converted to strings,
+    as the catalog stores them,
+    so that `1` and `"1"` are the same label.
+
+    Args:
+        labels: The one-dimensional labels.
+
+    Returns:
+        The error message naming each duplicate label once,
+        empty when the labels are distinct.
+    """
+    duplicates = _find_duplicates(map(str, labels))
+    if not duplicates:
+        return []
+
+    plural = len(duplicates) > 1
+    # The labels are quoted, so that their whitespace is visible.
+    return [
+        (
+            f"The following label{'s name' if plural else ' names'} "
+            "several alternatives of the catalog: "
+            f"{pretty_str(map(repr, duplicates), sort=False)}."
+        )
+    ]
+
+
+def _find_duplicates(strings: Iterable[str]) -> list[str]:
+    """Find the strings occurring several times.
+
+    Args:
+        strings: The strings.
+
+    Returns:
+        Each string occurring several times, once,
+        in the order of its first repetition.
+    """
+    seen = set()
+    duplicates = []
+    for string in strings:
+        if string not in seen:
+            seen.add(string)
+        elif string not in duplicates:
+            duplicates.append(string)
+
+    return duplicates
 
 
 def _compute_property_lengths(properties: Mapping[str, Any]) -> dict[str, int]:
@@ -615,32 +601,28 @@ def _is_scalar(property_values: Any) -> bool:
     )
 
 
-def _strip_value(value: Any) -> Any:
-    """Remove the leading and trailing whitespace of a value, if it is a string.
+def _normalize_string(value: Any) -> Any:
+    """Normalize a value if it is a string.
 
     Args:
         value: The value.
 
     Returns:
-        The value, stripped and normalized to `bytes` if it is a byte string.
+        The value, normalized to `bytes` if it is a byte string.
     """
     if isinstance(value, ndarray) and value.ndim == 0 and value.dtype.kind in "US":
         # A zero-dimensional string array stands for a single string, and is
         # read as a scalar property, so unwrap it rather than leave the only
-        # scalar kind of property that stripping does not reach.
-        value = value.item()
+        # scalar kind of property that is not a string instance.
+        return value.item()
 
-    if not isinstance(value, (str, bytes, bytearray)):
-        return value
-
-    stripped = value.strip()
     # NumPy reads a bytearray through the buffer protocol, unlike a str
     # or a bytes object, which it treats as a single value; left as a
     # bytearray, a scalar property would be exploded into one row per
     # byte when it is later broadcast over the rows or frozen, and an
     # element of a sequence property would make the property inhomogeneous,
     # so it is normalized to bytes here, upstream of both.
-    return bytes(stripped) if isinstance(stripped, bytearray) else stripped
+    return bytes(value) if isinstance(value, bytearray) else value
 
 
 def _decode_labels(labels: list[Any] | None) -> tuple[list[Any] | None, list[str]]:
@@ -649,13 +631,10 @@ def _decode_labels(labels: list[Any] | None) -> tuple[list[Any] | None, list[str
     NumPy converts a byte string to a string with the ASCII codec,
     which fails on any other byte with an unclear message,
     while a catalog writes its labels to an HDF file encoded to UTF-8;
-    so a byte-string label is decoded from UTF-8 instead,
-    then stripped like a string label,
-    which also removes the non-ASCII whitespace
-    that stripping the byte string left.
+    so a byte-string label is decoded from UTF-8 instead.
 
     Args:
-        labels: The stripped labels, `None` if not supplied.
+        labels: The normalized labels, `None` if not supplied.
 
     Returns:
         The labels, with the byte strings decoded to strings,
@@ -671,7 +650,7 @@ def _decode_labels(labels: list[Any] | None) -> tuple[list[Any] | None, list[str
     for label in labels:
         if isinstance(label, bytes):
             try:
-                label = label.decode().strip()  # noqa: PLW2901
+                label = label.decode()  # noqa: PLW2901
             except UnicodeDecodeError:
                 error_messages.append(
                     f"The label {label!r} of the catalog is a byte string "
@@ -683,28 +662,33 @@ def _decode_labels(labels: list[Any] | None) -> tuple[list[Any] | None, list[str
     return decoded_labels, error_messages
 
 
-def _strip(property_values: Any) -> Any:
-    """Remove the leading and trailing whitespace of the strings of a property.
+def _normalize_strings(property_values: Any) -> Any:
+    """Normalize the strings of a property.
+
+    A sequence of Python objects is converted to a list,
+    which also reveals the true shape of a column of equal-length sequences.
 
     Args:
         property_values: The property, possibly a scalar or `None`.
 
     Returns:
-        The property with its strings stripped.
+        The property with its strings normalized,
+        see [_normalize_string][gemseo.space.catalog._input._normalize_string].
     """
     if property_values is None:
         return None
 
-    if isinstance(property_values, ndarray) and property_values.dtype.kind not in "USO":
-        # A numeric, boolean, datetime or timedelta array holds no string to
-        # strip; leaving it alone also keeps its data type, which the list
+    if _is_scalar(property_values):
+        return _normalize_string(property_values)
+
+    if isinstance(property_values, ndarray) and property_values.dtype.kind != "O":
+        # Such an array holds no bytearray, no zero-dimensional array
+        # and no nested sequence, so there is nothing to normalize;
+        # leaving it alone also keeps its data type, which the list
         # below would lose, and skips one Python-level pass over its values.
         return property_values
 
-    if _is_scalar(property_values):
-        return _strip_value(property_values)
-
-    return [_strip_value(value) for value in property_values]
+    return [_normalize_string(value) for value in property_values]
 
 
 def is_missing(value: Any) -> bool:
@@ -724,7 +708,8 @@ def is_missing(value: Any) -> bool:
 def _is_blank(value: Any) -> bool:
     """Return whether a value carries no information.
 
-    A blank value is a missing value or an empty string.
+    A blank value is a missing value
+    or a string that is empty once stripped of its leading and trailing whitespace.
     A zero and a `False` are values, so they are not blank.
 
     Args:
@@ -734,24 +719,187 @@ def _is_blank(value: Any) -> bool:
         Whether the value is blank.
     """
     if isinstance(value, (str, bytes)):
-        return not value
+        return not value.strip()
 
     return is_missing(value)
 
 
-def _is_blank_property(property_values: Any) -> bool:
-    """Return whether a property carries no information.
+def is_blank_property(property_values: Iterable[Any]) -> bool:
+    """Return whether a property holds no value.
+
+    A property holds no value when each of its elements is blank,
+    i.e. is a missing value
+    or a string that is empty once stripped of its leading and trailing whitespace;
+    `0` and `False` are values, so their properties hold values.
+    This is the notion
+    [clean_catalog_data][gemseo.space.catalog._input.clean_catalog_data]
+    drops a property by.
 
     Args:
-        property_values: The property, possibly a scalar.
+        property_values: The property.
 
     Returns:
         Whether the property holds no value.
     """
-    if _is_scalar(property_values):
-        return _is_blank(property_values)
-
     return all(_is_blank(value) for value in property_values)
+
+
+def clean_catalog_data(
+    labels: ndarray, properties: Mapping[str, ndarray]
+) -> tuple[ndarray, ReadOnlyMapping[str, ndarray]]:
+    """Clean the data of a catalog.
+
+    The strings of the labels and of the properties are stripped
+    of their leading and trailing whitespace,
+    then the properties holding no value are dropped
+    and named in a log warning,
+    see [is_blank_property][gemseo.space.catalog._input.is_blank_property].
+
+    The data of a catalog are already valid,
+    and cleaning them keeps them so,
+    so the cleaned data are frozen directly rather than formatted again.
+
+    Args:
+        labels: The labels of the catalog.
+        properties: The properties of the catalog.
+
+    Returns:
+        The cleaned labels and the cleaned properties, frozen.
+
+    Raises:
+        ValueError: If every property holds no value,
+            since cleaning would leave none,
+            or if labels differ only by their leading and trailing whitespace,
+            since they would name several alternatives once stripped,
+            naming every such error at once.
+    """
+    cleaned_properties = {}
+    dropped_names = []
+    for name, property_values in properties.items():
+        stripped_property = _strip_strings(property_values)
+        if is_blank_property(stripped_property):
+            dropped_names.append(name)
+        else:
+            cleaned_properties[name] = _freeze_stripped_strings(stripped_property)
+
+    error_messages = []
+    if dropped_names and not cleaned_properties:
+        error_messages.append(
+            "Every property of the catalog is blank, "
+            "i.e. holds only missing values or empty strings, "
+            "so cleaning the catalog would leave no property: "
+            f"{pretty_str(dropped_names, sort=False)}."
+        )
+
+    stripped_labels = _strip_strings(labels)
+    if merged_labels := _find_merged_labels(labels, stripped_labels):
+        error_messages.append(
+            "The following labels of the catalog differ only "
+            "by their leading and trailing whitespace, "
+            "so cleaning the catalog would make them duplicates: "
+            f"{'; '.join(merged_labels)}."
+        )
+
+    raise_errors("The catalog cannot be cleaned:", error_messages)
+    if dropped_names:
+        logger.warning(
+            "The following properties of the catalog hold no value "
+            "and were dropped: %s.",
+            pretty_str(dropped_names, sort=False),
+        )
+
+    cleaned_labels = _freeze_stripped_strings(stripped_labels)
+    return cleaned_labels, ReadOnlyMapping(cleaned_properties)
+
+
+def _freeze_stripped_strings(stripped_values: ndarray) -> ndarray:
+    """Freeze an array whose strings have been stripped.
+
+    Stripping keeps the width of the data type of an array of strings,
+    so such an array is rebuilt at the width of its longest stripped string,
+    as the constructor of a catalog would build it.
+    An array of Python objects is already a deep copy that nobody else holds,
+    so it is frozen in place rather than copied again.
+
+    Args:
+        stripped_values: The array whose strings have been stripped.
+
+    Returns:
+        The frozen array.
+    """
+    dtype = stripped_values.dtype
+    if dtype.kind in "US":
+        return _freeze(stripped_values.tolist(), dtype.type)
+
+    if dtype.kind == "O":
+        stripped_values.setflags(write=False)
+        return stripped_values
+
+    return freeze_property_array(stripped_values)
+
+
+def find_labels_merged_by_cleaning(labels: ndarray) -> list[str]:
+    """Return the labels that cleaning a catalog would make duplicates.
+
+    Args:
+        labels: The labels of the catalog.
+
+    Returns:
+        The representation of each group of labels
+        differing only by their leading and trailing whitespace.
+    """
+    return _find_merged_labels(labels, _strip_strings(labels))
+
+
+def _find_merged_labels(labels: ndarray, stripped_labels: ndarray) -> list[str]:
+    """Return the labels that stripping makes duplicates.
+
+    Args:
+        labels: The labels, which are distinct.
+        stripped_labels: The labels stripped of their leading and trailing whitespace.
+
+    Returns:
+        The representation of each group of labels stripped to the same label.
+    """
+    stripped_label_to_labels: dict[str, list[str]] = {}
+    for label, stripped_label in zip(
+        labels.tolist(), stripped_labels.tolist(), strict=True
+    ):
+        stripped_label_to_labels.setdefault(stripped_label, []).append(label)
+
+    # The labels are quoted, so that their whitespace is visible.
+    return [
+        pretty_str(map(repr, original_labels), sort=False)
+        for original_labels in stripped_label_to_labels.values()
+        if len(original_labels) > 1
+    ]
+
+
+def _strip_strings(values: ndarray) -> ndarray:
+    """Remove the leading and trailing whitespace of the strings of an array.
+
+    Args:
+        values: The array.
+
+    Returns:
+        A copy of the array with its strings stripped,
+        deep for an array of Python objects,
+        so that it shares none of its objects with the array given,
+        or the array itself if it cannot hold a string.
+    """
+    kind = values.dtype.kind
+    if kind in "US":
+        return strip_array(values)
+
+    if kind == "O":
+        stripped_values = deepcopy(values)
+        for index, value in enumerate(values):
+            if isinstance(value, (str, bytes)):
+                stripped_values[index] = value.strip()
+
+        return stripped_values
+
+    return values
 
 
 def _mixes_string_and_missing(property_values: Any) -> bool:

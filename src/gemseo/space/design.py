@@ -478,7 +478,7 @@ class DesignSpace(
                 to a sequence or a scalar, a scalar being repeated over the rows.
             value: The default value of the variable,
                 either the position of an alternative in the catalog
-                or a label naming exactly one alternative,
+                or the label of an alternative,
                 see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
                 If `None`, do not use a default value.
 
@@ -486,7 +486,13 @@ class DesignSpace(
             ValueError: Either if the variable already exists,
                 if the catalog is wrong,
                 if the value is not the position of an alternative,
-                or if the value is a label naming no alternative or several ones.
+                or if the value is a label naming no alternative.
+
+        Note:
+            The labels and the properties of the catalog are kept as they are;
+            to use cleaned data, pass a catalog cleaned with
+            [clean][gemseo.space.catalog.catalog.Catalog.clean],
+            e.g. `Catalog(properties=table).clean()`.
         """
         variable = CatalogVariable(catalog=catalog)
         if isinstance(value, str):
@@ -1095,8 +1101,8 @@ class DesignSpace(
             name: The name of the variable.
             current_value: The current value of the variable,
                 or `None` to mark the variable as having no value.
-                The value of a catalog variable can also be a label
-                naming exactly one alternative of its catalog,
+                The value of a catalog variable can also be the label
+                of an alternative of its catalog,
                 see [get_position][gemseo.space.catalog.catalog.Catalog.get_position].
                 For a categorical variable,
                 it can be given as labels instead of coordinates.
@@ -1105,7 +1111,7 @@ class DesignSpace(
             ValueError: If the value does not match the size of the variable,
                 if a component of the value falls outside the domain
                 of the kind of the variable,
-                or if the value is a label naming no alternative or several ones.
+                or if the value is a label naming no alternative.
             TypeError: If the value is a label
                 but the variable is neither a catalog nor a categorical variable.
         """

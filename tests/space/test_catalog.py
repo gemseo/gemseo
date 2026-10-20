@@ -20,6 +20,8 @@ import copy
 import logging
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
+from typing import Final
 
 import h5py
 import pytest
@@ -42,6 +44,9 @@ from pydantic_core import PydanticSerializationError
 from gemseo.space import Catalog
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from _pytest.mark.structures import ParameterSet
 
 
 @pytest.fixture
@@ -84,49 +89,139 @@ def test_default_labels() -> None:
     assert_array_equal(catalog.labels, array(["0", "1"]))
 
 
-def test_strip() -> None:
-    """Check that the stored strings are stripped, in the properties and the labels."""
+def test_strings_are_kept_as_they_are() -> None:
+    """Check that the strings are kept as they are, in the properties and the labels."""
     catalog = Catalog(
         properties={"supplier": [" ACME ", "Foundry\t"]}, labels=[" alu", "steel "]
     )
 
-    assert_array_equal(catalog.properties["supplier"], array(["ACME", "Foundry"]))
-    assert_array_equal(catalog.labels, array(["alu", "steel"]))
-
-
-def test_series_property_is_stripped() -> None:
-    """Check that a property given as a Series is stripped like a list.
-
-    A Series is neither a `Sequence`, an `ndarray` nor an `Index`,
-    but it is read as a sequence of values, each of them stripped.
-    """
-    catalog = Catalog(properties={"s": Series([" ACME ", "B "]), "x": [1, 2]})
-
-    assert_array_equal(catalog.properties["s"], array(["ACME", "B"]))
+    assert_array_equal(catalog.properties["supplier"], array([" ACME ", "Foundry\t"]))
+    assert_array_equal(catalog.labels, array([" alu", "steel "]))
 
 
 @pytest.mark.parametrize(
-    "property_values",
+    ("values", "expected"),
     [
-        [],
-        [nan, nan],
-        [None, None],
-        ["", ""],
-        ["  ", "\t"],
-        ["", nan],
-        [b"", b""],
-        [b"  ", b" "],
-        nan,
-        None,
-        "   ",
+        pytest.param(array([" ACME ", "B\t"]), ["ACME", "B"], id="str-array"),
+        pytest.param(array([b" ACME ", b"B\t"]), [b"ACME", b"B"], id="bytes-array"),
+        pytest.param([" ACME ", nan], ["ACME", nan], id="object-with-nan"),
+        pytest.param(Series([" ACME ", "B\t"]), ["ACME", "B"], id="series"),
+        pytest.param(b"  steel  ", [b"steel", b"steel"], id="bytes-scalar"),
+        pytest.param(
+            bytearray(b"  steel  "), [b"steel", b"steel"], id="bytearray-scalar"
+        ),
+        pytest.param(array("  ACME  "), ["ACME", "ACME"], id="zero-dimensional-str"),
+        pytest.param(
+            [b"  steel  ", bytearray(b" alu ")],
+            [b"steel", b"alu"],
+            id="bytearray-element",
+        ),
     ],
 )
-def test_blank_property_is_dropped(property_values, caplog) -> None:
-    """Check that a property holding no value is dropped and named in a warning."""
+def test_clean_strips_the_strings(values, expected) -> None:
+    """Check that clean returns a new catalog whose strings are stripped.
+
+    The strings are stripped in the labels and in the properties,
+    whatever the data type of the property,
+    including a `Series`, which is read as a sequence of values,
+    a zero-dimensional string array, which is read as a string,
+    and a sequence with a `bytearray` element, read as a `bytes` value.
+    `bytes` and `bytearray` are `Sequence` instances,
+    but a scalar byte-string property is broadcast as a single value over the rows,
+    the way a scalar `str` property is,
+    not exploded into one row per byte.
+    The stripped labels and properties are as wide as
+    the ones of a catalog built from them.
+    """
+    catalog = Catalog(
+        properties={"supplier": values, "mass": [2.7, 7.8]}, labels=[" alu", "steel "]
+    )
+    cleaned_catalog = catalog.clean()
+    expected_catalog = Catalog(
+        properties={"supplier": expected, "mass": [2.7, 7.8]}, labels=["alu", "steel"]
+    )
+
+    assert cleaned_catalog is not catalog
+    assert cleaned_catalog == expected_catalog
+    assert cleaned_catalog.labels.dtype == expected_catalog.labels.dtype
+    assert (
+        cleaned_catalog.properties["supplier"].dtype
+        == expected_catalog.properties["supplier"].dtype
+    )
+
+
+def test_clean_shares_no_object() -> None:
+    """Check that the cleaned catalog shares no object with the original one."""
+    catalog = Catalog(properties={"spec": [{"a": 1}, " s ", None], "mass": [1, 2, 3]})
+    cleaned_catalog = catalog.clean()
+    catalog.properties["spec"][0]["a"] = 2
+
+    assert cleaned_catalog.properties["spec"][0] == {"a": 1}
+
+
+def test_clean_freezes_the_arrays(table) -> None:
+    """Check that every array of a cleaned catalog is read-only.
+
+    The table has a property of Python objects, mixing strings and missing values.
+    """
+    catalog = Catalog(properties=table.assign(note=[" a", None, "b"])).clean()
+
+    assert catalog.properties["note"].dtype.kind == "O"
+    assert not catalog.labels.flags.writeable
+    for property_values in catalog.properties.values():
+        assert not property_values.flags.writeable
+
+
+@pytest.mark.parametrize(
+    ("labels", "mass"),
+    [
+        pytest.param(["a", "a ", "b"], [2.7, 7.8, 4.5], id="one-merged"),
+        pytest.param([" a", "a", "b", "b\t"], [2.7, 7.8, 4.5, 1.0], id="two-merged"),
+        pytest.param(["a", "a "], [nan, nan], id="with-a-blank-property"),
+    ],
+)
+def test_clean_rejects_the_labels_made_duplicates(labels, mass, snapshot) -> None:
+    """Check that clean rejects the labels that stripping makes duplicates.
+
+    A blank property is reported with them.
+    """
+    with assert_exception(ValueError, snapshot):
+        Catalog(properties={"mass": mass}, labels=labels).clean()
+
+
+_blank_properties = (
+    pytest.param([nan, nan], id="nan-list"),
+    pytest.param([None, None], id="none-list"),
+    pytest.param(["", ""], id="empty-str-list"),
+    pytest.param(["  ", "\t"], id="whitespace-str-list"),
+    pytest.param(["", nan], id="empty-str-and-nan-list"),
+    pytest.param([b"", b""], id="empty-bytes-list"),
+    pytest.param([b"  ", b" "], id="whitespace-bytes-list"),
+    pytest.param(nan, id="nan"),
+    pytest.param(None, id="none"),
+    pytest.param("   ", id="whitespace-str"),
+)
+"""Properties holding no value."""
+
+
+@pytest.mark.parametrize("property_values", _blank_properties)
+def test_blank_property_is_kept(property_values, caplog) -> None:
+    """Check that a property holding no value is kept, without a warning."""
     with caplog.at_level(logging.WARNING):
         catalog = Catalog(properties={"mass": [2.7, 7.8], "blank": property_values})
 
-    assert tuple(catalog.properties) == ("mass",)
+    assert tuple(catalog.properties) == ("mass", "blank")
+    assert not caplog.records
+
+
+@pytest.mark.parametrize("property_values", _blank_properties)
+def test_clean_drops_a_blank_property(property_values, caplog) -> None:
+    """Check that clean drops a property holding no value and names it in a warning."""
+    catalog = Catalog(properties={"mass": [2.7, 7.8], "blank": property_values})
+    with caplog.at_level(logging.WARNING):
+        cleaned_catalog = catalog.clean()
+
+    assert tuple(cleaned_catalog.properties) == ("mass",)
     assert (
         "The following properties of the catalog hold no value and were dropped: blank."
         in caplog.text
@@ -135,8 +230,9 @@ def test_blank_property_is_dropped(property_values, caplog) -> None:
 
 def test_blank_properties_are_named_together(caplog) -> None:
     """Check that a single warning names every dropped property."""
+    catalog = Catalog(properties={"mass": [2.7], "note": [""], "void": [nan]})
     with caplog.at_level(logging.WARNING):
-        Catalog(properties={"mass": [2.7], "note": [""], "void": [nan]})
+        catalog.clean()
 
     assert len(caplog.records) == 1
     assert (
@@ -149,12 +245,12 @@ def test_blank_properties_are_named_together(caplog) -> None:
     "property_values", [[0, 0], [False, False], [2.7, nan], ["ACME", ""]]
 )
 def test_property_is_kept(property_values) -> None:
-    """Check that a property holding at least one value is kept.
+    """Check that clean keeps a property holding at least one value.
 
     A zero and a `False` are values, so the emptiness of a property is
     its blankness and never its falsiness.
     """
-    catalog = Catalog(properties={"mass": [2.7, 7.8], "kept": property_values})
+    catalog = Catalog(properties={"mass": [2.7, 7.8], "kept": property_values}).clean()
     assert tuple(catalog.properties) == ("mass", "kept")
 
 
@@ -373,27 +469,27 @@ def test_zero_dimensional_array_property_is_a_scalar() -> None:
     assert_array_equal(catalog.properties["stock"], array([0, 0]))
 
 
-def test_zero_dimensional_string_array_property_is_stripped() -> None:
-    """Check that a zero-dimensional string array property is stripped.
+def test_zero_dimensional_string_array_property() -> None:
+    """Check that a zero-dimensional string array property is read as a string.
 
     It is the one kind of scalar property that is not a `str` instance,
-    so stripping has to unwrap it first.
+    so it is unwrapped, then broadcast.
     """
     catalog = Catalog(properties={"mass": [2.7, 7.8], "supplier": array("  ACME  ")})
 
-    assert_array_equal(catalog.properties["supplier"], array(["ACME", "ACME"]))
+    assert_array_equal(catalog.properties["supplier"], array(["  ACME  "] * 2))
 
 
-def test_byte_strings_in_a_sequence_property_are_stripped() -> None:
-    """Check that the byte strings of a sequence property are stripped.
+def test_byte_strings_in_a_sequence_property() -> None:
+    """Check the byte strings of a sequence property.
 
-    A `bytearray` element is stripped into a `bytes` value,
+    A `bytearray` element is converted into a `bytes` value,
     since NumPy would read a `bytearray` through the buffer protocol
     as a nested sequence of bytes rather than as a single value.
     """
     catalog = Catalog(properties={"name": [b"  steel  ", bytearray(b" alu ")]})
 
-    assert_array_equal(catalog.properties["name"], array([b"steel", b"alu"]))
+    assert_array_equal(catalog.properties["name"], array([b"  steel  ", b" alu "]))
 
 
 def test_non_string_mapping_key(snapshot) -> None:
@@ -482,16 +578,17 @@ def test_bytes_labels_is_a_single_label(value) -> None:
     assert_array_equal(catalog.labels, array(["ab"]))
 
 
-@pytest.mark.parametrize(
-    "labels",
-    [
-        [b"\xc3\xa9", b" b\xc2\xa0"],
-        array([b"\xc3\xa9", b"b"]),
-        [bytearray(b"\xc3\xa9"), "b"],
-    ],
+_BYTE_STRING_LABELS: Final[tuple[ParameterSet, ...]] = (
+    pytest.param([b"\xc3\xa9", b" b\xc2\xa0"], " b\u00a0", id="bytes-list"),
+    pytest.param(array([b"\xc3\xa9", b"b"]), "b", id="bytes-array"),
+    pytest.param([bytearray(b"\xc3\xa9"), "b"], "b", id="bytearray"),
 )
-def test_byte_string_labels_are_decoded_from_utf8(labels) -> None:
-    """Check that byte-string labels are decoded from UTF-8, then stripped.
+"""The byte-string labels and the second label they are decoded into."""
+
+
+@pytest.mark.parametrize(("labels", "second_label"), _BYTE_STRING_LABELS)
+def test_byte_string_labels_are_decoded_from_utf8(labels, second_label) -> None:
+    """Check that byte-string labels are decoded from UTF-8.
 
     NumPy converts a byte string to a string with the ASCII codec,
     which would reject a non-ASCII byte-string label;
@@ -499,7 +596,15 @@ def test_byte_string_labels_are_decoded_from_utf8(labels) -> None:
     """
     catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=labels)
 
-    assert_array_equal(catalog.labels, array(["\u00e9", "b"]))
+    assert_array_equal(catalog.labels, array(["\u00e9", second_label]))
+
+
+@pytest.mark.parametrize(("labels", "second_label"), _BYTE_STRING_LABELS)
+def test_clean_strips_the_decoded_byte_string_labels(labels, second_label) -> None:
+    """Check that clean strips the labels decoded from byte strings."""
+    catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=labels)
+
+    assert_array_equal(catalog.clean().labels, array(["\u00e9", second_label.strip()]))
 
 
 def test_byte_string_labels_not_utf8(snapshot) -> None:
@@ -517,7 +622,7 @@ def test_byte_string_index_is_decoded_from_utf8(index) -> None:
     A byte-string index is decoded, not converted with `str`,
     which would give labels like `"b'alu'"` that no label could resolve.
     """
-    catalog = Catalog(properties=DataFrame({"mass": [2.7, 7.8]}, index=index))
+    catalog = Catalog(properties=DataFrame({"mass": [2.7, 7.8]}, index=index)).clean()
 
     assert_array_equal(catalog.labels, array(["\u00e9", "b"]))
     assert catalog.get_position("\u00e9") == 0
@@ -557,25 +662,6 @@ def test_empty_string_labels_is_one_label() -> None:
     assert_array_equal(catalog.labels, array([""]))
 
 
-@pytest.mark.parametrize(
-    ("value", "stripped"),
-    [(b"  steel  ", b"steel"), (bytearray(b"  steel  "), b"steel")],
-)
-def test_byte_string_scalar_is_stripped_and_not_exploded(value, stripped) -> None:
-    """Check that a scalar byte string is stripped and broadcast as one value.
-
-    `bytes` and `bytearray` are `Sequence` instances,
-    but a scalar byte-string property is stripped and broadcast
-    as a single value over the rows, the way a scalar `str` property is,
-    not exploded into one row per byte,
-    e.g. into a 5-row property of byte codes for `b"steel"`.
-    """
-    catalog = Catalog(properties={"name": value, "mass": 7.8})
-
-    assert len(catalog) == 1
-    assert_array_equal(catalog.properties["name"], array([stripped]))
-
-
 def test_no_row(snapshot) -> None:
     """Check that a table without any row is rejected."""
     with assert_exception(ValidationError, snapshot):
@@ -610,16 +696,15 @@ def test_no_property(snapshot) -> None:
         Catalog(properties={})
 
 
-def test_every_property_blank(snapshot, caplog) -> None:
-    """Check that a catalog whose every property is blank is rejected.
+def test_every_property_blank(snapshot) -> None:
+    """Check that clean rejects a catalog whose every property is blank.
 
-    The properties are dropped first, and named in a warning,
-    so the failure reports the absence of a property.
+    The error names the blank properties
+    and says that cleaning would leave no property.
     """
-    with caplog.at_level(logging.WARNING), assert_exception(ValidationError, snapshot):
-        Catalog(properties={"note": ["", ""], "void": [nan, nan]})
-
-    assert "were dropped: note and void" in caplog.text
+    catalog = Catalog(properties={"note": ["", ""], "void": [nan, nan]})
+    with assert_exception(ValueError, snapshot):
+        catalog.clean()
 
 
 @pytest.mark.parametrize("axis", ["index", "columns", "both"])
@@ -697,7 +782,8 @@ def test_nested_sequence_column_in_dataframe(snapshot) -> None:
     """Check that a `DataFrame` property of equal-length sequences is rejected.
 
     Such a property is read back from the `DataFrame` as a 1-D object array,
-    which only reveals its true, two-dimensional shape once stripped.
+    which only reveals its true, two-dimensional shape once its strings are
+    normalized, even if they are not stripped.
     """
     with assert_exception(ValidationError, snapshot):
         Catalog(properties=DataFrame({"mass": [[1, 2], [3, 4]]}))
@@ -764,21 +850,93 @@ def test_to_dataframe_is_isolated(table) -> None:
     assert catalog.to_dataframe() is not dataframe
 
 
-def test_duplicate_labels() -> None:
-    """Check that duplicate labels are accepted, since the value is the position."""
-    catalog = Catalog(properties={"mass": [2.7, 2.7]}, labels=["alu", "alu"])
-    assert len(catalog) == 2
+@pytest.mark.parametrize(
+    "labels",
+    [
+        pytest.param(["alu", "alu"], id="one-duplicate"),
+        pytest.param(["alu", "ti", "alu", "ti"], id="two-duplicates"),
+        pytest.param([1, "1"], id="int-and-str"),
+    ],
+)
+def test_duplicate_labels(labels, snapshot) -> None:
+    """Check that labels equal once converted to strings are rejected."""
+    with assert_exception(ValueError, snapshot):
+        Catalog(properties={"mass": 2.7}, labels=labels)
 
 
 @pytest.mark.parametrize(
     ("other", "expected"),
     [
-        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel"]), True),
-        (Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "iron"]), False),
-        (Catalog(properties={"mass": [2.7, 9.9]}, labels=["alu", "steel"]), False),
-        (Catalog(properties={"cost": [2.7, 7.8]}, labels=["alu", "steel"]), False),
-        (Catalog(properties={"mass": [2.7]}, labels=["alu"]), False),
-        ("not a catalog", False),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            True,
+            id="equal",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "iron"],
+            ),
+            False,
+            id="other-label",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 9.9], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+            id="other-value",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"cost": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+            id="other-name",
+        ),
+        pytest.param(
+            Catalog(properties={"mass": [2.7], "supplier": ["ACME"]}, labels=["alu"]),
+            False,
+            id="other-length",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel "],
+            ),
+            False,
+            id="label-whitespace",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+                labels=["alu", "steel "],
+            ).clean(),
+            True,
+            id="label-whitespace-cleaned",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": [" ACME ", "Foundry"]},
+                labels=["alu", "steel"],
+            ),
+            False,
+            id="property-whitespace",
+        ),
+        pytest.param(
+            Catalog(
+                properties={"mass": [2.7, 7.8], "supplier": [" ACME ", "Foundry"]},
+                labels=["alu", "steel"],
+            ).clean(),
+            True,
+            id="property-whitespace-cleaned",
+        ),
+        pytest.param("not a catalog", False, id="not-a-catalog"),
     ],
 )
 def test_eq(other, expected) -> None:
@@ -786,8 +944,13 @@ def test_eq(other, expected) -> None:
 
     The comparison must return a boolean,
     since `BaseVariable.__eq__` uses it as is.
+    Strings differing by whitespace differ, in the labels and in the properties,
+    unless cleaned.
     """
-    catalog = Catalog(properties={"mass": [2.7, 7.8]}, labels=["alu", "steel"])
+    catalog = Catalog(
+        properties={"mass": [2.7, 7.8], "supplier": ["ACME", "Foundry"]},
+        labels=["alu", "steel"],
+    )
     assert (catalog == other) is expected
 
 
@@ -970,7 +1133,6 @@ def test_eq_object_property_of_dicts_holding_series(other_value, expected) -> No
         ({"mass": array([1, 2], dtype="int8")}, {"mass": [1, 2]}),
         ({"mass": [0.0]}, {"mass": [-0.0]}),
         ({"mass": [1, None]}, {"mass": [1, None]}),
-        ({"supplier": ["ACME"]}, {"supplier": [" ACME "]}),
     ],
 )
 def test_hash_agrees_with_eq(properties, other_properties) -> None:
@@ -998,9 +1160,9 @@ def test_hash_of_a_catalog_used_as_a_key(table) -> None:
 @pytest.mark.parametrize(
     ("n_labels", "expected"),
     [
-        (1, "[0]"),
-        (6, "[0, 1, 2, 3, 4, 5]"),
-        (7, "[0, 1, 2, ..., 4, 5, 6] (7 labels)"),
+        (1, "['0']"),
+        (6, "['0', '1', '2', '3', '4', '5']"),
+        (7, "['0', '1', '2', ..., '4', '5', '6'] (7 labels)"),
     ],
 )
 def test_format_labels(n_labels, expected) -> None:
@@ -1010,11 +1172,20 @@ def test_format_labels(n_labels, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    ("label", "expected"), [("aluminium", 0), ("titanium", 2), (" steel\t", 1)]
+    ("labels", "label", "expected"),
+    [
+        pytest.param((), "aluminium", 0, id="first"),
+        pytest.param((), "titanium", 2, id="last"),
+        pytest.param(("alu", " alu", "ti"), " alu", 1, id="leading-space"),
+        pytest.param(("alu", " alu", "ti"), "alu", 0, id="no-space"),
+    ],
 )
-def test_get_position(table, label, expected) -> None:
-    """Check that a label is stripped then mapped to the position it names."""
-    assert Catalog(properties=table).get_position(label) == expected
+def test_get_position(table, labels, label, expected) -> None:
+    """Check that a label is mapped to the position it names.
+
+    The label is compared exactly, whitespace included.
+    """
+    assert Catalog(properties=table, labels=labels).get_position(label) == expected
 
 
 def test_get_position_with_default_labels() -> None:
@@ -1022,34 +1193,35 @@ def test_get_position_with_default_labels() -> None:
     assert Catalog(properties={"mass": [2.7, 7.8]}).get_position("1") == 1
 
 
-@pytest.mark.parametrize("label", ["gold", "Steel"])
-def test_get_position_unknown_label(table, label, snapshot) -> None:
-    """Check that a label naming no alternative is rejected."""
-    with assert_exception(ValueError, snapshot):
-        Catalog(properties=table).get_position(label)
+@pytest.mark.parametrize(
+    ("labels", "label"),
+    [
+        pytest.param((), "gold", id="gold"),
+        pytest.param((), "Steel", id="Steel"),
+        pytest.param(("aluminium", "steel ", "titanium"), "steel", id="whitespace"),
+    ],
+)
+def test_get_position_unknown_label(table, labels, label, snapshot) -> None:
+    """Check that a label naming no alternative is rejected.
 
-
-def test_get_position_duplicate_label(snapshot) -> None:
-    """Check that a label naming several alternatives is rejected."""
-    catalog = Catalog(
-        properties={"mass": [2.7, 7.8, 4.5, 7.9]},
-        labels=["aluminium", "steel", "titanium", "steel"],
-    )
+    The labels of the catalog are quoted in the error,
+    so that their leading and trailing whitespace is visible.
+    """
     with assert_exception(ValueError, snapshot):
-        catalog.get_position("steel")
+        Catalog(properties=table, labels=labels).get_position(label)
 
 
 @pytest.mark.parametrize(
     ("max_length", "expected"),
     [
-        (-1, "[..., 6] (7 labels)"),
-        (0, "[..., 6] (7 labels)"),
-        (1, "[..., 6] (7 labels)"),
-        (2, "[0, ..., 6] (7 labels)"),
-        (3, "[0, ..., 5, 6] (7 labels)"),
-        (4, "[0, 1, ..., 5, 6] (7 labels)"),
-        (7, "[0, 1, 2, 3, 4, 5, 6]"),
-        (100, "[0, 1, 2, 3, 4, 5, 6]"),
+        (-1, "[..., '6'] (7 labels)"),
+        (0, "[..., '6'] (7 labels)"),
+        (1, "[..., '6'] (7 labels)"),
+        (2, "['0', ..., '6'] (7 labels)"),
+        (3, "['0', ..., '5', '6'] (7 labels)"),
+        (4, "['0', '1', ..., '5', '6'] (7 labels)"),
+        (7, "['0', '1', '2', '3', '4', '5', '6']"),
+        (100, "['0', '1', '2', '3', '4', '5', '6']"),
     ],
 )
 def test_format_labels_max_length(max_length, expected) -> None:
@@ -1114,11 +1286,11 @@ def test_repr(table) -> None:
     takes 13 kB for a thousand rows and drowns a traceback.
     """
     assert repr(Catalog(properties=table)) == (
-        "Catalog(3 alternatives [aluminium, steel, titanium], "
+        "Catalog(3 alternatives ['aluminium', 'steel', 'titanium'], "
         "properties: mass and supplier)"
     )
     assert repr(Catalog(properties={"mass": 2.7})) == (
-        "Catalog(1 alternative [0], properties: mass)"
+        "Catalog(1 alternative ['0'], properties: mass)"
     )
 
 
@@ -1193,6 +1365,23 @@ def test_model_construct_properties() -> None:
     assert Catalog.model_construct(properties=properties).properties is properties
 
 
+def _round_trip_through_hdf(catalog: Catalog) -> Catalog:
+    """Write a catalog to an HDF file and read it back.
+
+    Args:
+        catalog: The catalog.
+
+    Returns:
+        The catalog read back.
+    """
+    file_path = Path("catalog.h5")
+    with h5py.File(file_path, "w") as h5file:
+        catalog.write_hdf(h5file.create_group("catalog"))
+
+    with h5py.File(file_path) as h5file:
+        return Catalog.read_hdf(h5file["catalog"])
+
+
 def test_hdf_round_trip_with_non_ascii(tmp_wd) -> None:
     """Check that a round trip through HDF preserves non-ASCII strings.
 
@@ -1202,17 +1391,22 @@ def test_hdf_round_trip_with_non_ascii(tmp_wd) -> None:
     catalog = Catalog(
         properties={"matériau": ["acier", "béton"]}, labels=["pièce", "poutre"]
     )
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert tuple(read_catalog.properties) == ("matériau",)
     assert_array_equal(read_catalog.labels, array(["pièce", "poutre"]))
     assert_array_equal(read_catalog.properties["matériau"], array(["acier", "béton"]))
     assert read_catalog == catalog
+
+
+def test_hdf_round_trip_keeps_the_data_as_they_are(tmp_wd) -> None:
+    """Check that a round trip through HDF keeps whitespace and blank properties."""
+    catalog = Catalog(
+        properties={"supplier": [" ACME ", "B\t"], "note": ["", ""]},
+        labels=[" alu", "steel "],
+    )
+
+    assert _round_trip_through_hdf(catalog) == catalog
 
 
 def test_hdf_round_trip_with_byte_string_property(tmp_wd) -> None:
@@ -1222,12 +1416,7 @@ def test_hdf_round_trip_with_byte_string_property(tmp_wd) -> None:
     rather than decoding it into a `"U"` one.
     """
     catalog = Catalog(properties={"a": array([b"x", b"y"])})
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert read_catalog.properties["a"].dtype.kind == "S"
     assert_array_equal(read_catalog.properties["a"], array([b"x", b"y"]))
@@ -1245,12 +1434,7 @@ def test_hdf_round_trip_preserves_the_property_order(tmp_wd) -> None:
         properties={"zinc": [1, 2], "alu": ["x", "y"], "mass": [3.0, 4.0]},
         labels=["p", "q"],
     )
-    file_path = Path("catalog.h5")
-    with h5py.File(file_path, "w") as h5file:
-        catalog.write_hdf(h5file.create_group("catalog"))
-
-    with h5py.File(file_path) as h5file:
-        read_catalog = Catalog.read_hdf(h5file["catalog"])
+    read_catalog = _round_trip_through_hdf(catalog)
 
     assert tuple(read_catalog.properties) == ("zinc", "alu", "mass")
     assert read_catalog == catalog
@@ -1280,13 +1464,35 @@ def test_check_hdf_writable_rejects_a_dtype_hdf_cannot_store(dtype, snapshot) ->
         catalog.check_hdf_writable()
 
 
-def test_check_hdf_writable_rejects_an_object_property(snapshot) -> None:
+@pytest.mark.parametrize(
+    ("properties", "labels"),
+    [
+        pytest.param(
+            {"spec": array([{"a": 1}, {"b": 2}], dtype=object), "mass": [2.7, 7.8]},
+            (),
+            id="objects",
+        ),
+        pytest.param({"spec": [None, None], "mass": [2.7, 7.8]}, (), id="blank"),
+        pytest.param(
+            {"spec": [None, None], "mass": [2.7, 7.8]},
+            ["x", " x"],
+            id="blank-with-labels-merged-by-cleaning",
+        ),
+        pytest.param({"spec": [None, None]}, (), id="only-blank"),
+    ],
+)
+def test_check_hdf_writable_rejects_an_object_property(
+    properties, labels, snapshot
+) -> None:
     """Check that a property holding Python objects is rejected.
 
     Such a property carries no dtype an HDF file could store, and is named as
-    holding objects rather than by its opaque `object` dtype.
+    holding objects rather than by its opaque `object` dtype;
+    the error suggests cleaning the catalog when the property holds no value,
+    unless no property holds a value, since cleaning would then leave none,
+    and asks first to rename the labels that cleaning would make duplicates.
     """
-    catalog = Catalog(properties={"spec": array([{"a": 1}, {"b": 2}], dtype=object)})
+    catalog = Catalog(properties=properties, labels=labels)
     with assert_exception(ValueError, snapshot):
         catalog.check_hdf_writable()
 
@@ -1461,6 +1667,29 @@ def test_model_copy_does_not_mutate_the_original(table) -> None:
     assert not copied.labels.flags.writeable
 
 
+class _UnitCatalog(Catalog):
+    """A catalog with a field of its own."""
+
+    unit: str = "kg"
+    """The unit of the mass."""
+
+
+def test_clean_keeps_the_fields_of_a_subclass() -> None:
+    """Check that a cleaned catalog keeps the fields of a subclass."""
+    catalog = _UnitCatalog(properties={"m": [1.0, 2.0]}, labels=["a", "b"], unit="g")
+    cleaned_catalog = catalog.clean()
+    assert isinstance(cleaned_catalog, _UnitCatalog)
+    assert cleaned_catalog.unit == "g"
+
+
+def test_model_copy_keeps_the_fields_of_a_subclass() -> None:
+    """Check that an updated copy of a catalog keeps the fields of a subclass."""
+    catalog = _UnitCatalog(properties={"m": [1.0, 2.0]}, labels=["a", "b"], unit="g")
+    copied_catalog = catalog.model_copy(update={"labels": ["c", "d"]})
+    assert isinstance(copied_catalog, _UnitCatalog)
+    assert copied_catalog.unit == "g"
+
+
 def test_properties_field_cannot_be_mutated(table, snapshot) -> None:
     """Check that the public properties field cannot be used to add a property.
 
@@ -1601,25 +1830,20 @@ def test_property_with_a_missing_date_equals_itself(dtype) -> None:
     assert catalog == Catalog(properties={"delivery": array([1, "NaT"], dtype=dtype)})
 
 
-def test_empty_property_beside_a_scalar_property_is_dropped(caplog) -> None:
-    """Check that a scalar property defines the row of an otherwise empty table.
+def test_empty_property_beside_a_scalar_property(snapshot) -> None:
+    """Check that an empty property beside a scalar one is rejected.
 
-    The empty property is dropped as blank,
-    the way a blank scalar property is,
-    e.g. in `{"mass": "", "supplier": "alu inc."}`,
-    rather than making the input rowless.
+    The empty property has no row, which the scalar property cannot make up for.
     """
-    catalog = Catalog(properties={"mass": [], "supplier": "alu inc."})
-
-    assert tuple(catalog.properties) == ("supplier",)
-    assert len(catalog) == 1
-    assert "were dropped: mass" in caplog.text
+    with assert_exception(ValidationError, snapshot):
+        Catalog(properties={"mass": [], "supplier": "alu inc."})
 
 
 def test_numeric_property_keeps_its_dtype() -> None:
     """Check that a numeric array property is not rebuilt from Python values.
 
-    Only a property holding strings is stripped,
+    The constructor keeps the values as they are,
+    and only rebuilds a property of Python objects from its values,
     so a numeric property keeps its data type.
     """
     catalog = Catalog(properties={"mass": array([1, 2], dtype="int8")})
