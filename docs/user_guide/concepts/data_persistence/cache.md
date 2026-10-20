@@ -77,6 +77,17 @@ stores it in the cache and returns it to the user.
     and the resulting hash value is compared
     to those stored in the cache.
 
+!!! note
+    A path (`pathlib.Path`, `PurePath` or a subclass)
+    is hashed and compared as its string with forward slashes,
+    so that an HDF5 cache file can be shared between Windows and POSIX platforms.
+    A `str` hits the entry of a path
+    only when it is written exactly as this string,
+    e.g. `"a/b"` for `Path("a") / "b"`, but not `"./a/b"`.
+    Strings and paths are always compared exactly,
+    whatever the `tolerance`;
+    the tolerance only applies to numeric values.
+
 A `tolerance` can be set to relax the input comparison.
 Two input arrays are considered equal when
 the allclose function from NumPy is satisfied:
@@ -156,6 +167,63 @@ GEMSEO ships with three cache implementations:
     discovers the new types automatically
     through the
     [CacheFactory][gemseo.core.cache.factory.CacheFactory].
+
+## Path variables { #concept-cache-path-variables }
+
+A discipline with a path input or output can use
+[HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache]
+and [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache],
+with or without a tolerance.
+
+**Supported types.**
+A path is an instance of `pathlib.Path`,
+`pathlib.PurePath`
+or one of their subclasses,
+including Pydantic's `FilePath`, `DirectoryPath` and `NewPath`.
+
+**Storage, hashing and comparison.**
+A path is stored, hashed and compared as its string with forward slashes,
+e.g. `"a/b"` for `Path("a") / "b"`.
+This string does not depend on the platform,
+so an HDF5 cache file can be shared between Windows and POSIX platforms.
+
+**Type of a path read back from the cache.**
+It depends on the grammar of the discipline:
+
+- With a `SimpleGrammar` or a `PydanticGrammar`,
+  a cached path is read back with the path type declared by the grammar,
+  e.g. `Path` or `PureWindowsPath`.
+- When the grammar declares another type too,
+  e.g. `str | Path` or `Literal["auto"] | Path`,
+  the cached path is read back as a `str`.
+- With a `SimpleGrammar`,
+  a path cached for a variable without type, i.e. `None`,
+  is read back as a one-item string NumPy array.
+
+**Hitting the entry of a path with a `str`.**
+A `str` hits the cache entry of a path
+only when it is written exactly as the string of the path with forward slashes.
+For instance,
+`"a/b"` hits the entry of `Path("a") / "b"`
+but `"./a/b"`, `"a//b"` and `"a/b/"` do not.
+
+**Windows.**
+On Windows:
+
+- a `str` with backslashes does not hit the entry of the path built from it,
+  nor the other way around;
+- two paths that differ only by letter case,
+  e.g. `Path("C:/Data")` and `Path("c:/data")`,
+  are equal but do not hit the same cache entry.
+
+**Limitations.**
+
+- Only a single path value is supported:
+  a list, a tuple or a NumPy array of paths is not supported
+  and raises an error.
+- A path variable that can be `None`, e.g. `Path | None`, is not supported:
+  [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache]
+  raises a `TypeError` when its value is `None`.
 
 ## Going further { #concept-going-further }
 

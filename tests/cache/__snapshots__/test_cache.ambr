@@ -5,6 +5,21 @@
 # name: test_check_version_missing
   'The file cache.h5 cannot be used because it has no file format version: see HDF5Cache.update_file_format to convert it.'
 # ---
+# name: test_hash_data_object_array[dict]
+  'The value of p cannot be hashed: its type dict is not supported.'
+# ---
+# name: test_hash_data_object_array[object-array]
+  'The value of p cannot be hashed: it is an array of Python objects, which cannot be hashed.'
+# ---
+# name: test_hash_data_several_paths[list]
+  'The value of p cannot be hashed: only a single path is supported, not a list, a tuple or a NumPy array of paths.'
+# ---
+# name: test_hash_data_several_paths[object-array]
+  'The value of p cannot be hashed: only a single path is supported, not a list, a tuple or a NumPy array of paths.'
+# ---
+# name: test_hash_data_several_paths[tuple]
+  'The value of p cannot be hashed: only a single path is supported, not a list, a tuple or a NumPy array of paths.'
+# ---
 # name: test_tolerance[cache0]
   'The tolerance shall be positive: -1.0'
 # ---

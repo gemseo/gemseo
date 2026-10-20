@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_cache_object_array
+  'The value of y is an array of Python objects, which cannot be cached in an HDF5 file.'
+# ---
+# name: test_cache_optional_path_none
+  'The value of p is None, which cannot be cached in an HDF5 file.'
+# ---

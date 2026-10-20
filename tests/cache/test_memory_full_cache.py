@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -42,17 +43,33 @@ def create_cache() -> MemoryFullCache:
     )
 
 
-@pytest.mark.parametrize("input_string", [array(["some_string"]), "some_string"])
 @pytest.mark.parametrize("tolerance", [0, 0.01])
-def test_cache_str(input_string, tolerance) -> None:
-    """Test a cache with strings in different formats and with numeric variables.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
+@pytest.mark.parametrize(
+    ("cached", "queried"),
+    [
+        (array(["some_string"]), array(["some_string"])),
+        ("some_string", "some_string"),
+        (Path("some_path"), Path("some_path")),
+        (Path("a") / "b", "a/b"),
+        ("a/b", Path("a") / "b"),
+    ],
+    ids=["array", "str", "path", "path-to-str", "str-to-path"],
+)
+def test_cache_str(cached, queried, tolerance) -> None:
+    """Check that a str, a path and a one-item string array hit the cache entry of
+    the same string, with numeric variables.
     """
     cache = create_cache()
     cache.tolerance = tolerance
-    inputs = {"i": input_string, "var_1": ones(1)}
     outputs = {"o": ones(1)}
-    cache.cache_outputs(inputs, outputs)
-    assert cache.get(inputs).outputs == outputs
+    cache.cache_outputs({"i": cached, "var_1": ones(1)}, outputs)
+    assert cache.get({"i": queried, "var_1": ones(1)}).outputs == outputs
+
+
+@pytest.mark.parametrize("tolerance", [0, 0.01])
+def test_cache_path_miss(tolerance) -> None:
+    """Check that a different path input is a cache miss."""
+    cache = create_cache()
+    cache.tolerance = tolerance
+    cache.cache_outputs({"p": Path("some_path"), "x": ones(1)}, {"o": ones(1)})
+    assert not cache.get({"p": Path("other_path"), "x": ones(1)}).outputs

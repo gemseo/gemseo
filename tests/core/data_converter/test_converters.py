@@ -15,13 +15,23 @@
 from __future__ import annotations
 
 import operator
+from enum import StrEnum
+from pathlib import Path
+from pathlib import PurePath
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
+from typing import Annotated
 from typing import Any
+from typing import Literal
 
 import pytest
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_array_equal
+from pydantic import DirectoryPath
+from pydantic import FilePath
+from pydantic import NewPath
 
 from gemseo import set_data_converters
 from gemseo.core.data_converter.base import BaseDataConverter
@@ -33,6 +43,12 @@ from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+
+class _StrEnum(StrEnum):
+    """A string enumeration."""
+
+    A = "a"
 
 
 def create_converters() -> list[BaseDataConverter]:
@@ -169,6 +185,7 @@ def test_convert_array_to_value_user(
 
 value_size_data = [
     ("a_str", "0", 1),
+    ("a_path", Path("0"), 1),
     ("a_float", 0.0, 1),
     ("a_int", 0, 1),
     ("a_complex", 1j, 1),
@@ -207,6 +224,15 @@ def test_get_value_size_non_numeric(converter, snapshot) -> None:
     """Verify get_value_size raises a TypeError for a non-numeric, non-array value."""
     with assert_exception(TypeError, snapshot):
         converter.get_value_size("a_list", [1.0])
+
+
+def test_convert_data_to_array_paths_and_strs() -> None:
+    """Verify that paths and strings are concatenated as strings."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_types({"a": Path, "b": str})
+    converter = grammar.data_converter
+    data = {"a": Path("x"), "b": "y"}
+    assert_array_equal(converter.convert_data_to_array(["a", "b"], data), ["x", "y"])
 
 
 reference_data = {
@@ -272,18 +298,22 @@ def test_convert_array_to_data(converter) -> None:
 
 def test_convert_data_to_array(converter) -> None:
     """Verify convert_data_to_array."""
-    # Full data.
-    array_ = converter.convert_data_to_array(reference_data.keys(), reference_data)
-    # Cast the reference to the same dtype because numpy.concatenate
-    # does too to the dtype that can represent all the data.
-    ref_array = reference_array.astype(array_.dtype)
-    assert_array_equal(array_, ref_array)
+    # Full numeric data.
+    numeric_names = [name for name in reference_data if name != "a_str"]
+    array_ = converter.convert_data_to_array(numeric_names, reference_data)
+    assert_array_equal(array_, array([0.0, 0, 1.0j, 0.0, 0.0]))
     # Non full data.
     array_ = converter.convert_data_to_array(("a_int", "a_ndarray"), reference_data)
     assert_array_equal(array_, array([0.0] * 3))
     # No data.
     array_ = converter.convert_data_to_array((), reference_data)
     assert len(array_) == 0
+
+
+def test_convert_data_to_array_mixed_types(converter, snapshot) -> None:
+    """Verify that convert_data_to_array refuses strings mixed with numbers."""
+    with assert_exception(TypeError, snapshot):
+        converter.convert_data_to_array(reference_data.keys(), reference_data)
 
 
 def create_converters_ndarray() -> list[BaseDataConverter]:
@@ -349,3 +379,204 @@ def test_pydantic_to_simple_grammar_normalizes_ndarray_type() -> None:
     assert not converter.is_numeric("a_file")
     assert converter.is_numeric("a_int")
     assert not converter.is_continuous("a_int")
+
+
+@pytest.mark.parametrize(
+    ("grammar_class", "declared_type", "expected_type"),
+    [
+        (SimpleGrammar, Path, Path),
+        (SimpleGrammar, PurePath, PurePath),
+        (SimpleGrammar, PurePosixPath, PurePosixPath),
+        (SimpleGrammar, PureWindowsPath, PureWindowsPath),
+        (PydanticGrammar, Path, Path),
+        (PydanticGrammar, PurePosixPath, PurePosixPath),
+        (PydanticGrammar, PureWindowsPath, PureWindowsPath),
+        (PydanticGrammar, Path | None, Path),
+        (PydanticGrammar, PureWindowsPath | None, PureWindowsPath),
+        (PydanticGrammar, PurePosixPath | PureWindowsPath, Path),
+        (PydanticGrammar, FilePath, Path),
+        (PydanticGrammar, NewPath, Path),
+        (PydanticGrammar, DirectoryPath | None, Path),
+        (PydanticGrammar, Annotated[PureWindowsPath | None, "foo"], PureWindowsPath),
+        (
+            PydanticGrammar,
+            Annotated[PureWindowsPath, "x"] | PureWindowsPath,
+            PureWindowsPath,
+        ),
+        (PydanticGrammar, Annotated[PurePosixPath, ["foo"]], PurePosixPath),
+        (
+            PydanticGrammar,
+            PurePosixPath | Annotated[PureWindowsPath, {"k": 1}],
+            Path,
+        ),
+    ],
+    ids=[
+        "simple-path",
+        "simple-pure-path",
+        "simple-posix",
+        "simple-windows",
+        "pydantic-path",
+        "pydantic-posix",
+        "pydantic-windows",
+        "optional-path",
+        "optional-windows",
+        "posix-or-windows",
+        "file-path",
+        "new-path",
+        "optional-directory-path",
+        "annotated-optional",
+        "path-declared-twice",
+        "unhashable-metadata",
+        "union-with-unhashable-metadata",
+    ],
+)
+def test_path_round_trip(grammar_class, declared_type, expected_type) -> None:
+    """Verify that a path is converted to a string array and back to a path."""
+    grammar = grammar_class("g")
+    grammar.update_from_types({"p": declared_type})
+    converter = grammar.data_converter
+    path = PurePosixPath("some") / "path"
+    array_ = converter.convert_value_to_array("p", path)
+    assert array_.dtype.kind == "U"
+    assert array_[0] == "some/path"
+    value = converter.convert_array_to_value("p", array_)
+    assert isinstance(value, expected_type)
+    assert value.as_posix() == "some/path"
+
+
+def test_path_to_array_platform() -> None:
+    """Verify that a path is stored with forward slashes whatever the platform."""
+    grammar = SimpleGrammar("g")
+    grammar.update_from_types({"p": PureWindowsPath})
+    array_ = grammar.data_converter.convert_value_to_array("p", PureWindowsPath("a\\b"))
+    assert array_[0] == "a/b"
+
+
+@pytest.mark.parametrize(
+    ("grammar_class", "declared_type"),
+    [
+        (SimpleGrammar, str),
+        (JSONGrammar, str),
+        (PydanticGrammar, str),
+        (PydanticGrammar, str | Path),
+        (PydanticGrammar, Path | str | None),
+        (PydanticGrammar, FilePath | str),
+        (PydanticGrammar, Literal["a"] | Path),
+        (PydanticGrammar, _StrEnum | Path),
+        (PydanticGrammar, int | Path),
+        (PydanticGrammar, Path | list[Annotated[str, {"k": 1}]]),
+    ],
+    ids=[
+        "simple-str",
+        "json-str",
+        "pydantic-str",
+        "str-or-path",
+        "optional-path-or-str",
+        "file-path-or-str",
+        "literal-or-path",
+        "enum-or-path",
+        "int-or-path",
+        "unhashable-metadata",
+    ],
+)
+def test_str_array_to_value_without_path(grammar_class, declared_type) -> None:
+    """Verify that a string array is converted to a str for an item not only a path."""
+    grammar = grammar_class("g")
+    grammar.update_from_types({"s": declared_type})
+    value = grammar.data_converter.convert_array_to_value("s", array(["a"]))
+    assert value == "a"
+    assert type(value) is str
+
+
+@pytest.mark.parametrize("declared_type", [None, ndarray], ids=["no-type", "ndarray"])
+def test_str_array_to_value_without_path_type(declared_type) -> None:
+    """Verify that a one-item string array is unchanged without path type."""
+    grammar = SimpleGrammar("g")
+    grammar.update_from_types({"x": declared_type})
+    array_ = array(["red"])
+    assert grammar.data_converter.convert_array_to_value("x", array_) is array_
+
+
+def test_path_to_value_without_type() -> None:
+    """Verify that a path of a SimpleGrammar item without type is read as an array."""
+    grammar = SimpleGrammar("g")
+    grammar.update_from_types({"p": None})
+    converter = grammar.data_converter
+    array_ = converter.convert_value_to_array("p", PurePosixPath("a") / "b")
+    value = converter.convert_array_to_value("p", array_)
+    assert isinstance(value, ndarray)
+    assert_array_equal(value, array(["a/b"]))
+
+
+@pytest.mark.parametrize(
+    ("grammar_class", "declared_type", "expected_type"),
+    [
+        (SimpleGrammar, Path, Path),
+        (SimpleGrammar, PureWindowsPath, PureWindowsPath),
+        (PydanticGrammar, Path, Path),
+        (PydanticGrammar, Path | None, Path),
+    ],
+    ids=[
+        "simple-path",
+        "simple-windows",
+        "pydantic-path",
+        "optional-path",
+    ],
+)
+def test_bytes_array_to_path(grammar_class, declared_type, expected_type) -> None:
+    """Verify that a one-item bytes array is converted to a path."""
+    grammar = grammar_class("g")
+    grammar.update_from_types({"p": declared_type})
+    value = grammar.data_converter.convert_array_to_value("p", array([b"a/b"]))
+    assert isinstance(value, expected_type)
+    assert value.as_posix() == "a/b"
+
+
+@pytest.mark.parametrize(
+    ("declared_type", "expected_type", "expected"),
+    [
+        (str | Path, str, "a/b"),
+        (Literal["a"] | Path, str, "a/b"),
+        (_StrEnum | Path, str, "a/b"),
+        (int | Path, str, "a/b"),
+        (str, bytes, b"a/b"),
+    ],
+    ids=[
+        "str-or-path",
+        "literal-or-path",
+        "enum-or-path",
+        "int-or-path",
+        "str-only",
+    ],
+)
+def test_bytes_array_to_str_with_path(declared_type, expected_type, expected) -> None:
+    """Verify that a one-item bytes array is decoded to a str only if a path type is
+    declared, and is unchanged otherwise.
+    """
+    grammar = PydanticGrammar("g")
+    grammar.update_from_types({"b": declared_type})
+    value = grammar.data_converter.convert_array_to_value("b", array([b"a/b"]))
+    assert type(value) is expected_type
+    assert value == expected
+
+
+@pytest.mark.parametrize("declared_type", [None, Path], ids=["no-type", "path"])
+def test_str_array_of_several_items_to_value(declared_type) -> None:
+    """Verify that a string array of several items is not converted to a str."""
+    grammar = SimpleGrammar("g")
+    grammar.update_from_types({"s": declared_type})
+    array_ = array(["a", "b"])
+    assert_array_equal(
+        grammar.data_converter.convert_array_to_value("s", array_), array_
+    )
+
+
+def test_path_type_after_grammar_update() -> None:
+    """Verify that the path type follows a change of the grammar."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_types({"p": Path})
+    converter = grammar.data_converter
+    assert isinstance(converter.convert_array_to_value("p", array(["a"])), Path)
+    grammar.update_from_types({"p": PureWindowsPath})
+    value = converter.convert_array_to_value("p", array(["a"]))
+    assert isinstance(value, PureWindowsPath)

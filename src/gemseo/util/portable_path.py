@@ -20,14 +20,22 @@
 
 from __future__ import annotations
 
+from pathlib import PurePath
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
+from typing import TypeVar
+
+from numpy import array
 
 from gemseo.util.platform import platform_is_windows
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from gemseo.util.typing import StringArray
+
+_T = TypeVar("_T")
 
 
 def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:
@@ -42,3 +50,24 @@ def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:
     if platform_is_windows:
         return PureWindowsPath(path)
     return PurePosixPath(path)
+
+
+def ensure_path_to_array(value: _T) -> _T | StringArray:
+    """Convert a value to a one-item string array if it is a path.
+
+    A path is an instance of `pathlib.PurePath` or of one of its subclasses.
+
+    The string does not depend on the platform:
+    the parts of the path are separated by forward slashes,
+    so that the same path gives the same string on Windows and POSIX platforms.
+
+    Args:
+        value: The value to convert.
+
+    Returns:
+        The one-item string array of the value if it is a path,
+        the value unchanged otherwise.
+    """
+    if isinstance(value, PurePath):
+        return array([value.as_posix()])
+    return value

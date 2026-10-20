@@ -31,6 +31,9 @@ from xxhash import xxh3_64_hexdigest
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+string_dtype_kinds: Final[frozenset[str]] = frozenset({"U", "S"})
+"""The kinds of the NumPy dtypes of string and bytes arrays."""
+
 complex128_dtype: Final = dtype("complex128")
 """The NumPy complex number type with double-precision imaginary and real parts."""
 
