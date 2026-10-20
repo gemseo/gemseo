@@ -52,9 +52,10 @@ package; the rename map that also drives the external codemod):
   submodules, for the old packages that have no rename of their own and no longer exist
   in the tree, but whose submodules were renamed. They are derived from
   `module_renames`, not listed in the configuration.
-- `reexported_old_modules`: (last segment of an old module name, new module name) ->
-  the old module name, for the modules a package may re-export under their own name,
-  derived from `module_renames`, `attribute_renames` and `unmigrated_attributes`.
+- `get_reexported_old_modules()`: (last segment of an old module name, new module
+  name) -> the old module name, for the modules a package may re-export under their own
+  name, derived from `module_renames`, `attribute_renames` and `unmigrated_attributes`
+  on the first call only.
 - `class_attribute_renames`: class name -> {old attribute: new attribute}, from the
   `classes:` section, keyed by the class's current name (resolved through
   `attribute_renames` when the class itself was also renamed). An old attribute name
@@ -72,6 +73,7 @@ Accumulation across releases is achieved by keeping the old entries in
 from __future__ import annotations
 
 import sys
+from functools import cache
 from pathlib import Path
 from pkgutil import get_importer
 from types import MappingProxyType
@@ -800,18 +802,26 @@ Old package name -> the ordered new locations of its former submodules. Derived 
 submodules are redirected.
 """
 
-reexported_old_modules: Final[Mapping[tuple[str, str], str]] = (
-    _find_reexported_old_modules(
+
+@cache
+def get_reexported_old_modules() -> Mapping[tuple[str, str], str]:
+    """Return the old paths of the modules a package may re-export as its own.
+
+    They are computed on the first call only, as they are rarely needed: they would
+    slow down every import of GEMSEO otherwise.
+
+    Returns:
+        The last segment of an old module name and its new name -> the old module
+        name, e.g. `("base_parallel_mda_settings",
+        "gemseo.mda.core.base_parallel_solver_settings")` ->
+        `gemseo.mda.base_parallel_mda_settings`, for the modules a package may
+        re-export under their own name, e.g. `gemseo.base_parallel_mda_settings`. A
+        pair matching several old modules is left out.
+    """
+    return _find_reexported_old_modules(
         module_renames, module_renames, attribute_renames, unmigrated_attributes
     )
-)
-"""The last segment of an old module name and its new name -> the old module name.
 
-For the modules a package may re-export under their own name, e.g.
-`gemseo.base_parallel_mda_settings`, whose old path is
-`gemseo.mda.base_parallel_mda_settings`. A pair matching several old modules is left
-out.
-"""
 
 class_attribute_renames: Final[Mapping[str, Mapping[str, str]]] = _tables[3]
 """Class name -> {old attribute name: new attribute name}.

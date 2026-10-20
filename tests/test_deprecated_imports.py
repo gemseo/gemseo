@@ -44,6 +44,37 @@ if TYPE_CHECKING:
     from _pytest.mark.structures import ParameterSet
 
 
+@pytest.fixture(autouse=True)
+def _forget_cached_old_names():
+    """Forget the old names the live modules cached in their namespace by a test.
+
+    A live module caches the object an old name resolves to, which then no longer
+    warns: each test must start with an empty cache.
+    """
+    from gemseo._deprecation import attribute_renames
+    from gemseo._deprecation import live_aliased_modules
+
+    def get_bound_old_names() -> dict[str, set[str]]:
+        """Return the old names bound in the namespace of each live module."""
+        return {
+            module_name: {
+                old_name
+                for old_name in attribute_renames.get(module_name, {})
+                if old_name in sys.modules[module_name].__dict__
+            }
+            for module_name in live_aliased_modules
+            if module_name in sys.modules
+        }
+
+    before = get_bound_old_names()
+    yield
+    # The modules imported by the test bind their own names, some being old names.
+    after = get_bound_old_names()
+    for module_name, old_names in before.items():
+        for old_name in after[module_name] - old_names:
+            sys.modules[module_name].__dict__.pop(old_name)
+
+
 def test_moved_module_and_renamed_class():
     """A class renamed and whose module moved is reachable from the old path."""
     from gemseo.mda.gauss_seidel_newton_raphson import MDAGaussSeidelNewtonRaphson
@@ -341,6 +372,27 @@ def test_renamed_top_level_reexport_of_a_module():
     _check_reexported_module(base_parallel_mda_settings)
 
 
+def test_renamed_top_level_reexport_of_a_module_warns_once():
+    """A `from` import of a renamed top-level name warns once and caches the name.
+
+    The statement looks the name up twice, to check it exists then to import it. The
+    cached old name is neither in `dir` nor listed by `__all__`.
+    """
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        from gemseo import base_parallel_mda_settings
+
+    assert [str(record.message) for record in records] == [
+        (
+            "The attribute 'base_parallel_mda_settings' of the module 'gemseo' is "
+            "deprecated; use 'gemseo.mda.core.base_parallel_solver_settings' instead."
+        )
+    ]
+    assert gemseo.__dict__["base_parallel_mda_settings"] is base_parallel_mda_settings
+    assert "base_parallel_mda_settings" not in dir(gemseo)
+    assert "base_parallel_mda_settings" not in getattr(gemseo, "__all__", ())
+
+
 def test_renamed_top_level_reexport_of_a_module_as_an_attribute():
     """A module re-exported by the gemseo 6.3.2 package is an attribute of it."""
     with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
@@ -401,6 +453,12 @@ def test_renamed_attribute_of_a_top_level_reexport_of_a_module(old_name, new_nam
             None,
         ),
     ],
+    ids=[
+        "redirected-to-the-new-module",
+        "last-segment-differs",
+        "redirected-to-another-module",
+        "two-old-modules-share-the-name",
+    ],
 )
 def test_find_reexported_old_module(module_renames, expected):
     """The old path of a re-exported module is the only one named and redirected so.
@@ -416,6 +474,26 @@ def test_find_reexported_old_module(module_renames, expected):
     )
 
     assert old_modules.get(("module", "gemseo.new")) == expected
+
+
+def test_get_reexported_old_modules_is_computed_once():
+    """The old paths of the re-exported modules are computed on first use only."""
+    from gemseo._deprecation import aliases
+
+    aliases.get_reexported_old_modules.cache_clear()
+    assert aliases.get_reexported_old_modules.cache_info().currsize == 0
+
+    old_modules = aliases.get_reexported_old_modules()
+
+    assert (
+        old_modules[
+            "base_parallel_mda_settings",
+            "gemseo.mda.core.base_parallel_solver_settings",
+        ]
+        == "gemseo.mda.base_parallel_mda_settings"
+    )
+    assert aliases.get_reexported_old_modules() is old_modules
+    assert aliases.get_reexported_old_modules.cache_info().hits == 1
 
 
 def test_reexported_old_module_keeps_the_other_deprecation_warnings(monkeypatch):
@@ -446,8 +524,8 @@ def test_reexported_old_module_keeps_the_other_deprecation_warnings(monkeypatch)
     monkeypatch.setattr(_deprecation, "import_module", import_module)
     monkeypatch.setattr(
         _deprecation,
-        "reexported_old_modules",
-        {("module", package.module.__name__): old_module.__name__},
+        "get_reexported_old_modules",
+        lambda: {("module", package.module.__name__): old_module.__name__},
     )
 
     with warnings.catch_warnings(record=True) as records:
@@ -2123,13 +2201,19 @@ def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
     ("class_module_name", "new_name", "expected"),
     [
         ("gemseo.fake_package.module", "gemseo.fake_package.module.Method", True),
-        # A package re-exporting the object.
         ("gemseo.fake_package.module", "gemseo.fake_package.Method", True),
         ("gemseo.fake_package.module", "gemseo.Method", True),
-        # A homonym class of another package.
         ("gemseo.fake_package.module", "gemseo.other_package.Method", False),
         ("gemseo.fake_package.module", "gemseo.fake_package.module_2.Method", False),
         ("gemseo.fake_package.module", "gemseo.fake_package.module.sub.Method", False),
+    ],
+    ids=[
+        "own-module",
+        "parent-package",
+        "root-package",
+        "homonym-class-of-another-package",
+        "sibling-module-with-the-same-prefix",
+        "submodule-of-the-module",
     ],
 )
 def test_attribute_moved_out_of_its_class_is_declared_by_its_module_or_package(

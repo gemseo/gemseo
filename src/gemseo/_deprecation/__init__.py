@@ -94,12 +94,12 @@ from gemseo._deprecation.aliases import attribute_renames
 from gemseo._deprecation.aliases import class_attribute_renames
 from gemseo._deprecation.aliases import dissolved_packages
 from gemseo._deprecation.aliases import find_ancestor
+from gemseo._deprecation.aliases import get_reexported_old_modules
 from gemseo._deprecation.aliases import is_moved_class_attribute
 from gemseo._deprecation.aliases import live_aliased_modules
 from gemseo._deprecation.aliases import manual_migrations
 from gemseo._deprecation.aliases import module_rename_notes
 from gemseo._deprecation.aliases import module_renames
-from gemseo._deprecation.aliases import reexported_old_modules
 from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
@@ -286,7 +286,7 @@ def _get_renamed_attribute(
     [_get_new_object][gemseo._deprecation._get_new_object]. When it is a module
     re-exported by a package, the stand-in of the old path of the module is returned
     instead, if any (see
-    [reexported_old_modules][gemseo._deprecation.aliases.reexported_old_modules]),
+    [get_reexported_old_modules][gemseo._deprecation.aliases.get_reexported_old_modules]),
     as the old package re-exported the old module, whose old names the new module
     does not resolve.
 
@@ -311,7 +311,10 @@ def _get_renamed_attribute(
     """
     new_object = _get_new_object(module, module_name, name, new_name)
     if isinstance(new_object, ModuleType):
-        old_module_name = reexported_old_modules.get((name, new_object.__name__))
+        old_module_name = get_reexported_old_modules().get((
+            name,
+            new_object.__name__,
+        ))
         if old_module_name is not None:
             with warnings.catch_warnings():
                 # The warning of the old name already points at the new module; the
@@ -393,14 +396,22 @@ class _DeprecatedModule(ModuleType):
         if new_name is None:
             try:
                 return getattr(target, name)
-            except AttributeError:
+            except (AttributeError, ImportError) as error:
+                if name not in getattr(target, "__all__", ()):
+                    if isinstance(error, ImportError):
+                        raise
+                    msg = f"module {self.__name__!r} has no attribute {name!r}"
+                    raise AttributeError(msg) from None
                 # The target exports the name but cannot resolve it,
                 # e.g. a lazily re-exported name with a wrong location:
-                # its error tells why.
-                if name in getattr(target, "__all__", ()):
+                # the error tells why, once it names the old module too.
+                if isinstance(error, ModuleNotFoundError):
                     raise
-                msg = f"module {self.__name__!r} has no attribute {name!r}"
-                raise AttributeError(msg) from None
+                msg = (
+                    f"The name {name!r} of the module {self.__name__!r}, "
+                    f"moved to {target.__name__!r}, cannot be resolved: {error}"
+                )
+                raise_unresolvable_attribute(msg, error)
         # The module warning only names the new module, which does not carry the old
         # attribute name; point at the renamed attribute itself.
         _warn_attribute_rename(self.__name__, name, new_name)
@@ -539,12 +550,22 @@ def _install_attribute_aliases(module: ModuleType) -> None:
     renamed modules, and those whose migration cannot be automated (the `TODO <text>`
     entries of the `attributes:` section) an `ImportError`.
 
+    The object a renamed name resolves to is cached in the namespace of the module, so
+    that the old name warns once, on its first access, as the names of the lazy
+    re-export of a package do; the cached old names are hidden from `dir`.
+
     Args:
         module: The module whose old attribute names must keep working.
     """
     module_name = module.__name__
     renames = attribute_renames.get(module_name, {})
     previous_getattr = module.__dict__.get("__getattr__")
+    previous_dir = module.__dict__.get("__dir__")
+    resolved_names: set[str] = set()
+
+    def __dir__() -> list[str]:  # noqa: N807
+        names = module.__dict__ if previous_dir is None else previous_dir()
+        return [name for name in names if name not in resolved_names]
 
     def __getattr__(name: str) -> Any:  # noqa: N807
         _raise_for_unmigrated_attribute(module_name, name)
@@ -555,8 +576,15 @@ def _install_attribute_aliases(module: ModuleType) -> None:
             msg = f"module {module_name!r} has no attribute {name!r}"
             raise AttributeError(msg)
         _warn_attribute_rename(module_name, name, new_name)
-        return _get_renamed_attribute(module, module_name, name, new_name)
+        obj = _get_renamed_attribute(module, module_name, name, new_name)
+        # A `from module import name` statement looks the name up twice, first
+        # to check that it exists, which would warn twice: the object is kept in the
+        # namespace so that the second lookup is a plain one.
+        module.__dict__[name] = obj
+        resolved_names.add(name)
+        return obj
 
+    module.__dict__["__dir__"] = __dir__
     module.__dict__["__getattr__"] = __getattr__
 
 

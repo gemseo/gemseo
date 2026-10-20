@@ -162,10 +162,17 @@ def make_lazy_reexport_tests(
 
         The `__init__.py` of the package is executed again in a fresh module object,
         as the resolved names are cached in the namespace of the package
-        by the first access.
+        by the first access; so are its module-level side effects, which must be
+        idempotent.
         """
-        fresh_package = importlib.util.module_from_spec(package.__spec__)
-        package.__spec__.loader.exec_module(fresh_package)
+        spec = package.__spec__
+        if spec is None or spec.loader is None:
+            pytest.fail(
+                f"the package {package.__name__!r} has no spec or loader "
+                "to execute it again"
+            )
+        fresh_package = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fresh_package)
         assert not [name for name in names if name in vars(fresh_package)]
 
     if deferred_sample is not None:

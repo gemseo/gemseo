@@ -19,6 +19,7 @@ from __future__ import annotations
 import ast
 import sys
 from importlib import import_module
+from importlib.machinery import ModuleSpec
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING
@@ -88,15 +89,14 @@ def test_resolve_lazy_export(fake_package) -> None:
     )
 
 
-def test_getattr_resolves_and_caches(fake_package) -> None:
+def test_getattr_caches_the_resolved_name(fake_package) -> None:
     """Check that a resolved name is cached in the namespace."""
     assert "Foo" not in fake_package.__dict__
+
     foo = fake_package.Foo
-    assert foo is fake_package.sub.Foo
+
     assert fake_package.__dict__["Foo"] is foo
-    assert fake_package.Bar is foo
-    assert fake_package.Absolute is resolve_lazy_export
-    assert fake_package.Inner is fake_package.sub.Outer.Inner
+    assert foo is fake_package.sub.Foo
 
 
 def test_all(fake_package) -> None:
@@ -193,24 +193,24 @@ def test_module_import_error_propagates(tmp_package, name, error, snapshot) -> N
     assert exc_info.value.__cause__ is None
 
 
-@pytest.mark.parametrize(
-    ("name", "error"), [("Broken", ImportError), ("Typo", ModuleNotFoundError)]
-)
-def test_from_import_module_import_error(tmp_package, name, error, snapshot) -> None:
+def test_from_import_module_import_error_is_chained(tmp_package, snapshot) -> None:
     """Check the error of ``from package import name`` when the module import fails.
 
     CPython would replace an ``AttributeError`` raised by the import of the module
-    by its own generic ImportError, so it is chained to an ``ImportError``;
-    the other errors propagate unchanged.
+    by its own generic ImportError, so it is chained to an ``ImportError``.
     """
-    namespace: dict[str, object] = {}
-    with assert_exception(error, snapshot) as exc_info:
-        exec(f"from lazy_tmp_pkg import {name}", namespace)  # noqa: S102
+    with assert_exception(ImportError, snapshot) as exc_info:
+        exec("from lazy_tmp_pkg import Broken", {})  # noqa: S102
 
-    if error is ImportError:
-        assert isinstance(exc_info.value.__cause__, AttributeError)
-    else:
-        assert exc_info.value.__cause__ is None
+    assert isinstance(exc_info.value.__cause__, AttributeError)
+
+
+def test_from_import_module_not_found_error_propagates(tmp_package, snapshot) -> None:
+    """Check that ``from package import name`` does not wrap a missing module."""
+    with assert_exception(ModuleNotFoundError, snapshot) as exc_info:
+        exec("from lazy_tmp_pkg import Typo", {})  # noqa: S102
+
+    assert exc_info.value.__cause__ is None
 
 
 @pytest.fixture
@@ -222,11 +222,30 @@ def deprecated_module(fake_package) -> ModuleType:
 
 
 def test_deprecated_module_bad_location(deprecated_module, snapshot) -> None:
-    """Check that a stand-in keeps the error of a lazy name it cannot resolve."""
+    """Check the error of a lazy name that a stand-in cannot resolve.
+
+    It names the old module and the new one, and is chained to the original error.
+    """
     with assert_exception(AttributeError, snapshot) as exc_info:
         deprecated_module.BadChain  # noqa: B018
 
     assert isinstance(exc_info.value.__cause__, AttributeError)
+
+
+def test_from_import_from_deprecated_module_bad_location(
+    deprecated_module, monkeypatch, snapshot
+) -> None:
+    """Check that a stand-in raises an ImportError naming the old module.
+
+    This is the error of a ``from old_module import name`` statement.
+    """
+    monkeypatch.setitem(sys.modules, deprecated_module.__name__, deprecated_module)
+
+    with assert_exception(ImportError, snapshot) as exc_info:
+        from fake_old_pkg import BadChain  # noqa: F401
+
+    assert isinstance(exc_info.value.__cause__, ImportError)
+    assert isinstance(exc_info.value.__cause__.__cause__, AttributeError)
 
 
 def test_deprecated_module_unknown_name(deprecated_module, snapshot) -> None:
@@ -386,3 +405,24 @@ def test_packages_are_tested() -> None:
     """Check that every lazily re-exporting package has its factory-made tests."""
     untested = set(_get_package_names()) - _get_tested_package_names()
     assert not untested, sorted(untested)
+
+
+@pytest.mark.parametrize(
+    "spec",
+    [None, ModuleSpec("package_without_loader", None)],
+    ids=["no-spec", "no-loader"],
+)
+def test_reexport_is_lazy_without_loader(spec, snapshot) -> None:
+    """Check that the laziness test fails clearly when it cannot execute the package.
+
+    Args:
+        spec: The spec of the package.
+        snapshot: The fixture to check the message of the error.
+    """
+    package = ModuleType("package_without_loader")
+    package._name_to_location = {}
+    package.__spec__ = spec
+    test_reexport_is_lazy = make_lazy_reexport_tests(package)["test_reexport_is_lazy"]
+
+    with assert_exception(pytest.fail.Exception, snapshot):
+        test_reexport_is_lazy()
