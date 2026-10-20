@@ -463,29 +463,41 @@ def test_variables_view_name_to_indices(space) -> None:
         name_to_indices["x"] = range(2)
 
 
-def test_variables_view_has_real_variables(space) -> None:
-    """Check that the view tells whether a variable is of real type.
+@pytest.mark.parametrize(
+    ("space", "held_type", "other_type"),
+    [
+        (DesignSpace, VariableType.REAL, VariableType.RANDOM),
+        (RandomSpace, VariableType.RANDOM, VariableType.REAL),
+    ],
+    indirect=["space"],
+)
+def test_variables_view_has_variables_of_type(space, held_type, other_type) -> None:
+    """Check that the view tells whether a variable is of a given type.
 
-    This is how a consumer typed on the base class reads it, whatever the space;
-    the random variables are always of real type.
+    The design variables are never of random type and the random variables never of
+    real type.
     """
-    assert space.variables.has_variables_of_type(VariableType.REAL)
+    assert space.variables.has_variables_of_type(held_type)
+    assert not space.variables.has_variables_of_type(other_type)
 
     space.remove_variable("x")
-    assert not space.variables.has_variables_of_type(VariableType.REAL)
+    assert not space.variables.has_variables_of_type(held_type)
 
 
-def test_variables_view_has_integer_variables(space) -> None:
-    """Check that the view tells whether a variable is of integer type.
+def test_variables_view_has_no_integer_variables(space) -> None:
+    """Check that the view tells that no variable is of integer type.
 
     This is how a consumer typed on the base class reads it, whatever the space;
-    the random variables are always of real type.
+    the random variables are never of integer type.
     """
     assert not space.variables.has_variables_of_type(VariableType.INTEGER)
 
-    if isinstance(space, DesignSpace):
-        space.add_integer_variable("n")
-        assert space.variables.has_variables_of_type(VariableType.INTEGER)
+
+def test_variables_view_has_integer_variables() -> None:
+    """Check that the view tells that a design variable is of integer type."""
+    space = DesignSpace()
+    space.add_integer_variable("n")
+    assert space.variables.has_variables_of_type(VariableType.INTEGER)
 
 
 def test_variables_view_is_live(space) -> None:

@@ -58,6 +58,7 @@ from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
 from gemseo.space.variable import VariableType
+from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
@@ -67,11 +68,9 @@ current_dir = Path(__file__).parent
 test_infile = current_dir / "design_space.csv"
 fail_hdf = current_dir / "fail.hdf5"
 
-DesignVariableType = DesignSpace.DesignVariableType
-
-real_type = DesignSpace.DesignVariableType.REAL
-integer = DesignSpace.DesignVariableType.INTEGER
-discrete = DesignSpace.DesignVariableType.DISCRETE
+real_type = VariableType.REAL
+integer = VariableType.INTEGER
+discrete = VariableType.DISCRETE
 
 
 @pytest.fixture
@@ -125,6 +124,17 @@ def test_add_variable_with_unkown_type(design_space, snapshot) -> None:
     """Check that adding a variable with unknown type raises an error."""
     with assert_exception(ValueError, snapshot):
         design_space.add_variable(name="varname", type_="a")
+
+
+def test_variable_types_to_dtypes_keys() -> None:
+    """Check that the design variable types are those of the deterministic variables.
+
+    The map is not read from the factory, so this test catches a drift between them;
+    in particular, the random variable type is left out.
+    """
+    assert set(DesignSpace.variable_types_to_dtypes) == set(
+        deterministic_variable_factory.variable_types
+    )
 
 
 @pytest.mark.parametrize(
@@ -2517,9 +2527,9 @@ def test_add_variable_from():
     assert ds.variables["y"].size == 3
     assert ds.variables["z"].size == 1
 
-    assert ds.variables["x"].type == DesignVariableType.INTEGER
-    assert ds.variables["y"].type == DesignVariableType.INTEGER
-    assert ds.variables["z"].type == DesignVariableType.REAL
+    assert ds.variables["x"].type == VariableType.INTEGER
+    assert ds.variables["y"].type == VariableType.INTEGER
+    assert ds.variables["z"].type == VariableType.REAL
 
     assert_equal(ds.variables["x"].lower_bound, array([1, 1]))
     assert_equal(ds.variables["y"].lower_bound, array([3, 3, 3]))
@@ -2541,12 +2551,12 @@ def test_to_scalar_variables(snapshot):
     space.add_integer_variable("y", 2, [3, 5], [4, 6], [3, 6])
     new_space = space.to_scalar_variables()
     assert tuple(new_space.variables) == ("foo", "y[0]", "y[1]")
-    assert new_space.variables["foo"].type == DesignSpace.DesignVariableType.REAL
+    assert new_space.variables["foo"].type == VariableType.REAL
     assert new_space.variables["foo"].size == 1
     assert new_space.variables["y[0]"].size == 1
-    assert new_space.variables["y[0]"].type == DesignSpace.DesignVariableType.INTEGER
+    assert new_space.variables["y[0]"].type == VariableType.INTEGER
     assert new_space.variables["y[1]"].size == 1
-    assert new_space.variables["y[1]"].type == DesignSpace.DesignVariableType.INTEGER
+    assert new_space.variables["y[1]"].type == VariableType.INTEGER
     assert_array_equal(new_space.get_lower_bounds(), [1, 3, 5])
     assert_array_equal(new_space.get_upper_bounds(), [2, 4, 6])
     with assert_exception(KeyError, snapshot):

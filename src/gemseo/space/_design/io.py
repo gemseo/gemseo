@@ -943,7 +943,7 @@ def from_csv(
         raw_to_type = {
             raw_type: VariableType._resolve_value(raw_type)
             if raw_type
-            else cls.DesignVariableType.REAL
+            else VariableType.REAL
             for raw_type in dict.fromkeys(type_cells)
         }
 
@@ -952,7 +952,7 @@ def from_csv(
     mixed_variables: list[str] = []
     for name, (k, size) in name_to_rows.items():
         if type_column is None:
-            variable_types[name] = cls.DesignVariableType.REAL
+            variable_types[name] = VariableType.REAL
             continue
 
         row_types = tuple(

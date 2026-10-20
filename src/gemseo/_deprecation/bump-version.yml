@@ -720,7 +720,7 @@ attributes:
   gemseo.algos.base_driver_library.TQDM_LOGGER: gemseo.core.algorithm._progress_bar.custom.logger
   gemseo.algos.database.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.algos.design_space.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
-  gemseo.algos.design_space.TYPE_MAP: gemseo.space.variable.variable_type_to_numpy_type
+  gemseo.algos.design_space.TYPE_MAP: gemseo.space.variable.design_variable_type_to_numpy_type
   gemseo.algos.doe.scipy.scipy_doe.SCIPY_VERSION: gemseo.util._compatibility.scipy.scipy_version
   gemseo.algos.doe.scipy.scipy_doe.SEED: gemseo.util.seeder.seed
   gemseo.algos.opt.nlopt.nlopt.C_LONG_MAX: gemseo.util.constant.infinite_int
@@ -954,7 +954,7 @@ attributes:
   # gemseo.space.variable.VariableType (REAL replaces "float") and has more keys, but
   # indexing it with a member of the old DataType, as gemseo did, still works, whereas
   # a TODO value would make every import fail.
-  gemseo.algos._variable.TYPE_MAP: gemseo.space.variable.variable_type_to_numpy_type
+  gemseo.algos._variable.TYPE_MAP: gemseo.space.variable.design_variable_type_to_numpy_type
   gemseo.algos.doe.doe_quality._DEFAULT_DISCREPANCY_TYPE_NAME: gemseo.doe.doe_quality._default_discrepancy_type_name
   gemseo.algos.doe.doe_quality._DEFAULT_POWER: gemseo.doe.doe_quality._default_power
   gemseo.algos.doe.openturns._algos.ot_axial_doe.LOGGER: gemseo.doe.openturns._algorithm.ot_axial_doe.logger
@@ -1268,6 +1268,8 @@ classes:
   #### DesignSpace
   DesignSpace:
     VARIABLE_TYPES_TO_DTYPES: variable_types_to_dtypes
+    DesignVariableType: null
+    # TODO: use gemseo.enum.VariableType instead.
     # The shortcuts to the variables of the space were removed; a design space
     # is read through its variables view, like a random space.
     variable_names: null
@@ -1368,16 +1370,18 @@ classes:
     variable_sizes: null
     # TODO: use {n: v.size for n, v in space.variables.items()} instead.
     variable_types: null
-    # TODO: use {n: v.type for n, v in space.variables.items()} instead.
+    # TODO: use {n: v.type for n, v in space.variables.items()} instead;
+    # a random variable is of random type, where it was of type "float".
     names_to_indices: null
     # TODO: use space.variables.name_to_indices instead.
     get_size: null
     # TODO: use space.variables[name].size instead.
     get_type: null
-    # TODO: use space.variables[name].type instead.
+    # TODO: use space.variables[name].type instead;
+    # a random variable is of random type, where it was of type "float".
     has_integer_variables: null
     # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead;
-    # it is always False, as a random variable is of real type.
+    # it is always False, as a random variable is of random type.
     has_current_value: null
     get_current_value: null
     set_current_value: null

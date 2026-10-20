@@ -47,6 +47,7 @@ from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.optimization.result import OptimizationResult
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import VariableType
 from gemseo.space.variable import variable_type_to_numpy_type
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.lock import synchronized
@@ -220,7 +221,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
             python_var_types = {
                 name: variable_type_to_numpy_type[type_]
                 for name, type_ in variable_types.items()
-                if type_ != DesignSpace.DesignVariableType.REAL
+                if type_ != VariableType.REAL
             }
             samples.dtype = dtype(samples.dtype, metadata=python_var_types)
 

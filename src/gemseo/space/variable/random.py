@@ -71,7 +71,7 @@ class RandomVariable(BaseNumericVariable):
     everything else is derived from them and read-only:
     the joint probability distribution of its components,
     its size (the number of these components),
-    its variable type (always real)
+    its variable type (always random, with real components)
     and its bounds (the limits of the support of its distribution).
 
     Note:
@@ -89,7 +89,7 @@ class RandomVariable(BaseNumericVariable):
         of the distribution, which the variable leaves untouched.
     """
 
-    type: ClassVar[VariableType] = VariableType.REAL
+    type: ClassVar[VariableType] = VariableType.RANDOM
 
     distribution_settings: tuple[BaseDistributionSettings, ...] = Field(
         min_length=1,

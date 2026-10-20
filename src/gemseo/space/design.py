@@ -60,7 +60,7 @@ from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import VariableType
-from gemseo.space.variable import variable_type_to_numpy_type
+from gemseo.space.variable import design_variable_type_to_numpy_type
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import pretty_str
@@ -120,11 +120,9 @@ class DesignSpace(
 
     _supports_normalization: ClassVar[bool] = True
 
-    DesignVariableType = VariableType
-
     # TODO: API: the values are not dtypes but types, either fix the values or the name.
     variable_types_to_dtypes: Final[Mapping[str, type[int64 | float64]]] = (
-        variable_type_to_numpy_type
+        design_variable_type_to_numpy_type
     )
     """One NumPy `dtype` per design variable type."""
 

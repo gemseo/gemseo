@@ -114,9 +114,9 @@ def test_container_behavior(space) -> None:
     assert "x" in space
     assert "z" not in space
     assert space.variables["x"].size == 2
-    assert space.variables["x"].type == VariableType.REAL
+    assert space.variables["x"].type == VariableType.RANDOM
     assert space.variables["y"].size == 1
-    assert space.variables["y"].type == VariableType.REAL
+    assert space.variables["y"].type == VariableType.RANDOM
     assert space.get_indexed_variable_names() == ["x[0]", "x[1]", "y"]
     assert_array_equal(space.get_variables_indexes(["y"]), [2])
 

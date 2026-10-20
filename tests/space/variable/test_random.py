@@ -21,6 +21,7 @@ from copy import copy
 from copy import deepcopy
 
 import pytest
+from numpy import float64
 from numpy import inf
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
@@ -32,6 +33,7 @@ from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
 from gemseo.space.variable import VariableType
+from gemseo.space.variable import variable_type_to_numpy_type
 from gemseo.space.variable.random import RandomVariable
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -57,7 +59,7 @@ def variable() -> RandomVariable:
 def test_derived_fields(variable) -> None:
     """Check that size, type and bounds derive from the distribution."""
     assert variable.size == 2
-    assert variable.type == VariableType.REAL
+    assert variable.type == VariableType.RANDOM
     assert_array_equal(variable.lower_bound, [-inf, 0.0])
     assert_array_equal(variable.upper_bound, [inf, 1.0])
     assert variable.distribution.dimension == 2
@@ -130,9 +132,19 @@ def test_immutability(variable, name, snapshot) -> None:
         setattr(variable, name, 3)
 
 
+def test_numpy_type() -> None:
+    """Check that the NumPy type of the random variable type is the one of the class.
+
+    The map cannot read it from the class, which is re-exported lazily,
+    so this test catches a drift between them.
+    """
+    numpy_type = variable_type_to_numpy_type[VariableType.RANDOM]
+    assert numpy_type is RandomVariable.coordinate_type is float64
+
+
 def test_type_is_a_class_variable(variable, snapshot) -> None:
     """Check that the type is shared by the class and cannot be set on an instance."""
-    assert RandomVariable.type == VariableType.REAL
+    assert RandomVariable.type == VariableType.RANDOM
     with assert_exception(AttributeError, snapshot):
         variable.type = VariableType.INTEGER
 
