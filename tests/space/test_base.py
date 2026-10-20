@@ -32,6 +32,7 @@ from numpy import inf
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.enum import VariableType
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.space._core.variables import UnknownVariableError
 from gemseo.space._core.variables import Variables
@@ -41,7 +42,6 @@ from gemseo.space._random.variables_view import RandomVariablesView
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.variable import VariableType
 from gemseo.space.variables_view import VariablesView
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,

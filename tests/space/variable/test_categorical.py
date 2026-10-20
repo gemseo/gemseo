@@ -24,10 +24,10 @@ from numpy import int64
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import BaseNumericVariable
+from gemseo.enum import VariableType
 from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DiscreteVariable
-from gemseo.space.variable import VariableType
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.testing.helper import assert_exception
 
 

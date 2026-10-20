@@ -34,7 +34,7 @@ from numpy import clip
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
-from gemseo.space.variable import VariableType
+from gemseo.enum import VariableType
 from gemseo.util.discipline import update_default_input_values
 from gemseo.util.logging import LoggingContext
 from gemseo.util.name_generator import NameGenerator

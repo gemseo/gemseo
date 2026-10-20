@@ -305,10 +305,13 @@ modules:
 # Renamed classes, functions and variables, given with the module defining them: the
 # module of the old name is renamed too when it is also a key of `modules:`.
 names:
-  gemseo.algos._variable.DataType: gemseo.space.variable.VariableType
+  gemseo.algos._variable.BoundArray: gemseo.space.variable.numeric.BoundArray
+  gemseo.algos._variable.BoundType: gemseo.space.variable.numeric.BoundType
+  gemseo.algos._variable.DataType: gemseo.enum.VariableType
+  gemseo.algos._variable.ScalarBoundType: gemseo.space.variable.numeric.ScalarBoundType
   gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
   gemseo.algos.base_algo_factory._AlgoFactoryMeta: gemseo.core.algorithm.base_algorithm_factory._AlgorithmFactoryMeta
-  gemseo.algos.design_space.DataType: gemseo.space.variable.VariableType
+  gemseo.algos.design_space.DataType: gemseo.enum.VariableType
   gemseo.algos.problem_function.ProblemFunction: gemseo.core.function.evaluation_function.EvaluationFunction
   gemseo.algos.stop_criteria.DesvarIsNan: gemseo.core.problem.termination_criterion.DesvarIsNan
   gemseo.algos.stop_criteria.FtolReached: gemseo.core.problem.termination_criterion.FtolReached

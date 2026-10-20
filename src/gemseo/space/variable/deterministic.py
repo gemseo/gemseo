@@ -21,9 +21,9 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from gemseo.enum import VariableType
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable.base import BaseVariable
-from gemseo.space.variable.base import VariableType
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:

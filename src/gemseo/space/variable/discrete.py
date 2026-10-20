@@ -29,10 +29,10 @@ from numpy import unique
 from pydantic import Field
 from pydantic import model_validator
 
+from gemseo.enum import VariableType
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable._formatting import format_elided
 from gemseo.space.variable._view_field import expose_fields_as_views
-from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.space.variable.numeric import ScalarBoundType

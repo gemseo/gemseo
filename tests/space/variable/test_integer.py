@@ -26,8 +26,8 @@ from numpy import int64
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
+from gemseo.enum import VariableType
 from gemseo.space.variable import IntegerVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 

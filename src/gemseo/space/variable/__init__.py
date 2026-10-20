@@ -25,58 +25,18 @@ from typing import Final
 # so the name must keep resolving here;
 # it is re-exported explicitly and left out of the public surface.
 from gemseo.space.variable._legacy import Variable as Variable
-from gemseo.space.variable.base import BaseVariable as BaseVariable
-from gemseo.space.variable.base import VariableType as VariableType
-from gemseo.space.variable.catalog import CatalogVariable
-from gemseo.space.variable.categorical import CategoricalVariable
-from gemseo.space.variable.deterministic import (
-    BaseDeterministicVariable as BaseDeterministicVariable,
-)
-from gemseo.space.variable.discrete import DiscreteVariable
-from gemseo.space.variable.factory import (
-    DeterministicVariableFactory as DeterministicVariableFactory,
-)
-from gemseo.space.variable.integer import IntegerVariable
-from gemseo.space.variable.interval import BaseIntervalVariable as BaseIntervalVariable
-from gemseo.space.variable.numeric import BaseNumericVariable as BaseNumericVariable
-from gemseo.space.variable.numeric import BoundArray as BoundArray
-from gemseo.space.variable.numeric import BoundType as BoundType
-from gemseo.space.variable.real import RealVariable
+from gemseo.space.variable.catalog import CatalogVariable as CatalogVariable
+from gemseo.space.variable.categorical import CategoricalVariable as CategoricalVariable
+from gemseo.space.variable.discrete import DiscreteVariable as DiscreteVariable
+from gemseo.space.variable.integer import IntegerVariable as IntegerVariable
+from gemseo.space.variable.real import RealVariable as RealVariable
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     # static visibility for mypy / IDEs
-    from gemseo.space.variable.base import CoordinateDType
     from gemseo.space.variable.random import RandomVariable  # noqa: F401
-
-design_variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
-    MappingProxyType({
-        cls.type: cls.coordinate_type
-        for cls in (
-            CatalogVariable,
-            CategoricalVariable,
-            DiscreteVariable,
-            IntegerVariable,
-            RealVariable,
-        )
-    })
-)
-"""The map from a design variable type to the NumPy type of its coordinates.
-
-A design space cannot hold a random variable, so the random variable type is left out.
-"""
-
-variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
-    MappingProxyType({
-        **design_variable_type_to_numpy_type,
-        # RandomVariable is re-exported lazily, so its type is not read from the class;
-        # it inherits the NumPy type of its coordinates.
-        VariableType.RANDOM: BaseNumericVariable.coordinate_type,
-    })
-)
-"""The map from a variable type to the NumPy type of its coordinates."""
 
 # A random variable drags in the probability distributions,
 # which a design space has no use for,
@@ -91,18 +51,8 @@ install_lazy_reexport(
     globals(),
     _name_to_location,
     extra_all=[
-        "design_variable_type_to_numpy_type",
-        "variable_type_to_numpy_type",
-        "BaseDeterministicVariable",
-        "BaseIntervalVariable",
-        "BaseNumericVariable",
-        "BaseVariable",
-        "BoundArray",
-        "BoundType",
         "CatalogVariable",
         "CategoricalVariable",
-        "VariableType",
-        "DeterministicVariableFactory",
         "DiscreteVariable",
         "IntegerVariable",
         "RealVariable",

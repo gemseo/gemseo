@@ -44,11 +44,11 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 from gemseo.core.problem.evaluation import EvaluationType
 from gemseo.core.serializable import Serializable
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
+from gemseo.enum import VariableType
 from gemseo.optimization.result import OptimizationResult
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import VariableType
-from gemseo.space.variable import variable_type_to_numpy_type
+from gemseo.space.variable._coordinate_type import variable_type_to_numpy_type
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.lock import synchronized
 from gemseo.util.pydantic import create_model

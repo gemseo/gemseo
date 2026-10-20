@@ -31,15 +31,15 @@ from numpy import str_
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import BaseDeterministicVariable
-from gemseo.space.variable import BaseIntervalVariable
-from gemseo.space.variable import BaseNumericVariable
-from gemseo.space.variable import BaseVariable
+from gemseo.enum import VariableType
 from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
+from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.deterministic import BaseDeterministicVariable
+from gemseo.space.variable.interval import BaseIntervalVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.space.variable.random import RandomVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.testing.helper import assert_exception

@@ -22,9 +22,9 @@ import pytest
 from numpy import array
 from numpy import inf
 
-from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable._legacy import Variable
+from gemseo.space.variable.base import BaseVariable
 from gemseo.space.variable.factory import DeterministicVariableFactory
 from tests.space.variable.utils import kinds
 

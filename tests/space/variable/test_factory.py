@@ -21,10 +21,10 @@ from typing import ClassVar
 import pytest
 from numpy.testing import assert_array_equal
 
+from gemseo.enum import VariableType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
 from gemseo.space.variable.factory import DeterministicVariableFactory
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.testing.helper import assert_exception

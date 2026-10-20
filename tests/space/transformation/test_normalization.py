@@ -23,9 +23,9 @@ from numpy import inf
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
 from gemseo.space.transformation.normalization import SpaceNormalization
-from gemseo.space.variable import VariableType
 
 
 @pytest.fixture

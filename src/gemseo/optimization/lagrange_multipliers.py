@@ -289,8 +289,8 @@ class LagrangeMultipliers:
         # substituted with float ones of the same bounds,
         # so checking a point against it checks the bounds only of these
         # and the full domain of the others.
+        from gemseo.enum import VariableType
         from gemseo.space.transformation.relaxation import SpaceRelaxation
-        from gemseo.space.variable import VariableType
 
         variables = space.variables
         working_space = SpaceRelaxation(

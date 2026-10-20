@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from prettytable import PrettyTable
 
 from gemseo.space._design.constants import table_names
-from gemseo.space.variable import BaseNumericVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.string import _format_value_in_pretty_table_16
 
 if TYPE_CHECKING:

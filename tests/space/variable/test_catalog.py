@@ -28,9 +28,9 @@ from numpy.testing import assert_array_equal
 from pandas import DataFrame
 from pydantic import ValidationError
 
+from gemseo.enum import VariableType
 from gemseo.space import Catalog
 from gemseo.space.variable import CatalogVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 

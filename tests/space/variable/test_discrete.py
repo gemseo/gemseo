@@ -27,9 +27,9 @@ from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
+from gemseo.enum import VariableType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import RealVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 

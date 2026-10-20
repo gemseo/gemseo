@@ -19,12 +19,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
-from gemseo.space.variable import BaseVariable
+from gemseo.space.variable.base import BaseVariable
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
 if TYPE_CHECKING:
+    from gemseo.enum import VariableType
     from gemseo.space._core.variables import Variables
-    from gemseo.space.variable import VariableType
 
 _VariableT = TypeVar("_VariableT", bound=BaseVariable)
 """The type of the variables of the registry."""

@@ -27,9 +27,9 @@ from numpy import int64
 from numpy.testing import assert_array_equal
 from scipy.sparse import csr_array
 
+from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
 from gemseo.space.variable import CategoricalVariable
-from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 

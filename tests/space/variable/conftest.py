@@ -25,8 +25,8 @@ from tests.space.variable.utils import kind_to_kwargs
 from tests.space.variable.utils import numeric_kinds
 
 if TYPE_CHECKING:
-    from gemseo.space.variable import BaseNumericVariable
-    from gemseo.space.variable import BaseVariable
+    from gemseo.space.variable.base import BaseVariable
+    from gemseo.space.variable.numeric import BaseNumericVariable
 
 
 @pytest.fixture(params=all_kinds)

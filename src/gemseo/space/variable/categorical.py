@@ -28,10 +28,10 @@ from numpy import int64
 from pydantic import Field
 from pydantic import model_validator
 
+from gemseo.enum import VariableType
 from gemseo.space.variable._formatting import format_components
 from gemseo.space.variable._formatting import format_elided
 from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.base import VariableType
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.util._numpy import freeze_array
 from gemseo.util.string import pretty_repr
