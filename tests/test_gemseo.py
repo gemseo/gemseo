@@ -1073,55 +1073,86 @@ def test_configure_logger() -> None:
     assert logger.level == logging.INFO
 
 
-def test_configure_logger_gemseo_logger():
+def test_configure_logger_gemseo_logger(tmp_wd):
     """Check that configuring the root logger
     changes the configuration of the gemseo logger."""
     date_format = _logging_date_format + " - "
     message_format = _logging_message_format + " - "
     file_name = "foo"
     file_mode = "w"
-    handlers = gemseo_logger.handlers.copy()
-    configure_logger(
-        level=logging.WARNING,
-        date_format=date_format,
-        message_format=message_format,
-        filename=file_name,
-        filemode=file_mode,
-    )
-    assert gemseo_logger.level == logging.WARNING
-    assert gemseo_logger.handlers[0].formatter.datefmt == date_format
-    assert gemseo_logger.handlers[0].formatter._fmt == message_format
-    assert gemseo_logger.handlers[1].baseFilename.endswith(file_name)
-    assert gemseo_logger.handlers[1].mode == file_mode
-    # Restore the original handlers.
-    gemseo_logger.handlers.clear()
-    gemseo_logger.handlers.extend(handlers)
+    root_logger = logging.root
+    loggers_states = [
+        (logger, logger.level, logger.handlers.copy())
+        for logger in (gemseo_logger, root_logger)
+    ]
+    logging_options = configuration.logging.model_dump()
+    try:
+        configure_logger(
+            level=logging.WARNING,
+            date_format=date_format,
+            message_format=message_format,
+            filename=file_name,
+            filemode=file_mode,
+        )
+        assert gemseo_logger.level == logging.WARNING
+        assert gemseo_logger.handlers[0].formatter.datefmt == date_format
+        assert gemseo_logger.handlers[0].formatter._fmt == message_format
+        assert gemseo_logger.handlers[1].baseFilename.endswith(file_name)
+        assert gemseo_logger.handlers[1].mode == file_mode
+    finally:
+        # configure_logger() also writes the global logging configuration,
+        # which reconfigures the gemseo logger.
+        for name, value in logging_options.items():
+            setattr(configuration.logging, name, value)
+
+        # Close the handlers that were added, then restore the original ones.
+        for logger, level, handlers in loggers_states:
+            for handler in logger.handlers:
+                if handler not in handlers:
+                    handler.close()
+
+            logger.handlers.clear()
+            logger.handlers.extend(handlers)
+            logger.setLevel(level)
 
 
-def test_configure_logger_no_gemseo_logger() -> None:
+def test_configure_logger_no_gemseo_logger(tmp_wd) -> None:
     """Check that configuring a logger different from the root logger
     does not change the configuration of the gemseo logger."""
     date_format = _logging_date_format + " - "
     message_format = _logging_message_format + " - "
     file_name = "foo"
     file_mode = "w"
-    logger = configure_logger(
-        logger_name="foo",
-        level=logging.WARNING,
-        date_format=date_format,
-        message_format=message_format,
-        filename=file_name,
-        filemode=file_mode,
-    )
-    assert logger.name == "foo"
-    assert logger.level == logging.WARNING
-    assert logger.handlers[0].formatter.datefmt == date_format
-    assert logger.handlers[0].formatter._fmt == message_format
-    assert logger.handlers[1].baseFilename.endswith(file_name)
-    assert logger.handlers[1].mode == file_mode
-    assert gemseo_logger.level == logging.WARNING
-    assert gemseo_logger.handlers[0].formatter.datefmt == _logging_date_format
-    assert gemseo_logger.handlers[0].formatter._fmt == _logging_message_format
+    gemseo_level = gemseo_logger.level
+    other_logger = logging.getLogger("foo")
+    other_level = other_logger.level
+    other_handlers = other_logger.handlers.copy()
+    try:
+        logger = configure_logger(
+            logger_name="foo",
+            level=logging.WARNING,
+            date_format=date_format,
+            message_format=message_format,
+            filename=file_name,
+            filemode=file_mode,
+        )
+        assert logger.name == "foo"
+        assert logger.level == logging.WARNING
+        assert logger.handlers[0].formatter.datefmt == date_format
+        assert logger.handlers[0].formatter._fmt == message_format
+        assert logger.handlers[1].baseFilename.endswith(file_name)
+        assert logger.handlers[1].mode == file_mode
+        assert gemseo_logger.level == gemseo_level
+        assert gemseo_logger.handlers[0].formatter.datefmt == _logging_date_format
+        assert gemseo_logger.handlers[0].formatter._fmt == _logging_message_format
+    finally:
+        for handler in other_logger.handlers:
+            if handler not in other_handlers:
+                handler.close()
+
+        other_logger.handlers.clear()
+        other_logger.handlers.extend(other_handlers)
+        other_logger.setLevel(other_level)
 
 
 def test_configure_logger_level() -> None:
