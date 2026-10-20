@@ -88,7 +88,10 @@ class CatalogVariable(
         "as the properties to build the catalog from, "
         "or a mapping whose keys are exactly 'properties' and 'labels', "
         "with a table or a mapping under 'properties', "
-        "as the fields of a catalog, e.g. its model_dump."
+        "as the fields of a catalog, e.g. its model_dump; "
+        "the labels and the properties are kept as they are, "
+        "so, to use cleaned data, pass a catalog cleaned with Catalog.clean, "
+        "e.g. Catalog(properties=table).clean()."
     )
 
     @field_validator("catalog", mode="before")

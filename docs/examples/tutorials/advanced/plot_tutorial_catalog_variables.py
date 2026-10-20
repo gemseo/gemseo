@@ -74,19 +74,38 @@ materials = Catalog(
 materials.to_dataframe()
 
 # %%
-# The catalog **formats** its input:
-# it strips the strings of their leading and trailing whitespace,
-# and drops, with a warning, a property holding no value.
-# Here, the label `" steel "` becomes `"steel"`
-# and the empty property `"comment"` is dropped:
-Catalog(
+# The catalog keeps its input **as it is**:
+# cleaning the data is up to you.
+# Here, the label `" steel "` keeps its spaces
+# and the empty property `"comment"` is kept:
+raw_materials = Catalog(
     properties={
         "density": [2.7, 7.8, 4.5],
         "cost": [10.0, 5.0, 50.0],
         "comment": ["", "", ""],
     },
     labels=["aluminium", " steel ", "titanium"],
-).to_dataframe()
+)
+raw_materials.to_dataframe()
+
+# %%
+# The table hides the spaces around a label,
+# while [format_labels()][gemseo.space.catalog.catalog.Catalog.format_labels]
+# quotes each label and shows them:
+raw_materials.format_labels()
+
+# %%
+# [clean()][gemseo.space.catalog.catalog.Catalog.clean] returns a **cleaned** copy of the catalog:
+# the strings are stripped of their leading and trailing whitespace,
+# and a property holding no value is dropped, with a warning.
+# Here, the label `" steel "` becomes `"steel"`
+# and the empty property `"comment"` is dropped:
+cleaned_materials = raw_materials.clean()
+cleaned_materials.to_dataframe()
+
+# %%
+# Its labels have no spaces left:
+cleaned_materials.format_labels()
 
 # %%
 # A catalog can also be built from a `DataFrame`,
@@ -126,10 +145,7 @@ design_space.add_catalog_variable("material", materials, value="steel")
 # %%
 # The label is replaced by the position of the alternative it names, here `1`;
 # `value=1` would have done the same.
-# A label naming no alternative is rejected,
-# and so is a label naming several ones,
-# since a catalog accepts duplicate labels:
-# pass the position of the alternative then.
+# A label naming no alternative is rejected.
 design_space.get_current_value(["material"])
 
 # %%

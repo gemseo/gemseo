@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from itertools import starmap
 from typing import TYPE_CHECKING
 from typing import Annotated
 from typing import Any
@@ -44,7 +43,10 @@ from gemseo.space.catalog._hdf import read_hdf_property
 from gemseo.space.catalog._hdf import was_unicode_attribute
 from gemseo.space.catalog._input import CatalogFormatter
 from gemseo.space.catalog._input import CatalogInput
+from gemseo.space.catalog._input import clean_catalog_data
+from gemseo.space.catalog._input import find_labels_merged_by_cleaning
 from gemseo.space.catalog._input import freeze_property_array
+from gemseo.space.catalog._input import is_blank_property
 from gemseo.space.catalog._input import labels_field
 from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog._input import raise_errors
@@ -100,23 +102,25 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     A `str`, `bytes`, `bytearray` or zero-dimensional array is a single label,
     so `labels="alu"` builds a one-row catalog labelled `"alu"`,
     and `labels=""` names a single row rather than meaning no labels.
-    Duplicate labels are accepted,
-    since an alternative is chosen by its position.
+    The labels must be distinct once converted to strings, whitespace included,
+    since a label names a single alternative.
 
     [DesignSpace.add_catalog_variable][gemseo.space.design.DesignSpace.add_catalog_variable]
     and [CatalogVariable][gemseo.space.variable.catalog.CatalogVariable]
     also accept the properties of a catalog in place of a catalog,
     and build it themselves.
 
-    **Formatting.** Whatever the way it is built, the input is formatted:
+    **Cleaning.** The data of the catalog are kept as they are:
+    cleaning them is up to the user,
+    e.g. with [clean][gemseo.space.catalog.catalog.Catalog.clean],
+    which returns a new catalog
+    whose strings are stripped and whose blank properties are dropped.
+    `add_catalog_variable` and `CatalogVariable` do not clean a catalog,
+    so pass them a cleaned one, e.g. `Catalog(properties=table).clean()`.
 
-    - the leading and trailing whitespace of every string is removed,
-      in the properties and in the labels,
-      and a byte-string label is decoded from UTF-8;
-    - a property holding no value,
-      i.e. whose every element is a missing value or an empty string,
-      is dropped with a log warning;
-      `0` and `False` are values, so their properties are kept;
+    **Reading.** Whatever the way it is built, the input is read as follows:
+
+    - a byte-string label is decoded from UTF-8;
     - a scalar property is repeated over the rows;
     - the index of a `Series` given as a property is ignored,
       since a property is read positionally;
@@ -131,8 +135,9 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     The input is rejected
     if a property is an unordered collection, e.g. a `set`, or a `DataFrame`,
     if a property, or the labels, is not one-dimensional,
+    if two labels are equal,
     if the properties and the labels do not have the same number of elements,
-    if there is no row or no property left,
+    if there is no row or no property,
     if two column names of a `DataFrame` are equal once converted to strings,
     or if a byte-string label is not valid UTF-8.
 
@@ -249,6 +254,38 @@ label naming a single row, not an absence of labels.""",
         """
         return DataFrame(dict(self.properties), index=self.labels, copy=True)
 
+    def clean(self) -> Self:
+        """Return a cleaned copy of the catalog.
+
+        The strings of the labels and of the properties are stripped
+        of their leading and trailing whitespace,
+        then the properties holding no value are dropped
+        and named in a log warning.
+        A property holds no value when each of its elements
+        is a missing value or an empty string;
+        `0` and `False` are values, so their properties are kept.
+
+        The cleaned catalog keeps the other fields of the catalog
+        and is not validated again,
+        so a subclass with its own validators must override this method.
+
+        Returns:
+            The cleaned catalog.
+
+        Raises:
+            ValueError: If every property holds no value,
+                since cleaning would leave none,
+                or if labels differ only by their leading and trailing whitespace,
+                since they would name several alternatives once stripped.
+        """
+        labels, properties = clean_catalog_data(self.labels, self.properties)
+        # The data of the catalog are valid and cleaning them keeps them so:
+        # they are built without being formatted again.
+        return self.model_construct(
+            self.model_fields_set,
+            **{**self.__dict__, labels_field: labels, properties_field: properties},
+        )
+
     def format_labels(self, max_length: int = _max_formatted_labels) -> str:
         """Return a readable representation of the labels.
 
@@ -262,17 +299,22 @@ label naming a single row, not an absence of labels.""",
                 since an elided representation keeps at least one label.
 
         Returns:
-            The representation of the labels,
-            e.g. `"[aluminium, steel, titanium]"`.
+            The representation of the labels, each quoted,
+            so that its leading and trailing whitespace is visible,
+            e.g. `"['aluminium', 'steel ', 'titanium']"`.
         """
-        return format_elided(self.labels, "labels", max_length)
+        # The labels are converted to Python strings,
+        # whose representation is quoted,
+        # unlike the one of a NumPy string, e.g. "np.str_('steel')".
+        return format_elided(
+            self.labels, "labels", max_length, lambda label: repr(str(label))
+        )
 
     def get_position(self, label: str) -> int:
         """Return the position of the alternative named by a label.
 
-        The label is stripped of its leading and trailing whitespace,
-        as the labels of the catalog are,
-        then compared exactly, case included, with each of them.
+        The label is compared exactly, whitespace and case included,
+        with each label of the catalog.
         A catalog built without labels is labelled by the positions,
         so that `"1"` then names the alternative at position `1`.
 
@@ -283,26 +325,16 @@ label naming a single row, not an absence of labels.""",
             The position of the alternative.
 
         Raises:
-            ValueError: If no alternative or several alternatives
-                have this label.
+            ValueError: If no alternative has this label.
         """
-        label = label.strip()
         positions = flatnonzero(self.labels == label)
-        if len(positions) == 1:
+        if len(positions):
             return int(positions[0])
 
-        if not len(positions):
-            msg = (
-                f"The catalog has no alternative labelled {label!r}; "
-                f"its labels are {self.format_labels()}. "
-                "Pass the position of an alternative to choose it by row."
-            )
-            raise ValueError(msg)
-
         msg = (
-            f"The label {label!r} names several alternatives of the catalog, "
-            f"at positions {pretty_str(positions.tolist(), sort=False)}; "
-            "pass the position of the alternative to choose one of them."
+            f"The catalog has no alternative labelled {label!r}; "
+            f"its labels are {self.format_labels()}. "
+            "Pass the position of an alternative to choose it by row."
         )
         raise ValueError(msg)
 
@@ -379,6 +411,7 @@ label naming a single row, not an absence of labels.""",
 
         Returns:
             The catalog itself without an update, otherwise a new catalog.
+            The fields missing from the update keep their values.
             New properties without new labels keep the labels of the catalog,
             except a `DataFrame`, labelled by its index,
             and except for a catalog labelled by the positions,
@@ -391,11 +424,11 @@ label naming a single row, not an absence of labels.""",
         if not update:
             return self
 
-        payload = dict(update)
-        if labels_field not in update and not self.__update_relabels(update):
-            payload[labels_field] = self.__dict__[labels_field]
+        # Start from every field of the catalog, those of a subclass included.
+        payload = {**self.__dict__, **update}
+        if labels_field not in update and self.__update_relabels(update):
+            del payload[labels_field]
 
-        payload.setdefault(properties_field, self.__dict__[properties_field])
         return self.model_validate(payload)
 
     def __update_relabels(self, update: Mapping[str, Any]) -> bool:
@@ -433,11 +466,45 @@ label naming a single row, not an absence of labels.""",
                 encoded to UTF-8, or if a label cannot be encoded to UTF-8;
                 every offender is named at once, one reason per property.
         """
-        error_messages = [
-            message
-            for message in starmap(find_hdf_writing_error, self.properties.items())
-            if message
+        properties = self.properties
+        name_to_message = {
+            name: message
+            for name, property_values in properties.items()
+            if (message := find_hdf_writing_error(name, property_values))
+        }
+        # A property of missing values only, e.g. [None, None], is an array of
+        # Python objects, but it holds no value: dropping it is the fix,
+        # unless no other property holds a value, since clean() then raises.
+        # The other properties are scanned only when such a property fails,
+        # so that writing a valid catalog does not pay for it.
+        blank_names = [
+            name
+            for name in name_to_message
+            if properties[name].dtype.kind == "O"
+            and is_blank_property(properties[name])
         ]
+        if blank_names and any(
+            not is_blank_property(property_values)
+            for name, property_values in properties.items()
+            if name not in blank_names
+        ):
+            hint = (
+                "It holds no value: use Catalog.clean() "
+                "to drop the properties holding no value; "
+                "it also strips the strings of the labels and of the properties."
+            )
+            if merged_labels := find_labels_merged_by_cleaning(self.labels):
+                hint += (
+                    " First rename the labels differing only "
+                    "by their leading and trailing whitespace, "
+                    "since cleaning the catalog would make them duplicates: "
+                    f"{'; '.join(merged_labels)}."
+                )
+
+            for name in blank_names:
+                name_to_message[name] = f"{name_to_message[name]} {hint}"
+
+        error_messages = list(name_to_message.values())
         if (label := find_unencodable_utf8_value(self.labels)) is not None:
             error_messages.append(
                 f"The label {label!r} of the catalog cannot be encoded to UTF-8 "

@@ -276,7 +276,7 @@ and what distinguishes them are their properties.
 A catalog is a table:
 one row per alternative,
 one column per property,
-and one index label naming each alternative.
+and one distinct index label naming each alternative.
 It is built from a `pandas` table or from a mapping
 from a property name to a sequence of values.
 
@@ -297,8 +297,7 @@ Its value can also be given by label,
 e.g. `"steel"` for $1$,
 both to [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
 and to [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable];
-a label naming no alternative, or several ones, is rejected,
-and the position must then be given instead,
+a label naming no alternative is rejected,
 while a label given to a variable that is neither a catalog
 nor a categorical variable
 raises a `TypeError`.
@@ -327,10 +326,12 @@ tells whether the design space holds a catalog variable.
 The tabular view shows such a variable as a bounded integer;
 it adds no column.
 
-The catalog is **formatted** when the `Catalog` is built,
+The catalog is **read** when the `Catalog` is built,
 which `add_catalog_variable()` does from the properties it is given,
-while a `Catalog` it is given is already formatted;
-the steps run in this order:
+while a `Catalog` it is given is already read.
+Its data are kept as they are,
+since cleaning them is up to the user.
+Reading runs these steps in this order:
 
 1. the labels and the properties are read from the input:
    a string, a byte string or a zero-dimensional array given as the labels
@@ -342,26 +343,42 @@ the steps run in this order:
 2. a property given as an unordered collection, e.g. a `set`, is refused,
    since the order of the rows it would define is arbitrary,
    and so is a property given as a nested table;
-3. every string is stripped of its leading and trailing whitespace,
-   in the properties and in the labels,
-   and a byte-string label is decoded from UTF-8;
+3. a byte-string label is decoded from UTF-8;
 4. every property, and the labels, must be one-dimensional,
-   so a property or labels built from a nested sequence are refused;
-5. an input describing no row at all is refused;
-   an empty property beside a property that holds a value
-   is dropped by the next step instead;
-6. a property holding no value is dropped and named in a log warning —
-   a property holds no value when it is empty,
-   or when each of its elements is missing or an empty string;
-   a property of zeros holds values and is kept;
-7. every property, and the labels, must hold the same number of elements;
-8. a property given as a scalar is repeated over the rows;
-9. at least one property must be left;
-10. the arrays are copied and made read-only.
+   so a property or labels built from a nested sequence are refused,
+   and the labels must be distinct once converted to strings,
+   whitespace included, e.g. the integer `1` and the string `"1"` collide;
+5. every property, and the labels, must hold the same number of elements.
+   An input with an empty property describes no row and is refused.
+   Empty labels count as no labels.
+   When every property given as a sequence is empty and there are no labels,
+   the error is that a catalog must have at least one row.
+   Otherwise, the error is that the properties
+   do not have the same number of elements,
+   since another property, or the labels, name at least one row;
+6. a property given as a scalar is repeated over the rows;
+7. there must be at least one property;
+8. the arrays are copied and made read-only.
 
 The errors of the first four steps are reported together,
 in a single exception,
 so that an input can be fixed in one pass.
+
+[clean()][gemseo.space.catalog.catalog.Catalog.clean]
+returns a **cleaned** copy of a catalog:
+every string is stripped of its leading and trailing whitespace,
+in the properties and in the labels,
+then a property holding no value is dropped and named in a log warning —
+a property holds no value when each of its elements
+is missing or an empty string;
+a property of zeros holds values and is kept.
+A catalog cannot be cleaned
+if its labels differ only by their leading and trailing whitespace,
+since they would become duplicates,
+or if every property holds no value,
+since no property would be left.
+`add_catalog_variable()` does not clean a catalog,
+so pass it a cleaned one to declare a variable over cleaned data.
 
 The catalog **cannot be changed** once the variable is built:
 neither through the table passed to the constructor,
@@ -413,6 +430,7 @@ Changing a catalog means declaring a new variable.
     - [CatalogVariable][gemseo.space.variable.CatalogVariable]
     - [Catalog][gemseo.space.catalog.catalog.Catalog]
     - [Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+    - [Catalog.clean()][gemseo.space.catalog.catalog.Catalog.clean]
 
 ## Integer relaxation { #concept-integer-relaxation }
 
