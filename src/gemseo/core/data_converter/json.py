@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from functools import cache
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 from gemseo.core.data_converter.base import BaseDataConverter
@@ -34,6 +35,8 @@ class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
     def __convert_types(types: tuple[type, ...]) -> tuple[type, ...]:
         """Convert from python types to json types.
 
+        The path types are left out, because a JSONGrammar does not support them.
+
         This method is cached for performance.
 
         Args:
@@ -42,7 +45,12 @@ class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
         Returns:
             The converted types.
         """
-        return tuple(python_to_json_types.get(type_, type_) for type_ in types)
+        return tuple(
+            python_to_json_types.get(type_, type_)
+            for type_ in types
+            # JSONGrammar does not support path types.
+            if not (isinstance(type_, type) and issubclass(type_, PurePath))
+        )
 
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:
         json_types = self.__convert_types(types)

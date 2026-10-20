@@ -24,6 +24,7 @@ import shutil
 from errno import EACCES
 from itertools import count
 from pathlib import Path
+from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -253,6 +254,43 @@ def test_collision(tmp_wd) -> None:
 
     c1_outs, _ = c1[input_data2]
     assert (c1_outs["o"] == output_data2["o"]).all()
+
+
+@pytest.mark.parametrize(
+    ("other_value", "are_equal"),
+    [
+        (Path("a") / "b", True),
+        ("a/b", True),
+        (Path("a") / "c", False),
+        (PureWindowsPath("a\\b"), True),
+    ],
+    ids=["same-path", "str", "other-path", "windows-path"],
+)
+def test_hash_data_path(other_value, are_equal) -> None:
+    """Check that a path is hashed as its string with forward slashes."""
+    assert (
+        hash_data({"p": Path("a") / "b"}) == hash_data({"p": other_value})
+    ) is are_equal
+
+
+@pytest.mark.parametrize(
+    "value",
+    [[Path("a")], (Path("a"),), array([Path("a")], dtype=object)],
+    ids=["list", "tuple", "object-array"],
+)
+def test_hash_data_several_paths(value, snapshot) -> None:
+    """Check that a list, a tuple or an array of paths cannot be hashed."""
+    with assert_exception(TypeError, snapshot):
+        hash_data({"p": value})
+
+
+@pytest.mark.parametrize(
+    "value", [{"k": 1}, array([object()])], ids=["dict", "object-array"]
+)
+def test_hash_data_object_array(value, snapshot) -> None:
+    """Check that an array of Python objects, not paths, cannot be hashed."""
+    with assert_exception(TypeError, snapshot):
+        hash_data({"p": value})
 
 
 def test_hash_data_dict() -> None:

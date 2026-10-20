@@ -42,6 +42,7 @@ from gemseo.util.derivative.approximator.factory import GradientApproximatorFact
 from gemseo.util.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
@@ -274,7 +275,7 @@ class DisciplineJacApprox:
 
     def _prepare_xvect(
         self,
-        input_names: Iterable[str],
+        input_names: Collection[str],
         data: DisciplineData = read_only_empty_dict,
     ) -> ndarray:
         """Convert an input data mapping into an input array.
@@ -297,8 +298,8 @@ class DisciplineJacApprox:
 
     def compute_approx_jac(
         self,
-        output_names: Iterable[str],
-        input_names: Iterable[str],
+        output_names: Sequence[str],
+        input_names: Sequence[str],
         x_indices: Sequence[int] = (),
         input_data: Mapping[str, ndarray] = read_only_empty_dict,
     ) -> dict[str, dict[str, ndarray]]:
@@ -371,8 +372,8 @@ class DisciplineJacApprox:
 
     def check_jacobian(
         self,
-        output_names: Iterable[str],
-        input_names: Iterable[str],
+        output_names: Sequence[str],
+        input_names: Sequence[str],
         analytic_jacobian: JacobianData = read_only_empty_dict,
         atol: float = 1e-8,
         rtol: float = 1e-8,

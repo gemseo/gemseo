@@ -21,20 +21,24 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from functools import partial
+from pathlib import PurePath
 
 from numpy import allclose
+from numpy import array
 from numpy import array_equal
 from numpy import asarray
 from numpy import ndarray
-from numpy import str_
 
 from gemseo.util._compatibility.scipy import sparse_classes
+from gemseo.util._numpy import string_dtype_kinds
 from gemseo.util.data_conversion import flatten_nested_dict
+from gemseo.util.typing import BytesArray
 from gemseo.util.typing import SparseOrDenseRealArray
+from gemseo.util.typing import StringArray
 
+_ComparableValue = SparseOrDenseRealArray | StringArray | BytesArray | PurePath | str
 DataToCompare = (
-    Mapping[str, SparseOrDenseRealArray]
-    | Mapping[str, Mapping[str, SparseOrDenseRealArray]]
+    Mapping[str, _ComparableValue] | Mapping[str, Mapping[str, _ComparableValue]]
 )
 
 
@@ -54,10 +58,24 @@ def compare_dict_of_arrays(
     is set, then arrays are considered equal if `norm(dict_of_arrays[name] -
     other_dict_of_arrays[name]) /(1 + norm(other_dict_of_arrays[name])) <= tolerance`.
 
+    A path is compared as a one-item array of its string with forward slashes,
+    whatever the tolerance.
+    A `str` compared to a path is compared as a one-item array too,
+    so that a `str` and a path have the same string compare equal,
+    e.g. `"a/b"` and `Path("a") / "b"`,
+    as they have the same hash with
+    [hash_data()][gemseo.core.cache.util.hash_data].
+    A `str` compared to anything else than a path is compared as a 0-d array,
+    so that `"a"` and `array(["a"])` are not equal.
+    String arrays are compared exactly, whatever the tolerance,
+    and a string array is not equal to an array of numbers,
+    e.g. a path is not equal to `array([1.0])`.
+
     Args:
-        dict_of_arrays: A dictionary of NumPy arrays and/or SciPy sparse matrices.
-        other_dict_of_arrays: Another dictionary of NumPy arrays and/or SciPy sparse
-            matrices.
+        dict_of_arrays: A dictionary of NumPy arrays, SciPy sparse matrices,
+            strings and/or paths (`pathlib.PurePath` and its subclasses).
+        other_dict_of_arrays: Another dictionary of NumPy arrays,
+            SciPy sparse matrices, strings and/or paths.
         tolerance: The relative tolerance. If 0.0, the array must be exactly equal.
         nan_are_equal: Whether to compare NaN's as equal.
 
@@ -88,6 +106,22 @@ def compare_dict_of_arrays(
     for key, array_ in dict_of_arrays.items():
         other_array = other_dict_of_arrays[key]
 
+        # A path is compared as a one-item string array,
+        # which is how a data converter stores it,
+        # and so is a str compared to a path,
+        # e.g. the str read back from an HDF5 cache for a str | Path input.
+        array_is_path = isinstance(array_, PurePath)
+        other_array_is_path = isinstance(other_array, PurePath)
+        if array_is_path or other_array_is_path:
+            if array_is_path:
+                array_ = array([array_.as_posix()])
+            elif isinstance(array_, str):
+                array_ = array([array_])
+            if other_array_is_path:
+                other_array = array([other_array.as_posix()])
+            elif isinstance(other_array, str):
+                other_array = array([other_array])
+
         if not isinstance(array_, (ndarray, sparse_classes)):
             array_ = asarray(array_)
 
@@ -110,8 +144,11 @@ def compare_dict_of_arrays(
             array_ = array_.data.reshape(-1)
             other_array = other_array.data.reshape(-1)
 
-        if array_.dtype.type is str_:
-            if (array_ != other_array).any():
+        kinds = {array_.dtype.kind, other_array.dtype.kind}
+        if kinds & string_dtype_kinds:
+            # A string array is not equal to a number array,
+            # which cannot be compared with allclose or array_equal.
+            if not kinds <= string_dtype_kinds | {"O"} or (array_ != other_array).any():
                 return False
         elif not compare_arrays(array_, other_array):
             return False

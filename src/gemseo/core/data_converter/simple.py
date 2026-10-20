@@ -21,6 +21,8 @@ from typing import TYPE_CHECKING
 from gemseo.core.data_converter.base import BaseDataConverter
 
 if TYPE_CHECKING:
+    from pathlib import PurePath
+
     from gemseo.core.grammar.simple import SimpleGrammar  # noqa: F401
 
 
@@ -32,7 +34,15 @@ class SimpleGrammarDataConverter(BaseDataConverter["SimpleGrammar"]):
         cannot make a distinction between the types of
         data in a NumPy array, it is assumed that those types are numeric and can
         differentiate. You may use another type of grammar if the distinction is needed.
+
+        A path converted to an array for an element without type,
+        i.e. whose type is `None`,
+        is converted back to a one-item string array, not to a path,
+        as any one-item string array of such an element.
     """
 
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:  # noqa: D102
         return self._grammar[name] in types
+
+    def _get_path_type(self, name: str) -> type[PurePath | str] | None:
+        return self._select_path_type(self._grammar[name])

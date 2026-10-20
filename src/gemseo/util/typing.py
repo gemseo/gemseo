@@ -25,6 +25,7 @@ from typing import TypeVar
 from typing import Union
 
 from numpy import bool_
+from numpy import bytes_
 from numpy import complexfloating
 from numpy import floating
 from numpy import inexact
@@ -61,6 +62,9 @@ RealOrComplexArrayT = TypeVar("RealOrComplexArrayT", RealArray, ComplexArray)
 
 StringArray = NDArray[str_]
 """A NumPy array of strings."""
+
+BytesArray = NDArray[bytes_]
+"""A NumPy array of bytes."""
 
 StrPath = str | PathLike[str]
 """A string or a path."""

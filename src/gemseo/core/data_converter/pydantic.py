@@ -16,7 +16,11 @@
 
 from __future__ import annotations
 
+from types import UnionType
 from typing import TYPE_CHECKING
+from typing import Annotated
+from typing import Any
+from typing import Union
 from typing import get_args
 from typing import get_origin
 
@@ -30,11 +34,16 @@ from gemseo.util.pydantic_ndarray import _NDArrayPydantic
 from gemseo.util.pydantic_ndarray import _ScalarType_co
 
 if TYPE_CHECKING:
+    from pathlib import PurePath
+
     from gemseo.core.grammar.pydantic import PydanticGrammar  # noqa: F401
 
 
 class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     """Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar]."""  # noqa: E501
+
+    def _get_path_type(self, name: str) -> type[PurePath | str] | None:
+        return self._select_path_type(*_get_types(self._grammar[name].annotation))
 
     def _has_type(  # noqa:D102
         self,
@@ -76,3 +85,28 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
             )
 
         return False
+
+
+def _get_types(annotation: Any) -> tuple[Any, ...]:
+    """Return the types of an annotation.
+
+    The types of a union, e.g. `Path | None`, are its members.
+    The type of an `Annotated` annotation, e.g. Pydantic's `FilePath`,
+    is the annotated type.
+
+    Args:
+        annotation: The annotation.
+
+    Returns:
+        The types of the annotation.
+    """
+    if get_origin(annotation) is Annotated:
+        annotation = get_args(annotation)[0]
+    if get_origin(annotation) in {Union, UnionType}:
+        types = get_args(annotation)
+    else:
+        types = (annotation,)
+    return tuple(
+        get_args(type_)[0] if get_origin(type_) is Annotated else type_
+        for type_ in types
+    )

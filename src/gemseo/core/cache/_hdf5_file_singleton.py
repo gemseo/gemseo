@@ -28,6 +28,7 @@ from genericpath import exists
 from importlib import metadata
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 import h5py
@@ -35,6 +36,8 @@ from numpy import append
 from numpy import array
 from numpy import bytes_
 from numpy import str_
+from numpy.char import decode
+from numpy.char import encode
 from scipy.sparse import csr_array
 
 from gemseo.core.cache.base import BaseCache
@@ -142,6 +145,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         group: BaseCache.Group,
         index: int,
         hdf_node_path: str,
+        data_hash: int | None = None,
     ) -> None:
         """Cache input data to avoid re-evaluation.
 
@@ -151,7 +155,19 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             index: The index of the entry in the cache.
             hdf_node_path: The name of the HDF group to store the entries,
                 possibly passed as a path `root_name/.../group_name/.../node_name`.
+            data_hash: The hash of the input data;
+                if `None`,
+                computed from `data` when the entry has no hash yet.
+
+        Raises:
+            TypeError: If a value is an array of Python objects,
+                e.g. `None`.
+            RuntimeError: If the data cannot be written in the file.
         """
+        # Convert and validate all the values before touching the file,
+        # so that a failure leaves no partial entry.
+        converted_data = self.__convert_data(data)
+
         with self.__open(mode="a"):
             assert self.__file is not None
 
@@ -159,23 +175,27 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 self.__set_file_format_version(self.__file)
 
             root = self.__file.require_group(hdf_node_path)
+            entry = root.get(str(index))
+            if (entry is None or entry.get(self.hash_tag) is None) and (
+                data_hash is None
+            ):
+                data_hash = hash_data(data)
+
             entry = root.require_group(str(index))
             entry_group = entry.require_group(group)
 
             try:
                 # Write hash if needed
                 if entry.get(self.hash_tag) is None:
-                    data_hash = array([hash_data(data)], dtype="bytes")
-                    entry.create_dataset(self.hash_tag, data=data_hash)
+                    entry.create_dataset(
+                        self.hash_tag, data=array([data_hash], dtype="bytes")
+                    )
 
-                for name, value in data.items():
-                    if value.dtype.type is str_:
-                        # See https://docs.h5py.org/en/stable/strings.html
-                        entry_group[name] = value.astype("bytes")
-                    elif isinstance(value, sparse_classes):
+                for name, value in converted_data.items():
+                    if isinstance(value, sparse_classes):
                         self.__write_sparse_array(entry_group, name, value)
                     else:
-                        entry_group[name] = to_real(value)
+                        entry_group[name] = value
 
             except (RuntimeError, OSError, ValueError):
                 msg = "Failed to cache dataset %s.%s.%s in file: %s"
@@ -186,6 +206,42 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                     entry_group,
                     self.hdf_file_path,
                 ) from None
+
+    @staticmethod
+    def __convert_data(data: StrKeyMapping) -> dict[str, Any]:
+        """Convert the values to what can be stored in an HDF5 file.
+
+        Args:
+            data: The data containing the values of the names to cache.
+
+        Returns:
+            The converted values.
+
+        Raises:
+            TypeError: If a value is an array of Python objects.
+        """
+        converted_data: dict[str, Any] = {}
+        for name, value in data.items():
+            if isinstance(value, sparse_classes):
+                converted_data[name] = value
+            elif value.dtype.kind == "O":
+                if value.size == 1 and value.item() is None:
+                    msg = (
+                        f"The value of {name} is None, "
+                        "which cannot be cached in an HDF5 file."
+                    )
+                else:
+                    msg = (
+                        f"The value of {name} is an array of Python objects, "
+                        "which cannot be cached in an HDF5 file."
+                    )
+                raise TypeError(msg)
+            elif value.dtype.type is str_:
+                # See https://docs.h5py.org/en/stable/strings.html
+                converted_data[name] = encode(value, "utf-8")
+            else:
+                converted_data[name] = to_real(value)
+        return converted_data
 
     def __write_sparse_array(
         self,
@@ -247,7 +303,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 if dataset.attrs.get(self.__SparseMatricesAttribute.SPARSE):
                     value = self.__read_sparse_array(dataset)
                 elif dataset.dtype.type == bytes_:
-                    value = array(dataset, dtype=str_)
+                    value = decode(array(dataset), "utf-8")
                 else:
                     value = array(dataset)
                 data[key] = value

@@ -131,6 +131,8 @@ class HDF5Cache(BaseFullCache):
             hdf_node_path=self.__hdf_node_path,
             tolerance=self._tolerance,
             name=self.name,
+            input_data_converter=self.__input_data_converter,
+            output_data_converter=self.__output_data_converter,
         )
 
     @synchronized
@@ -205,8 +207,11 @@ class HDF5Cache(BaseFullCache):
         # so the lookups hash the input data in the same form.
         if self.__input_data_converter is not None:
             to_array = self.__input_data_converter.convert_value_to_array
+            # A None value is left as is, as hash_data ignores it
+            # and the file refuses it with a clear error when writing.
             input_data = {
-                name: to_array(name, value) for name, value in input_data.items()
+                name: value if value is None else to_array(name, value)
+                for name, value in input_data.items()
             }
 
         return hash_data(input_data)
@@ -217,19 +222,24 @@ class HDF5Cache(BaseFullCache):
         group: BaseFullCache.Group,
         index: int,
     ) -> None:
-        if self.__input_data_converter is not None and group == self.Group.INPUTS:
-            to_array = self.__input_data_converter.convert_value_to_array
-            for input_name, value in values.items():
-                values[input_name] = to_array(input_name, value)
-        elif self.__output_data_converter is not None and group == self.Group.OUTPUTS:
-            to_array = self.__output_data_converter.convert_value_to_array
-            for name, value in values.items():
-                values[name] = to_array(name, value)
+        data_hash = None
+        if group == self.Group.INPUTS:
+            # Hash the data as the lookups do.
+            data_hash = self._hash_input_data(values)
+            converter = self.__input_data_converter
+        elif group == self.Group.OUTPUTS:
+            converter = self.__output_data_converter
+        else:
+            converter = None
+        if converter is not None:
+            to_array = converter.convert_value_to_array
+            values = {name: to_array(name, value) for name, value in values.items()}
         self.__hdf_file.write_data(
             values,
             group,
             index,
             self.__hdf_node_path,
+            data_hash,
         )
 
     @staticmethod

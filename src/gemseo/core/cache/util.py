@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 from typing import cast
 
@@ -26,6 +27,7 @@ from numpy import ndarray
 from xxhash import xxh3_64_hexdigest
 
 from gemseo.util._numpy import hash_array
+from gemseo.util.portable_path import ensure_path_to_array
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
@@ -45,11 +47,30 @@ def hash_data(
     [compare_dict_of_arrays][gemseo.util.comparison.compare_dict_of_arrays]
     have the same hash value.
 
+    A path is hashed as its string with forward slashes,
+    so that it has the same hash on Windows and POSIX platforms.
+    A `str` is hashed exactly as written.
+    A path and a `str` therefore have the same hash
+    only when the string is written exactly as the path's string with forward slashes,
+    e.g. `Path("a") / "b"` and `"a/b"`, but not `"./a/b"`, `"a//b"` or `"a/b/"`.
+    On Windows,
+    a `str` with backslashes does not have the same hash as the path built from it,
+    and two paths that differ only by letter case,
+    e.g. `Path("C:/Data")` and `Path("c:/data")`,
+    are equal but do not have the same hash.
+    Only a path given as a single value is supported:
+    a list, a tuple or a NumPy array of paths is not supported and raises an error.
+
     Args:
         data: The data to hash.
 
     Returns:
         The hash value of the data.
+
+    Raises:
+        TypeError: When the value of a data is an array of Python objects,
+            e.g. a list, a tuple or a NumPy array of paths,
+            or when its type is not supported, e.g. a dict.
     """
     names_with_hashed_values = []
 
@@ -58,8 +79,23 @@ def hash_data(
         if value is None:
             continue
 
+        original_value = value
+        value = ensure_path_to_array(value)
         if not isinstance(value, ndarray):
             value = array([value])
+
+        if value.dtype.kind == "O":
+            if any(isinstance(item, PurePath) for item in value.flat):
+                reason = (
+                    "only a single path is supported, "
+                    "not a list, a tuple or a NumPy array of paths."
+                )
+            elif not isinstance(original_value, ndarray):
+                reason = f"its type {type(original_value).__name__} is not supported."
+            else:
+                reason = "it is an array of Python objects, which cannot be hashed."
+            msg = f"The value of {name} cannot be hashed: {reason}"
+            raise TypeError(msg)
 
         hashed_value = hash_array(value)
         hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))

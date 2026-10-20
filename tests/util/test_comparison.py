@@ -16,6 +16,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from pathlib import PurePosixPath
+from pathlib import PureWindowsPath
+
 import pytest
 from numpy import array
 from numpy import nan
@@ -121,6 +125,23 @@ def test_array_are_close(
         (array(["string", "other_string"]), array(["string", "other_string"]), True),
         (array(["string", "other_string"]), array(["string", "bad"]), False),
         ("string", array(["string"]), False),
+        (array(["1.0"]), array([1.0]), False),
+        (array([1.0]), array(["1.0"]), False),
+        (array([b"string"]), array([b"string"]), True),
+        (array(["string"], dtype=object), array(["string"]), True),
+    ],
+    ids=[
+        "str-same",
+        "str-different",
+        "str-array-same",
+        "str-array-different",
+        "str-arrays-same",
+        "str-arrays-different",
+        "str-vs-str-array",
+        "str-array-vs-number-array",
+        "number-array-vs-str-array",
+        "bytes-arrays",
+        "object-vs-str-array",
     ],
 )
 def test_str(data_1, data_2, are_equal):
@@ -136,3 +157,41 @@ def test_str(data_1, data_2, are_equal):
                 )
                 is are_equal
             )
+
+
+@pytest.mark.parametrize(
+    ("data_1", "data_2", "are_equal"),
+    [
+        (Path("a"), Path("a"), True),
+        (Path("a"), Path("b"), False),
+        (Path("a"), array(["a"]), True),
+        (array(["a"]), Path("a"), True),
+        (PureWindowsPath("a\\b"), PurePosixPath("a/b"), True),
+        (Path("a"), "a", True),
+        ("a", Path("a"), True),
+        (Path("a"), "b", False),
+        (PureWindowsPath("a\\b"), "a/b", True),
+        (Path("a"), array([1.0]), False),
+        (array([1.0]), Path("a"), False),
+    ],
+    ids=[
+        "same-path",
+        "different-paths",
+        "path-vs-str-array",
+        "str-array-vs-path",
+        "windows-vs-posix",
+        "path-vs-str",
+        "str-vs-path",
+        "path-vs-different-str",
+        "windows-path-vs-posix-str",
+        "path-vs-number-array",
+        "number-array-vs-path",
+    ],
+)
+@pytest.mark.parametrize("tolerance", [0.0, 0.01])
+def test_path(data_1, data_2, are_equal, tolerance):
+    """Test equality comparison with paths, compared as their strings."""
+    assert (
+        compare_dict_of_arrays({"x": data_1}, {"x": data_2}, tolerance=tolerance)
+        is are_equal
+    )

@@ -165,6 +165,20 @@ class BaseFullCache(BaseCache):
         """
         return hash_data(input_data)
 
+    def __forget_last_entry(self, input_data: StrKeyMapping) -> None:
+        """Remove the last index from the indices associated with the input hash.
+
+        Args:
+            input_data: The input data of the entry.
+        """
+        data_hash = self._hash_input_data(input_data)
+        indices = self._hash_to_indices[data_hash]
+        indices = indices[indices != self._max_index.value]
+        if len(indices):
+            self._hash_to_indices[data_hash] = indices
+        else:
+            del self._hash_to_indices[data_hash]
+
     def _initialize_entry(
         self,
         index: int,
@@ -225,8 +239,17 @@ class BaseFullCache(BaseCache):
         Returns:
             Whether `group` exists.
         """
+        previous_index = self._last_accessed_index.value
+        previous_max_index = self._max_index.value
         if not self.__ensure_input_data_exists(input_data):
-            self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
+            try:
+                self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
+            except Exception:
+                # Forget the new entry, which has not been written.
+                self.__forget_last_entry(input_data)
+                self._max_index.value = previous_max_index
+                self._last_accessed_index.value = previous_index
+                raise
         elif self._has_group(self._last_accessed_index.value, group):
             return True
         return False
