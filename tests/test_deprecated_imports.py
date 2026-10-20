@@ -210,21 +210,26 @@ def test_renamed_module_level_constant():
     assert infinite_int == C_LONG_MAX
 
 
-def test_renamed_module_level_constant_of_a_redirected_private_module():
-    """A constant of a private module redirected as a whole is not a submodule.
+@pytest.mark.parametrize(
+    "old_module_name", ["gemseo.algos._variable", "gemseo.algos.design_space"]
+)
+def test_renamed_type_map(old_module_name):
+    """Both old paths of `TYPE_MAP` are the map of the design variable types.
 
     `gemseo.algos._variable` is redirected to `gemseo.space.variable`, so without its
     own entry `TYPE_MAP` would be looked up as the submodule
     `gemseo.space.variable.TYPE_MAP`.
     """
-    from gemseo.space.variable import variable_type_to_numpy_type
+    from gemseo.space.variable import design_variable_type_to_numpy_type
 
     with pytest.warns(
-        DeprecationWarning, match="'gemseo.space.variable.variable_type_to_numpy_type'"
+        DeprecationWarning,
+        match="'gemseo.space.variable.design_variable_type_to_numpy_type'",
     ):
-        from gemseo.algos._variable import TYPE_MAP
+        # As the statement from old_module_name import TYPE_MAP does.
+        type_map = __import__(old_module_name, fromlist=["TYPE_MAP"]).TYPE_MAP
 
-    assert TYPE_MAP is variable_type_to_numpy_type
+    assert type_map is design_variable_type_to_numpy_type
 
 
 def test_moved_module_level_constant():
@@ -1750,6 +1755,7 @@ def test_renamed_enumeration_member_warns_and_resolves():
         "CATEGORICAL",
         "DISCRETE",
         "INTEGER",
+        "RANDOM",
         "REAL",
     )
 

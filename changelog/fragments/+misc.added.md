@@ -38,8 +38,9 @@
 - The probabilistic data of a `RandomSpace` is read through `variables` too: `variables.distribution` (joint
   distribution of the space), `variables[name].distribution`, `variables[name].distribution_settings` and the statistics
   of `variables[name].distribution` such as `range` and `support`.
-- `space.variables.has_variables_of_type(VariableType.INTEGER)` is `False` for a `RandomSpace`, whose random variables
-  are always of real type.
+- The variables of a `RandomSpace` are of type `VariableType.RANDOM`, which a `DesignSpace` does not accept, so
+  `space.variables.has_variables_of_type(VariableType.RANDOM)` is `True` for a non-empty `RandomSpace`, whose variables
+  are never of real or integer type.
 - The function `gemseo.create_random_space` creates an empty `RandomSpace`.
 - The factory `gemseo.space.factory.random_space_factory` creates `RandomSpace` objects.
 - `BaseDOELibrary.sample_space` and the function `gemseo.compute_doe` sample any `BaseVariableSpace`, hence a
@@ -81,6 +82,10 @@
 - The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its variable
   type. A random variable is built from the settings of its probability distributions, not from a variable type, and so
   is out of the scope of this factory.
+- The read-only map `gemseo.space.variable.design_variable_type_to_numpy_type` gives the NumPy type of the coordinates
+  of a design variable from its `VariableType`; it replaces `gemseo.algos.design_space.TYPE_MAP`. The read-only map
+  `gemseo.space.variable.variable_type_to_numpy_type` does the same for every variable type, `VariableType.RANDOM`
+  included.
 - Passing a read-only member of a variable, e.g. the size of a scalar variable or a bound derived from the choices of a
   discrete variable, raises an error naming that member and what the kind of variable takes as input, e.g.
   `"lower_bound is read-only; the input of a DiscreteVariable is choices."`.

@@ -26,7 +26,7 @@ from typing import Final
 # it is re-exported explicitly and left out of the public surface.
 from gemseo.space.variable._legacy import Variable as Variable
 from gemseo.space.variable.base import BaseVariable as BaseVariable
-from gemseo.space.variable.base import VariableType as VariableType  # noqa: TC001
+from gemseo.space.variable.base import VariableType as VariableType
 from gemseo.space.variable.catalog import CatalogVariable
 from gemseo.space.variable.categorical import CategoricalVariable
 from gemseo.space.variable.deterministic import (
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from gemseo.space.variable.base import CoordinateDType
     from gemseo.space.variable.random import RandomVariable  # noqa: F401
 
-variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
+design_variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
     MappingProxyType({
         cls.type: cls.coordinate_type
         for cls in (
@@ -63,11 +63,26 @@ variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
         )
     })
 )
+"""The map from a design variable type to the NumPy type of its coordinates.
+
+A design space cannot hold a random variable, so the random variable type is left out.
+"""
+
+variable_type_to_numpy_type: Final[Mapping[VariableType, CoordinateDType]] = (
+    MappingProxyType({
+        **design_variable_type_to_numpy_type,
+        # RandomVariable is re-exported lazily, so its type is not read from the class;
+        # it inherits the NumPy type of its coordinates.
+        VariableType.RANDOM: BaseNumericVariable.coordinate_type,
+    })
+)
 """The map from a variable type to the NumPy type of its coordinates."""
 
 # A random variable drags in the probability distributions,
 # which a design space has no use for,
-# so it is re-exported lazily.
+# so it is re-exported lazily to keep them out of the import of gemseo.space.design;
+# the discovery of the deterministic variable factory,
+# run by the first call to DesignSpace.add_variable, still imports them.
 _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "RandomVariable": "random"
 })
@@ -76,6 +91,7 @@ install_lazy_reexport(
     globals(),
     _name_to_location,
     extra_all=[
+        "design_variable_type_to_numpy_type",
         "variable_type_to_numpy_type",
         "BaseDeterministicVariable",
         "BaseIntervalVariable",

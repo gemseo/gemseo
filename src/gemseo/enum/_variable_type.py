@@ -63,6 +63,7 @@ class VariableType(StrEnum):
     CATEGORICAL = "categorical"
     DISCRETE = "discrete"
     INTEGER = "integer"
+    RANDOM = "random"
     REAL = "real"
 
     @classmethod

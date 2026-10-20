@@ -29,6 +29,7 @@ from scipy.sparse import csr_array
 
 from gemseo.space.design import DesignSpace
 from gemseo.space.variable import CategoricalVariable
+from gemseo.space.variable import VariableType
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -46,7 +47,7 @@ def categorical_design_space() -> DesignSpace:
 def test_add_categorical_variable(categorical_design_space) -> None:
     """Check the addition of a categorical variable with a value."""
     variable = categorical_design_space.variables["material"]
-    assert variable.type == DesignSpace.DesignVariableType.CATEGORICAL
+    assert variable.type == VariableType.CATEGORICAL
     assert variable.categories == ("steel", "aluminium", "titanium")
     # The current value is the position of the label.
     assert_array_equal(
