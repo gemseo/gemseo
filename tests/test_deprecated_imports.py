@@ -45,34 +45,17 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(autouse=True)
-def _forget_cached_old_names():
-    """Forget the old names the live modules cached in their namespace by a test.
+def _forget_resolved_old_names():
+    """Forget the objects the old attribute names resolved to during a test.
 
-    A live module caches the object an old name resolves to, which then no longer
-    warns: each test must start with an empty cache.
+    An old name warns on its first access only, then resolves silently: each test must
+    start with an empty table of the resolved names, and leave it empty.
     """
-    from gemseo._deprecation import attribute_renames
-    from gemseo._deprecation import live_aliased_modules
+    from gemseo._deprecation import _resolved_old_attributes
 
-    def get_bound_old_names() -> dict[str, set[str]]:
-        """Return the old names bound in the namespace of each live module."""
-        return {
-            module_name: {
-                old_name
-                for old_name in attribute_renames.get(module_name, {})
-                if old_name in sys.modules[module_name].__dict__
-            }
-            for module_name in live_aliased_modules
-            if module_name in sys.modules
-        }
-
-    before = get_bound_old_names()
+    _resolved_old_attributes.clear()
     yield
-    # The modules imported by the test bind their own names, some being old names.
-    after = get_bound_old_names()
-    for module_name, old_names in before.items():
-        for old_name in after[module_name] - old_names:
-            sys.modules[module_name].__dict__.pop(old_name)
+    _resolved_old_attributes.clear()
 
 
 def test_moved_module_and_renamed_class():
@@ -373,10 +356,10 @@ def test_renamed_top_level_reexport_of_a_module():
 
 
 def test_renamed_top_level_reexport_of_a_module_warns_once():
-    """A `from` import of a renamed top-level name warns once and caches the name.
+    """A `from` import of a renamed top-level name warns once.
 
     The statement looks the name up twice, to check it exists then to import it. The
-    cached old name is neither in `dir` nor listed by `__all__`.
+    old name is bound neither in the namespace of the module nor in `dir`.
     """
     with warnings.catch_warnings(record=True) as records:
         warnings.simplefilter("always")
@@ -388,9 +371,53 @@ def test_renamed_top_level_reexport_of_a_module_warns_once():
             "deprecated; use 'gemseo.mda.core.base_parallel_solver_settings' instead."
         )
     ]
-    assert gemseo.__dict__["base_parallel_mda_settings"] is base_parallel_mda_settings
+    _check_reexported_module(base_parallel_mda_settings)
+    assert "base_parallel_mda_settings" not in gemseo.__dict__
     assert "base_parallel_mda_settings" not in dir(gemseo)
     assert "base_parallel_mda_settings" not in getattr(gemseo, "__all__", ())
+
+
+@pytest.mark.parametrize(
+    ("module_name", "old_name"),
+    [
+        ("gemseo.algos._variable", "DataType"),
+        ("gemseo.datasets", "DatasetFactory"),
+        ("gemseo.mlearning", "BaseMLSupervisedAlgo"),
+    ],
+)
+def test_renamed_attribute_of_a_renamed_package_warns_once(module_name, old_name):
+    """A `from` import of a renamed attribute of a renamed package warns once.
+
+    Args:
+        module_name: The old name of the renamed package.
+        old_name: The old name of an attribute renamed in this package.
+    """
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        namespace = {}
+        exec(f"from {module_name} import {old_name}", namespace)  # noqa: S102
+
+    messages = [
+        str(record.message)
+        for record in records
+        if f"The attribute {old_name!r} of the module {module_name!r}"
+        in str(record.message)
+    ]
+    assert len(messages) == 1
+    assert old_name in namespace
+
+
+def test_star_import_does_not_bind_a_read_old_name():
+    """A star import does not bind an old name read earlier, and does not warn."""
+    with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
+        gemseo.base_parallel_mda_settings  # noqa: B018
+
+    namespace = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        exec("from gemseo import *", namespace)  # noqa: S102
+
+    assert "base_parallel_mda_settings" not in namespace
 
 
 def test_renamed_top_level_reexport_of_a_module_as_an_attribute():
@@ -1809,6 +1836,79 @@ def test_renamed_hook_of_a_formulation_subclass_body():
 
     assert Formulation._update_input_space is vars(Formulation)["_update_design_space"]
     assert "_update_input_space" not in Formulation.__abstractmethods__
+
+
+def _create_stand_in_of_a_lazy_package(location: str) -> tuple[ModuleType, ModuleType]:
+    """Create a lazy package exporting `Name` and the stand-in of its old path.
+
+    Args:
+        location: The location of `Name` in the lazy package.
+
+    Returns:
+        The lazy package and the stand-in.
+    """
+    from gemseo import _deprecation
+    from gemseo.util.package_import import install_lazy_reexport
+
+    package = ModuleType("gemseo_fake_lazy_package")
+    install_lazy_reexport(package.__dict__, {"Name": location})
+    stand_in = _deprecation._DeprecatedModule("gemseo_fake_old_lazy_package")
+    stand_in.__dict__["_deprecation_target"] = package
+    return package, stand_in
+
+
+def test_import_error_behind_an_exported_name_propagates_unchanged(monkeypatch):
+    """A plain `ImportError` of the module behind a name propagates unchanged.
+
+    As through the new package, it is not turned into an `AttributeError`, which
+    `hasattr` would hide.
+
+    Args:
+        monkeypatch: Fixture to make the import of the module fail.
+    """
+    from gemseo.util import package_import
+
+    package, stand_in = _create_stand_in_of_a_lazy_package("broken_module")
+    error = ImportError("cannot import name X from some_dependency")
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(package_import, "import_module", import_module)
+
+    for module in (package, stand_in):
+        with pytest.raises(ImportError) as excinfo:
+            module.Name  # noqa: B018
+
+        assert excinfo.value is error
+        with pytest.raises(ImportError) as excinfo:
+            hasattr(module, "Name")
+
+        assert excinfo.value is error
+
+
+@pytest.mark.parametrize("is_imported_from", [False, True])
+def test_unresolvable_exported_name_names_the_old_and_new_modules(is_imported_from):
+    """The error of a name that cannot be resolved names the old and the new modules.
+
+    Args:
+        is_imported_from: Whether the name is imported by a `from` statement.
+    """
+    _, stand_in = _create_stand_in_of_a_lazy_package("gemseo.util.package_import:nope")
+    sys.modules[stand_in.__name__] = stand_in
+    try:
+        if is_imported_from:
+            with pytest.raises(ImportError) as excinfo:
+                exec(f"from {stand_in.__name__} import Name", {})  # noqa: S102
+        else:
+            with pytest.raises(AttributeError) as excinfo:
+                stand_in.Name  # noqa: B018
+    finally:
+        del sys.modules[stand_in.__name__]
+
+    message = str(excinfo.value)
+    assert "'gemseo_fake_old_lazy_package'" in message
+    assert "'gemseo_fake_lazy_package'" in message
 
 
 def _create_module_renaming_an_attribute(
