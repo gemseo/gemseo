@@ -50,11 +50,11 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             "MultiStart",
             description=(
                 "The optimization algorithm `multistart` "
-                "generates starting points using a DOE algorithm"
-                "and run a sub-optimization algorithm from each starting point."
-                "Depending on the sub-optimization algorithm,"
-                "`multistart` can handle integer design variables,"
-                "equality and inequality constraints"
+                "generates starting points using a DOE algorithm "
+                "and runs a sub-optimization algorithm from each starting point. "
+                "Depending on the sub-optimization algorithm, "
+                "`multistart` can handle integer design variables, "
+                "equality and inequality constraints "
                 "as well as multi-objective functions."
             ),
             handle_multiobjective=True,

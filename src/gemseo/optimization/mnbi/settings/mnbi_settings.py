@@ -65,8 +65,8 @@ the number of objectives of the problem.""",
     doe_algo_settings: BaseDOESettings = Field(
         default_factory=PYDOE_FULLFACT_Settings,
         description="The DOE algorithm settings "
-        "for the target points on the Pareto front."
-        "A full factorial DOE is used default as these tend to be low dimensions, "
+        "for the target points on the Pareto front. "
+        "A full factorial DOE is used by default as these tend to be low dimensions, "
         "usually not more than 3 objectives for a given problem. "
         "This setting is relevant only for problems with more than 2 objectives.",
     )
@@ -85,7 +85,7 @@ the number of objectives of the problem.""",
 
     skip_betas: bool = Field(
         default=True,
-        description="""Whether to skip the sub-optimizations of relevant.
+        description="""Whether to skip the redundant sub-optimizations.
 
 The sub-optimizations are skipped if they correspond to values of beta for
 which the theoretical result has already been found.
