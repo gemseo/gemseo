@@ -226,7 +226,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `MDOScenario.add_objective` method allows to minimize and maximize groups of objectives. [#847](https://gitlab.com/gemseo/dev/gemseo/-/issues/847)
 - The directory manager organizes the files created at run time into a directory tree mirroring the workflow of the scenario, with one directory per scenario, iteration or sample, MDA iteration and discipline execution, and writes an execution trace in each of them; enable it with `configuration.directory_manager.enable = True` and see [the directory manager][the-directory-manager] and its [settings][global-configuration-directory-manager]. GEMSEO now requires `pyyaml`, used to write the traces. [#1569](https://gitlab.com/gemseo/dev/gemseo/-/issues/1569)
 - `EvaluationScenario`, which replaces `BaseScenario` as the base class of `MDOScenario`, can be instantiated: it evaluates disciplinary outputs over an input space with a DOE algorithm, the multi-disciplinary process being specified through a formulation (`BaseFormulation`). [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
-- `EvaluationScenario.execute` (`BaseScenario.execute` in 6.3.2, which returned `None`) returns the result of the algorithm's execution, if there is one.
+- `EvaluationScenario.execute` (`BaseScenario.execute` in 6.3, which returned `None`) returns the result of the algorithm's execution, if there is one.
     In the case of an `MDOScenario`, this result is an `OptimizationResult`. [#1669](https://gitlab.com/gemseo/dev/gemseo/-/issues/1669)
 - The `wrap_scenario_in_job_scheduler` function of `gemseo.scenario`, also available from `gemseo`, allows wrapping an `EvaluationScenario` (and hence an `MDOScenario`) for remote execution on an HPC cluster via a job scheduler; its `adapter_settings` argument allows customizing the underlying scenario adapter, e.g. to save the database of the scenario. [#1688](https://gitlab.com/gemseo/dev/gemseo/-/issues/1688)
 - The `default_input_data` argument of `EvaluationScenario` and `MDOScenario` can change the default input data of the disciplines. [#1733](https://gitlab.com/gemseo/dev/gemseo/-/issues/1733)
@@ -331,7 +331,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
   so the number of processes of an `MDAJacobi`
   is no longer left at the number of CPUs when parallel execution is disabled. [#1914](https://gitlab.com/gemseo/dev/gemseo/-/issues/1914)
 - `enable_parallel_execution` and the fast mode now also apply
-    to `ParallelDisciplineChain` (`MDOParallelChain` in 6.3.2) and `CallableParallelExecution`,
+    to `ParallelDisciplineChain` (`MDOParallelChain` in 6.3) and `CallableParallelExecution`,
     which no longer parallelize over all the disciplines
     when the global configuration asks for a serial execution. [#1951](https://gitlab.com/gemseo/dev/gemseo/-/issues/1951)
 
@@ -343,7 +343,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 - `split_namespace` now splits a name into the `(namespace, name)` pair on the last separator only, as documented; it previously split on every separator, returning a list of all segments. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
 - `AutoPyDiscipline` supports callable class instances as values of `py_func` and `py_jac`. [#1553](https://gitlab.com/gemseo/dev/gemseo/-/issues/1553)
-- The differentiated inputs/outputs of the `JobSchedulerDiscipline` (named `JobSchedulerDisciplineWrapper` in 6.3.2) are now consistent with ones of the wrapped discipline. [#1657](https://gitlab.com/gemseo/dev/gemseo/-/issues/1657)
+- The differentiated inputs/outputs of the `JobSchedulerDiscipline` (named `JobSchedulerDisciplineWrapper` in 6.3) are now consistent with ones of the wrapped discipline. [#1657](https://gitlab.com/gemseo/dev/gemseo/-/issues/1657)
 - It is now possible to rename input and output grammars that have different names, to a same one. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
 - The `RemappingDiscipline` supports disciplines without input variables. [#1691](https://gitlab.com/gemseo/dev/gemseo/-/issues/1691)
 - The `RemappingDiscipline` class now correctly accounts for the remapped names when using the `linearize` method. [#1843](https://gitlab.com/gemseo/dev/gemseo/-/issues/1843)
@@ -391,7 +391,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `DisciplineChain` (formerly `MDOChain`) no longer computes unnecessary Jacobians for backward-coupled disciplines. [#1660](https://gitlab.com/gemseo/dev/gemseo/-/issues/1660)
 - `DisciplineChain` Jacobian is now correct when a coupling variable is also a chain-level input. [#1670](https://gitlab.com/gemseo/dev/gemseo/-/issues/1670)
 - Fixed bug where the hybrid jacobian approximation method was approximating all entries of the jacobian instead of just the missing ones. [#1736](https://gitlab.com/gemseo/dev/gemseo/-/issues/1736)
-- The Jacobian of `DisciplineChain` (`MDOChain` in 6.3.2) is now correct when a discipline overwrites the output of an earlier discipline without consuming it; each consumer is differentiated with respect to its closest upstream producer, as in execution. [#1821](https://gitlab.com/gemseo/dev/gemseo/-/issues/1821)
+- The Jacobian of `DisciplineChain` (`MDOChain` in 6.3) is now correct when a discipline overwrites the output of an earlier discipline without consuming it; each consumer is differentiated with respect to its closest upstream producer, as in execution. [#1821](https://gitlab.com/gemseo/dev/gemseo/-/issues/1821)
 
 #### Functions and problems
 
@@ -517,7 +517,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     Plotly `BarPlot` annotations are now rounded to `n_digits` and use the `font_size` setting, aligning the Plotly backend with the Matplotlib one. [#1735](https://gitlab.com/gemseo/dev/gemseo/-/issues/1735)
 - The `SOM` post-processor now trains its self-organizing map on normalized data. [#1752](https://gitlab.com/gemseo/dev/gemseo/-/issues/1752)
 - The `OptHistoryView` post-processing no longer crashes when the objective function is also a design variable. [#1779](https://gitlab.com/gemseo/dev/gemseo/-/issues/1779)
-- `BaseDatasetPlot.execute` (`DatasetPlot.execute` in 6.3.2) deduces the plot engine from the extension of `file_path` when provided, instead of always relying on `file_format`. [#1860](https://gitlab.com/gemseo/dev/gemseo/-/issues/1860)
+- `BaseDatasetPlot.execute` (`DatasetPlot.execute` in 6.3) deduces the plot engine from the extension of `file_path` when provided, instead of always relying on `file_format`. [#1860](https://gitlab.com/gemseo/dev/gemseo/-/issues/1860)
 - `OptHistoryView` supports multiobjective problems: the objective plot draws one curve per objective, named in a legend, and the figures mark no best iteration, as several objectives have no single best design. It no longer crashes when every objective value is `NaN`. [#2036](https://gitlab.com/gemseo/dev/gemseo/-/issues/2036)
 - `Animation` no longer leaks an open file handle per frame when building a GIF; the frame images are now read into memory and their files closed immediately.
 
@@ -1387,7 +1387,7 @@ All the removals are breaking changes.
 - `MDOFunction.rel_err()` was removed.
 - `MDOFunction.filt_0()` was removed. [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
 - `EvaluationProblem.preprocess_functions()` and the `ProblemFunction` class were removed; use `EvaluationProblem.bind_functions()` and, to evaluate the functions in the coordinates of an algorithm, `EvaluationProblem.create_working_problem()`; see [evaluation problem][concept-evaluation-problem]. Code that only solves problems needs no change.
-- `LinearFunction.normalize()` (`MDOLinearFunction.normalize()` in 6.3.2) was removed; normalizing a design space is a transformation of the space, see `gemseo.space.transformation`.
+- `LinearFunction.normalize()` (`MDOLinearFunction.normalize()` in 6.3) was removed; normalizing a design space is a transformation of the space, see `gemseo.space.transformation`.
 - The `preprocessing` argument of `EvaluationProblem.reset()` was removed.
 - `EvaluationProblem.parallel_differentiation` and `EvaluationProblem.parallel_differentiation_options` no longer raise once the functions are bound.
 - `Functions.reset()` was removed. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
