@@ -29,7 +29,9 @@ resolving the old attribute names in that module's own namespace.
 The names whose `attributes:` value is `TODO <text>` are the exception: their migration
 cannot be automated, as the new name does not behave as the old one on its own, so
 importing one raises an `ImportError` ending with the text, which tells how to migrate,
-instead of silently resolving to a name of a different meaning.
+instead of silently resolving to a name of a different meaning. The text of a
+`modules:` value `<new name> TODO <text>` is added as a note to the `ImportError`
+raised when importing the new module through the old one.
 
 Renamed class attributes (see the `classes:` section of `bump-version.yml` and
 [class_attribute_renames][gemseo._deprecation.aliases.class_attribute_renames]) are
@@ -40,7 +42,12 @@ old name (e.g. `OLD = value` in the class statement) is remapped to the new name
 old name of an enumeration member is also resolved by the lookup by name, e.g.
 `Enum["OLD"]`, but is not listed among the members. A dotted entry, e.g.
 `DifferentiationMethod.USER_GRAD`, aliases the attribute of a class nested in the
-class, e.g. the member of an enumeration.
+class, e.g. the member of an enumeration. An entry whose new name is the complete
+dotted path of an object, e.g.
+`gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod` for the `Method` of
+`SobolAnalysis`, aliases an attribute moved out of the class to that object; a
+subclass body still assigning its old name keeps its own binding, which the class no
+longer reads, and a `DeprecationWarning` says so.
 The one path this does not cover is an assignment on the class object itself after
 it is defined, e.g. `Cls.OLD = value` or `monkeypatch.setattr(Cls, "OLD", ...)`: this
 silently shadows the descriptor instead of going through it, so patch the new name
@@ -52,6 +59,11 @@ submodules were renamed, is derived from the `modules:` section (see
 gives an empty stand-in that warns and lists the new locations of its former
 submodules; it resolves no name of its own, as the old package defined none, while its
 submodules are redirected as any renamed module.
+
+The old name under which a package re-exported a module, e.g.
+`gemseo.base_parallel_mda_settings`, gives the stand-in of the old path of the module,
+as in the previous release, so that the old names of the module resolve through the
+package too.
 
 `gemseo/__init__.py` calls [install][gemseo._deprecation.install] on import, so
 `from gemseo.old.path import OldName` keeps working even though the old module no longer
@@ -65,7 +77,6 @@ seen by the code importing the new path. Patch the new path instead.
 
 from __future__ import annotations
 
-import dis
 import sys
 import warnings
 from enum import Enum
@@ -78,18 +89,23 @@ from importlib.util import find_spec as _find_spec
 from types import ModuleType
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import NoReturn
 
 from gemseo._deprecation.aliases import attribute_renames
 from gemseo._deprecation.aliases import class_attribute_renames
 from gemseo._deprecation.aliases import dissolved_packages
 from gemseo._deprecation.aliases import find_ancestor
+from gemseo._deprecation.aliases import get_reexported_old_modules
+from gemseo._deprecation.aliases import is_moved_class_attribute
 from gemseo._deprecation.aliases import live_aliased_modules
 from gemseo._deprecation.aliases import manual_migrations
+from gemseo._deprecation.aliases import module_rename_notes
 from gemseo._deprecation.aliases import module_renames
 from gemseo._deprecation.aliases import removed_attributes
 from gemseo._deprecation.aliases import removed_modules
 from gemseo._deprecation.aliases import unmigrated_attributes
+from gemseo.util.package_import import getattr_wrapper_marker
+from gemseo.util.package_import import is_imported_from
+from gemseo.util.package_import import raise_unresolvable_attribute
 from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
@@ -102,10 +118,15 @@ _package_prefix: Final[str] = "gemseo."
 _plugin_prefix: Final[str] = "gemseo_"
 """The prefix of the name of the package of a GEMSEO plugin, e.g. `gemseo_excel`."""
 
-_import_from_opcode: Final[int] = dis.opmap["IMPORT_FROM"]
-"""The opcode importing a name in a `from module import name` statement."""
-
 _installed: bool = False
+
+# This module looks attributes up for its callers: its module-level `__getattr__`
+# wraps the lazy one of the re-exporting packages (see
+# [getattr_wrapper_marker][gemseo.util.package_import.getattr_wrapper_marker]).
+globals()[getattr_wrapper_marker] = True
+
+_module_rename_message: Final[str] = r"The module 'gemseo\..*' is deprecated"
+"""The pattern of the message of the warning of a renamed or dissolved module."""
 
 
 def _resolve_new_name(old_name: str) -> str | None:
@@ -137,60 +158,23 @@ def _resolve_new_name(old_name: str) -> str | None:
     return None if new_name == old_name else new_name
 
 
-def _warn_attribute_rename(module_name: str, name: str, new_name: str) -> None:
+def _warn_attribute_rename(
+    module_name: str, name: str, new_name: str, stacklevel: int = 3
+) -> None:
     """Warn that a module-level attribute was renamed.
 
     Args:
         module_name: The old fully-qualified name of the module defining the attribute.
         name: The old attribute name.
         new_name: The fully-qualified new name to point the user at.
+        stacklevel: The stack level of the warning, counted from this function.
     """
     warnings.warn(
         f"The attribute {name!r} of the module {module_name!r} is deprecated; "
         f"use {new_name!r} instead.",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=stacklevel,
     )
-
-
-def _is_imported_from() -> bool:
-    """Return whether the attribute being looked up is imported by a `from` statement.
-
-    The frame looking the attribute up is the first one outside this module, the
-    frames of this module being those of the `__getattr__` of a module and of its
-    helpers. It imports the attribute when it is executing the `IMPORT_FROM`
-    instruction of a `from module import name` statement.
-
-    Returns:
-        Whether the attribute is imported by a `from module import name` statement.
-    """
-    frame = sys._getframe(1)
-    while frame is not None and frame.f_globals.get("__name__") == __name__:
-        frame = frame.f_back
-    return (
-        frame is not None and frame.f_code.co_code[frame.f_lasti] == _import_from_opcode
-    )
-
-
-def _raise_unresolvable_attribute(msg: str) -> NoReturn:
-    """Raise the error of a module-level attribute that cannot be resolved.
-
-    An `AttributeError` is raised, so that `hasattr` and `getattr` with a default keep
-    working, as they only swallow an `AttributeError`, except under a
-    `from module import name` statement, which would replace an `AttributeError` by a
-    generic "cannot import name" `ImportError`, losing the message: an `ImportError` is
-    raised there instead.
-
-    Args:
-        msg: The error message.
-
-    Raises:
-        ImportError: Under a `from module import name` statement.
-        AttributeError: Otherwise.
-    """
-    if _is_imported_from():
-        raise ImportError(msg)
-    raise AttributeError(msg)
 
 
 def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
@@ -211,7 +195,7 @@ def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
             `from module import name` statement.
         AttributeError: When the attribute was removed with no replacement, otherwise
             (see
-            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
     """
     migration = manual_migrations.get(module_name, {}).get(name)
     if migration is not None:
@@ -225,7 +209,7 @@ def _raise_for_unmigrated_attribute(module_name: str, name: str) -> None:
             f"The attribute {name!r} of the module {module_name!r} was removed, "
             "with no replacement."
         )
-        _raise_unresolvable_attribute(msg)
+        raise_unresolvable_attribute(msg)
 
 
 def _raise_for_removed_module(name: str) -> None:
@@ -302,6 +286,57 @@ def _get_renamed_attribute(
 ) -> Any:
     """Return the object a rename points to.
 
+    The object is looked up by
+    [_get_new_object][gemseo._deprecation._get_new_object]. When it is a module
+    re-exported by a package, the stand-in of the old path of the module is returned
+    instead, if any (see
+    [get_reexported_old_modules][gemseo._deprecation.aliases.get_reexported_old_modules]),
+    as the old package re-exported the old module, whose old names the new module
+    does not resolve.
+
+    Args:
+        module: The module the attribute is looked up on when it stayed in its own
+            (possibly renamed) module; ignored when the attribute moved elsewhere.
+        module_name: The old fully-qualified name of the module defining the
+            attribute, for the error message only.
+        name: The old attribute name, for the error message only.
+        new_name: The fully-qualified new name.
+
+    Returns:
+        The renamed object.
+
+    Raises:
+        AttributeError: When the new name does not exist, or when it is in a plugin
+            that is not installed, except under a `from module import name`
+            statement.
+        ImportError: When the new name is in a plugin that is not installed, under a
+            `from module import name` statement (see
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
+    """
+    new_object = _get_new_object(module, module_name, name, new_name)
+    if isinstance(new_object, ModuleType):
+        old_module_name = get_reexported_old_modules().get((
+            name,
+            new_object.__name__,
+        ))
+        if old_module_name is not None:
+            with warnings.catch_warnings():
+                # The warning of the old name already points at the new module; the
+                # other warnings, e.g. of a first import of the new module, are kept.
+                warnings.filterwarnings(
+                    "ignore",
+                    message=_module_rename_message,
+                    category=DeprecationWarning,
+                )
+                return import_module(old_module_name)
+    return new_object
+
+
+def _get_new_object(
+    module: ModuleType, module_name: str, name: str, new_name: str
+) -> Any:
+    """Return the object a new name designates.
+
     `new_name` comes from
     [attribute_renames][gemseo._deprecation.aliases.attribute_renames], where it is
     always fully qualified, in any package, e.g. GEMSEO or a plugin. The lookup goes
@@ -323,7 +358,7 @@ def _get_renamed_attribute(
         new_name: The fully-qualified new name.
 
     Returns:
-        The renamed object.
+        The object.
 
     Raises:
         AttributeError: When the new name does not exist, or when it is in a plugin
@@ -331,7 +366,7 @@ def _get_renamed_attribute(
             statement.
         ImportError: When the new name is in a plugin that is not installed, under a
             `from module import name` statement (see
-            [_raise_unresolvable_attribute][gemseo._deprecation._raise_unresolvable_attribute]).
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
     """
     new_module_name, _, attribute_name = new_name.rpartition(".")
     if new_module_name == module.__name__:
@@ -344,7 +379,7 @@ def _get_renamed_attribute(
         )
         if msg is None:
             raise
-        _raise_unresolvable_attribute(msg)
+        raise_unresolvable_attribute(msg)
     try:
         return getattr(new_module, attribute_name)
     except AttributeError:
@@ -352,6 +387,55 @@ def _get_renamed_attribute(
         if not hasattr(new_module, "__path__") or _find_spec(new_name) is None:
             raise
     return import_module(new_name)
+
+
+_resolved_old_attributes: Final[dict[tuple[str, str], Any]] = {}
+"""The objects the old names of renamed attributes resolved to.
+
+The keys are the pairs (old fully-qualified module name, old attribute name). The old
+names are kept here rather than in the namespace of their module, so that they never
+show up in `dir`, in a star import or in `vars`.
+"""
+
+
+def _resolve_old_attribute(
+    module: ModuleType, module_name: str, name: str, new_name: str
+) -> Any:
+    """Return the object an old attribute name resolves to, warning on the first access.
+
+    A `from module import name` statement looks the name up twice, first to check that
+    it exists, which would warn twice. The object is therefore remembered, in
+    [_resolved_old_attributes][gemseo._deprecation._resolved_old_attributes], and the
+    later lookups of the name return it without warning, as the names of the lazy
+    re-export of a package do.
+
+    Args:
+        module: The module the attribute is looked up on when it stayed in its own
+            (possibly renamed) module; ignored when the attribute moved elsewhere.
+        module_name: The old fully-qualified name of the module defining the
+            attribute.
+        name: The old attribute name.
+        new_name: The fully-qualified new name.
+
+    Returns:
+        The renamed object.
+
+    Raises:
+        AttributeError: When the new name does not exist, or when it is in a plugin
+            that is not installed, except under a `from module import name`
+            statement.
+        ImportError: When the new name is in a plugin that is not installed, under a
+            `from module import name` statement (see
+            [raise_unresolvable_attribute][gemseo.util.package_import.raise_unresolvable_attribute]).
+    """
+    key = (module_name, name)
+    if key in _resolved_old_attributes:
+        return _resolved_old_attributes[key]
+    # The stack level skips this function and the `__getattr__` calling it.
+    _warn_attribute_rename(module_name, name, new_name, stacklevel=4)
+    obj = _get_renamed_attribute(module, module_name, name, new_name)
+    _resolved_old_attributes[key] = obj
+    return obj
 
 
 class _DeprecatedModule(ModuleType):
@@ -365,13 +449,36 @@ class _DeprecatedModule(ModuleType):
         if new_name is None:
             try:
                 return getattr(target, name)
-            except AttributeError:
-                msg = f"module {self.__name__!r} has no attribute {name!r}"
-                raise AttributeError(msg) from None
+            except (AttributeError, ImportError) as error:
+                if name not in getattr(target, "__all__", ()):
+                    if isinstance(error, ImportError):
+                        raise
+                    msg = f"module {self.__name__!r} has no attribute {name!r}"
+                    raise AttributeError(msg) from None
+                # The target exports the name but cannot resolve it,
+                # e.g. a lazily re-exported name with a wrong location:
+                # the error tells why, once it names the old module too.
+                # `raise_unresolvable_attribute` raises an `ImportError` only under a
+                # `from module import name` statement, and chains it to an
+                # `AttributeError`. Any other `ImportError`, e.g. the one of a
+                # module behind the name whose own `from module import name` fails,
+                # propagates unchanged, as through the new package, so that `hasattr`
+                # does not hide it. Under a `from` statement, the error of a nested
+                # failing `from` statement looks like the one of the name itself: it
+                # is wrapped as well, which keeps it an `ImportError` chained to the
+                # original one.
+                if isinstance(error, ImportError) and not (
+                    is_imported_from() and isinstance(error.__cause__, AttributeError)
+                ):
+                    raise
+                msg = (
+                    f"The name {name!r} of the module {self.__name__!r}, "
+                    f"moved to {target.__name__!r}, cannot be resolved: {error}"
+                )
+                raise_unresolvable_attribute(msg, error)
         # The module warning only names the new module, which does not carry the old
         # attribute name; point at the renamed attribute itself.
-        _warn_attribute_rename(self.__name__, name, new_name)
-        return _get_renamed_attribute(target, self.__name__, name, new_name)
+        return _resolve_old_attribute(target, self.__name__, name, new_name)
 
     def __dir__(self) -> list[str]:
         # Expose the new location's names, as the stand-in namespace is empty.
@@ -393,7 +500,27 @@ class _DeprecatedModuleLoader(Loader):
     def create_module(self, spec: ModuleSpec) -> ModuleType:  # noqa: D102
         try:
             target = import_module(self._new_name)
-        except ModuleNotFoundError as error:
+        except ImportError as error:
+            if isinstance(error, ModuleNotFoundError) and error.name == self._new_name:
+                # The new module does not exist, e.g. the name of an attribute of the
+                # new package that `from package import name` asks for as a submodule
+                # when the package cannot resolve it. The old module does not exist
+                # either, and the error says so under the old name, which the import
+                # machinery then swallows for a `from` statement as for any other
+                # module that does not exist, so that the error of the attribute
+                # lookup is the one raised, as with the new package.
+                msg = f"No module named {self._old_name!r}"
+                raise ModuleNotFoundError(msg, name=self._old_name) from error
+            # The text of a `<new name> TODO <text>` rule may explain the error, e.g.
+            # a dependency of the new module that the old one did not have.
+            note = module_rename_notes.get(self._old_name)
+            if note:
+                error.add_note(
+                    f"The module {self._old_name!r} moved to {self._new_name!r}; "
+                    f"{note}."
+                )
+            if not isinstance(error, ModuleNotFoundError):
+                raise
             msg = _get_missing_plugin_message(
                 f"The module {self._old_name!r}", self._new_name, error
             )
@@ -496,6 +623,11 @@ def _install_attribute_aliases(module: ModuleType) -> None:
     renamed modules, and those whose migration cannot be automated (the `TODO <text>`
     entries of the `attributes:` section) an `ImportError`.
 
+    The old name warns once, on its first access (see
+    [_resolve_old_attribute][gemseo._deprecation._resolve_old_attribute]); the objects
+    it resolves to are not kept in the namespace of the module, so that the old names
+    never show up in `dir` nor in a star import.
+
     Args:
         module: The module whose old attribute names must keep working.
     """
@@ -511,8 +643,7 @@ def _install_attribute_aliases(module: ModuleType) -> None:
                 return previous_getattr(name)
             msg = f"module {module_name!r} has no attribute {name!r}"
             raise AttributeError(msg)
-        _warn_attribute_rename(module_name, name, new_name)
-        return _get_renamed_attribute(module, module_name, name, new_name)
+        return _resolve_old_attribute(module, module_name, name, new_name)
 
     module.__dict__["__getattr__"] = __getattr__
 
@@ -562,6 +693,27 @@ class _RenamedClassAttribute:
         setattr(instance, self._new_name, value)
 
 
+class _MovedClassAttribute(_RenamedClassAttribute):
+    """A data descriptor resolving the old name of a class attribute moved elsewhere.
+
+    The new name is the complete dotted path of the object the attribute moved to,
+    e.g. a nested enumeration made a module-level class, whose module is imported on
+    access only.
+    """
+
+    def __get__(self, instance: Any, owner: type | None = None) -> Any:
+        _warn_class_attribute_rename(self._class_name, self._old_name, self._new_name)
+        module_name, _, name = self._new_name.rpartition(".")
+        return getattr(import_module(module_name), name)
+
+    def __set__(self, instance: Any, value: Any) -> None:
+        msg = (
+            f"The attribute {self._old_name!r} of the class {self._class_name!r} "
+            f"moved to {self._new_name!r} and cannot be set."
+        )
+        raise AttributeError(msg)
+
+
 # A dict, as the enumeration's own member map, not a slower UserDict.
 class _AliasingMemberMap(dict[str, Enum]):  # noqa: FURB189
     """The member map of an enumeration, resolving the old names of renamed members.
@@ -604,6 +756,14 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
     tells apart a `classes:` table entry meant for `cls` from one that was written
     for an unrelated class that merely happens to share `cls`'s name.
 
+    An attribute moved out of the class, whose name is the complete dotted path of
+    an object (see
+    [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]),
+    counts as declared when the path of the object is in the module defining the
+    class or in one of its parent packages, e.g. one re-exporting the object, and
+    that module, which is imported already, binds or lazily exports the name of the
+    object, as listed by `dir`; neither the object nor any other module is imported.
+
     Args:
         cls: The class to inspect.
         name: The attribute name to look for.
@@ -611,6 +771,14 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
     Returns:
         Whether `cls` declares `name`.
     """
+    if is_moved_class_attribute(name):
+        object_module_name, _, object_name = name.rpartition(".")
+        if cls.__module__ != object_module_name and not cls.__module__.startswith(
+            f"{object_module_name}."
+        ):
+            return False
+        object_module = sys.modules.get(object_module_name)
+        return object_module is not None and object_name in dir(object_module)
     with warnings.catch_warnings():
         # Only checking declaration, not a real access to the name; guarded all the
         # same so a warning raised by some unrelated custom `__getattr__` cannot be
@@ -690,7 +858,12 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
         if old_name_is_live:
             # The old name is still live: a stale table entry must not shadow it.
             continue
-        setattr(cls, old_name, _RenamedClassAttribute(cls.__name__, old_name, new_name))
+        descriptor_class = (
+            _MovedClassAttribute
+            if is_moved_class_attribute(new_name)
+            else _RenamedClassAttribute
+        )
+        setattr(cls, old_name, descriptor_class(cls.__name__, old_name, new_name))
 
     if member_renames:
         member_map = cls._member_map_  # type: ignore[attr-defined]
@@ -698,6 +871,45 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
             member_map = _AliasingMemberMap(cls.__name__, member_map)
             cls._member_map_ = member_map  # type: ignore[attr-defined]
         member_map.renames.update(member_renames)
+
+
+def _get_class_statement_stacklevel(subclass: type) -> int:
+    """Return the stack level of the statement defining a class being created.
+
+    It is the stack level that a chained `__init_subclass__` (see
+    [_chain_init_subclass][gemseo._deprecation._chain_init_subclass]) gives to
+    [warnings.warn][], so that the warning points at the class statement of the
+    subclass, not at the code creating the class. The frames in between are those of
+    the `__new__` of the metaclass of the subclass, e.g. `ABCMeta.__new__`, and of the
+    metaclasses it derives from, which call `type.__new__`, which calls
+    `__init_subclass__`; and those of the chained `__init_subclass__` of the classes
+    deriving from the one of the caller, which call it.
+
+    It must be called by a chained `__init_subclass__`.
+
+    Args:
+        subclass: The class being created.
+
+    Returns:
+        The stack level, counted from the chained `__init_subclass__` calling this
+        function.
+    """
+    frame = sys._getframe(1)
+    # The chained `__init_subclass__` of all the classes share their code.
+    skipped_codes = {frame.f_code}
+    for metaclass in type(subclass).__mro__:
+        new = vars(metaclass).get("__new__")
+        # The `__new__` of a class is a static method wrapping a function, unless it
+        # is a built-in one, which has no frame.
+        code = getattr(getattr(new, "__func__", new), "__code__", None)
+        if code is not None:
+            skipped_codes.add(code)
+    stacklevel = 2
+    frame = frame.f_back
+    while frame is not None and frame.f_code in skipped_codes:
+        stacklevel += 1
+        frame = frame.f_back
+    return stacklevel
 
 
 def _chain_init_subclass(cls: type, renames: Mapping[str, str]) -> None:
@@ -713,8 +925,25 @@ def _chain_init_subclass(cls: type, renames: Mapping[str, str]) -> None:
     def __init_subclass__(subclass: type, **kwargs: Any) -> None:  # noqa: N807
         subclass_vars = vars(subclass)
         for old_name, new_name in renames.items():
-            if old_name in subclass_vars and new_name not in subclass_vars:
-                _warn_class_attribute_rename(cls.__name__, old_name, new_name)
+            if old_name not in subclass_vars or new_name in subclass_vars:
+                continue
+            stacklevel = _get_class_statement_stacklevel(subclass)
+            if is_moved_class_attribute(new_name):
+                # The binding is an attribute of the subclass of its own, which the
+                # class no longer reads, e.g. a nested enumeration overriding the one
+                # made a module-level class.
+                warnings.warn(
+                    f"The attribute {old_name!r} of the class {cls.__name__!r} is "
+                    f"deprecated; it moved to {new_name!r}, and the class "
+                    f"{cls.__name__!r} no longer reads the one the class "
+                    f"{subclass.__name__!r} defines.",
+                    DeprecationWarning,
+                    stacklevel=stacklevel,
+                )
+            else:
+                _warn_class_attribute_rename(
+                    cls.__name__, old_name, new_name, stacklevel + 1
+                )
                 setattr(subclass, new_name, subclass_vars[old_name])
         if previous is not None:
             previous.__func__(subclass, **kwargs)
@@ -888,9 +1117,7 @@ def install() -> None:
         return
     if not sys.warnoptions:
         warnings.filterwarnings(
-            "once",
-            message=r"The module 'gemseo\..*' is deprecated",
-            category=DeprecationWarning,
+            "once", message=_module_rename_message, category=DeprecationWarning
         )
         warnings.filterwarnings(
             "once",

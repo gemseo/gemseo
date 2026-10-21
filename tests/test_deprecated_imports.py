@@ -17,15 +17,18 @@
 from __future__ import annotations
 
 import importlib
+import importlib.abc
 import importlib.util
 import io
 import logging
 import os
 import pickle
 import pkgutil
+import re
 import subprocess
 import sys
 import warnings
+from abc import ABCMeta
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
@@ -41,6 +44,20 @@ from tests.marks import requires_numpy_2
 
 if TYPE_CHECKING:
     from _pytest.mark.structures import ParameterSet
+
+
+@pytest.fixture(autouse=True)
+def _forget_resolved_old_names():
+    """Forget the objects the old attribute names resolved to during a test.
+
+    An old name warns on its first access only, then resolves silently: each test must
+    start with an empty table of the resolved names, and leave it empty.
+    """
+    from gemseo._deprecation import _resolved_old_attributes
+
+    _resolved_old_attributes.clear()
+    yield
+    _resolved_old_attributes.clear()
 
 
 def test_moved_module_and_renamed_class():
@@ -182,8 +199,7 @@ def test_renamed_attribute_of_renamed_module_warns_about_the_attribute():
     messages = [str(record.message) for record in records]
     assert (
         "The attribute 'RadarChart' of the module 'gemseo.post.radar_chart' is "
-        "deprecated; use 'gemseo.post.constraint_radar.ConstraintRadar' instead."
-        in messages
+        "deprecated; use 'gemseo.post.ConstraintRadar' instead." in messages
     )
 
 
@@ -198,6 +214,53 @@ def test_dropped_reexport_warning_gives_the_new_location():
         "use 'gemseo.machine_learning.core.model.base_ml_model.BaseMLModel' instead."
         in messages
     )
+
+
+@pytest.mark.parametrize(
+    ("old_module_name", "name", "new_name"),
+    [
+        (
+            "gemseo.algos.opt.scipy_milp",
+            "SciPyMILP_Settings",
+            "gemseo.optimization.MILP_Settings",
+        ),
+        ("gemseo.uncertainty", "Dataset", "gemseo.dataset.Dataset"),
+        ("gemseo.uncertainty", "IODataset", "gemseo.dataset.IODataset"),
+        ("gemseo.mlearning", "Dataset", "gemseo.dataset.Dataset"),
+        (
+            "gemseo.utils.directory_creator",
+            "DirectoryNamingMethod",
+            "gemseo.enum.Naming",
+        ),
+    ],
+)
+def test_renamed_attribute_points_at_the_package_reexporting_its_successor(
+    old_module_name, name, new_name
+):
+    """The advice of a renamed attribute names the package exporting its successor.
+
+    The module defining the successor is not named, so that a successor has a single
+    spelling, e.g. `gemseo.dataset.Dataset` for `gemseo.datasets.dataset.Dataset` too.
+
+    Args:
+        old_module_name: The old name of the module of the attribute.
+        name: The old name of the attribute.
+        new_name: The complete new name of the attribute.
+    """
+    new_module_name, _, new_attribute_name = new_name.rpartition(".")
+    new_object = getattr(importlib.import_module(new_module_name), new_attribute_name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        old_module = importlib.import_module(old_module_name)
+
+    message = (
+        f"The attribute {name!r} of the module {old_module_name!r} is deprecated; "
+        f"use {new_name!r} instead."
+    )
+    with pytest.warns(DeprecationWarning, match=re.escape(message)):
+        old_object = getattr(old_module, name)
+
+    assert old_object is new_object
 
 
 def test_renamed_module_level_constant():
@@ -283,7 +346,7 @@ def test_removed_gemseo_logger_constant_resolves_to_the_gemseo_logger(
 @pytest.mark.parametrize(
     ("old_name", "new_module_name", "new_name"),
     [
-        ("BaseScenario", "gemseo.scenario.evaluation", "EvaluationScenario"),
+        ("BaseScenario", "gemseo.scenario", "EvaluationScenario"),
         (
             "BaseParallelMDASettings",
             "gemseo.mda.core.base_parallel_solver_settings",
@@ -307,25 +370,264 @@ _top_level_module_warning: Final[str] = (
 )
 """The warning of the module re-exported by the gemseo 6.3.2 package."""
 
+_reexported_module_name: Final[str] = "gemseo.mda.base_parallel_mda_settings"
+"""The old path of the module re-exported by the gemseo 6.3.2 package."""
+
+
+def _check_reexported_module(module: ModuleType) -> None:
+    """Check that a module re-exported by the gemseo 6.3.2 package is the old module.
+
+    As in gemseo 6.3.2, it is the module of its old path, which resolves the old names
+    of the module, unlike its new module.
+
+    Args:
+        module: The module re-exported by the gemseo 6.3.2 package.
+    """
+    from gemseo.mda.core import base_parallel_solver_settings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        old_module = importlib.import_module(_reexported_module_name)
+
+    assert module is old_module
+    assert (
+        module.BaseMDAParallelSolverSettings
+        is base_parallel_solver_settings.BaseMDAParallelSolverSettings
+    )
+
 
 def test_renamed_top_level_reexport_of_a_module():
     """A module re-exported by the gemseo 6.3.2 package is importable from it."""
-    from gemseo.mda.core import base_parallel_solver_settings
-
     with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
         from gemseo import base_parallel_mda_settings
 
-    assert base_parallel_mda_settings is base_parallel_solver_settings
+    _check_reexported_module(base_parallel_mda_settings)
+
+
+def test_renamed_top_level_reexport_of_a_module_warns_once():
+    """A `from` import of a renamed top-level name warns once.
+
+    The statement looks the name up twice, to check it exists then to import it. The
+    old name is bound neither in the namespace of the module nor in `dir`.
+    """
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        from gemseo import base_parallel_mda_settings
+
+    assert [str(record.message) for record in records] == [
+        (
+            "The attribute 'base_parallel_mda_settings' of the module 'gemseo' is "
+            "deprecated; use 'gemseo.mda.core.base_parallel_solver_settings' instead."
+        )
+    ]
+    _check_reexported_module(base_parallel_mda_settings)
+    assert "base_parallel_mda_settings" not in gemseo.__dict__
+    assert "base_parallel_mda_settings" not in dir(gemseo)
+    assert "base_parallel_mda_settings" not in getattr(gemseo, "__all__", ())
+
+
+@pytest.mark.parametrize(
+    ("module_name", "old_name"),
+    [
+        ("gemseo.algos._variable", "DataType"),
+        ("gemseo.datasets", "DatasetFactory"),
+        ("gemseo.mlearning", "BaseMLSupervisedAlgo"),
+    ],
+)
+def test_renamed_attribute_of_a_renamed_package_warns_once(module_name, old_name):
+    """A `from` import of a renamed attribute of a renamed package warns once.
+
+    Args:
+        module_name: The old name of the renamed package.
+        old_name: The old name of an attribute renamed in this package.
+    """
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        namespace = {}
+        exec(f"from {module_name} import {old_name}", namespace)  # noqa: S102
+
+    messages = [
+        str(record.message)
+        for record in records
+        if f"The attribute {old_name!r} of the module {module_name!r}"
+        in str(record.message)
+    ]
+    assert len(messages) == 1
+    assert old_name in namespace
+
+
+def test_star_import_does_not_bind_a_read_old_name():
+    """A star import does not bind an old name read earlier, and does not warn."""
+    with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
+        gemseo.base_parallel_mda_settings  # noqa: B018
+
+    namespace = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        exec("from gemseo import *", namespace)  # noqa: S102
+
+    assert "base_parallel_mda_settings" not in namespace
 
 
 def test_renamed_top_level_reexport_of_a_module_as_an_attribute():
     """A module re-exported by the gemseo 6.3.2 package is an attribute of it."""
-    from gemseo.mda.core import base_parallel_solver_settings
-
     with pytest.warns(DeprecationWarning, match=_top_level_module_warning):
         module = gemseo.base_parallel_mda_settings
 
-    assert module is base_parallel_solver_settings
+    _check_reexported_module(module)
+
+
+@pytest.mark.parametrize(
+    ("old_name", "new_name"),
+    [
+        (
+            "BaseParallelMDASettings",
+            (
+                "gemseo.mda.core.base_parallel_solver_settings."
+                "BaseMDAParallelSolverSettings"
+            ),
+        ),
+        ("N_CPUS", "gemseo.util.constant.n_cpus"),
+        (
+            "_ENABLE_PARALLEL_EXECUTION",
+            "gemseo.util.constant._enable_parallel_execution",
+        ),
+    ],
+)
+def test_renamed_attribute_of_a_top_level_reexport_of_a_module(old_name, new_name):
+    """An old name of a module re-exported by the gemseo 6.3.2 package resolves.
+
+    It resolves through the package as through the old path of the module, with the
+    same warning.
+    """
+    new_module_name, _, new_attribute_name = new_name.rpartition(".")
+    new_object = getattr(importlib.import_module(new_module_name), new_attribute_name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        module = gemseo.base_parallel_mda_settings
+
+    message = (
+        f"The attribute {old_name!r} of the module {_reexported_module_name!r} is "
+        f"deprecated; use {new_name!r} instead."
+    )
+
+    with pytest.warns(DeprecationWarning, match=re.escape(message)) as records:
+        old_object = getattr(module, old_name)
+
+    assert old_object is new_object
+    assert [str(record.message) for record in records] == [message]
+
+
+@pytest.mark.parametrize(
+    ("module_renames", "expected"),
+    [
+        ({"gemseo.old.module": "gemseo.new"}, "gemseo.old.module"),
+        ({"gemseo.old.other": "gemseo.new"}, None),
+        ({"gemseo.old.module": "gemseo.other"}, None),
+        (
+            {"gemseo.old.module": "gemseo.new", "gemseo.older.module": "gemseo.new"},
+            None,
+        ),
+    ],
+    ids=[
+        "redirected-to-the-new-module",
+        "last-segment-differs",
+        "redirected-to-another-module",
+        "two-old-modules-share-the-name",
+    ],
+)
+def test_find_reexported_old_module(module_renames, expected):
+    """The old path of a re-exported module is the only one named and redirected so.
+
+    Args:
+        module_renames: The old module name -> new module name mapping.
+        expected: The expected old path.
+    """
+    from gemseo._deprecation import aliases
+
+    old_modules = aliases._find_reexported_old_modules(
+        module_renames, module_renames, {}
+    )
+
+    assert old_modules.get(("module", "gemseo.new")) == expected
+
+
+def test_get_reexported_old_modules_is_computed_once():
+    """The old paths of the re-exported modules are computed on first use only."""
+    from gemseo._deprecation import aliases
+
+    aliases.get_reexported_old_modules.cache_clear()
+    assert aliases.get_reexported_old_modules.cache_info().currsize == 0
+
+    old_modules = aliases.get_reexported_old_modules()
+
+    assert (
+        old_modules[
+            "base_parallel_mda_settings",
+            "gemseo.mda.core.base_parallel_solver_settings",
+        ]
+        == "gemseo.mda.base_parallel_mda_settings"
+    )
+    assert aliases.get_reexported_old_modules() is old_modules
+    assert aliases.get_reexported_old_modules.cache_info().hits == 1
+
+
+def test_reexported_old_module_keeps_the_other_deprecation_warnings(monkeypatch):
+    """Importing the old path of a re-exported module only silences its own warning.
+
+    The other deprecation warnings, e.g. of a first import of the new module, are
+    kept.
+
+    Args:
+        monkeypatch: Fixture to patch the import and the re-exported modules.
+    """
+    from gemseo import _deprecation
+
+    package = ModuleType("gemseo.fake_package")
+    package.module = ModuleType("gemseo.fake_package.module")
+    old_module = ModuleType("gemseo.fake_old_package.module")
+
+    def import_module(name: str) -> ModuleType:
+        warnings.warn(
+            f"The module {name!r} is deprecated; use 'gemseo.fake_package.module' "
+            "instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        warnings.warn("Another deprecation.", DeprecationWarning, stacklevel=2)
+        return old_module
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    monkeypatch.setattr(
+        _deprecation,
+        "get_reexported_old_modules",
+        lambda: {("module", package.module.__name__): old_module.__name__},
+    )
+
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter("always")
+        module = _deprecation._get_renamed_attribute(
+            package, "gemseo.fake_old_package", "module", package.module.__name__
+        )
+
+    assert module is old_module
+    assert [str(record.message) for record in records] == ["Another deprecation."]
+
+
+def test_find_reexported_old_module_of_a_module_with_attribute_rules():
+    """The old path of a re-exported module may be that of a module of attributes."""
+    from gemseo._deprecation import aliases
+
+    old_modules = aliases._find_reexported_old_modules(
+        {"gemseo.old": "gemseo.new"},
+        {"gemseo.old": "gemseo.new"},
+        {"gemseo.old.module": {}, "gemseo.live.module": {}, "strenum": {}},
+    )
+
+    assert old_modules == {
+        ("old", "gemseo.new"): "gemseo.old",
+        ("module", "gemseo.new.module"): "gemseo.old.module",
+    }
 
 
 def test_renamed_attribute_to_a_module_not_imported_yet(monkeypatch):
@@ -475,10 +777,10 @@ def test_star_import_from_dissolved_package(monkeypatch):
 
 def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
     """A dependency missing behind an alias is not masked by an `AttributeError`."""
-    old = importlib.import_module("gemseo.mda.gs_newton")
+    old = importlib.import_module("gemseo.mda.base_parallel_mda_solver")
 
     class _Boom:
-        __name__ = "gemseo.mda.gauss_seidel_newton_raphson"
+        __name__ = "gemseo.mda.core.base_parallel_solver"
 
         def __getattr__(self, name: str) -> object:
             msg = "No module named 'some_optional_dependency'"
@@ -486,7 +788,7 @@ def test_missing_dependency_is_not_reported_as_a_missing_attribute(monkeypatch):
 
     monkeypatch.setitem(old.__dict__, "_deprecation_target", _Boom())
     with pytest.raises(ModuleNotFoundError, match="some_optional_dependency"):
-        old.MDAGSNewton  # noqa: B018
+        old.BaseParallelMDASolver  # noqa: B018
 
 
 @pytest.mark.parametrize(
@@ -523,6 +825,148 @@ def test_missing_dependency_of_a_redirected_module_is_reraised(monkeypatch, new_
         loader.create_module(None)
 
     assert exc_info.value is error
+
+
+def test_missing_new_module_of_a_redirected_module_is_reported_as_the_old_one(
+    monkeypatch, snapshot
+):
+    """The error of a redirected module whose new module does not exist names the old.
+
+    The error is chained to the original one. Under a `from package import module`
+    statement, the import machinery swallows it as it names the module asked for, as
+    for any module that does not exist.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo import _deprecation
+
+    error = ModuleNotFoundError(
+        "No module named 'gemseo.fake_new_module'", name="gemseo.fake_new_module"
+    )
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    loader = _deprecation._DeprecatedModuleLoader(
+        "gemseo.fake_old_module", "gemseo.fake_new_module"
+    )
+
+    with assert_exception(ModuleNotFoundError, snapshot) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value.name == "gemseo.fake_old_module"
+    assert exc_info.value.__cause__ is error
+
+
+@pytest.mark.parametrize("name", ["Broken", "unknown"])
+def test_from_import_through_an_old_package_raises_the_error_of_the_new_one(
+    name, monkeypatch, snapshot
+):
+    """`from old_package import name` raises the error of the import from the new one.
+
+    The new package lazily exports `Broken` from a location that cannot be resolved,
+    and does not export `unknown`. The old package also asks the new one for the name
+    as a submodule, which does not exist: the error of the lookup of the name must
+    not be replaced by that of the module.
+
+    Args:
+        name: The name imported from the old package.
+        monkeypatch: Fixture to patch the modules and the module renames.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo import _deprecation
+    from gemseo.util.package_import import install_lazy_reexport
+
+    old_name = "gemseo.fake_old_package"
+    new_name = "gemseo.fake_new_package"
+    new_package = ModuleType(new_name)
+    new_package.__path__ = []
+    install_lazy_reexport(new_package.__dict__, {"Broken": "gemseo.util.string:Nope"})
+    monkeypatch.setitem(sys.modules, new_name, new_package)
+    monkeypatch.setattr(_deprecation, "module_renames", {old_name: new_name})
+    # The import creates the stand-in of the old package, and binds it in `gemseo`:
+    # both are removed after the test.
+    monkeypatch.setitem(sys.modules, old_name, new_package)
+    monkeypatch.delitem(sys.modules, old_name)
+    monkeypatch.setattr(gemseo, "fake_old_package", None, raising=False)
+    monkeypatch.delattr(gemseo, "fake_old_package")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with assert_exception(ImportError, snapshot) as exc_info:
+            exec(f"from {old_name} import {name}", {})  # noqa: S102
+
+    assert not isinstance(exc_info.value, ModuleNotFoundError)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ModuleNotFoundError("No module named 'syrupy'", name="syrupy"),
+        ImportError("cannot import name 'x' from 'syrupy'"),
+    ],
+    ids=["missing-module", "import-error"],
+)
+def test_import_error_of_a_redirected_module_gets_the_text_of_its_rule(
+    monkeypatch, error
+):
+    """The text of a `<new name> TODO <text>` module rule is added to its import error.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module and the texts.
+        error: The error raised when importing the new module.
+    """
+    from gemseo import _deprecation
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    monkeypatch.setattr(
+        _deprecation, "module_rename_notes", {"gemseo.fake_old_module": "add syrupy"}
+    )
+    loader = _deprecation._DeprecatedModuleLoader(
+        "gemseo.fake_old_module", "gemseo.fake_new_module"
+    )
+
+    with pytest.raises(ImportError) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value is error
+    assert exc_info.value.__notes__ == [
+        (
+            "The module 'gemseo.fake_old_module' moved to 'gemseo.fake_new_module'; "
+            "add syrupy."
+        )
+    ]
+
+
+def test_import_error_of_a_redirected_module_without_text_has_no_note(monkeypatch):
+    """The import error of a module whose rule has no text gets no note.
+
+    Args:
+        monkeypatch: Fixture to patch the import of the new module.
+    """
+    from gemseo import _deprecation
+
+    error = ImportError("cannot import name 'x' from 'syrupy'")
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(_deprecation, "import_module", import_module)
+    loader = _deprecation._DeprecatedModuleLoader(
+        "gemseo.fake_old_module", "gemseo.fake_new_module"
+    )
+
+    with pytest.raises(ImportError) as exc_info:
+        loader.create_module(None)
+
+    assert exc_info.value is error
+    assert not hasattr(exc_info.value, "__notes__")
 
 
 def test_user_warning_filters_are_not_overridden():
@@ -630,6 +1074,13 @@ def test_renamed_attribute_of_live_module_imported_after_install(monkeypatch):
     imported; the others go through the finder, which wraps their real loader.
     """
     module_name = "gemseo.post.dataset.radviz"
+    # The alias resolves through the package, which caches the RadViz of the module
+    # it imported: cache the current one, so that the teardown restores it
+    # (and the current submodule attribute, which the re-import replaces).
+    package = importlib.import_module("gemseo.post.dataset")
+    package.RadViz  # noqa: B018
+    monkeypatch.delitem(vars(package), "RadViz")
+    monkeypatch.setitem(vars(package), "radviz", sys.modules[module_name])
     monkeypatch.delitem(sys.modules, module_name)
 
     module = importlib.import_module(module_name)
@@ -1511,6 +1962,138 @@ def test_renamed_hook_of_a_formulation_subclass_body():
     assert "_update_input_space" not in Formulation.__abstractmethods__
 
 
+def _create_stand_in_of_a_lazy_package(location: str) -> tuple[ModuleType, ModuleType]:
+    """Create a lazy package exporting `Name` and the stand-in of its old path.
+
+    Args:
+        location: The location of `Name` in the lazy package.
+
+    Returns:
+        The lazy package and the stand-in.
+    """
+    from gemseo import _deprecation
+    from gemseo.util.package_import import install_lazy_reexport
+
+    package = ModuleType("gemseo_fake_lazy_package")
+    install_lazy_reexport(package.__dict__, {"Name": location})
+    stand_in = _deprecation._DeprecatedModule("gemseo_fake_old_lazy_package")
+    stand_in.__dict__["_deprecation_target"] = package
+    return package, stand_in
+
+
+def test_import_error_behind_an_exported_name_propagates_unchanged(monkeypatch):
+    """A plain `ImportError` of the module behind a name propagates unchanged.
+
+    As through the new package, it is not turned into an `AttributeError`, which
+    `hasattr` would hide.
+
+    Args:
+        monkeypatch: Fixture to make the import of the module fail.
+    """
+    from gemseo.util import package_import
+
+    package, stand_in = _create_stand_in_of_a_lazy_package("broken_module")
+    error = ImportError("cannot import name X from some_dependency")
+
+    def import_module(name: str) -> ModuleType:
+        raise error
+
+    monkeypatch.setattr(package_import, "import_module", import_module)
+
+    for module in (package, stand_in):
+        with pytest.raises(ImportError) as excinfo:
+            module.Name  # noqa: B018
+
+        assert excinfo.value is error
+        with pytest.raises(ImportError) as excinfo:
+            hasattr(module, "Name")
+
+        assert excinfo.value is error
+
+
+def test_nested_unresolvable_name_behind_an_exported_name_propagates_unchanged(
+    monkeypatch,
+):
+    """An `ImportError` of a nested `from` statement is not turned into an error.
+
+    The module behind the exported name runs `from inner import Broken`, where
+    `Broken` cannot be resolved lazily: the `ImportError` it raises, chained to an
+    `AttributeError`, propagates unchanged through the stand-in, as through the new
+    package, so that `hasattr` does not hide it. Under a `from` statement, it is
+    still an `ImportError` chained to the original one.
+
+    Args:
+        monkeypatch: Fixture to register the fake modules.
+    """
+    from gemseo.util.package_import import install_lazy_reexport
+
+    inner = ModuleType("gemseo_fake_inner_package")
+    install_lazy_reexport(inner.__dict__, {"Broken": "gemseo.util.package_import:nope"})
+    monkeypatch.setitem(sys.modules, inner.__name__, inner)
+
+    package, stand_in = _create_stand_in_of_a_lazy_package("behind")
+    package.__path__ = []
+    behind_name = f"{package.__name__}.behind"
+    monkeypatch.setitem(sys.modules, package.__name__, package)
+
+    class Loader(importlib.abc.Loader):
+        def create_module(self, spec):
+            return None
+
+        def exec_module(self, module):
+            exec(  # noqa: S102
+                f"from {inner.__name__} import Broken\nName = 1", module.__dict__
+            )
+
+    class Finder(importlib.abc.MetaPathFinder):
+        def find_spec(self, name, path, target=None):
+            if name == behind_name:
+                return importlib.util.spec_from_loader(name, Loader())
+            return None
+
+    monkeypatch.setattr(sys, "meta_path", [Finder(), *sys.meta_path])
+    monkeypatch.setitem(sys.modules, stand_in.__name__, stand_in)
+
+    for module in (package, stand_in):
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved") as exc:
+            hasattr(module, "Name")
+
+        # The error is the one of the inner name, not of the exported one.
+        assert "gemseo_fake_old_lazy_package" not in str(exc.value)
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved"):
+            module.Name  # noqa: B018
+
+        sys.modules.pop(behind_name, None)
+        with pytest.raises(ImportError, match=r"'Broken'.*cannot be resolved"):
+            exec(f"from {module.__name__} import Name", {})  # noqa: S102
+
+
+@pytest.mark.parametrize("is_imported_from", [False, True])
+def test_unresolvable_exported_name_names_the_old_and_new_modules(is_imported_from):
+    """The error of a name that cannot be resolved names the old and the new modules.
+
+    Args:
+        is_imported_from: Whether the name is imported by a `from` statement.
+    """
+    _, stand_in = _create_stand_in_of_a_lazy_package("gemseo.util.package_import:nope")
+    sys.modules[stand_in.__name__] = stand_in
+    try:
+        if is_imported_from:
+            with pytest.raises(ImportError) as excinfo:
+                exec(f"from {stand_in.__name__} import Name", {})  # noqa: S102
+        else:
+            with pytest.raises(AttributeError) as excinfo:
+                stand_in.Name  # noqa: B018
+    finally:
+        del sys.modules[stand_in.__name__]
+
+    message = str(excinfo.value)
+    assert "'gemseo_fake_old_lazy_package'" in message
+    assert "'gemseo_fake_lazy_package'" in message
+
+
 def _create_module_renaming_an_attribute(
     is_live: bool, new_name: str, monkeypatch: pytest.MonkeyPatch
 ) -> ModuleType:
@@ -1810,6 +2393,229 @@ def test_renamed_protected_class_attribute_warns_and_resolves():
         old_value = Serializable._ATTR_NOT_TO_SERIALIZE
 
     assert old_value is Serializable._attr_not_to_serialize
+
+
+@pytest.mark.parametrize(
+    ("old_module_name", "class_name", "new_module_name"),
+    [
+        ("correlation_analysis", "CorrelationAnalysis", "correlation"),
+        ("hsic_analysis", "HSICAnalysis", "hsic"),
+        ("morris_analysis", "MorrisAnalysis", "morris"),
+        ("sobol_analysis", "SobolAnalysis", "sobol"),
+    ],
+)
+def test_class_attribute_moved_out_of_its_class_warns_and_resolves(
+    old_module_name, class_name, new_module_name
+):
+    """The nested enumeration moved out of its class resolves through the class.
+
+    Args:
+        old_module_name: The name of the old module of the class.
+        class_name: The name of the class.
+        new_module_name: The name of the module of the class and its enumeration.
+    """
+    package_name = "gemseo.uncertainty.sensitivity"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        cls = getattr(
+            importlib.import_module(f"{package_name}.{old_module_name}"), class_name
+        )
+    new_module = importlib.import_module(f"{package_name}.{new_module_name}")
+
+    with pytest.warns(DeprecationWarning, match="'Method' of the class") as records:
+        old_value = cls.Method
+
+    assert old_value is getattr(new_module, f"{class_name}Method")
+    assert str(records[0].message).endswith(
+        f"use '{package_name}.{new_module_name}.{class_name}Method' instead."
+    )
+
+
+def test_class_attribute_moved_out_of_its_class_resolves_through_an_instance():
+    """The nested enumeration moved out of its class resolves through an instance."""
+    from gemseo.enum import SobolAnalysisMethod
+    from gemseo.uncertainty.sensitivity import SobolAnalysis
+
+    analysis = SobolAnalysis.__new__(SobolAnalysis)
+    with pytest.warns(DeprecationWarning, match="'Method'"):
+        old_value = analysis.Method
+
+    assert old_value is SobolAnalysisMethod
+
+
+def test_class_attribute_moved_out_of_its_class_cannot_be_set(snapshot):
+    """The old name of an attribute moved out of its class cannot be set.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo.uncertainty.sensitivity import SobolAnalysis
+
+    analysis = SobolAnalysis.__new__(SobolAnalysis)
+    with assert_exception(AttributeError, snapshot):
+        analysis.Method = None
+
+
+def test_subclass_body_assigning_an_attribute_moved_out_of_its_class_keeps_it():
+    """A subclass body binding the old name of a moved attribute keeps its own.
+
+    A warning tells that the class no longer reads it.
+    """
+    from gemseo.uncertainty.sensitivity import SobolAnalysis
+
+    class OwnMethod(StrEnum):
+        FIRST = "first"
+
+    message = (
+        "The attribute 'Method' of the class 'SobolAnalysis' is deprecated; it moved "
+        "to 'gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod', and the class "
+        "'SobolAnalysis' no longer reads the one the class 'NewSobolAnalysis' defines."
+    )
+    with pytest.warns(DeprecationWarning, match=re.escape(message)) as records:
+
+        class NewSobolAnalysis(SobolAnalysis):
+            Method = OwnMethod
+
+    assert NewSobolAnalysis.Method is OwnMethod
+    assert [str(record.message) for record in records] == [message]
+    # The warning points at the class statement, not at the `__new__` of `ABCMeta`.
+    assert records[0].filename == __file__
+
+
+class _FirstMetaclass(ABCMeta):
+    """A metaclass whose `__new__` is called by the one of another metaclass."""
+
+    def __new__(mcs, name, bases, namespace, **kwargs):  # noqa: N804
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
+
+
+class _SecondMetaclass(_FirstMetaclass):
+    """A metaclass whose `__new__` calls the one of its base metaclass."""
+
+    def __new__(mcs, name, bases, namespace, **kwargs):  # noqa: N804
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "metaclass",
+    [type, ABCMeta, _SecondMetaclass],
+    ids=["no-new", "abc-meta", "metaclass-chain"],
+)
+def test_warning_of_a_subclass_body_points_at_its_class_statement(metaclass):
+    """The warning of a subclass body binding an old name points at its class statement.
+
+    Whatever the metaclass chain, and the number of classes of the bases of the
+    subclass that rename the attribute: the frames of the `__new__` of the
+    metaclasses, and of the `__init_subclass__` of the classes, are skipped.
+
+    Args:
+        metaclass: The metaclass of the classes.
+    """
+    from gemseo._deprecation import _alias_class_attributes
+
+    base = metaclass("Base", (), {"new_name": 0})
+    derived = metaclass("Derived", (base,), {"other_new_name": 0})
+    _alias_class_attributes(base, {"old_name": "new_name"})
+    _alias_class_attributes(derived, {"other_old_name": "other_new_name"})
+    class_statement = compile(
+        "class Subclass(Derived):\n    old_name = 1\n    other_old_name = 2\n",
+        "<subclass>",
+        "exec",
+    )
+
+    match = "'(other_)?old_name' of the class"
+    with pytest.warns(DeprecationWarning, match=match) as records:
+        exec(class_statement, {"Derived": derived})  # noqa: S102
+
+    assert [(record.filename, record.lineno) for record in records] == [
+        ("<subclass>", 1),
+        ("<subclass>", 1),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("class_module_name", "new_name", "expected"),
+    [
+        ("gemseo.fake_package.module", "gemseo.fake_package.module.Method", True),
+        ("gemseo.fake_package.module", "gemseo.fake_package.Method", True),
+        ("gemseo.fake_package.module", "gemseo.Method", True),
+        ("gemseo.fake_package.module", "gemseo.fake_package.LazyMethod", True),
+        ("gemseo.fake_package.module", "gemseo.fake_package.module.Missing", False),
+        ("gemseo.fake_package.module", "gemseo.fake_package.Missing", False),
+        ("gemseo.fake_package.module", "gemseo.Missing", False),
+        ("gemseo.fake_package.module", "gemseo.other_package.Method", False),
+        ("gemseo.fake_package.module", "gemseo.fake_package.module_2.Method", False),
+        ("gemseo.fake_package.module", "gemseo.fake_package.module.sub.Method", False),
+    ],
+    ids=[
+        "own-module",
+        "parent-package",
+        "root-package",
+        "lazy-export-of-a-package",
+        "missing-from-the-module",
+        "missing-from-the-parent-package",
+        "missing-from-the-root-package",
+        "homonym-class-of-another-package",
+        "sibling-module-with-the-same-prefix",
+        "submodule-of-the-module",
+    ],
+)
+def test_attribute_moved_out_of_its_class_is_declared_by_its_module_or_package(
+    class_module_name, new_name, expected, monkeypatch
+):
+    """An attribute moved out of a class is aliased when its object is in its module.
+
+    The path of the object is that of the module of the class or of one of its parent
+    packages, which binds or exports the object.
+
+    Args:
+        class_module_name: The name of the module defining the class.
+        new_name: The complete dotted path of the object.
+        expected: Whether the attribute is aliased on the class.
+        monkeypatch: Fixture to patch the modules.
+    """
+    from gemseo._deprecation import _alias_class_attributes
+    from gemseo._deprecation import _MovedClassAttribute
+    from gemseo.util.package_import import install_lazy_reexport
+
+    module = ModuleType("gemseo.fake_package.module")
+    module.Method = StrEnum
+    package = ModuleType("gemseo.fake_package")
+    package.Method = StrEnum
+    # The module of the object that the package exports lazily does not exist.
+    install_lazy_reexport(package.__dict__, {"LazyMethod": "missing_module"})
+    monkeypatch.setitem(sys.modules, module.__name__, module)
+    monkeypatch.setitem(sys.modules, package.__name__, package)
+    monkeypatch.setattr(gemseo, "Method", StrEnum, raising=False)
+    cls = type("Analysis", (), {"__module__": class_module_name})
+
+    _alias_class_attributes(cls, {"Method": new_name})
+
+    assert isinstance(cls.__dict__.get("Method"), _MovedClassAttribute) is expected
+
+
+@pytest.mark.parametrize(
+    "old_name", ["_reset_x0_before_opt", "_set_x0_before_opt", "_set_bounds_before_opt"]
+)
+def test_renamed_instance_attribute_of_the_scenario_adapter_warns_and_resolves(
+    old_name,
+):
+    """The protected attributes of the scenario adapter resolve under their old names.
+
+    Their new names are set in `__init__` only, and declared on the class.
+
+    Args:
+        old_name: The old name of the attribute.
+    """
+    from gemseo.scenario import MDOScenarioAdapter
+
+    new_name = old_name.replace("_opt", "_exec")
+    adapter = MDOScenarioAdapter.__new__(MDOScenarioAdapter)
+    setattr(adapter, new_name, True)
+    with pytest.warns(DeprecationWarning, match=f"'{old_name}'"):
+        old_value = getattr(adapter, old_name)
+
+    assert old_value is True
 
 
 def test_renamed_class_attribute_skips_an_unrelated_class_of_the_same_name():

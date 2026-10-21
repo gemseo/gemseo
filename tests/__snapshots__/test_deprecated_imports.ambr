@@ -11,14 +11,26 @@
 # name: test_attribute_renamed_to_a_missing_plugin_raises_when_imported_from_its_module[stand-in]
   "The attribute 'Old' of the module 'gemseo.fake_old_module' moved to 'gemseo_missing_plugin.module.New', of the gemseo-missing-plugin plugin, which is not installed."
 # ---
+# name: test_class_attribute_moved_out_of_its_class_cannot_be_set
+  "The attribute 'Method' of the class 'SobolAnalysis' moved to 'gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod' and cannot be set."
+# ---
 # name: test_dissolved_package_unknown_attribute
   "module 'gemseo.settings' has no attribute 'does_not_exist'"
+# ---
+# name: test_from_import_through_an_old_package_raises_the_error_of_the_new_one[Broken]
+  "The name 'Broken' of the module 'gemseo.fake_old_package', moved to 'gemseo.fake_new_package', cannot be resolved: The location 'gemseo.util.string:Nope' of the name 'Broken' exported by 'gemseo.fake_new_package' cannot be resolved (module 'gemseo.util.string' has no attribute 'Nope')."
+# ---
+# name: test_from_import_through_an_old_package_raises_the_error_of_the_new_one[unknown]
+  "cannot import name 'unknown' from 'gemseo.fake_old_package' (unknown location)"
 # ---
 # name: test_manual_migration_raises
   "The attribute 'MDOObjectiveScenarioAdapter' of the module 'gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter' was removed; use gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_optimal_objective=True instead."
 # ---
 # name: test_manual_migration_raises_for_dissolved_package
   "The attribute 'Animation' of the module 'gemseo.settings' was removed; use gemseo.post.Animation instead."
+# ---
+# name: test_missing_new_module_of_a_redirected_module_is_reported_as_the_old_one
+  "No module named 'gemseo.fake_old_module'"
 # ---
 # name: test_module_moved_to_a_missing_plugin_raises
   "The module 'gemseo.disciplines.wrappers.xls_discipline' moved to 'gemseo_excel.xls_discipline', of the gemseo-excel plugin, which is not installed."

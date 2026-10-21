@@ -1,4 +1,13 @@
 # serializer version: 1
+# name: test_build_checks_the_head_of_a_rename_and_todo_value[attribute-relative]
+  "The attributes: rule for 'gemseo.a.b' has the value 'New'; it must be the complete new dotted path."
+# ---
+# name: test_build_checks_the_head_of_a_rename_and_todo_value[module-relative]
+  "The modules: rule for 'gemseo.a.b' has the value 'c'; it must be the complete new dotted path, in GEMSEO or in a plugin."
+# ---
+# name: test_build_checks_the_head_of_a_rename_and_todo_value[module-third-party]
+  "The modules: rule for 'gemseo.a.b' has the value 'scipy.sparse'; it must be the complete new dotted path, in GEMSEO or in a plugin."
+# ---
 # name: test_build_rejects_a_relative_attribute_value
   "The attributes: rule for 'gemseo.x.Old' has the value 'New'; it must be the complete new dotted path."
 # ---
