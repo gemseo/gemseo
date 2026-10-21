@@ -334,7 +334,7 @@ def test_catalog_variable_is_integer() -> None:
     """Check that the integer mask marks a catalog variable as integer.
 
     It is not an integer variable,
-    but its value is a position in its catalog, and so a whole number.
+    but its coordinate is the position of a label, and so a whole number.
     """
     variables = Variables()
     variables["c"] = CatalogVariable(catalog={"property": [1, 2]})

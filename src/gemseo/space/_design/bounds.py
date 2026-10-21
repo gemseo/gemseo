@@ -161,7 +161,7 @@ class Bounds(RegistryDerivedData):
         """Return the bound of the coordinates of a variable.
 
         A variable without bounds, e.g. a categorical one,
-        has coordinates ranging from zero to the number of its categories minus one.
+        has coordinates ranging from zero to the number of its labels minus one.
 
         Args:
             variable: The variable.
@@ -178,7 +178,7 @@ class Bounds(RegistryDerivedData):
             return zeros(variable.size, dtype=variable.coordinate_type)
 
         return full(
-            variable.size, len(variable.categories) - 1, dtype=variable.coordinate_type
+            variable.size, len(variable.labels) - 1, dtype=variable.coordinate_type
         )
 
     def _rebuild(self) -> None:

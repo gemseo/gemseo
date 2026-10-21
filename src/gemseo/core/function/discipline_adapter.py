@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.space.variable import CategoricalVariable
+    from gemseo.space.variable.base_categorical import BaseCategoricalVariable
     from gemseo.util.typing import JacobianData
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import StrKeyMapping
@@ -73,7 +73,7 @@ class DisciplineAdapter(ArrayFunction):
     measured and stored by this sibling, as if they had been given.
     """
 
-    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    __name_to_categorical_variable: Mapping[str, BaseCategoricalVariable]
     """The map from the name of a categorical input to its variable."""
 
     differentiated_input_names_substitute: Sequence[str]
@@ -93,7 +93,7 @@ class DisciplineAdapter(ArrayFunction):
         name_to_size: MutableMapping[str, int] = read_only_empty_dict,
         differentiated_input_names_substitute: Sequence[str] = (),
         name_to_categorical_variable: Mapping[
-            str, CategoricalVariable
+            str, BaseCategoricalVariable
         ] = read_only_empty_dict,
     ) -> None:
         """
@@ -117,7 +117,7 @@ class DisciplineAdapter(ArrayFunction):
                 when all of them are categorical, no input is differentiated.
             name_to_categorical_variable: The map
                 from the name of a categorical input to its variable;
-                the discipline receives the label of the category
+                the discipline receives its label
                 instead of its position in the input vector.
                 If empty, no input is categorical.
         """  # noqa: D205, D212, D415
@@ -533,22 +533,22 @@ class DisciplineAdapter(ArrayFunction):
                 if name not in self.__name_to_categorical_variable:
                     input_data[name] = input_data[name].astype(type_, copy=False)
 
-        self.__decode_categories(input_data, x_vect)
+        self.__decode_labels(input_data, x_vect)
 
         if x_vect.ndim == 2:
             return {k: v.ravel() for k, v in input_data.items()}
 
         return input_data
 
-    def __decode_categories(
+    def __decode_labels(
         self, input_data: MutableMapping[str, ndarray], x_vect: ndarray
     ) -> None:
-        """Set the categorical inputs to the labels of their categories.
+        """Set the categorical inputs to their labels.
 
         Args:
             input_data: The input data of the discipline.
             x_vect: The input vector of the function,
-                whose categorical components are positions among the categories.
+                whose categorical components are positions among the labels.
         """
         data_converter = self.__discipline.io.input_grammar.data_converter
         for name, variable in self.__name_to_categorical_variable.items():

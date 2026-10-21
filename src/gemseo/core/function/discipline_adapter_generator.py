@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammar.base import BaseGrammar
-    from gemseo.space.variable import CategoricalVariable
+    from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 
 
 class DisciplineAdapterGenerator:
@@ -57,7 +57,7 @@ class DisciplineAdapterGenerator:
     __name_to_size: MutableMapping[str, int]
     """The map from an input name to its size, if known."""
 
-    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    __name_to_categorical_variable: Mapping[str, BaseCategoricalVariable]
     """The map from the name of a categorical input to its variable."""
 
     def __init__(
@@ -65,7 +65,7 @@ class DisciplineAdapterGenerator:
         discipline: Discipline,
         name_to_size: MutableMapping[str, int] = read_only_empty_dict,
         name_to_categorical_variable: Mapping[
-            str, CategoricalVariable
+            str, BaseCategoricalVariable
         ] = read_only_empty_dict,
     ) -> None:
         """
@@ -76,7 +76,7 @@ class DisciplineAdapterGenerator:
                 determine them from the default inputs and local data of the discipline.
             name_to_categorical_variable: The map
                 from the name of a categorical input to its variable;
-                the discipline receives the label of the category
+                the discipline receives its label
                 instead of its position in the input vector.
                 If empty, no input is categorical.
         """  # noqa: D205, D212, D415

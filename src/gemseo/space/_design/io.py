@@ -37,9 +37,9 @@ from pydantic import ValidationError
 
 from gemseo.enum import VariableType
 from gemseo.space._design.constants import catalog_group
-from gemseo.space._design.constants import categories_group
 from gemseo.space._design.constants import choices_group
 from gemseo.space._design.constants import design_space_group
+from gemseo.space._design.constants import labels_group
 from gemseo.space._design.constants import lb_group
 from gemseo.space._design.constants import names_group
 from gemseo.space._design.constants import size_group
@@ -50,7 +50,9 @@ from gemseo.space._design.constants import var_type_group
 from gemseo.space.catalog.catalog import Catalog
 from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 from gemseo.space.variable.factory import deterministic_variable_factory
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util._numpy import int64_dtype
 from gemseo.util.hdf5 import get_hdf5_group
 from gemseo.util.string import convert_strings_to_iterable
@@ -82,7 +84,7 @@ _domain_payload_nouns: Final[Mapping[VariableType, tuple[str, str]]] = (
     MappingProxyType({
         VariableType.DISCRETE: ("no choices", "choices"),
         VariableType.CATALOG: ("no catalog", "a catalog"),
-        VariableType.CATEGORICAL: ("no categories", "categories"),
+        VariableType.CATEGORICAL: ("no labels", "labels"),
     })
 )
 """The noun phrases of the domain payload of a variable type, from its HDF group.
@@ -141,6 +143,19 @@ def get_strings(group: h5py.Group, name: str) -> list[str] | None:
     ]
 
 
+def _get_label(variable_group: h5py.Group) -> str | None:
+    """Retrieve the label stored as the value of a categorical variable.
+
+    Args:
+        variable_group: The HDF group of the variable.
+
+    Returns:
+        The label, or `None` if the variable has no value.
+    """
+    labels = get_strings(variable_group, value_group)
+    return None if labels is None else labels[0]
+
+
 def check_structure_is_unchanged(
     design_space: DesignSpace, space_group: h5py.Group, file_path: str | Path
 ) -> None:
@@ -148,7 +163,7 @@ def check_structure_is_unchanged(
 
     Only the structure that the stored input values rely on is compared:
     the variable names, in order, the size and the type of each variable,
-    and the categories, in order, of each categorical variable.
+    and the labels, in order, of each categorical variable.
 
     Args:
         design_space: The design space.
@@ -191,12 +206,12 @@ def check_structure_is_unchanged(
                 )
             elif variable.type == VariableType.CATEGORICAL:
                 # The stored values and the database rows are positions
-                # in the list of categories, so its order matters.
-                stored_categories = get_strings(variable_group, categories_group)
-                if stored_categories != list(variable.categories):
+                # in the list of labels, so its order matters.
+                stored_labels = get_strings(variable_group, labels_group)
+                if stored_labels != list(variable.labels):
                     error_messages.append(
-                        f"The categories of the design variable {name!r} "
-                        f"are {stored_categories}; got {list(variable.categories)}."
+                        f"The labels of the design variable {name!r} "
+                        f"are {stored_labels}; got {list(variable.labels)}."
                     )
 
     if error_messages:
@@ -255,7 +270,7 @@ def check_catalogs_are_unchanged(
 ) -> None:
     """Check that the catalogs of a space are those stored in an HDF file.
 
-    The value of a catalog variable is a position in its catalog,
+    A database stores the position of an alternative in its catalog,
     so the values stored in the file only designate the right alternatives
     with the catalogs they were written with.
     Only the catalog variables of the space stored with a catalog
@@ -292,7 +307,7 @@ def check_catalogs_are_unchanged(
         msg = (
             f"The design space stored in the node {space_group.parent.name!r} "
             f"of the HDF file {file_path} has different catalogs; "
-            "the value of a catalog variable is a position in its catalog, "
+            "a database stores the position of an alternative in its catalog, "
             f"so the stored values are only valid with the stored catalog:\n{errors}"
         )
         raise ValueError(msg)
@@ -415,19 +430,20 @@ def to_hdf(
                 # before the file was opened.
                 variable.catalog.write_hdf(variable_group.create_group(catalog_group))
 
-            is_categorical = variable.type == VariableType.CATEGORICAL
-            if is_categorical:
+            # The labels of a catalog variable are those of its catalog,
+            # which is stored above.
+            if variable.type == VariableType.CATEGORICAL:
                 # The labels may be non-ASCII, hence variable-length UTF-8 strings.
                 write_dataset(
                     variable_group,
-                    categories_group,
-                    array(variable.categories, dtype=h5py.string_dtype()),
+                    labels_group,
+                    array(variable.labels, dtype=h5py.string_dtype()),
                 )
 
             write_dataset(
                 variable_group, size_group, array(variable.size, dtype=int64_dtype)
             )
-            if not is_categorical:
+            if isinstance(variable, BaseNumericVariable):
                 write_dataset(
                     variable_group, lb_group, array(variable.lower_bound, copy=False)
                 )
@@ -445,8 +461,8 @@ def to_hdf(
             if value is None:
                 if value_group in variable_group:
                     del variable_group[value_group]
-            elif is_categorical:
-                # The file stores the label, not its position among the categories.
+            elif isinstance(variable, BaseCategoricalVariable):
+                # The file stores the label, not its position among the labels.
                 write_dataset(
                     variable_group,
                     value_group,
@@ -538,7 +554,7 @@ def from_hdf(
             decoded_var_type = (
                 var_type.decode() if isinstance(var_type, bytes) else var_type
             )
-            categories = get_strings(variable_group, categories_group)
+            labels = get_strings(variable_group, labels_group)
             choices = get_dataset(variable_group, choices_group)
             catalog_hdf_group = variable_group.get(catalog_group)
             _check_domain_payload(
@@ -547,14 +563,21 @@ def from_hdf(
                 decoded_var_type,
                 {
                     VariableType.CATALOG: catalog_hdf_group,
-                    VariableType.CATEGORICAL: categories,
+                    VariableType.CATEGORICAL: labels,
                     VariableType.DISCRETE: choices,
                 },
             )
-            if categories is not None:
-                labels = get_strings(variable_group, value_group)
+            if labels is not None:
                 design_space.add_categorical_variable(
-                    name, categories, None if labels is None else labels[0]
+                    name, labels, _get_label(variable_group)
+                )
+                continue
+
+            if catalog_hdf_group is not None:
+                design_space.add_catalog_variable(
+                    name,
+                    Catalog.read_hdf(catalog_hdf_group),
+                    _get_label(variable_group),
                 )
                 continue
 
@@ -565,16 +588,6 @@ def from_hdf(
                 design_space._register_variable(
                     name,
                     deterministic_variable_factory.create(var_type, choices=choices),
-                    value,
-                )
-            elif catalog_hdf_group is not None:
-                # Likewise, the bounds of a catalog variable are derived
-                # from its catalog.
-                design_space._register_variable(
-                    name,
-                    deterministic_variable_factory.create(
-                        var_type, catalog=Catalog.read_hdf(catalog_hdf_group)
-                    ),
                     value,
                 )
             else:

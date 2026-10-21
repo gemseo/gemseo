@@ -75,7 +75,8 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     and one label naming each alternative.
     It is the domain of a
     [CatalogVariable][gemseo.space.variable.catalog.CatalogVariable],
-    whose value is the **position** of an alternative, never its label.
+    whose labels are those of the catalog,
+    while the design vector stores the position of an alternative.
 
     **Building.** A catalog can be built:
 

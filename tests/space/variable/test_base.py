@@ -32,11 +32,13 @@ from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
 from gemseo.enum import VariableType
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import CategoricalVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.space.variable.interval import BaseIntervalVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
@@ -90,6 +92,7 @@ def test_base_variable_is_abstract() -> None:
             },
         ),
         (BaseIntervalVariable, {"get_normalization_mask"}),
+        (BaseCategoricalVariable, {"_format_labels"}),
     ],
 )
 def test_intermediate_classes_are_abstract(cls, abstract_methods) -> None:
@@ -105,6 +108,7 @@ def test_intermediate_classes_are_abstract(cls, abstract_methods) -> None:
         (IntegerVariable, True, True),
         (DiscreteVariable, True, True),
         (CategoricalVariable, True, False),
+        (CatalogVariable, True, False),
         (RandomVariable, False, True),
     ],
 )
@@ -126,7 +130,7 @@ def test_axes_of_the_hierarchy(cls, is_deterministic, is_numeric) -> None:
         (RealVariable, {"size", "lower_bound", "upper_bound"}),
         (IntegerVariable, {"size", "lower_bound", "upper_bound"}),
         (DiscreteVariable, {"choices"}),
-        (CategoricalVariable, {"categories"}),
+        (CategoricalVariable, {"labels"}),
         (RandomVariable, {"distribution_settings"}),
     ],
 )

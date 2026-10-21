@@ -28,9 +28,9 @@ from numpy import isin
 from numpy import where
 from numpy import zeros
 
-from gemseo.enum import VariableType
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util._numpy import convert_array_type
 from gemseo.util._numpy import float64_dtype
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 sparse_point_message: Final[str] = (
     "A point of a design space with categorical variables cannot be a sparse array, "
-    "as each of its categorical components is mapped to a category cell."
+    "as each of its categorical components is mapped to the cell of a label."
 )
 """The message of the error raised for a sparse point with categorical components."""
 
@@ -83,8 +83,8 @@ class Normalizer(RegistryDerivedData):
     """The indices of the categorical components normalized by cells.
     `None` when never been used."""
 
-    __n_categories: NumberArray | None
-    """The number of categories of each component of `__categorical_indices`.
+    __n_labels: NumberArray | None
+    """The number of labels of each component of `__categorical_indices`.
     `None` when never been used."""
 
     def __init__(
@@ -108,7 +108,7 @@ class Normalizer(RegistryDerivedData):
         self.__normalization_indices = None
         self.__affine_indices = None
         self.__categorical_indices = None
-        self.__n_categories = None
+        self.__n_labels = None
 
     def _rebuild(self) -> None:
         """Rebuild the normalization data."""
@@ -123,22 +123,22 @@ class Normalizer(RegistryDerivedData):
         )
         self.__normalization_indices = normalization_mask.nonzero()[0]
         # A categorical component is not scaled by the affine map of its bounds:
-        # a category owns a cell of the unit interval instead.
-        name_to_n_categories = {
-            name: len(variable.categories)
+        # a label owns a cell of the unit interval instead.
+        name_to_n_labels = {
+            name: len(variable.labels)
             for name, variable in self._variables.items()
-            if variable.type == VariableType.CATEGORICAL
+            if isinstance(variable, BaseCategoricalVariable)
         }
         is_categorical = zeros(self._variables.size, dtype=bool)
-        n_categories = zeros(self._variables.size)
-        for name, n in name_to_n_categories.items():
+        n_labels = zeros(self._variables.size)
+        for name, n in name_to_n_labels.items():
             indices = list(self._variables.name_to_indices[name])
             is_categorical[indices] = True
-            n_categories[indices] = n
+            n_labels[indices] = n
         is_categorical_cell = normalization_mask & is_categorical
         self.__affine_indices = (normalization_mask & ~is_categorical).nonzero()[0]
         self.__categorical_indices = is_categorical_cell.nonzero()[0]
-        self.__n_categories = n_categories[self.__categorical_indices]
+        self.__n_labels = n_labels[self.__categorical_indices]
         # Avoid divide-by-zero when lb == ub.
         is_zero = self.__normalization_factor == 0.0
         self.__normalization_factor_inv = 1.0 / where(
@@ -209,10 +209,10 @@ class Normalizer(RegistryDerivedData):
 
         categorical_indices = self.__categorical_indices
         if subtract_lower_bound and categorical_indices.size:
-            # A category is mapped to the centre of its cell.
+            # A label is mapped to the centre of its cell.
             components[..., categorical_indices] = (
                 components[..., categorical_indices] + 0.5
-            ) / self.__n_categories
+            ) / self.__n_labels
 
         return value
 
@@ -283,11 +283,11 @@ class Normalizer(RegistryDerivedData):
         # and rounding a gradient would destroy its integer components
         # instead of snapping a point to the grid.
         categorical_indices = self.__categorical_indices
-        decode_categories = bool(categorical_indices.size) and add_lower_bound
+        decode_labels = bool(categorical_indices.size) and add_lower_bound
         round_integers = self.__integer_rounder.has_integer and add_lower_bound
         # The integer recast only occurs when there are integer components to round.
-        # The categories are decoded to integer positions as well.
-        recast_to_int = recast_to_int and (round_integers or decode_categories)
+        # The labels are decoded to integer positions as well.
+        recast_to_int = recast_to_int and (round_integers or decode_labels)
 
         if full_value.dtype == current_dtype:
             value = full_value.copy()
@@ -320,14 +320,14 @@ class Normalizer(RegistryDerivedData):
             if add_lower_bound:
                 components[..., affine_indices] += lower_bounds[affine_indices]
 
-        if decode_categories:
-            # A category owns a cell of the unit interval.
-            n_categories = self.__n_categories
+        if decode_labels:
+            # A label owns a cell of the unit interval.
+            n_labels = self.__n_labels
             components = asarray(value)
             components[..., categorical_indices] = clip(
-                floor(components[..., categorical_indices].real * n_categories),
+                floor(components[..., categorical_indices].real * n_labels),
                 0,
-                n_categories - 1,
+                n_labels - 1,
             )
 
         if round_integers:

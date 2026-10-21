@@ -232,7 +232,7 @@ class CatalogFormatter:
             labels = [str(index) for index in range(n_rows)]
 
         # Freeze the validated data so that an accidental in-place mutation
-        # cannot make the catalog and the bounds derived from it disagree.
+        # cannot make the catalog and the labels derived from it disagree.
         # The frozen arrays are stored as they are: the descriptors set on the
         # two fields of Catalog at the end of its module hand out a fresh view
         # of each of them on every read, so a caller never gets a hand on the

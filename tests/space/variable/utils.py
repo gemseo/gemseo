@@ -25,7 +25,7 @@ from gemseo.space.variable import RealVariable
 kinds = (RealVariable, IntegerVariable)
 """The kinds of variable whose domain is an interval."""
 
-numeric_kinds = (*kinds, DiscreteVariable, CatalogVariable)
+numeric_kinds = (*kinds, DiscreteVariable)
 """The kinds of variable whose components are numbers, hence bounded."""
 
 all_kinds = (*kinds, DiscreteVariable, CatalogVariable, CategoricalVariable)
@@ -36,10 +36,10 @@ kind_to_kwargs = {
     IntegerVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
     # A discrete variable derives its bounds from its choices.
     DiscreteVariable: {"choices": [0, 1]},
-    # A catalog variable derives its bounds from the size of its catalog.
+    # A catalog variable derives its labels from its catalog.
     CatalogVariable: {"catalog": {"property": [0, 1]}},
-    # A categorical variable has no bounds.
-    CategoricalVariable: {"categories": ["a", "b"]},
+    # A categorical variable, e.g. a catalog one, has no bounds.
+    CategoricalVariable: {"labels": ["a", "b"]},
 }
 """The arguments building a variable of size 1, per kind.
 

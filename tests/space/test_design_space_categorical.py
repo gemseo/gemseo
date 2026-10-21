@@ -25,6 +25,7 @@ from numpy import array
 from numpy import float64
 from numpy import int64
 from numpy.testing import assert_array_equal
+from pandas import DataFrame
 from scipy.sparse import csr_array
 
 from gemseo.enum import VariableType
@@ -34,12 +35,23 @@ from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
-def categorical_design_space() -> DesignSpace:
-    """A design space mixing a categorical variable and a real one."""
+def categorical_design_space(request) -> DesignSpace:
+    """A design space mixing a categorical variable and a real one.
+
+    The categorical variable is a catalog variable when the fixture is parametrized
+    with `"catalog"`.
+    """
     design_space = DesignSpace()
-    design_space.add_categorical_variable(
-        "material", ("steel", "aluminium", "titanium"), value="aluminium"
-    )
+    labels = ("steel", "aluminium", "titanium")
+    if getattr(request, "param", "categorical") == "catalog":
+        design_space.add_catalog_variable(
+            "material",
+            DataFrame({"density": [7.8, 2.7, 4.5]}, index=labels),
+            value="aluminium",
+        )
+    else:
+        design_space.add_categorical_variable("material", labels, value="aluminium")
+
     design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
     return design_space
 
@@ -48,7 +60,7 @@ def test_add_categorical_variable(categorical_design_space) -> None:
     """Check the addition of a categorical variable with a value."""
     variable = categorical_design_space.variables["material"]
     assert variable.type == VariableType.CATEGORICAL
-    assert variable.categories == ("steel", "aluminium", "titanium")
+    assert variable.labels == ("steel", "aluminium", "titanium")
     # The current value is the position of the label.
     assert_array_equal(
         categorical_design_space.get_current_value(["material"]), array([1])
@@ -70,14 +82,14 @@ def test_add_categorical_variable_without_value() -> None:
     "kwargs",
     [
         pytest.param(
-            {"categories": ["steel", "aluminium"], "value": "gold"}, id="unknown-label"
+            {"labels": ["steel", "aluminium"], "value": "gold"}, id="unknown-label"
         ),
-        pytest.param({"categories": ["steel", "aluminium"], "value": 1}, id="integer"),
+        pytest.param({"labels": ["steel", "aluminium"], "value": 1}, id="integer"),
         pytest.param(
-            {"categories": ["steel", "aluminium"], "value": ["steel", "gold"]},
+            {"labels": ["steel", "aluminium"], "value": ["steel", "gold"]},
             id="several-labels",
         ),
-        pytest.param({"categories": ["steel", "steel"]}, id="duplicated-categories"),
+        pytest.param({"labels": ["steel", "steel"]}, id="duplicated-labels"),
     ],
 )
 def test_add_categorical_variable_with_invalid_arguments(kwargs, snapshot) -> None:
@@ -89,6 +101,9 @@ def test_add_categorical_variable_with_invalid_arguments(kwargs, snapshot) -> No
     assert "material" not in design_space
 
 
+@pytest.mark.parametrize(
+    "categorical_design_space", ["categorical", "catalog"], indirect=True
+)
 @pytest.mark.parametrize(
     ("value", "names", "expected"),
     [
@@ -154,6 +169,9 @@ def test_set_current_value_with_an_invalid_categorical_value(
         pytest.param(None, None, id="none"),
     ],
 )
+@pytest.mark.parametrize(
+    "categorical_design_space", ["categorical", "catalog"], indirect=True
+)
 def test_set_current_variable_with_labels(
     categorical_design_space, value, expected
 ) -> None:
@@ -167,6 +185,9 @@ def test_set_current_variable_with_labels(
         )
 
 
+@pytest.mark.parametrize(
+    "categorical_design_space", ["categorical", "catalog"], indirect=True
+)
 def test_reference_value(categorical_design_space) -> None:
     """Check that the reference value has labels while the current one has positions."""  # noqa: E501
     reference_value = categorical_design_space.reference_value
@@ -283,7 +304,7 @@ def test_categorical_check_membership_error(
 
 
 @pytest.mark.parametrize(
-    ("n_categories", "unit_value", "position"),
+    ("n_labels", "unit_value", "position"),
     [
         (3, 0.0, 0),
         (3, 0.2, 0),
@@ -302,14 +323,14 @@ def test_categorical_check_membership_error(
         (1, 1.0, 0),
     ],
 )
-def test_categorical_cells(n_categories, unit_value, position) -> None:
-    """Check that each category owns a cell of the unit interval.
+def test_categorical_cells(n_labels, unit_value, position) -> None:
+    """Check that each label owns a cell of the unit interval.
 
     The mapping is not an affine map of the bounds
     but a partition of the unit interval into cells of the same measure.
     """
     design_space = DesignSpace()
-    design_space.add_categorical_variable("c", [str(i) for i in range(n_categories)])
+    design_space.add_categorical_variable("c", [str(i) for i in range(n_labels)])
     design_space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
     design_space.set_current_value({"c": array([0]), "x": array([1.0])})
     with design_space._prepare_untransformation(True):
@@ -320,17 +341,27 @@ def test_categorical_cells(n_categories, unit_value, position) -> None:
         # The normalization of a point gives the centre of its cell,
         # which the denormalization maps back to the same point.
         unit_point = design_space.transform_vect(samples[0])
-        assert unit_point[0] == pytest.approx((position + 0.5) / n_categories)
+        assert unit_point[0] == pytest.approx((position + 0.5) / n_labels)
         assert unit_point[1] == pytest.approx(0.5)
         assert_array_equal(
             design_space.untransform_vect(unit_point, no_check=True), samples[0]
         )
 
 
-def test_categorical_cells_only_variable() -> None:
-    """Check the denormalization of a design space with a categorical variable only."""
+@pytest.mark.parametrize(
+    ("method", "domain"),
+    [
+        ("add_categorical_variable", ["a", "b", "c"]),
+        ("add_catalog_variable", DataFrame({"p": [1, 2, 3]}, index=["a", "b", "c"])),
+    ],
+)
+def test_categorical_cells_only_variable(method, domain) -> None:
+    """Check the denormalization of a design space with a categorical variable only.
+
+    A catalog variable is a categorical variable.
+    """
     design_space = DesignSpace()
-    design_space.add_categorical_variable("c", ["a", "b", "c"], "a")
+    getattr(design_space, method)("c", domain, "a")
     with design_space._prepare_untransformation(True):
         samples = design_space.untransform_vect(
             array([[0.0], [0.5], [1.0]]), no_check=True
@@ -339,6 +370,9 @@ def test_categorical_cells_only_variable() -> None:
     assert_array_equal(samples, array([[0], [1], [2]]))
 
 
+@pytest.mark.parametrize(
+    "categorical_design_space", ["categorical", "catalog"], indirect=True
+)
 def test_categorical_variable_is_not_normalized_by_default(
     categorical_design_space,
 ) -> None:
@@ -411,7 +445,7 @@ def test_check_membership_of_many_non_integer_points(snapshot) -> None:
 def test_sparse_point_with_a_categorical_variable(
     categorical_design_space, method_name, snapshot
 ) -> None:
-    """Check that a sparse point cannot be (de)normalized with categories."""
+    """Check that a sparse point cannot be (de)normalized with labels."""
     with (
         categorical_design_space._prepare_untransformation(True),
         assert_exception(TypeError, snapshot),
@@ -463,7 +497,7 @@ def assert_same_design_space(actual: DesignSpace, expected: DesignSpace) -> None
         assert actual_variable.type == variable.type
         assert actual_variable.size == variable.size
         if isinstance(variable, CategoricalVariable):
-            assert actual_variable.categories == variable.categories
+            assert actual_variable.labels == variable.labels
 
         actual_value = actual._current_value[name]
         expected_value = expected._current_value[name]
@@ -495,7 +529,7 @@ def test_categorical_variable_round_trip(
 
     assert_same_design_space(new_design_space, design_space)
     material = new_design_space.variables["material"]
-    assert material.categories == ("aluminium", "stainless steel", "titanium")
+    assert material.labels == ("aluminium", "stainless steel", "titanium")
     if with_value:
         assert_array_equal(new_design_space.get_current_value(["material"]), [1])
     else:
@@ -507,8 +541,8 @@ def test_categorical_variable_hdf_storage(categorical_io_design_space, tmp_wd) -
     categorical_io_design_space.to_hdf("ds.h5")
     with h5py.File("ds.h5") as h5file:
         group = h5file["design_space"]["material"]
-        assert set(group) == {"categories", "size", "var_type", "value"}
-        assert group["categories"].asstr()[()].tolist() == [
+        assert set(group) == {"labels", "size", "var_type", "value"}
+        assert group["labels"].asstr()[()].tolist() == [
             "aluminium",
             "stainless steel",
             "titanium",
@@ -541,14 +575,14 @@ def test_categorical_variable_hdf_append(categorical_io_design_space, tmp_wd) ->
     )
 
 
-def test_categorical_variable_hdf_append_with_other_categories(
+def test_categorical_variable_hdf_append_with_other_labels(
     categorical_io_design_space, tmp_wd, snapshot
 ) -> None:
-    """Check that the categories cannot change when appending to an HDF file."""
+    """Check that the labels cannot change when appending to an HDF file."""
     categorical_io_design_space.to_hdf("ds.h5")
     other_design_space = DesignSpace()
     other_design_space.add_real_variable("x", 2, 0.0, 1.0, (0.25, 0.5))
-    # The categories are the same ones, in another order.
+    # The labels are the same ones, in another order.
     other_design_space.add_categorical_variable(
         "material", ("titanium", "stainless steel", "aluminium")
     )
@@ -591,33 +625,31 @@ def test_categorical_variable_hdf_labels(label, tmp_wd) -> None:
     assert variable.decode(new_design_space._current_value["c"])[0] == label
 
 
-def _add_categories_to_a_real_variable(h5file: h5py.File) -> None:
-    """Store categories for the real variable ``x``.
+def _add_labels_to_a_real_variable(h5file: h5py.File) -> None:
+    """Store labels for the real variable ``x``.
 
     Args:
         h5file: The HDF file of the design space, opened in append mode.
     """
     h5file["design_space"]["x"].create_dataset(
-        "categories", data=array(["a", "b"], dtype=h5py.string_dtype())
+        "labels", data=array(["a", "b"], dtype=h5py.string_dtype())
     )
 
 
-def _remove_the_categories(h5file: h5py.File) -> None:
-    """Remove the categories of the categorical variable ``material``.
+def _remove_the_labels(h5file: h5py.File) -> None:
+    """Remove the labels of the categorical variable ``material``.
 
     Args:
         h5file: The HDF file of the design space, opened in append mode.
     """
-    del h5file["design_space"]["material"]["categories"]
+    del h5file["design_space"]["material"]["labels"]
 
 
 @pytest.mark.parametrize(
     "alter",
     [
-        pytest.param(
-            _add_categories_to_a_real_variable, id="categories-of-a-real-variable"
-        ),
-        pytest.param(_remove_the_categories, id="no-categories"),
+        pytest.param(_add_labels_to_a_real_variable, id="labels-of-a-real-variable"),
+        pytest.param(_remove_the_labels, id="no-labels"),
     ],
 )
 def test_hdf_invalid_file(categorical_io_design_space, tmp_wd, alter, snapshot) -> None:
@@ -643,13 +675,13 @@ def test_categorical_variable_to_scalar_variables() -> None:
 
 
 def test_categorical_variable_copy_and_pickle(categorical_design_space) -> None:
-    """Check that copying and unpickling preserve the categories."""
+    """Check that copying and unpickling preserve the labels."""
     for design_space in (
         deepcopy(categorical_design_space),
         pickle.loads(pickle.dumps(categorical_design_space)),
     ):
         assert design_space == categorical_design_space
-        assert design_space.variables["material"].categories == (
+        assert design_space.variables["material"].labels == (
             "steel",
             "aluminium",
             "titanium",
@@ -667,7 +699,7 @@ def test_categorical_variable_extend_and_filter(categorical_design_space) -> Non
     assert other_design_space == categorical_design_space
 
     categorical_design_space.filter_dimensions("material", [0])
-    assert categorical_design_space.variables["material"].categories == (
+    assert categorical_design_space.variables["material"].labels == (
         "steel",
         "aluminium",
         "titanium",

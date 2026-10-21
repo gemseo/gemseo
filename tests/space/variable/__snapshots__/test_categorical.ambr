@@ -1,33 +1,33 @@
 # serializer version: 1
 # name: test_decode_unknown_position[positions0]
-  '2 is not the position of a category; the categories are [steel, aluminium].'
+  "2 is not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_decode_unknown_position[positions1]
-  '-1 is not the position of a category; the categories are [steel, aluminium].'
+  "-1 is not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_decode_unknown_position[positions2]
-  '5 is not the position of a category; the categories are [steel, aluminium].'
+  "5 is not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_decode_unknown_position[positions3]
-  '0.5 is not the position of a category; the categories are [steel, aluminium].'
+  "0.5 is not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_decode_unknown_position[positions4]
-  'nan is not the position of a category; the categories are [steel, aluminium].'
+  "nan is not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_decode_unknown_position[positions5]
-  '0.5 and 2 are not the position of a category; the categories are [steel, aluminium].'
+  "0.5 and 2 are not the position of a label; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_encode_unknown_label[labels0]
-  "'gold' is not a category of the variable; the categories are [steel, aluminium]."
+  "'gold' is not a label of the variable; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_encode_unknown_label[labels1]
-  "'gold' is not a category of the variable; the categories are [steel, aluminium]."
+  "'gold' is not a label of the variable; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_encode_unknown_label[labels2]
-  '1 is not a category of the variable; the categories are [steel, aluminium].'
+  "1 is not a label of the variable; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_encode_unknown_label[labels3]
-  'None is not a category of the variable; the categories are [steel, aluminium].'
+  "None is not a label of the variable; the labels are ['steel', 'aluminium']."
 # ---
 # name: test_filter_components_rejects_other_selections[components0]
   'A categorical variable is scalar; its size cannot be set to 0.'
@@ -45,22 +45,22 @@
   'assignment destination is read-only'
 # ---
 # name: test_out_of_domain_messages
-  "The following coordinate of variable 'x' is not the position of one of its categories [a, b]: 3 (index 0)."
+  "The following coordinate of variable 'x' is not the position of one of its labels ['a', 'b']: 3 (index 0)."
 # ---
 # name: test_out_of_domain_messages.1
-  'The variable x is categorical with the categories [a, b]; got the coordinate x[0] = 3, which is not the position of a category.'
+  "The variable x is categorical with the labels ['a', 'b']; got the coordinate x[0] = 3, which is not the position of a label."
 # ---
 # name: test_rejections[kwargs0]
   '''
   1 validation error for CategoricalVariable
-    Value error, A categorical variable must have at least one category. [type=value_error, input_value={'categories': []}, input_type=dict]
+    Value error, A categorical variable must have at least one label. [type=value_error, input_value={'labels': []}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs10]
   '''
   1 validation error for CategoricalVariable
-  categories
+  labels
     Field required [type=missing, input_value={}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/missing
   '''
@@ -68,28 +68,28 @@
 # name: test_rejections[kwargs1]
   '''
   1 validation error for CategoricalVariable
-    Value error, A categorical variable must have at least one category. [type=value_error, input_value={'categories': ()}, input_type=dict]
+    Value error, A categorical variable must have at least one label. [type=value_error, input_value={'labels': ()}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs2]
   '''
   1 validation error for CategoricalVariable
-    Value error, The following category appears several times: 'a'. [type=value_error, input_value={'categories': ['a', 'a']}, input_type=dict]
+    Value error, The following label appears several times: 'a'. [type=value_error, input_value={'labels': ['a', 'a']}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs3]
   '''
   1 validation error for CategoricalVariable
-    Value error, The following categories appear several times: 'a' and 'b'. [type=value_error, input_value={'categories': ['a', 'b', 'a', 'b']}, input_type=dict]
+    Value error, The following labels appear several times: 'a' and 'b'. [type=value_error, input_value={'labels': ['a', 'b', 'a', 'b']}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs4]
   '''
   1 validation error for CategoricalVariable
-  categories.1
+  labels.1
     Input should be a valid string [type=string_type, input_value=1, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/string_type
   '''
@@ -97,10 +97,10 @@
 # name: test_rejections[kwargs5]
   '''
   2 validation errors for CategoricalVariable
-  categories.0
+  labels.0
     Input should be a valid string [type=string_type, input_value=1, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/string_type
-  categories.1
+  labels.1
     Input should be a valid string [type=string_type, input_value=2, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/string_type
   '''
@@ -108,7 +108,7 @@
 # name: test_rejections[kwargs6]
   '''
   1 validation error for CategoricalVariable
-  categories
+  labels
     Input should be a valid tuple [type=tuple_type, input_value='ab', input_type=str]
       For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
   '''
@@ -116,7 +116,7 @@
 # name: test_rejections[kwargs7]
   '''
   1 validation error for CategoricalVariable
-  categories.0
+  labels.0
     Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]
       For further information visit https://errors.pydantic.dev/X.Y/v/string_type
   '''
@@ -124,7 +124,7 @@
 # name: test_rejections[kwargs8]
   '''
   1 validation error for CategoricalVariable
-    Value error, size is read-only; the input of a CategoricalVariable is categories. [type=value_error, input_value={'categories': ['a'], 'size': 2}, input_type=dict]
+    Value error, size is read-only; the input of a CategoricalVariable is labels. [type=value_error, input_value={'labels': ['a'], 'size': 2}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

@@ -693,18 +693,20 @@ def catalog_problem() -> OptimizationProblem:
 @pytest.mark.parametrize(
     ("library_class", "algo_name"), [(ScipyOpt, "SLSQP"), (SciPyDOE, "MC")]
 )
-@pytest.mark.parametrize("handles_integer_and_discrete", [False, True])
+@pytest.mark.parametrize("handles_the_other_kinds", [False, True])
 def test_catalog_variable_unsuitability(
-    catalog_problem, library_class, algo_name, handles_integer_and_discrete
+    catalog_problem, library_class, algo_name, handles_the_other_kinds
 ) -> None:
     """Check that a driver not handling catalog variables is unsuited to them.
 
-    This holds even for an algorithm handling integer and discrete variables.
+    This holds even for an algorithm handling integer, discrete
+    and categorical variables, although a catalog variable is categorical.
     """
     description = dataclasses.replace(
         library_class.ALGORITHM_INFOS[algo_name],
-        handle_integer_variables=handles_integer_and_discrete,
-        handle_discrete_variables=handles_integer_and_discrete,
+        handle_integer_variables=handles_the_other_kinds,
+        handle_discrete_variables=handles_the_other_kinds,
+        handle_categorical_variables=handles_the_other_kinds,
     )
     assert not description.handle_catalog_variables
     assert not library_class.is_algorithm_suited(description, catalog_problem)
