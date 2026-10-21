@@ -109,10 +109,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     It comes with `gemseo.space.variable.CatalogVariable`, `VariableType.CATALOG`
     and `DriverDescription.handle_catalog_variables`;
     no GEMSEO driver handles such a variable yet. [#1791](https://gitlab.com/gemseo/dev/gemseo/-/issues/1791)
-- `DesignSpace.name_to_normalization_mask` maps a variable name to the mask of the components
-  to be normalized; it replaces the `DesignSpace.normalize` attribute.
-- `DesignSpace.denormalize_vect` and `DesignSpace.denormalize_grad` replace
-  `DesignSpace.unnormalize_vect` and `DesignSpace.unnormalize_grad`.
 - `DesignSpace.variables` is a read-only live view of the variables of the space, mapping a variable name to an immutable variable, which goes stale when the space changes it; the view also exposes `name_to_indices` and `has_variables_of_type`, e.g. `has_variables_of_type(VariableType.INTEGER)`. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
 - `DesignSpace.get_integer_mask` returns whether the components of the design vector
     are integer, one result per component. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
@@ -569,7 +565,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 #### Utilities
 
-- `HashableNdarray` supports the arrays that are not C-contiguous, e.g. a strided slice, and the zero-dimensional arrays, so that such arrays can be keys of a `Database`; the hash of an `int32` (resp. `uint32`) array is computed as for `int64` (resp. `uint64`) on all platforms, for the keys of a `Database` and the data of the caches. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
+- `HashableNdarray` supports the arrays that are not C-contiguous, e.g. a strided slice, and the zero-dimensional arrays, so that such arrays can be keys of a `Database`. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
 - `compare_dict_of_arrays` returns `False` when a string array is compared to an array of numbers with a tolerance, instead of raising an error. [#2038](https://gitlab.com/gemseo/dev/gemseo/-/issues/2038)
 - `MultiLineString._repr_html_` no longer produces malformed HTML when the indentation increases by more than one level at a time.
 - `filter_names` now keeps the expected names when `names_to_keep` is an iterator, e.g. a generator; it used to return no name, and an empty iterator did not keep all the names. This affected the `input_names` argument of the `plot` methods of the sensitivity analyses. `names_to_keep` no longer accepts `None`; use an empty iterable to keep all the names.
@@ -695,7 +691,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 ##### Functions and problems
 
 - A function declaring `with_normalized_inputs=True` is refused with a `ValueError` when a driver is run on the problem.
-- In a relaxed run, `OptimizationResult.x_opt` is relaxed, the design space receives the projection of the optimum onto the declared domain, held by the new fields `OptimizationResult.x_opt_projected`, `x_opt_projected_as_dict`, `f_opt_projected` and `is_feasible_projected`, and `Database.to_dataset()` exports a relaxed variable as a float column. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
+- In a relaxed run, `OptimizationResult.x_opt` is relaxed, the design space receives the projection of the optimum onto the declared domain, also given by `OptimizationResult.x_opt_projected`, and `Database.to_dataset()` exports a relaxed variable as a float column. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - The `restriction_indices` argument was renamed to `frozen_indexes`.
 - The `restriction_values` argument was renamed to `frozen_values`.
 - A `name` argument was added; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
@@ -1184,7 +1180,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 #### Caches
 
-- Since the hash of an array whose data type is `int32` (resp. `uint32`) is now computed as for `int64` (resp. `uint64`) on all platforms, a cache persisted with a previous version whose input data include 32-bit integer arrays leads to cache misses and recomputations, not to corruption. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
+- The hash of an `int32` (resp. `uint32`) array is computed as for `int64` (resp. `uint64`) on all platforms, for the keys of a `Database` and the data of the caches; so a cache persisted by a previous version with 32-bit integer input data leads to cache misses and recomputations, not to corruption. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
 - A full cache with a zero tolerance, e.g. a `MemoryFullCache` or an `HDF5Cache`, looks an entry up by its hash instead of comparing its input data to those of all the entries, which made filling it quadratic; on a DOE of 20 samples of the SSBJ problem, this takes 4 seconds instead of 78 with an `HDF5Cache` and 13 instead of 25 with a `MemoryFullCache`. [#2017](https://gitlab.com/gemseo/dev/gemseo/-/issues/2017)
 
 #### Derivatives
@@ -1244,7 +1240,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     including those embedded in other settings classes,
     instead of the class that it is called on only;
     a settings class that overrides the default of `n_processes` keeps its own value. [#1914](https://gitlab.com/gemseo/dev/gemseo/-/issues/1914)
-- Rename `MDAGSNewton_Settings` to `MDAGaussSeidelNewtonRaphson_Settings`, and its field `newton_settings` to `newton_raphson_settings`.
 
 #### Formulations
 
@@ -1424,8 +1419,6 @@ All the removals are breaking changes.
   `NAMES_GROUP`, `LB_GROUP`, `UB_GROUP`, `VAR_TYPE_GROUP`, `VALUE_GROUP`, `SIZE_GROUP`,
   `MINIMAL_FIELDS` and `TABLE_NAMES`; they were implementation details of `to_hdf`, `from_hdf`,
   `to_csv`, `from_csv` and `get_pretty_table`. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
-- `DesignSpace.has_integer_variables` is removed; use
-    `DesignSpace.variables.has_variables_of_type(VariableType.INTEGER)` instead. [#1956](https://gitlab.com/gemseo/dev/gemseo/-/issues/1956)
 - The class attribute `DesignSpace.DesignVariableType` is removed; use `gemseo.enum.VariableType` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
 - The class `ParameterSpace`, which mixed deterministic and uncertain variables, was removed, as was the factory `ParameterSpaceFactory`; use `RandomSpace` for a space of uncertain variables and `random_space_factory` for its factory.
 - `ParameterSpace.add_random_variable` and `ParameterSpace.add_random_vector` were replaced by `RandomSpace.add_variable(name, *settings)`.
