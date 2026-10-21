@@ -17,7 +17,7 @@ Changelog](https://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 There is also a page containing the history of the breaking changes in GEMSEO:
-<https://gemseo.readthedocs.io/en/stable/software/upgrading.html>.
+<https://gemseo.gitlab.io/dev/gemseo/develop/software/upgrading/>.
 
 <!-- towncrier release notes start -->
 
