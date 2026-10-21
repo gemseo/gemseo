@@ -177,7 +177,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `MultiStart` optimization algorithm has a new setting `skip_failed_starting_points`
     to choose whether to skip the starting points whose sub-optimization fails
     (default) or to stop at the first failure. [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739)
-- Added SciPy algorithm COBYLA. [#1745](https://gitlab.com/gemseo/dev/gemseo/-/issues/1745)
+- The SciPy algorithm `COBYLA` is available. [#1745](https://gitlab.com/gemseo/dev/gemseo/-/issues/1745)
 - `DriverDescription.handle_categorical_variables` tells whether a driver handles categorical variables; it is `False`
   by default and `True` for `DOEAlgorithmDescription`. [#1991](https://gitlab.com/gemseo/dev/gemseo/-/issues/1991)
 - `BaseDOELibrary.sample_space` and the function `gemseo.compute_doe` sample any `BaseVariableSpace`, hence a
@@ -201,9 +201,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
   users to provide instances of `BaseMDA` or `Discipline` to be used as the MDA1 or the MDA2 of the formulation. These
   instances shall be provided via the fields `mda1_instance` and `mda2_instance` of the
   `gemseo.formulation.bilevel_settings.BiLevel_Settings`.
-- It is now possible to deactivate the use of the MDA1 and MDA2 of the `gemseo.formulation.bilevel.BiLevel` and its
-  derived class `gemseo.formulation.bilevel_bcd.BiLevelBCD` using the `use_mda1` and `use_mda2` of the
-  `gemseo.formulation.bilevel_settings.BiLevel_Settings`.
+- The `use_mda1` and `use_mda2` fields of `BiLevel_Settings` deactivate the MDA1 and the MDA2 of `BiLevel` and `BiLevelBCD`.
 - The `gemseo.formulation.bilevel.BiLevel` and its derived class `gemseo.formulation.bilevel_bcd.BiLevelBCD` now allow
   users to provide instances of `Discipline` to be used as sub-scenarios of the formulation. These instances shall be
   provided via the `disciplines_as_sub_scenario` field of the `gemseo.formulation.bilevel_settings.BiLevel_Settings`.
@@ -344,7 +342,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `split_namespace` now splits a name into the `(namespace, name)` pair on the last separator only, as documented; it previously split on every separator, returning a list of all segments. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
 - `AutoPyDiscipline` supports callable class instances as values of `py_func` and `py_jac`. [#1553](https://gitlab.com/gemseo/dev/gemseo/-/issues/1553)
 - The differentiated inputs/outputs of the `JobSchedulerDiscipline` (named `JobSchedulerDisciplineWrapper` in 6.3) are now consistent with ones of the wrapped discipline. [#1657](https://gitlab.com/gemseo/dev/gemseo/-/issues/1657)
-- It is now possible to rename input and output grammars that have different names, to a same one. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
+- The variables of the input and output grammars with different names can be renamed to the same name. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
 - The `RemappingDiscipline` supports disciplines without input variables. [#1691](https://gitlab.com/gemseo/dev/gemseo/-/issues/1691)
 - The `RemappingDiscipline` class now correctly accounts for the remapped names when using the `linearize` method. [#1843](https://gitlab.com/gemseo/dev/gemseo/-/issues/1843)
 - A `Discipline` with an input whose value is neither a number nor a NumPy array,
@@ -390,7 +388,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `CenteredDifferences.compute_optimal_step` and `ForwardDifferences.compute_optimal_step` work for vector functions whose differentiation step is a float. [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
 - `DisciplineChain` (formerly `MDOChain`) no longer computes unnecessary Jacobians for backward-coupled disciplines. [#1660](https://gitlab.com/gemseo/dev/gemseo/-/issues/1660)
 - `DisciplineChain` Jacobian is now correct when a coupling variable is also a chain-level input. [#1670](https://gitlab.com/gemseo/dev/gemseo/-/issues/1670)
-- Fixed bug where the hybrid jacobian approximation method was approximating all entries of the jacobian instead of just the missing ones. [#1736](https://gitlab.com/gemseo/dev/gemseo/-/issues/1736)
+- The hybrid Jacobian approximation approximates only the missing entries of the Jacobian, instead of all of them. [#1736](https://gitlab.com/gemseo/dev/gemseo/-/issues/1736)
 - The Jacobian of `DisciplineChain` (`MDOChain` in 6.3) is now correct when a discipline overwrites the output of an earlier discipline without consuming it; each consumer is differentiated with respect to its closest upstream producer, as in execution. [#1821](https://gitlab.com/gemseo/dev/gemseo/-/issues/1821)
 
 #### Functions and problems
@@ -432,7 +430,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 #### Spaces
 
-- Fixed the `append` option in `DesignSpace.to_hdf`. [#1368](https://gitlab.com/gemseo/dev/gemseo/-/issues/1368)
+- The `append` option of `DesignSpace.to_hdf` works. [#1368](https://gitlab.com/gemseo/dev/gemseo/-/issues/1368)
 - Normalizing a gradient over a design space with integer variables no longer rounds its integer components. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - `DesignSpace.filter_dimensions` can now consider multi-character variable names. [#1695](https://gitlab.com/gemseo/dev/gemseo/-/issues/1695)
 - `DesignSpace.convert_dict_to_array` supports any dictionary of the form `{variable_name: variable_value, ...}` with `variable_value` of shape `(..., variable_dimension)`, e.g. `(n_samples, variable_dimension)`. [#1782](https://gitlab.com/gemseo/dev/gemseo/-/issues/1782)
@@ -1120,9 +1118,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - Consequently, `HSICAnalysis.indices.p_value_permutation` is empty unless `use_permutations` is `True`, and both `HSICAnalysis.filter(use_asymptotic=False)` and `HSICAnalysis.main_indices` (when `HSICAnalysis.main_method` is `p-value-permutation`) raise a `ValueError` in that case.
 - As the asymptotic p-values do not exist for a conditional HSIC analysis, `HSICAnalysis.filter` now requires `use_permutations` to be `True` for this analysis type.
 - `HSICAnalysis.main_indices` raises a `ValueError` when the p-values associated with `HSICAnalysis.main_method` are not available, instead of returning an empty dictionary. [#1908](https://gitlab.com/gemseo/dev/gemseo/-/issues/1908)
-- Replace the `**settings` of `BaseSensitivityAnalysis.plot_bar` by `bar_plot_settings: BarPlot_Settings | None = None`.
-- Replace the `**settings` of `BaseSensitivityAnalysis.plot_radar` by `radar_chart_settings: RadarChart_Settings | None = None` and remove the `min_radius` and `max_radius` arguments; use the `rmin` and `rmax` fields of `RadarChart_Settings` instead.
-- The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` have been removed.
+- The `**settings` of `BaseSensitivityAnalysis.plot_bar` were replaced by `bar_plot_settings: BarPlot_Settings | None = None`.
+- The `**settings` of `BaseSensitivityAnalysis.plot_radar` were replaced by `radar_chart_settings: RadarChart_Settings | None = None` and its `min_radius` and `max_radius` arguments were removed; use the `rmin` and `rmax` fields of `RadarChart_Settings` instead.
+- The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` were removed.
 - The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) has been renamed to `random_space` and takes a `RandomSpace`.
 
 ##### Benchmark problems
@@ -1318,11 +1316,9 @@ All the removals are breaking changes.
 #### Packaging and imports
 
 - Snippets have been removed from docstrings. Use the examples in the documentation instead. [#1700](https://gitlab.com/gemseo/dev/gemseo/-/issues/1700)
-- Support for Python 3.10; the minimum supported version is now Python 3.11.
-- The `typing-extensions` dependency, whose features are now provided by the standard library.
-- The `strenum` dependency; the enumerations now derive from `enum.StrEnum`.
-  The member names and values did not change.
-  `enum.StrEnum` is not a subclass of `strenum.StrEnum`, so code that is type-annotated with `strenum.StrEnum` must be changed to `enum.StrEnum`.
+- The support of Python 3.10 was removed; the minimum supported version is Python 3.11.
+- The `typing-extensions` dependency was removed, as its features are provided by the standard library.
+- The `strenum` dependency was removed; the enumerations derive from `enum.StrEnum`, with the same member names and values. `enum.StrEnum` is not a subclass of `strenum.StrEnum`, so code that is type-annotated with `strenum.StrEnum` must use `enum.StrEnum`.
 - The following names were removed with no replacement; importing one raises an error saying so:
     - the type aliases `MNBIOptionsType` of `gemseo.algos.opt.mnbi.mnbi`, `DisciplineIOMapping` of `gemseo.core.derivatives.chain_rule`, `Operand1T` and `Operand2T` of `gemseo.core.derivatives.jacobian_operator`, `OperatorType` of `gemseo.core.mdo_functions.mdo_function`, `DOEAlgorithmName` of `gemseo.mlearning.regression.algos.ot_gpr_settings`, `SavedObjectType` of `gemseo.mlearning.regression.algos.rbf`, `ScatterMatrixOption` of `gemseo.post.dataset.scatter_plot_matrix`, `DatasetPlotOption` of `gemseo.post.mlearning.ml_regressor_quality_viewer`, `ScenarioInputDataType` of `gemseo.scenarios.base_scenario`, and `ParametersType` and `StandardParametersType` of `gemseo.uncertainty.distributions.base_distribution` and `gemseo.uncertainty.distributions.scalar_distribution_mixin`;
     - the helper `copy_field_opt` of `gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings`, `gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings`, `gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings` and `gemseo.formulations.bilevel_bcd_settings`;
@@ -1336,14 +1332,7 @@ All the removals are breaking changes.
 - `gemseo.utils.logging.DEFAULT_MESSAGE_FORMAT` was removed.
 - `gemseo.utils.logging.LoggingSettings` was removed.
 - `gemseo.utils.logging.LOGGING_SETTINGS` was removed; use `gemseo.configuration.logging` instead. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
-- The `fast` option of the global configuration
-    and the `GEMSEO_FAST` environment variable;
-    use the methods `enable_fast_mode` and `disable_fast_mode`
-    of the global configuration instead.
-    Passing `fast` to the global configuration,
-    from the constructor, from a dotenv file
-    or from the `GEMSEO_FAST` environment variable,
-    raises an error naming these methods. [#1914](https://gitlab.com/gemseo/dev/gemseo/-/issues/1914)
+- The `fast` option of the global configuration and the `GEMSEO_FAST` environment variable were removed; use the methods `enable_fast_mode` and `disable_fast_mode` of the global configuration instead. Passing `fast` to the global configuration, from the constructor, from a dotenv file or from the `GEMSEO_FAST` environment variable, raises an error naming these methods. [#1914](https://gitlab.com/gemseo/dev/gemseo/-/issues/1914)
 - `gemseo.utils.logging_tools` was removed; use `gemseo.util.logging` instead.
 
 #### Settings and factories
