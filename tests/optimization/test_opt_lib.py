@@ -35,9 +35,11 @@ from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_global.settings.dual_annealing import (
     DUAL_ANNEALING_Settings,
 )
+from gemseo.optimization.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
+from gemseo.optimization.scipy_milp.scipy_milp import ScipyMILP
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
@@ -132,6 +134,34 @@ def test_is_algorithm_suited_pbm_type() -> None:
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
         == _UnsuitabilityReason.NON_LINEAR_PROBLEM
     )
+
+
+@pytest.mark.parametrize(
+    "library_cls",
+    [
+        pytest.param(ScipyLinprog, id="ScipyLinprog"),
+        pytest.param(ScipyMILP, id="ScipyMILP"),
+    ],
+)
+def test_linear_library_filters_out_nonlinear_problem(library_cls) -> None:
+    """Check that a linear-only library has no algorithm for a non-linear problem."""
+    assert not library_cls.filter_adapted_algorithms(Rosenbrock())
+
+
+@pytest.mark.parametrize(
+    ("library_cls", "algo_name"),
+    [
+        pytest.param(ScipyLinprog, "INTERIOR_POINT", id="INTERIOR_POINT"),
+        pytest.param(ScipyLinprog, "DUAL_SIMPLEX", id="DUAL_SIMPLEX"),
+        pytest.param(ScipyMILP, "MILP", id="MILP"),
+    ],
+)
+def test_linear_algorithm_rejects_nonlinear_problem(
+    library_cls, algo_name, snapshot
+) -> None:
+    """Check that a linear-only algorithm raises on a non-linear problem."""
+    with assert_exception(ValueError, snapshot):
+        library_cls(algo_name).execute(Rosenbrock())
 
 
 @pytest.mark.parametrize("kind", ["integer", "discrete", "categorical"])

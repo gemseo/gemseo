@@ -31,9 +31,7 @@ from gemseo.optimization.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.optimization.scipy_linprog.settings.highs_dual_simplex import (
     DUAL_SIMPLEX_Settings,
 )
-from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -45,15 +43,6 @@ def library_cls() -> type[ScipyLinprog]:
 def test_factory(library_cls) -> None:
     """Tests creation of library from factory."""
     assert library_cls == ScipyLinprog
-
-
-def test_nonlinear_optimization_problem(library_cls, snapshot) -> None:
-    """Tests that library does not support non-linear problems."""
-    problem = Rosenbrock()
-    assert not library_cls.filter_adapted_algorithms(problem)
-    for algo_name in library_cls.ALGORITHM_INFOS:
-        with assert_exception(ValueError, snapshot):
-            library_cls(algo_name).execute(problem)
 
 
 def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:

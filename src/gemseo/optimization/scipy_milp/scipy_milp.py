@@ -63,6 +63,9 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_inequality_constraints: bool = True
     """Whether the optimization algorithm handles inequality constraints."""
 
+    for_linear_problems: bool = True
+    """Whether the optimization algorithm is dedicated to linear problems."""
+
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
