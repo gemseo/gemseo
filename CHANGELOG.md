@@ -229,7 +229,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 - The `MDOScenario.add_objective` method allows to minimize and maximize groups of objectives. [#847](https://gitlab.com/gemseo/dev/gemseo/-/issues/847)
 - The directory manager organizes the files created at run time into a directory tree mirroring the workflow of the scenario, with one directory per scenario, iteration or sample, MDA iteration and discipline execution, and writes an execution trace in each of them; enable it with `configuration.directory_manager.enable = True` and see [the directory manager][the-directory-manager] and its [settings][global-configuration-directory-manager]. GEMSEO now requires `pyyaml`, used to write the traces. [#1569](https://gitlab.com/gemseo/dev/gemseo/-/issues/1569)
-- `BaseScenario` was renamed `EvaluationScenario` and can now be instantiated: it evaluates disciplinary outputs over an input space with a DOE algorithm, the multi-disciplinary process being specified through a formulation (`BaseFormulation`). [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
+- `EvaluationScenario`, which replaces `BaseScenario` as the base class of `MDOScenario`, can be instantiated: it evaluates disciplinary outputs over an input space with a DOE algorithm, the multi-disciplinary process being specified through a formulation (`BaseFormulation`). [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
 - `EvaluationScenario.execute` (`BaseScenario.execute` in 6.3.2, which returned `None`) returns the result of the algorithm's execution, if there is one.
     In the case of an `MDOScenario`, this result is an `OptimizationResult`. [#1669](https://gitlab.com/gemseo/dev/gemseo/-/issues/1669)
 - The `wrap_scenario_in_job_scheduler` function of `gemseo.scenario`, also available from `gemseo`, allows wrapping an `EvaluationScenario` (and hence an `MDOScenario`) for remote execution on an HPC cluster via a job scheduler; its `adapter_settings` argument allows customizing the underlying scenario adapter, e.g. to save the database of the scenario. [#1688](https://gitlab.com/gemseo/dev/gemseo/-/issues/1688)
@@ -755,6 +755,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`, where `ParameterSpace.compute_samples` returned a list of dictionaries, one per sample.
 - The argument `use_design_space_order` of `DesignSpace.get_variables_indexes` is renamed `use_space_order` and the argument `design_values` of `DesignSpace.convert_dict_to_array` is renamed `variable_values`; both methods are now defined by `BaseVariableSpace`.
 - An `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer, e.g. `DesignSpace.add_variable("n", type_="integer", upper_bound=1e30)` raises a `ValidationError` reading `The following upper bound component is outside the range of a 64-bit integer while the variable is of type integer: 1e+30 (index 0).`, where such a bound used to be accepted and stored as a floating-point number; an infinite bound is still accepted.
+- A space of variables is now either a `DesignSpace`, defined by bounds and used for optimization, or a `RandomSpace`, defined by probability distributions and used for sampling; a single space can no longer mix both kinds of variables.
 
 ##### Algorithms
 
@@ -1168,12 +1169,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The minimum versions of several dependencies were raised: `fastjsonschema` 2.16.2, `h5py` 3.8.0, `jinja2` 3.1.2, `matplotlib` 3.10.1, `minisom` 2.3.6, `networkx` 3.0, `nlopt` 2.7.1, `numpy` 1.24, `openpyxl` 3.1, `openturns` 1.27, `packaging` 23.2, `pandas` 2.2, `plotly` 6.0.0, `prettytable` 3.5.0, `pydantic` 2.12, `pydantic-settings` 2.9.0, `requests` 2.28.2, `scikit-learn` 1.5, `scipy` 1.15, `sympy` 1.12, `tqdm` 4.64.1 and `xxhash` 3.2.0.
   `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
 
-#### Configuration and logging
-
-- Documented that the logging configuration only applies to GEMSEO and its plugins
-    and that client code is responsible for configuring its own loggers,
-    in line with the Python recommendation for library logging. [#1811](https://gitlab.com/gemseo/dev/gemseo/-/issues/1811)
-
 #### Settings and factories
 
 - The factory singletons are now named in lower snake case, e.g. the module-level `MDO_FORMULATION_FACTORY` of `gemseo.formulations.factory` is now the `mdo_formulation_factory` of `gemseo.formulation.factory` and the `PROGRESS_BAR_DATA_FACTORY` of `gemseo.algos.progress_bar_data.factory` is now the `progress_bar_data_factory` of `gemseo.core.algorithm.progress_bar_data.factory`.
@@ -1211,6 +1206,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 - A function output holding a `NaN` is recorded in the database before the evaluation stops (`stop_if_nan=True`), and a design point holding a `NaN` stops the evaluation also when no database is kept (`use_database=False`). [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - The `name` argument of `Concatenate` is now optional; its default value is `""`, in which case the name of the function joins the names of the concatenated functions. [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
+- When the input space of a `Database` is not a `DesignSpace`, writing the database to an HDF file logs a warning once and omits the input space from the file: the evaluations themselves are written and re-read as usual, but the reloaded database describes its input values with a plain `DesignSpace` instead of the original random space.
 
 #### Spaces
 
@@ -1231,6 +1227,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
   read as a dictionary unchanged. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
 - `str(design_space)`, `DesignSpace.get_pretty_table` and `DesignSpace.to_csv` strip the imaginary part of the current value of every variable. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
 - The error raised when mixing probability distributions from different libraries reads `"A random space cannot mix probability distributions based on different libraries; got ..."` instead of `"A parameter space cannot ..."`.
+- The bounds of a random variable, the limits of the support of its probability distribution, are descriptive only: the input values of a problem defined over a `RandomSpace` are not checked against them and they do not bound the finite-difference perturbations.
 
 #### Algorithms
 
@@ -1295,7 +1292,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 #### Utilities
 
-- The `image_comparison` function of `gemseo.utils.testing.helpers` was removed; the tests of plugins can use the `snapshot_matplotlib` fixture of [syrupy-matplotlib](https://pypi.org/project/syrupy-matplotlib/) instead. [#1760](https://gitlab.com/gemseo/dev/gemseo/-/issues/1760)
 - The `gemseo.utils.derivatives.error_estimators.EPSILON` constant was renamed to `gemseo.util.constant.epsilon`.
 - The `gemseo.utils.constants.C_LONG_MAX` constant was renamed to `gemseo.util.constant.infinite_int`.
 - The `gemseo.util.constant.epsilon` constant is now a builtin `float` instead of a `numpy.float64`, so that it no longer upcasts `float32` arrays. [#1873](https://gitlab.com/gemseo/dev/gemseo/-/issues/1873)
@@ -1412,7 +1408,6 @@ All the removals are breaking changes.
 - The `FunctionFromDiscipline.generator_class` class attribute was removed.
 - The `group_functions` argument of `OptimizationProblem.to_dataset` was removed; functions are now always grouped by category.
 - The `design_space` argument of `OptimizationHistory` was removed; the history stored it without ever using it.
-- When the input space of a `Database` is not a `DesignSpace`, writing the database to an HDF file logs a warning once and omits the input space from the file: the evaluations themselves are written and re-read as usual, but the reloaded database describes its input values with a plain `DesignSpace` instead of the original random space.
 
 #### Spaces
 
@@ -1433,12 +1428,10 @@ All the removals are breaking changes.
     `DesignSpace.variables.has_variables_of_type(VariableType.INTEGER)` instead. [#1956](https://gitlab.com/gemseo/dev/gemseo/-/issues/1956)
 - The class attribute `DesignSpace.DesignVariableType` is removed; use `gemseo.enum.VariableType` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
 - The class `ParameterSpace`, which mixed deterministic and uncertain variables, was removed, as was the factory `ParameterSpaceFactory`; use `RandomSpace` for a space of uncertain variables and `random_space_factory` for its factory.
-- A space of variables is now either a `DesignSpace`, defined by bounds and used for optimization, or a `RandomSpace`, defined by probability distributions and used for sampling; a single space can no longer mix both kinds of variables.
 - `ParameterSpace.add_random_variable` and `ParameterSpace.add_random_vector` were replaced by `RandomSpace.add_variable(name, *settings)`.
 - Unpickling a `ParameterSpace`, or an object holding one, raises a `TypeError`: the removed name resolves to `RandomSpace`, which stores its probability distributions differently, so the space cannot be restored. Rebuild it from the settings of the marginal probability distributions of its random variables.
 - `ParameterSpace.get_tabular_view`, which tabulated per-variable statistics (distribution, transformation, support, mean, standard deviation and range), was removed; `RandomSpace.get_pretty_table` renders a table with a name column and a distribution column only, and the statistics are read from the distribution of a variable, e.g. `space.variables[name].distribution.mean`.
 - The `add_uncertain_variables` argument of `ScalableDesignSpace` was removed, as a design space no longer holds uncertain variables.
-- The bounds of a random variable, the limits of the support of its probability distribution, are descriptive only: the input values of a problem defined over a `RandomSpace` are not checked against them and they do not bound the finite-difference perturbations.
 - A random space is no longer serializable: `to_file`, `from_file`, `to_hdf`, `from_hdf`, `to_csv` and `from_csv` belong to `DesignSpace` only, where a `ParameterSpace` inherited them (without ever storing the probabilistic information). Rebuild a `RandomSpace` from the settings of its marginal probability distributions instead.
 - The `simplify` argument of `DesignSpace.get_pretty_table` was removed, together with the `ParameterSpace` implementation honoring it, which dropped the bound, value and type columns from the tabular view of a space of uncertain variables only; the tabular view of a `RandomSpace` has a name column and a distribution column, so there is nothing left to simplify.
 
@@ -1526,6 +1519,7 @@ All the removals are breaking changes.
 
 #### Utilities
 
+- The `image_comparison` function of `gemseo.utils.testing.helpers` was removed; the tests of plugins can use the `snapshot_matplotlib` fixture of [syrupy-matplotlib](https://pypi.org/project/syrupy-matplotlib/) instead. [#1760](https://gitlab.com/gemseo/dev/gemseo/-/issues/1760)
 - `gemseo.utils.enumeration.merge_enums` and its module were removed; the enumerations previously assembled with it are now defined explicitly. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 - `gemseo.utils.xdsm` was removed; use `gemseo.util.xdsm.xdsm` instead.
 - `gemseo.utils.xdsmizer` was removed; use `gemseo.util.xdsm.xdsmizer` instead.
