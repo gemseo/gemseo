@@ -286,7 +286,9 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 - Specific classes for discrete probability distributions:
 
     - `OTFiniteDiscreteDistribution` based on pairs of values and weights.
-    - `OTBernoulliDistribution` and `SPBernoulliDistribution` based on the probability of a binary event occurring. [#1856](https://gitlab.com/gemseo/dev/gemseo/-/issues/1856)
+    - `OTBernoulliDistribution` and `SPBernoulliDistribution` based on the probability of a binary event occurring.
+
+    [#1856](https://gitlab.com/gemseo/dev/gemseo/-/issues/1856)
 - `MorrisAnalysis.compute_indices` has a `use_elementary_effects` argument
   to compute the indices from the elementary effects,
   namely the finite differences of the OAT method
@@ -616,7 +618,9 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - `Splitter.__init__`: argument `output_names_to_input_indices` → `output_name_to_input_indices`.
     - `gemseo.util.discipline.update_default_input_values` (formerly in `gemseo.utils.discipline`): argument `input_names_to_default_values`
       → `input_name_to_default_value`.
-    - `gemseo.util.string.get_variables_with_components` (formerly in `gemseo.utils.string_tools`): argument `names_to_sizes` → `name_to_size`. [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
+    - `gemseo.util.string.get_variables_with_components` (formerly in `gemseo.utils.string_tools`): argument `names_to_sizes` → `name_to_size`.
+
+    [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
 - All GEMSEO packages and modules now use singular names, e.g. `gemseo.utils` is now `gemseo.util`, `gemseo.datasets` is now `gemseo.dataset`, `gemseo.disciplines` is now `gemseo.discipline`, `gemseo.formulations` is now `gemseo.formulation`, `gemseo.problems` is now `gemseo.problem`, `gemseo.scenarios` is now `gemseo.scenario`, `gemseo.uncertainty.distributions` is now `gemseo.uncertainty.distribution`, `gemseo.uncertainty.statistics` is now `gemseo.uncertainty.statistic`, `gemseo.core.grammars` is now `gemseo.core.grammar`, `gemseo.core.derivatives` is now `gemseo.core.derivative`, `gemseo.core.data_converters` is now `gemseo.core.data_converter`, `gemseo.mlearning.regression.algos` is now `gemseo.machine_learning.regression.model`, `gemseo.utils.derivatives.error_estimators` is now `gemseo.util.derivative.error_estimator` and `gemseo.post.dataset.bars` is now `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class). Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
 - The `gemseo.algos` package was split by domain:
     - `gemseo.algos.opt` is now the top-level package `gemseo.optimization`, which also hosts the optimization problem definition: `gemseo.algos.optimization_problem` is now `gemseo.optimization.problem`, `gemseo.algos.optimization_result` is now `gemseo.optimization.result`, `gemseo.algos.optimization_history` is now `gemseo.optimization.history`, `gemseo.algos.multiobjective_optimization_result` is now `gemseo.optimization.multiobjective_result`, and `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
@@ -1028,7 +1032,9 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - The argument `name` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
       e.g. `selection.add_candidate(LinearRegressor_Settings(fit_intercept=False))` instead of `selection.add_candidate("LinearRegressor", fit_intercept=False)`.
     - The argument `calib_space` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was renamed to `calibration_space`.
-    - The argument `calib_algo` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type. [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
+    - The argument `calib_algo` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type.
+
+    [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
 - The argument `disc_name` of `SurrogateDiscipline` was renamed to `name`.
 - The argument `disc_name` of `create_surrogate` was renamed to `name`.
 - The regressor settings can no longer be passed to `SurrogateDiscipline` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
