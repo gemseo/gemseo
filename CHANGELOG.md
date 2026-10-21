@@ -632,11 +632,14 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - The generic problem infrastructure moved to the new `gemseo.core.problem` package: `gemseo.algos.base_problem` is now `gemseo.core.problem.base`, `gemseo.algos.database` is now `gemseo.core.problem.database`, `gemseo.algos.evaluation_problem` is now `gemseo.core.problem.evaluation` and `gemseo.algos.evaluation_counter` is now `gemseo.core.problem.counter`. The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
     - `gemseo.algos.hashable_ndarray` is now `gemseo.util.hashable_ndarray` and `gemseo.algos.sequence_transformer` is now `gemseo.mda.sequence_transformer`.
 - The base classes and settings extenders of each algorithm family were gathered into a domain `core` package: `gemseo.doe.core`, `gemseo.linear.core`, `gemseo.ode.core`, `gemseo.optimization.core`, `gemseo.mda.core`, `gemseo.formulation.core`, `gemseo.post.core`, `gemseo.uncertainty.distribution.core`, `gemseo.uncertainty.sensitivity.core`, `gemseo.uncertainty.statistic.core`, and, in `gemseo.machine_learning`, the `core`, `regression.core`, `classification.core`, `clustering.core`, `linear_model_fitting.core`, `transformer.core` and `resampling.core` packages. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The protected (`_`-prefixed) ALL_CAPS class attributes are now named in lower snake case too, e.g. `_ATTR_NOT_TO_SERIALIZE` is now `_attr_not_to_serialize`, `_PACKAGE_NAMES` is now `_package_names`, `_CLASS` is now `_class` and `_RESULT_CLASS` is now `_result_class`; subclasses overriding these attributes should be updated to use the new names.
+- The old ALL_CAPS names keep working with a `DeprecationWarning`, except when assigned on the class itself, e.g. `SomeClass.OLD_NAME = value`, which silently has no effect; assign the new name instead, in particular for `OTGaussianProcessRegressor.max_size_for_lapack`, `hmatrix_assembly_epsilon` and `hmatrix_recompression_epsilon`, `BaseGrammar.data_converter_class`, `Correlations.maximum_correlation_coefficient`, `BaseDatasetPlot.default_plot_engine`, `SobieskiProblem.use_original_design_variables_order`, `BaseDiscipline.grammar_directory` and `CallableParallelExecution.multi_processing_start_method`.
 
 ##### Settings and factories
 
 - The `Settings` attributes defining settings classes were renamed to `settings_class`.
 - The `BaseSettings` class was moved from `gemseo.settings.base_settings` to `gemseo.util.pydantic`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
+- The settings models (`BaseSettings` and its subclasses, for the algorithms, formulations, MDAs and post-processors) validate a field when it is assigned after their creation, not only at creation time: assigning a value of a wrong type raises a `ValidationError`, and a `model_validator(mode="after")` that assigns a field calls itself again through that assignment, recursing without end; such a validator must bypass the validation, e.g. `self.__dict__["field"] = value`.
 
 ##### Disciplines
 
@@ -646,6 +649,16 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `MDOAdditiveChain` class was renamed to `AdditiveDisciplineChain`.
 - The `MDOWarmStartedChain` class was renamed to `WarmStartedDisciplineChain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 - `BaseDiscipline.execute()` now returns the output data only, where it previously returned the merged dict of inputs and outputs. Code that read inputs from the return value of `execute()` must be migrated to read them from `discipline.input_data[name]` instead. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
+- The default grammar type of the `AutoPyDiscipline` is `SimpleGrammar`. [#1496](https://gitlab.com/gemseo/dev/gemseo/-/issues/1496)
+- The methods from the `VariableRenamer` class now differentiate inputs and outputs:
+    - The `from_translations` method now needs an additional entry as the tuple's second position, to differentiate inputs and outputs.
+    - The `from_dictionary` method must now take the new format that separates inputs and outputs.
+    - The input files to use the `from_spreadsheet` and `from_csv` methods now need an additional entry as the second column, to differentiate inputs and outputs.
+    - The method `add_translations_by_discipline` now differentiates inputs and outputs through two separate arguments, `input_name_to_new_input_name` and `output_name_to_new_output_name`, which replace `variable_names_to_new_variable_names`.
+    - The method `add_translations_by_variable` now differentiates inputs and outputs through its argument `discipline_name_and_io_mapping`, which replaces `discipline_names_to_variable_names` and binds a `(variable_name, is_input)` pair to a discipline name instead of a variable name.
+- The `VariableTranslation` class now differentiates inputs and outputs through the `is_input` key, which is added to the translation pattern.
+- The `rename_discipline_variables` function input now requires a tuple that separates inputs and outputs by their respective position.
+- The `NameMapping` data processor constructor now requires two mappings, `input_mapping` and `output_mapping`, instead of a single one. Calling `NameMapping(mapping)` now is changed to `NameMapping(mapping, mapping)`. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
 - The `input_size` argument of `LinearCombination` can no longer be `None`; use `1` instead.
 - The `directory_naming_method` argument of `DiscFromExe` was renamed to `naming`.
 - The `keep_in` argument of `FilteringDiscipline` was renamed to `use_input_names`.
@@ -654,17 +667,25 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `JobSchedulerDisciplineWrapperFactory` was renamed to `JobSchedulerDisciplineFactory`. [#1687](https://gitlab.com/gemseo/dev/gemseo/-/issues/1687)
 - The `gemseo.core.chains` package is now `gemseo.discipline.chain`, next to the other public discipline building blocks.
 - `ExecutionStatus`, `ExecutionStatistics`, the namespace helpers and `ProcessDiscipline` moved into the `gemseo.core.discipline` package: `gemseo.core.execution_status` is now `gemseo.core.discipline.execution_status`, `gemseo.core.execution_statistics` is now `gemseo.core.discipline.execution_statistics`, `gemseo.core.namespaces` is now `gemseo.core.discipline.namespace` and `gemseo.core.process_discipline` is now `gemseo.core.discipline.process_discipline`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The `ode_solver_name` and `**ode_solver_settings` arguments of `ODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
 
 ##### Grammars
 
 - The default grammar type of disciplines is now `SimpleGrammar` instead of `JSONGrammar`. [#1741](https://gitlab.com/gemseo/dev/gemseo/-/issues/1741)
+- `BaseGrammar.update()` raises a `ValueError` when an element name would map to two different namespaced names, unless `allow_namespace_nesting=True`, which only the process disciplines pass; the nesting-capable merge of `update_namespaces` moved to the new `update_nested_namespaces`.
+- `SimpleGrammar.__init__` now accepts a `defaults` argument. When `required_names` is not given, elements present in `defaults` are no longer marked as required, matching the behavior of `JSONGrammar` and `PydanticGrammar`.
 
 ##### Caches
 
 - The `gemseo.caches` package is now `gemseo.core.cache` and the redundant `_cache` suffix was removed from its module names, e.g. `gemseo.caches.hdf5_cache` is now `gemseo.core.cache.hdf5`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
+- `BaseCache.last_entry` was renamed to `BaseCache.last_item`; it returns a `CacheItem` instead of a `CacheEntry`.
 
 ##### Derivatives
 
+- The `threshold` argument of `DisciplineJacApprox.check_jacobian` and `error_max` argument of `ODEProblem.check_jacobian`
+  have been replaced by separate `atol` (absolute tolerance) and `rtol` (relative tolerance) arguments,
+  both defaulting to `1e-8`. [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
 - The `step` argument of `BaseGradientApproximator` can no longer be `None`; use `0.0` instead. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 - The hybrid modes were removed from `Discipline.ApproximationMode`, which now holds only `COMPLEX_STEP`, `FINITE_DIFFERENCES` and `CENTERED_DIFFERENCES`; use the new `Discipline.HybridApproximationMode` instead.
 - `MDOChain.LinearizationMode.REVERSE`, renamed `DisciplineChain`, no longer exists; the chain rule accumulation modes are gathered in the new `ChainDerivationMode` enumeration, which defines `FORWARD`, `REVERSE` and `AUTO` and is available as `DisciplineChain.ChainDerivationMode`.
@@ -673,6 +694,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 ##### Functions and problems
 
+- A function declaring `with_normalized_inputs=True` is refused with a `ValueError` when a driver is run on the problem.
+- In a relaxed run, `OptimizationResult.x_opt` is relaxed, the design space receives the projection of the optimum onto the declared domain, held by the new fields `OptimizationResult.x_opt_projected`, `x_opt_projected_as_dict`, `f_opt_projected` and `is_feasible_projected`, and `Database.to_dataset()` exports a relaxed variable as a float column. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - The `restriction_indices` argument was renamed to `frozen_indexes`.
 - The `restriction_values` argument was renamed to `frozen_values`.
 - A `name` argument was added; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
@@ -688,13 +711,56 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `gemseo.core.mdo_functions` package (the `ArrayFunction` family) is now `gemseo.core.function`.
 - `Constraints` (ex `gemseo.core.mdo_functions.collections.constraints`) moved to `gemseo.optimization.core.constraints`.
 - `TerminationCriterion` and its subclasses now carry their stop message (`TerminationCriterion.message`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The space of an `EvaluationProblem` is named `input_space`, as in `Database`, since it is not a design space in general: `problem.design_space` becomes `problem.input_space`, the first argument of `EvaluationProblem` is renamed `input_space` and the `design_space` argument of `EvaluationProblem.reset` is renamed `input_space`.
+- `EvaluationProblem.input_space` is read-only: the space is set at instantiation and can no longer be replaced afterwards, as the functions of the problem are defined over it.
+- `OptimizationProblem.design_space` is a read-only property typed `DesignSpace`, like `MDOScenario.design_space`, since their input space is a design space; the `design_space` argument of their constructors is unchanged.
+- `EvaluationProblem.evaluate_functions` renames its arguments `design_vector`, `design_vector_is_normalized` and `preprocess_design_vector` to `input_value`, `input_value_is_normalized` and `preprocess_input_value`.
+- The enumeration of the functions aggregating constraints is named `ConstraintAggregation.AggregationFunction`, as the argument taking it already was, and is exported as `gemseo.enum.AggregationFunction`; it was named `ConstraintAggregation.EvaluationFunction`, which named neither what it holds nor what it is passed to. `OptimizationProblem.AggregationFunction` and `Constraints.AggregationFunction` are unchanged.
 
 ##### Spaces
 
 - The `build_joint_distribution` method of `ParameterSpace` was replaced by the `add_copula(names, copula)` method of `RandomSpace`, adding a copula to a group of dependent random variables; copy a dependency structure with `for names, copula in space.variables.copulas: other_space.add_copula(names, copula)`. The string and HTML representations of a `RandomSpace` list its copulas. [#1717](https://gitlab.com/gemseo/dev/gemseo/-/issues/1717)
+- `DesignSpace.dimension` and `DesignSpace.normalize` were writable instance attributes; they are
+  now read-only properties and can no longer be assigned.
+- `DesignSpace.name_to_normalization_mask` (and its deprecated `DesignSpace.normalize` alias)
+  returns a read-only mapping instead of a plain `dict`; item assignment such as
+  `space.normalize["x"] = mask` now raises `TypeError`, and code relying on
+  `isinstance(..., dict)` or on `dict`-specific methods (e.g. `.copy()`) on this mapping must be
+  adapted.
+- The concatenated design-vector argument is uniformly named `x_vect`; it was named `x_vec` in
+  `DesignSpace.get_active_bounds`, `x_c` in `DesignSpace.project_into_bounds`, `vector` in
+  `DesignSpace.transform_vect` and `DesignSpace.untransform_vect` (and their `RandomSpace`
+  counterparts, `ParameterSpace` being replaced by `RandomSpace`) and `x_array` in `DesignSpace.convert_array_to_dict`; calls passing these arguments by
+  keyword must be updated.
+- `DesignSpace.project_into_bounds` no longer preserves the dtype of its `x_vect` argument: an
+  integer input is now promoted to float whenever the bounds are float (any infinite bound, or a mix
+  of real and integer variables). The result is numerically more correct (float bounds are no
+  longer truncated to fit an integer array) but callers relying on an integer return dtype must cast
+  explicitly.
+- `DesignSpace` now uses the `ABCGoogleDocstringInheritanceMeta` metaclass (previously plain
+  `type`), so a subclass inherits the docstrings of the members it overrides; a subclass combining
+  `DesignSpace` with another metaclass must use one compatible with it, such as `ABCMeta`.
+- Any unknown variable name now raises `KeyError` with the message `No variable named '<name>'.`:
+  `DesignSpace.set_lower_bound`, `set_upper_bound`, `filter`, `filter_dimensions`,
+  `rename_variable` and `set_current_variable` raised `ValueError`, while `remove_variable`
+  raised a `KeyError` holding the name only.
+- `DesignSpace.get_lower_bounds` and `DesignSpace.get_upper_bounds` return read-only arrays, whose in-place mutation raises a `ValueError`; copy them to get mutable arrays, e.g. `space.get_lower_bounds().copy()`.
+- The normalization masks of `DesignSpace.name_to_normalization_mask` are read-only arrays. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
+- `DesignSpace.add_variable` raises a `ValueError` instead of a `pydantic.ValidationError` when the type of the variable is unknown.
+- `DesignSpace.set_current_value`, `DesignSpace.set_current_variable` and `DesignSpace.add_variable` store a copy of the value, cast to `float64` for a real variable unless it is complex, and `DesignSpace.set_current_variable` rejects a non-integer value of an integer variable.
+- An integer variable rejects a non-integer scalar bound instead of truncating it, and the finite bounds of a variable are stored with the NumPy type of its components. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
+- The type of a real design variable is named `"real"` instead of `"float"`; a design space file using `"float"` and `DesignSpace.add_variable(..., type_="float")` still work, with a `DeprecationWarning`, but comparing a variable type to `"float"` is now `False`, `DesignSpace.variable_types_to_dtypes["float"]` raises a `KeyError` and a file written by this release cannot be read by an earlier one. [#1931](https://gitlab.com/gemseo/dev/gemseo/-/issues/1931)
+- The uncertain variables of a `ParameterSpace` were of type `"float"`, whereas the random variables of a `RandomSpace` are of type `VariableType.RANDOM`, so a test such as `space.variables[name].type == VariableType.REAL`, migrated from `space.get_type(name) == "float"`, is `False` for a random variable; compare to `VariableType.RANDOM` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
+- `DesignSpace.to_csv` refuses `fields` without `"name"` or with a repeated field, and `DesignSpace.from_csv` refuses a variable whose rows have different types or with a value in some rows only. [#2030](https://gitlab.com/gemseo/dev/gemseo/-/issues/2030)
+- `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`, where `ParameterSpace.compute_samples` returned a list of dictionaries, one per sample.
+- The argument `use_design_space_order` of `DesignSpace.get_variables_indexes` is renamed `use_space_order` and the argument `design_values` of `DesignSpace.convert_dict_to_array` is renamed `variable_values`; both methods are now defined by `BaseVariableSpace`.
+- An `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer, e.g. `DesignSpace.add_variable("n", type_="integer", upper_bound=1e30)` raises a `ValidationError` reading `The following upper bound component is outside the range of a 64-bit integer while the variable is of type integer: 1e+30 (index 0).`, where such a bound used to be accepted and stored as a floating-point number; an infinite bound is still accepted.
 
 ##### Algorithms
 
+- The augmented Lagrangian algorithms and `MultiStart` ignore `normalize_design_space` at the top level and leave the normalization to their sub-algorithms; passing `normalize_design_space=True` explicitly logs a warning. An augmented Lagrangian run with its default settings can therefore return a different optimum, its finite-difference steps being now absolute.
+- The driver setting `round_ints` and the argument `skip_int_check` of `BaseDriverLibrary.execute()` are replaced by the driver settings `relax_integer_variables` and `relax_discrete_variables`, `False` by default: an algorithm that does not handle integer or discrete variables raises a `ValueError` on them unless they are relaxed to float variables, and nothing rounds the point at every evaluation any more; see [integer relaxation][concept-integer-relaxation] and [evaluation problem][concept-evaluation-problem].
+- A driver checks that the algorithm handles the discrete variables (new `DriverDescription.handle_discrete_variables`); among the SciPy global algorithms, only `DIFFERENTIAL_EVOLUTION` handles integer variables, through the `integrality` option of SciPy, and `DUAL_ANNEALING` and `SHGO` require `relax_integer_variables=True`. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - The `**settings` arguments of `BaseAlgoFactory.execute` (renamed `BaseAlgorithmFactory`) were removed and the `settings_model` argument renamed to `settings` is now mandatory.
 - The `**settings` arguments of `BaseAlgorithmLibrary.execute` were removed and the `settings_model` argument renamed to `settings` is still optional.
 - The `eval_obs_jac` argument of `BaseDriverLibrary.execute` was removed
@@ -722,8 +788,12 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `doe_algo` field of `MNBI_Settings` was removed; use its `doe_algo_settings` instead.
 - The type of the `doe_algo_settings` field of `MNBI_Settings` is `BaseDOESettings`.
 - The `compute_doe` of `BaseDOELibrary` was removed and replaced by the `sample_space` and `sample_unit_hypercube` methods. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- By default, `MultiStart` skips the starting points whose sub-optimization fails, with a warning, and raises a `ValueError` only if all of them fail; set `skip_failed_starting_points` to `False` to stop at the first failure as before. [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739)
 - The unused member `SciPyDOE.Optimizer.NONE` was removed. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 - `BaseAlgoFactory` is renamed to `BaseAlgorithmFactory` and its module `gemseo.algos.base_algo_factory` is now `gemseo.core.algorithm.base_algorithm_factory`; the `DriverLibraryFactory` module is now `gemseo.core.algorithm.factory`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
+- When sampling a unit hypercube by dimension with `BaseDOELibrary.sample_unit_hypercube` or `gemseo.compute_doe`, the single variable spanning the hypercube is no longer named `"x"`; a DOE setting referring to variable names, such as the `reverse` setting of `DiagonalDOE`, has no effect there and component indices must be used instead.
+- The `_filter_settings` method of `BaseAlgorithmLibrary` takes no argument; use `self._filter_settings()` instead of `self._filter_settings(settings, model_to_exclude)`: it dumps the settings of the library without the fields of the class attributes `_settings_class_to_exclude` and `_additional_settings_classes_to_exclude`, which a library sets instead of passing a model to exclude.
 
 ##### MDA
 
@@ -764,6 +834,11 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `newton_linear_solver_settings` field of `MDANewtonRaphson_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with a linear solver.
 - The `linear_solver_tolerance` field of `BaseMDASettings` was removed; use the `rtol` field of the settings of the linear solver, e.g. a SciPy one, given to `BaseMDASettings.linear_solver_settings` instead. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
 - `JacobianAssembly` (ex `gemseo.core.derivatives.jacobian_assembly`) moved to `gemseo.mda.jacobian_assembly`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.compute_newton_step` have been removed and replaced by `linear_solver_settings` of `BaseLinearSolverSettings` type.
+- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.total_derivatives` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` of `CoupledSystem.direct_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `CoupledSystem.adjoint_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- The `use_lu_fact` option of MDA settings has been removed; set the `linear_solver_settings` option to `None` instead.
 
 ##### Formulations
 
@@ -772,6 +847,16 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The attribute `optimization_problem` of `BaseFormulation` has been renamed `problem`
   since it can be either an `EvaluationProblem` or an `OptimizationProblem`.
 - The argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`; use `[output_name]` in the case of a single output name.
+- `BaseFormulation` has a method `create_objective` to create an objective function from output names;
+  `BaseFormulation` is no longer responsible for attaching the objective function to the optimization problem,
+  this is done by the `MDOScenario`.
+- `BaseFormulation` has a method `create_constraint` to create a constraint function from output names;
+  this method replaces the method `add_constraint`;
+  `BaseFormulation` is no longer responsible for attaching the constraint function to the optimization problem,
+  this is done by the `MDOScenario`;
+  `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level`
+  instead of the argument `levels` used by `add_constraint` which was a list of literals;
+  these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method.
 - `gemseo.formulations.base_formulation` was renamed to `gemseo.formulation.core.base`.
 - `gemseo.formulations.base_formulation_settings` was renamed to `gemseo.formulation.core.base_settings`.
 - `gemseo.formulations.base_mdo_formulation` was renamed to `gemseo.formulation.core.base_mdo`. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
@@ -780,6 +865,10 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `**settings` arguments of `BaseFormulation` were removed and the `settings_model` argument renamed to `settings` is still optional.
 - The `main_mda_name` field of `MDF_Settings` was removed; use `main_mda_settings` instead.
 - The `main_mda_settings` field of `MDF_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with an MDA. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- The HDF5 files written by the `BiLevel` formulation with the `save_opt_history` setting are named after the sub-scenario and its index, e.g. `"FooScenario_0_1.h5"` instead of `"FooScenario_1.h5"`, so that two sub-scenarios with the same name no longer overwrite each other's files.
+- `BiLevelScenarioResult.get_sub_optimization_result` raises a `ValueError` for a negative index instead of returning `None`. [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968)
+- `BaseFormulation.design_space` is renamed `BaseFormulation.input_space` and is typed `BaseVariableSpace`.
+- `BaseMDOFormulation` takes the space of variables as a second type parameter, e.g. `BaseMDOFormulation[MyFormulation_Settings, DesignSpace]`, instead of pinning `DesignSpace`; a custom formulation must supply it, either a type variable bound to `BaseVariableSpace` when it uses the base API only, or `DesignSpace` when it reads bounds or a current value.
 
 ##### Scenarios
 
@@ -798,6 +887,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `gemseo.disciplines.scenario_adapters` is now `gemseo.scenario.adapter`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 - The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
 - The arguments of the scenario adapters no longer refer to an optimization: `reset_x0_before_opt`, `set_x0_before_opt` and `set_bounds_before_opt` were renamed to `reset_x0_before_exec`, `set_x0_before_exec` and `set_bounds_before_exec`, while `keep_opt_history`, `save_opt_history` and `opt_history_file_prefix` were renamed to `keep_databases`, `save_databases` and `database_file_prefix`. The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
+- `MDOScenario` and `OptimizationProblem` require a `DesignSpace`, as their signatures state; use an `EvaluationScenario` or an `EvaluationProblem` to sample a `RandomSpace`, and define a `DesignSpace` for optimization.
 
 ##### Post-processing
 
@@ -816,11 +906,16 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `RadarChart` class subclassing `BasePost` was renamed to `ConstraintRadar`.
 - The `RadarChart_Settings` class subclassing `BasePostSettings` was renamed to `ConstraintRadar_Settings`.
 - The `Radar` class was renamed to `RadViz`. [#1720](https://gitlab.com/gemseo/dev/gemseo/-/issues/1720)
+- The boolean option `kde` was renamed to `use_kde` (`PairPlot`, formerly `ScatterMatrix`). [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
 - The `ScatterMatrix` class was renamed to `PairPlot`. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
 - `gemseo.post.dataset.plots` is now `gemseo.post.dataset.plot` and `gemseo.post.dataset.dataset_plot` is now `gemseo.post.dataset.base`.
 - `gemseo.post.core.gantt_chart` is now `gemseo.post.gantt_chart`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- `ColorEvolution` (`gemseo.post.dataset.color_evolution`) has been merged into `Heatmap` (`gemseo.post.dataset.heatmap.Heatmap`), selected via the new `Heatmap_Settings.symmetric` boolean (`False` reproduces the old `ColorEvolution` behavior, `True` plots a symmetric variable-versus-variable matrix). [#1854](https://gitlab.com/gemseo/dev/gemseo/-/issues/1854)
 - The `rbf` trend of `Scatter` and `PairPlot` is now based on
   `scipy.interpolate.RBFInterpolator` with its default thin plate spline kernel. [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861)
+- The `**boxplot_options` keyword arguments of `Boxplot` are now the `options` setting of `Boxplot_Settings`, which no longer accepts `orientation`, `vert` and `labels`.
+  Use the setting `use_vertical_bars` to set the orientation.
+  Use the matplotlib option `tick_labels` instead of `labels`.
 
 ##### Datasets
 
@@ -949,6 +1044,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `multi_start_n_samples` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
 - The `multi_start_algo_name` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
 - The type of the `multi_start_algo_settings` field of `OTGaussianProcessRegressor_Settings` is `BaseDOESettings | None`. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- `OTGaussianProcessRegressor` uses the OpenTURNS `GaussianProcessFitter` and `GaussianProcessRegression` API instead of the deprecated `KrigingAlgorithm`; its `algo` attribute is a `GaussianProcessRegressionResult`. [#1798](https://gitlab.com/gemseo/dev/gemseo/-/issues/1798)
 - The machine learning modules were renamed to match their class names: `ml_algo` is now `base_ml_model`, `ml_algo_settings` is now `base_ml_model_settings`, `supervised`/`supervised_settings` are now `base_supervised`/`base_supervised_settings`, `unsupervised`/`unsupervised_settings` are now `base_unsupervised`/`base_unsupervised_settings` and `base_ml_algo_quality` is now `base_ml_model_quality`; `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`); `thin_plate_spline`/`thin_plate_spline_settings` are now `tps`/`tps_settings` (matching the `TPSRegressor` class). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 - `RBFRegressor` and `TPSRegressor` are now based on
   [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
@@ -1027,11 +1123,28 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - Consequently, `HSICAnalysis.indices.p_value_permutation` is empty unless `use_permutations` is `True`, and both `HSICAnalysis.filter(use_asymptotic=False)` and `HSICAnalysis.main_indices` (when `HSICAnalysis.main_method` is `p-value-permutation`) raise a `ValueError` in that case.
 - As the asymptotic p-values do not exist for a conditional HSIC analysis, `HSICAnalysis.filter` now requires `use_permutations` to be `True` for this analysis type.
 - `HSICAnalysis.main_indices` raises a `ValueError` when the p-values associated with `HSICAnalysis.main_method` are not available, instead of returning an empty dictionary. [#1908](https://gitlab.com/gemseo/dev/gemseo/-/issues/1908)
+- Replace the `**settings` of `BaseSensitivityAnalysis.plot_bar` by `bar_plot_settings: BarPlot_Settings | None = None`.
+- Replace the `**settings` of `BaseSensitivityAnalysis.plot_radar` by `radar_chart_settings: RadarChart_Settings | None = None` and remove the `min_radius` and `max_radius` arguments; use the `rmin` and `rmax` fields of `RadarChart_Settings` instead.
+- The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` have been removed.
+- The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) has been renamed to `random_space` and takes a `RandomSpace`.
 
 ##### Benchmark problems
 
 - The `gemseo.problems.mdo.sobieski.process.mdo_chain` module was renamed to `gemseo.problem.mdo.sobieski.process.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 - `gemseo.problems.mdo.sobieski.core` is now `gemseo.problem.mdo.sobieski.standalone` and `gemseo.problems.mdo.scalable.parametric.core` is now `gemseo.problem.mdo.scalable.parametric.standalone`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- The `**ode_solver_options` arguments of `SpringODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
+- The `**ode_solver_options` arguments of `CoupledSpringsGenerator.create_coupled_ode_disciplines` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
+- The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for parametric scalable problems) have been replaced by `formulation_settings: BaseFormulationSettings | None = None`; the `use_optimizer` argument has been removed.
+- The `algo_name` and `max_iter` arguments of `ScalabilityStudy.add_optimization_strategy` have been removed and replaced by `algo_settings` of `BaseOptimizerSettings` type.
+- The `formulation_name` argument of `ScalabilityStudy.add_optimization_strategy` has been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type.
+- The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for data-driver scalable problems) have been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type and `sub_optimizer_settings` of `BaseOptimizerSettings` type.
+- The `scenario_type` argument of `ScalableProblem.create_scenario` (for data-driver scalable problems) has been removed.
+- The `**kwargs` arguments of `SpringsDynamicsDiscipline` have been replaced by `name: str = ""`.
+- In `gemseo.problem.mdo.scalable.linear.disciplines_generator`, `LETTERS` is now `letters` and is a `tuple` instead of a NumPy `ndarray`, and the `DESC_*` constants are now `desc_*` and are tuples of tuples instead of lists of lists. `NUMERICS` of `gemseo.discipline.wrapper.disc_from_exe` is now `numerics` and is a `tuple` instead of a `list`.
+- The design bounds of the Sobieski problem, `SobieskiBase.design_bounds` and `SobieskiProblem.design_bounds`, are read-only arrays; copy them to get mutable arrays.
+- The initial state arrays `initial_time`, `initial_position` and `initial_velocity` of `gemseo.problem.ode.spring.springs_dynamics_discipline`, and so the default input data of `SpringsDynamicsDiscipline`, are read-only; copy them to get mutable arrays.
+- `IshigamiSpace` and `WingWeightUncertainSpace` derive from `RandomSpace`; the latter has been renamed to `WingWeightRandomSpace`; they are found by the new `random_space_factory` instead of `design_space_factory`.
+- `IshigamiProblem` derives from `EvaluationProblem` instead of `OptimizationProblem`; it is still defined over the `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but the Ishigami function is now an observable of the problem instead of its objective, so `problem.objective` no longer exists.
 
 ##### Utilities
 
@@ -1052,8 +1165,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The documentation is now generated by Mkdocs instead of Sphinx, and the docstrings are written in Markdown instead of reStructuredText. [#1647](https://gitlab.com/gemseo/dev/gemseo/-/issues/1647)
 - The members of all the enumerations are named in upper case, their values being unchanged, e.g. `ColormapName.cool` is now `ColormapName.COOL`, still equal to `"cool"`; the old names still resolve, with a `DeprecationWarning`, except the attribute `Criterion.center`, now the method `str.center`: use `Criterion.CENTER` instead. [#1838](https://gitlab.com/gemseo/dev/gemseo/-/issues/1838)
 - The public ALL_CAPS class attributes and module-level constants are named in lower snake case, e.g. `gemseo.LOGGER` is now `gemseo.logger` and `Dataset.DEFAULT_GROUP` is now `Dataset.default_group`; a few renames are not a pure case change: `MOERegressor.LABELS` is now `labels_output_name`, `BaseMDA.NORMALIZED_RESIDUAL_NORM` is now `normalized_residual_norm_name`, `XLSStudyParser.DISCIPLINES` is now `disciplines_key` and `JobSchedulerDiscipline.TEMPLATES_DIR_PATH` is now `job_templates_dir_path`.
-- The protected (`_`-prefixed) ALL_CAPS class attributes are now named in lower snake case too, e.g. `_ATTR_NOT_TO_SERIALIZE` is now `_attr_not_to_serialize`, `_PACKAGE_NAMES` is now `_package_names`, `_CLASS` is now `_class` and `_RESULT_CLASS` is now `_result_class`; subclasses overriding these attributes should be updated to use the new names.
-- The old ALL_CAPS names keep working with a `DeprecationWarning`, except when assigned on the class itself, e.g. `SomeClass.OLD_NAME = value`, which silently has no effect; assign the new name instead, in particular for `OTGaussianProcessRegressor.max_size_for_lapack`, `hmatrix_assembly_epsilon` and `hmatrix_recompression_epsilon`, `BaseGrammar.data_converter_class`, `Correlations.maximum_correlation_coefficient`, `BaseDatasetPlot.default_plot_engine`, `SobieskiProblem.use_original_design_variables_order`, `BaseDiscipline.grammar_directory` and `CallableParallelExecution.multi_processing_start_method`.
 - The minimum versions of several dependencies were raised: `fastjsonschema` 2.16.2, `h5py` 3.8.0, `jinja2` 3.1.2, `matplotlib` 3.10.1, `minisom` 2.3.6, `networkx` 3.0, `nlopt` 2.7.1, `numpy` 1.24, `openpyxl` 3.1, `openturns` 1.27, `packaging` 23.2, `pandas` 2.2, `plotly` 6.0.0, `prettytable` 3.5.0, `pydantic` 2.12, `pydantic-settings` 2.9.0, `requests` 2.28.2, `scikit-learn` 1.5, `scipy` 1.15, `sympy` 1.12, `tqdm` 4.64.1 and `xxhash` 3.2.0.
   `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
 
@@ -1066,21 +1177,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 #### Settings and factories
 
 - The factory singletons are now named in lower snake case, e.g. the module-level `MDO_FORMULATION_FACTORY` of `gemseo.formulations.factory` is now the `mdo_formulation_factory` of `gemseo.formulation.factory` and the `PROGRESS_BAR_DATA_FACTORY` of `gemseo.algos.progress_bar_data.factory` is now the `progress_bar_data_factory` of `gemseo.core.algorithm.progress_bar_data.factory`.
-- The settings models (`BaseSettings` and its subclasses, for the algorithms, formulations, MDAs and post-processors) validate a field when it is assigned after their creation, not only at creation time: assigning a value of a wrong type raises a `ValidationError`, and a `model_validator(mode="after")` that assigns a field calls itself again through that assignment, recursing without end; such a validator must bypass the validation, e.g. `self.__dict__["field"] = value`.
-
-#### Disciplines
-
-- The default grammar type of the `AutoPyDiscipline` is `SimpleGrammar`. [#1496](https://gitlab.com/gemseo/dev/gemseo/-/issues/1496)
-- The methods from the `VariableRenamer` class now differentiate inputs and outputs:
-    - The `from_translations` method now needs an additional entry as the tuple's second position, to differentiate inputs and outputs.
-    - The `from_dictionary` method must now take the new format that separates inputs and outputs.
-    - The input files to use the `from_spreadsheet` and `from_csv` methods now need an additional entry as the second column, to differentiate inputs and outputs.
-    - The method `add_translations_by_discipline` now differentiates inputs and outputs through two separate arguments, `input_name_to_new_input_name` and `output_name_to_new_output_name`, which replace `variable_names_to_new_variable_names`.
-    - The method `add_translations_by_variable` now differentiates inputs and outputs through its argument `discipline_name_and_io_mapping`, which replaces `discipline_names_to_variable_names` and binds a `(variable_name, is_input)` pair to a discipline name instead of a variable name.
-- The `VariableTranslation` class now differentiates inputs and outputs through the `is_input` key, which is added to the translation pattern.
-- The `rename_discipline_variables` function input now requires a tuple that separates inputs and outputs by their respective position.
-- The `NameMapping` data processor constructor now requires two mappings, `input_mapping` and `output_mapping`, instead of a single one. Calling `NameMapping(mapping)` now is changed to `NameMapping(mapping, mapping)`. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
-- The `ode_solver_name` and `**ode_solver_settings` arguments of `ODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
 
 #### Grammars
 
@@ -1090,21 +1186,14 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The module `gemseo.core.grammars.pydantic_grammar` was renamed to `gemseo.core.grammar.pydantic`.
 - The module `gemseo.core.grammars.simple_grammar` was renamed to `gemseo.core.grammar.simple`.
 - The module `gemseo.core.grammars.simpler_grammar` was renamed to `gemseo.core.grammar.simpler`.
-- `BaseGrammar.update()` raises a `ValueError` when an element name would map to two different namespaced names, unless `allow_namespace_nesting=True`, which only the process disciplines pass; the nesting-capable merge of `update_namespaces` moved to the new `update_nested_namespaces`.
-- `SimpleGrammar.__init__` now accepts a `defaults` argument. When `required_names` is not given, elements present in `defaults` are no longer marked as required, matching the behavior of `JSONGrammar` and `PydanticGrammar`.
 
 #### Caches
 
 - Since the hash of an array whose data type is `int32` (resp. `uint32`) is now computed as for `int64` (resp. `uint64`) on all platforms, a cache persisted with a previous version whose input data include 32-bit integer arrays leads to cache misses and recomputations, not to corruption. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
 - A full cache with a zero tolerance, e.g. a `MemoryFullCache` or an `HDF5Cache`, looks an entry up by its hash instead of comparing its input data to those of all the entries, which made filling it quadratic; on a DOE of 20 samples of the SSBJ problem, this takes 4 seconds instead of 78 with an `HDF5Cache` and 13 instead of 25 with a `MemoryFullCache`. [#2017](https://gitlab.com/gemseo/dev/gemseo/-/issues/2017)
-- `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
-- `BaseCache.last_entry` was renamed to `BaseCache.last_item`; it returns a `CacheItem` instead of a `CacheEntry`.
 
 #### Derivatives
 
-- The `threshold` argument of `DisciplineJacApprox.check_jacobian` and `error_max` argument of `ODEProblem.check_jacobian`
-  have been replaced by separate `atol` (absolute tolerance) and `rtol` (relative tolerance) arguments,
-  both defaulting to `1e-8`.
 - The gradient approximator modules have been moved into the new `gemseo.util.derivative.approximator` subpackage:
     - `gemseo.utils.derivatives.base_gradient_approximator` → `gemseo.util.derivative.approximator.base`
     - `gemseo.utils.derivatives.centered_differences` → `gemseo.util.derivative.approximator.centered_differences`
@@ -1120,15 +1209,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 #### Functions and problems
 
-- A function output holding a `NaN` is recorded in the database before the evaluation stops (`stop_if_nan=True`), and a design point holding a `NaN` stops the evaluation also when no database is kept (`use_database=False`).
-- A function declaring `with_normalized_inputs=True` is refused with a `ValueError` when a driver is run on the problem.
-- In a relaxed run, `OptimizationResult.x_opt` is relaxed, the design space receives the projection of the optimum onto the declared domain, held by the new fields `OptimizationResult.x_opt_projected`, `x_opt_projected_as_dict`, `f_opt_projected` and `is_feasible_projected`, and `Database.to_dataset()` exports a relaxed variable as a float column. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
+- A function output holding a `NaN` is recorded in the database before the evaluation stops (`stop_if_nan=True`), and a design point holding a `NaN` stops the evaluation also when no database is kept (`use_database=False`). [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 - The `name` argument of `Concatenate` is now optional; its default value is `""`, in which case the name of the function joins the names of the concatenated functions. [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
-- The space of an `EvaluationProblem` is named `input_space`, as in `Database`, since it is not a design space in general: `problem.design_space` becomes `problem.input_space`, the first argument of `EvaluationProblem` is renamed `input_space` and the `design_space` argument of `EvaluationProblem.reset` is renamed `input_space`.
-- `EvaluationProblem.input_space` is read-only: the space is set at instantiation and can no longer be replaced afterwards, as the functions of the problem are defined over it.
-- `OptimizationProblem.design_space` is a read-only property typed `DesignSpace`, like `MDOScenario.design_space`, since their input space is a design space; the `design_space` argument of their constructors is unchanged.
-- `EvaluationProblem.evaluate_functions` renames its arguments `design_vector`, `design_vector_is_normalized` and `preprocess_design_vector` to `input_value`, `input_value_is_normalized` and `preprocess_input_value`.
-- The enumeration of the functions aggregating constraints is named `ConstraintAggregation.AggregationFunction`, as the argument taking it already was, and is exported as `gemseo.enum.AggregationFunction`; it was named `ConstraintAggregation.EvaluationFunction`, which named neither what it holds nor what it is passed to. `OptimizationProblem.AggregationFunction` and `Constraints.AggregationFunction` are unchanged.
 
 #### Spaces
 
@@ -1139,65 +1221,23 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `DesignSpace.unnormalize_vect` and `DesignSpace.unnormalize_grad` methods were renamed to
   `DesignSpace.denormalize_vect` and `DesignSpace.denormalize_grad`; the former names are kept as
   deprecated aliases emitting a `DeprecationWarning`.
-- `DesignSpace.dimension` and `DesignSpace.normalize` were writable instance attributes; they are
-  now read-only properties and can no longer be assigned.
-- `DesignSpace.name_to_normalization_mask` (and its deprecated `DesignSpace.normalize` alias)
-  returns a read-only mapping instead of a plain `dict`; item assignment such as
-  `space.normalize["x"] = mask` now raises `TypeError`, and code relying on
-  `isinstance(..., dict)` or on `dict`-specific methods (e.g. `.copy()`) on this mapping must be
-  adapted.
-- The concatenated design-vector argument is uniformly named `x_vect`; it was named `x_vec` in
-  `DesignSpace.get_active_bounds`, `x_c` in `DesignSpace.project_into_bounds`, `vector` in
-  `DesignSpace.transform_vect` and `DesignSpace.untransform_vect` (and their `RandomSpace`
-  counterparts, `ParameterSpace` being replaced by `RandomSpace`) and `x_array` in `DesignSpace.convert_array_to_dict`; calls passing these arguments by
-  keyword must be updated.
-- `DesignSpace.project_into_bounds` no longer preserves the dtype of its `x_vect` argument: an
-  integer input is now promoted to float whenever the bounds are float (any infinite bound, or a mix
-  of real and integer variables). The result is numerically more correct (float bounds are no
-  longer truncated to fit an integer array) but callers relying on an integer return dtype must cast
-  explicitly.
 - `DesignSpace.set_current_value` accepts any `Mapping`, and not only a `dict`, mapping a variable
   name either to a value or to `None` to mark the variable as having no value; a mapping of another
   type previously raised `TypeError`.
-- `DesignSpace` now uses the `ABCGoogleDocstringInheritanceMeta` metaclass (previously plain
-  `type`), so a subclass inherits the docstrings of the members it overrides; a subclass combining
-  `DesignSpace` with another metaclass must use one compatible with it, such as `ABCMeta`.
-- Any unknown variable name now raises `KeyError` with the message `No variable named '<name>'.`:
-  `DesignSpace.set_lower_bound`, `set_upper_bound`, `filter`, `filter_dimensions`,
-  `rename_variable` and `set_current_variable` raised `ValueError`, while `remove_variable`
-  raised a `KeyError` holding the name only.
-- `DesignSpace.get_lower_bounds` and `DesignSpace.get_upper_bounds` return read-only arrays, whose in-place mutation raises a `ValueError`; copy them to get mutable arrays, e.g. `space.get_lower_bounds().copy()`.
-- The normalization masks of `DesignSpace.name_to_normalization_mask` are read-only arrays.
 - `DesignSpace.get_current_value` now returns copies: the array, the dictionary and the arrays it
   holds are new writeable objects, so mutating them no longer makes the design space inconsistent.
   It previously handed out the arrays and the dictionary that the design space keeps, so that
   `space.get_current_value()[0] = 0.0` changed the value read as an array while leaving the value
   read as a dictionary unchanged. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
-- `DesignSpace.add_variable` raises a `ValueError` instead of a `pydantic.ValidationError` when the type of the variable is unknown.
-- `DesignSpace.set_current_value`, `DesignSpace.set_current_variable` and `DesignSpace.add_variable` store a copy of the value, cast to `float64` for a real variable unless it is complex, and `DesignSpace.set_current_variable` rejects a non-integer value of an integer variable.
-- `str(design_space)`, `DesignSpace.get_pretty_table` and `DesignSpace.to_csv` strip the imaginary part of the current value of every variable.
-- An integer variable rejects a non-integer scalar bound instead of truncating it, and the finite bounds of a variable are stored with the NumPy type of its components. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
-- The type of a real design variable is named `"real"` instead of `"float"`; a design space file using `"float"` and `DesignSpace.add_variable(..., type_="float")` still work, with a `DeprecationWarning`, but comparing a variable type to `"float"` is now `False`, `DesignSpace.variable_types_to_dtypes["float"]` raises a `KeyError` and a file written by this release cannot be read by an earlier one. [#1931](https://gitlab.com/gemseo/dev/gemseo/-/issues/1931)
-- The uncertain variables of a `ParameterSpace` were of type `"float"`, whereas the random variables of a `RandomSpace` are of type `VariableType.RANDOM`, so a test such as `space.variables[name].type == VariableType.REAL`, migrated from `space.get_type(name) == "float"`, is `False` for a random variable; compare to `VariableType.RANDOM` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
-- `DesignSpace.to_csv` refuses `fields` without `"name"` or with a repeated field, and `DesignSpace.from_csv` refuses a variable whose rows have different types or with a value in some rows only. [#2030](https://gitlab.com/gemseo/dev/gemseo/-/issues/2030)
-- `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`, where `ParameterSpace.compute_samples` returned a list of dictionaries, one per sample.
+- `str(design_space)`, `DesignSpace.get_pretty_table` and `DesignSpace.to_csv` strip the imaginary part of the current value of every variable. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
 - The error raised when mixing probability distributions from different libraries reads `"A random space cannot mix probability distributions based on different libraries; got ..."` instead of `"A parameter space cannot ..."`.
-- The argument `use_design_space_order` of `DesignSpace.get_variables_indexes` is renamed `use_space_order` and the argument `design_values` of `DesignSpace.convert_dict_to_array` is renamed `variable_values`; both methods are now defined by `BaseVariableSpace`.
-- An `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer, e.g. `DesignSpace.add_variable("n", type_="integer", upper_bound=1e30)` raises a `ValidationError` reading `The following upper bound component is outside the range of a 64-bit integer while the variable is of type integer: 1e+30 (index 0).`, where such a bound used to be accepted and stored as a floating-point number; an infinite bound is still accepted.
 
 #### Algorithms
 
-- The augmented Lagrangian algorithms and `MultiStart` ignore `normalize_design_space` at the top level and leave the normalization to their sub-algorithms; passing `normalize_design_space=True` explicitly logs a warning. An augmented Lagrangian run with its default settings can therefore return a different optimum, its finite-difference steps being now absolute.
-- The driver setting `round_ints` and the argument `skip_int_check` of `BaseDriverLibrary.execute()` are replaced by the driver settings `relax_integer_variables` and `relax_discrete_variables`, `False` by default: an algorithm that does not handle integer or discrete variables raises a `ValueError` on them unless they are relaxed to float variables, and nothing rounds the point at every evaluation any more; see [integer relaxation][concept-integer-relaxation] and [evaluation problem][concept-evaluation-problem].
-- A driver checks that the algorithm handles the discrete variables (new `DriverDescription.handle_discrete_variables`); among the SciPy global algorithms, only `DIFFERENTIAL_EVOLUTION` handles integer variables, through the `integrality` option of SciPy, and `DUAL_ANNEALING` and `SHGO` require `relax_integer_variables=True`.
 - `is_algorithm_suited` and `filter_adapted_algorithms` take the integer and discrete variables of a problem into account. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
-- By default, `MultiStart` skips the starting points whose sub-optimization fails, with a warning, and raises a `ValueError` only if all of them fail; set `skip_failed_starting_points` to `False` to stop at the first failure as before.
 - `MultiStart` merges the Jacobians evaluated by the sub-optimizations into the parent database, unless `store_jacobian` is `False`. [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739)
-- The PyDOE algorithms library now relies on the maintained [PyDOE](https://pydoe.github.io/pydoe/) package (`pydoe`) instead of the unmaintained `pyDOE3`.
-- The `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
+- The PyDOE algorithms library now relies on the maintained [PyDOE](https://pydoe.github.io/pydoe/) package (`pydoe`) instead of the unmaintained `pyDOE3`. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
 - The log of a driver names the input space after its class, e.g. `"over the random space:"` and `"Random space:"` for a `RandomSpace`, and reports `"the variable space is empty"` instead of `"the design space is empty"` when no algorithm suits the problem; a formulation logs `"Variable x was removed from the input space"` instead of `"from the Design Space"`.
-- When sampling a unit hypercube by dimension with `BaseDOELibrary.sample_unit_hypercube` or `gemseo.compute_doe`, the single variable spanning the hypercube is no longer named `"x"`; a DOE setting referring to variable names, such as the `reverse` setting of `DiagonalDOE`, has no effect there and component indices must be used instead.
-- The `_filter_settings` method of `BaseAlgorithmLibrary` takes no argument; use `self._filter_settings()` instead of `self._filter_settings(settings, model_to_exclude)`: it dumps the settings of the library without the fields of the class attributes `_settings_class_to_exclude` and `_additional_settings_classes_to_exclude`, which a library sets instead of passing a model to exclude.
 
 #### MDA
 
@@ -1208,45 +1248,23 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     instead of the class that it is called on only;
     a settings class that overrides the default of `n_processes` keeps its own value. [#1914](https://gitlab.com/gemseo/dev/gemseo/-/issues/1914)
 - Rename `MDAGSNewton_Settings` to `MDAGaussSeidelNewtonRaphson_Settings`, and its field `newton_settings` to `newton_raphson_settings`.
-- The `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.compute_newton_step` have been removed and replaced by `linear_solver_settings` of `BaseLinearSolverSettings` type.
-- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.total_derivatives` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
-- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` of `CoupledSystem.direct_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
-- The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `CoupledSystem.adjoint_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
-- The `use_lu_fact` option of MDA settings has been removed; set the `linear_solver_settings` option to `None` instead.
 
 #### Formulations
 
-- `BaseFormulation` has a method `create_objective` to create an objective function from output names;
-  `BaseFormulation` is no longer responsible for attaching the objective function to the optimization problem,
-  this is done by the `MDOScenario`.
-- `BaseFormulation` has a method `create_constraint` to create a constraint function from output names;
-  this method replaces the method `add_constraint`;
-  `BaseFormulation` is no longer responsible for attaching the constraint function to the optimization problem,
-  this is done by the `MDOScenario`;
-  `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level`
-  instead of the argument `levels` used by `add_constraint` which was a list of literals;
-  these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
-- The HDF5 files written by the `BiLevel` formulation with the `save_opt_history` setting are named after the sub-scenario and its index, e.g. `"FooScenario_0_1.h5"` instead of `"FooScenario_1.h5"`, so that two sub-scenarios with the same name no longer overwrite each other's files.
-- `BiLevelScenarioResult.get_sub_optimization_result` raises a `ValueError` for a negative index instead of returning `None`. [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968)
-- `BaseFormulation.design_space` is renamed `BaseFormulation.input_space` and is typed `BaseVariableSpace`.
 - The method `BaseFormulation._update_design_space` is renamed `_update_input_space` and is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
-- `BaseMDOFormulation` takes the space of variables as a second type parameter, e.g. `BaseMDOFormulation[MyFormulation_Settings, DesignSpace]`, instead of pinning `DesignSpace`; a custom formulation must supply it, either a type variable bound to `BaseVariableSpace` when it uses the base API only, or `DesignSpace` when it reads bounds or a current value.
 - The error raised by `IDF` when a coupling variable is missing reads `"must be added to the input space"` instead of `"must be added to the design space"`, since `IDF` no longer requires a design space.
 
 #### Scenarios
 
 - An `EvaluationScenarioAdapter` (and hence an `MDOScenarioAdapter`) with `set_x0_before_exec=True` and `input_names` covering only a part of the design variables sets the starting point of the scenario from these inputs and the current value of the other design variables, projected into the bounds when `set_bounds_before_exec=True`, instead of raising an error. [#1688](https://gitlab.com/gemseo/dev/gemseo/-/issues/1688)
-- `MDOScenario` and `OptimizationProblem` require a `DesignSpace`, as their signatures state; use an `EvaluationScenario` or an `EvaluationProblem` to sample a `RandomSpace`, and define a `DesignSpace` for optimization.
 
 #### Post-processing
 
 - When the `variable_names` option is empty, `PairPlot` (formerly `ScatterMatrix`) uses all the variables of the dataset while keeping their order.
 - When the `variables` option is empty, `Heatmap` (formerly `ColorEvolution`) uses all the variables of the dataset while keeping their order.
 - When the `variables` option is empty, `Lines` uses all the variables of the dataset while keeping their order. [#1718](https://gitlab.com/gemseo/dev/gemseo/-/issues/1718)
-- The boolean option `kde` was renamed to `use_kde` (`PairPlot`, formerly `ScatterMatrix`).
 - The histograms on the diagonal (when `use_kde` is `False`) are superimposed histograms by category when `classifier` is set.
 - The density functions on the diagonal (when `use_kde` is `True`) are superimposed density functions by category when `classifier` is set. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
-- `ColorEvolution` (`gemseo.post.dataset.color_evolution`) has been merged into `Heatmap` (`gemseo.post.dataset.heatmap.Heatmap`), selected via the new `Heatmap_Settings.symmetric` boolean (`False` reproduces the old `ColorEvolution` behavior, `True` plots a symmetric variable-versus-variable matrix). [#1854](https://gitlab.com/gemseo/dev/gemseo/-/issues/1854)
 - `ConstraintsHistory`, `ParallelCoordinates` and `VariableInfluence` draw their reference lines in the color of the axes, given by the matplotlib rcParam `axes.edgecolor`, instead of black.
 - `Boxplot` draws its grid in the color given by the matplotlib rcParam `grid.color`, instead of light grey.
 - `OptHistoryView` marks the iteration of the best design, when the problem has one, with a star on the x-axis and a dashed line, mentioned in the label of the x-axis, instead of a red line and a legend; the color of the mark reads on both light and dark backgrounds and is not the red of a violated constraint.
@@ -1254,9 +1272,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The figure of `OptHistoryView` about the distance to the best design is titled "Evolution of the distance to the best design" instead of "Evolution of the distance to the optimum".
 - `OptHistoryView` draws neither the mark of the best design nor the figure of the distance to it when the problem has no optimum solution, e.g. when every feasible design has a `NaN` objective. [#1900](https://gitlab.com/gemseo/dev/gemseo/-/issues/1900)
 - The y-axis of the objective plot of `OptHistoryView` is labelled with the name of the objective instead of "Objective value", followed by "(relative to iteration i)" when `obj_relative` is `True`, where i is the first iteration whose objective values are not `NaN`. [#2036](https://gitlab.com/gemseo/dev/gemseo/-/issues/2036)
-- The `**boxplot_options` keyword arguments of `Boxplot` are now the `options` setting of `Boxplot_Settings`, which no longer accepts `orientation`, `vert` and `labels`.
-  Use the setting `use_vertical_bars` to set the orientation.
-  Use the matplotlib option `tick_labels` instead of `labels`.
 
 #### Datasets
 
@@ -1266,38 +1281,17 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 #### Machine learning
 
 - When the `var_names` option is empty, unsupervised machine learning models uses all the variables of the dataset while keeping their order. [#1718](https://gitlab.com/gemseo/dev/gemseo/-/issues/1718)
-- `OTGaussianProcessRegressor` uses the OpenTURNS `GaussianProcessFitter` and `GaussianProcessRegression` API instead of the deprecated `KrigingAlgorithm`; its `algo` attribute is a `GaussianProcessRegressionResult`. [#1798](https://gitlab.com/gemseo/dev/gemseo/-/issues/1798)
 
 #### Uncertainty
 
 - When the `variable_names` argument is empty, `BaseStatistics` uses all the variables of the dataset while keeping their order. [#1718](https://gitlab.com/gemseo/dev/gemseo/-/issues/1718)
 - By default, `BaseSensitivityAnalysis.plot` is an alias of `BaseSensitivityAnalysis.plot_bar`; it is up to the subclass to implement a specific visualization. [#1842](https://gitlab.com/gemseo/dev/gemseo/-/issues/1842)
 - The default `MorrisAnalysis.plot()` title format is `<output_name> - R=<n_replicates> - delta_r=<round(100 * step)>% - <doe_algo_name> - <elementary effects | finite differences>`. [#1850](https://gitlab.com/gemseo/dev/gemseo/-/issues/1850)
-- Replace the `**settings` of `BaseSensitivityAnalysis.plot_bar` by `bar_plot_settings: BarPlot_Settings | None = None`.
-- Replace the `**settings` of `BaseSensitivityAnalysis.plot_radar` by `radar_chart_settings: RadarChart_Settings | None = None` and remove the `min_radius` and `max_radius` arguments; use the `rmin` and `rmax` fields of `RadarChart_Settings` instead.
-- The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` have been removed.
 - The modules `base_sensitivity_analysis`, `correlation_analysis`, `hsic_analysis`, `morris_analysis` and `sobol_analysis` of the `gemseo.uncertainty.sensitivity` package were renamed to `core.base`, `correlation`, `hsic`, `morris` and `sobol` respectively.
 - The modules `base_statistics`, `base_parametric_statistics`, `empirical_statistics`, `ot_parametric_statistics` and `sp_parametric_statistics` of the `gemseo.uncertainty.statistics` package (now `gemseo.uncertainty.statistic`) were renamed to `core.base`, `core.base_parametric`, `empirical`, `ot_parametric` and `sp_parametric` respectively.
 - The module `gemseo.uncertainty.statistics.tolerance_interval.distribution` was renamed to `gemseo.uncertainty.statistic.tolerance_interval.base`.
 - The package `gemseo.uncertainty.distributions.base_settings` was renamed to `gemseo.uncertainty.distribution.core.base_univariate_settings` and the `_settings` suffix was removed from its module names, e.g. `beta_settings` is now `beta`.
-- The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) has been renamed to `random_space` and takes a `RandomSpace`.
 - `SobolAnalysis.compute_samples` stores the random space it was given in `dataset.misc["random_space"]` instead of `dataset.misc["parameter_space"]`; the legacy key is still read so that user code populating the miscellaneous data of a dataset against the previous name still works.
-
-#### Benchmark problems
-
-- The `**ode_solver_options` arguments of `SpringODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
-- The `**ode_solver_options` arguments of `CoupledSpringsGenerator.create_coupled_ode_disciplines` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
-- The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for parametric scalable problems) have been replaced by `formulation_settings: BaseFormulationSettings | None = None`; the `use_optimizer` argument has been removed.
-- The `algo_name` and `max_iter` arguments of `ScalabilityStudy.add_optimization_strategy` have been removed and replaced by `algo_settings` of `BaseOptimizerSettings` type.
-- The `formulation_name` argument of `ScalabilityStudy.add_optimization_strategy` has been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type.
-- The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for data-driver scalable problems) have been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type and `sub_optimizer_settings` of `BaseOptimizerSettings` type.
-- The `scenario_type` argument of `ScalableProblem.create_scenario` (for data-driver scalable problems) has been removed.
-- The `**kwargs` arguments of `SpringsDynamicsDiscipline` have been replaced by `name: str = ""`.
-- In `gemseo.problem.mdo.scalable.linear.disciplines_generator`, `LETTERS` is now `letters` and is a `tuple` instead of a NumPy `ndarray`, and the `DESC_*` constants are now `desc_*` and are tuples of tuples instead of lists of lists. `NUMERICS` of `gemseo.discipline.wrapper.disc_from_exe` is now `numerics` and is a `tuple` instead of a `list`.
-- The design bounds of the Sobieski problem, `SobieskiBase.design_bounds` and `SobieskiProblem.design_bounds`, are read-only arrays; copy them to get mutable arrays.
-- The initial state arrays `initial_time`, `initial_position` and `initial_velocity` of `gemseo.problem.ode.spring.springs_dynamics_discipline`, and so the default input data of `SpringsDynamicsDiscipline`, are read-only; copy them to get mutable arrays.
-- `IshigamiSpace` and `WingWeightUncertainSpace` derive from `RandomSpace`; the latter has been renamed to `WingWeightRandomSpace`; they are found by the new `random_space_factory` instead of `design_space_factory`.
-- `IshigamiProblem` derives from `EvaluationProblem` instead of `OptimizationProblem`; it is still defined over the `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but the Ishigami function is now an observable of the problem instead of its objective, so `problem.objective` no longer exists.
 
 #### Utilities
 
