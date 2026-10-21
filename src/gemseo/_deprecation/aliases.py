@@ -20,16 +20,29 @@ package; the rename map that also drives the external codemod):
 - `module_renames`: old fully-qualified module (or package) name -> new one, fully
   resolved (ancestor package renames applied), from the `modules:` section.
 - `attribute_renames`: old module fully-qualified name -> {old attribute: new
-  attribute}, from the `attributes:` entries that rename a name.
+  attribute}, from the `attributes:` entries that rename a name. An entry of an
+  attribute of a class, e.g. `gemseo.x.module.Class.Method`, whose parent is the old
+  name of another entry, is left out of every table of the `attributes:` section; the
+  `classes:` section aliases it.
+- `attribute_renames` and `module_renames` also hold the entries whose value is
+  `<new name> TODO <text>`: a rename to `<new name>`, like the plain one, which the
+  external codemod also marks with `<text>`. The runtime ignores the text of an
+  `attributes:` entry.
+- `module_rename_notes`: old module fully-qualified name -> the text of its
+  `<new name> TODO <text>` rule of the `modules:` section, which is added as a note to
+  the `ImportError` raised when importing the new module through the old one, e.g.
+  for a dependency the new module requires.
 - `manual_migrations`: old module fully-qualified name -> {old attribute: how to
   migrate}, from the `attributes:` entries whose value is `TODO <text>`, for the names
   whose migration cannot be automated. The text is an instruction telling how to
   migrate by hand, e.g. `use gemseo.x.New instead`, which ends the message of the error
   raised for the old name.
 - `removed_modules`: the old fully-qualified names of the modules (and packages)
-  removed with no replacement, the `modules:` entries whose value is `null`.
+  removed with no replacement, the `modules:` entries whose value is `null`, or
+  `null TODO <text>`, the text being for the external codemod only.
 - `removed_attributes`: old module fully-qualified name -> its attributes removed with
-  no replacement, the `attributes:` entries whose value is `null`.
+  no replacement, the `attributes:` entries whose value is `null`, or
+  `null TODO <text>`.
 - `unmigrated_attributes`: old module fully-qualified name -> its attributes that raise
   instead of resolving, those of `removed_attributes` and `manual_migrations`.
 - `live_aliased_modules`: the modules of `attribute_renames`, `removed_attributes` and
@@ -39,11 +52,19 @@ package; the rename map that also drives the external codemod):
   submodules, for the old packages that have no rename of their own and no longer exist
   in the tree, but whose submodules were renamed. They are derived from
   `module_renames`, not listed in the configuration.
+- `get_reexported_old_modules()`: (last segment of an old module name, new module
+  name) -> the old module name, for the modules a package may re-export under their own
+  name, derived from `module_renames`, `attribute_renames` and `unmigrated_attributes`
+  on the first call only.
 - `class_attribute_renames`: class name -> {old attribute: new attribute}, from the
   `classes:` section, keyed by the class's current name (resolved through
   `attribute_renames` when the class itself was also renamed). An old attribute name
   may be dotted, e.g. `DifferentiationMethod.USER_GRAD`, for the renamed attribute of
-  a class nested in the class, e.g. a member of an enumeration.
+  a class nested in the class, e.g. a member of an enumeration. A new attribute name
+  may be the complete dotted path of a GEMSEO object, e.g.
+  `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, for an attribute moved
+  out of the class (see
+  [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]).
 
 Accumulation across releases is achieved by keeping the old entries in
 `bump-version.yml` until their scheduled removal.
@@ -52,6 +73,7 @@ Accumulation across releases is achieved by keeping the old entries in
 from __future__ import annotations
 
 import sys
+from functools import cache
 from pathlib import Path
 from pkgutil import get_importer
 from types import MappingProxyType
@@ -156,6 +178,28 @@ def _get_todo_text(value: str) -> str:
     if value.startswith(_todo_prefix):
         return value.removeprefix(_todo_prefix).strip()
     return ""
+
+
+def _split_rename_todo(value: str) -> tuple[str, str]:
+    """Split the value of a rule into its new name and the text of its `TODO` tail.
+
+    A value `<new name> TODO <text>` is a rename to `<new name>`, which the external
+    codemod also marks with `<text>`, on the first ` TODO `. A value starting with
+    `TODO ` is a manual migration instead, and is returned as it is, like any value
+    with no ` TODO ` followed by a text.
+
+    Args:
+        value: The value of a rule.
+
+    Returns:
+        The new name and the text following the first ` TODO `, both stripped, or
+        `value` and an empty string if `value` is not a `<new name> TODO <text>` value.
+    """
+    new_name, _, text = value.partition(f" {_todo_prefix}")
+    text = text.strip()
+    if not text or _get_todo_text(value):
+        return value, ""
+    return new_name.strip(), text
 
 
 def _check_rule_value(section: str, old_name: str, new_value: str) -> None:
@@ -325,7 +369,9 @@ def _parse_classes_section(text: str) -> dict[str, dict[str, str]]:
       instead, so that the entries following it are not misattributed.
     - A line indented exactly 4 spaces of the form `old_name: new_name` is an
       attribute rename for the current class, unless there is none, and the entry is
-      aliasable (see
+      aliasable, once a `TODO <text>` tail of `new_name` is cut, as for the other
+      sections (see
+      [_split_rename_todo][gemseo._deprecation.aliases._split_rename_todo]; see
       [_is_aliasable_class_entry][gemseo._deprecation.aliases._is_aliasable_class_entry];
       a YAML anchor or alias reference, and a codemod-only value-conversion note, are
       not, and are dropped like a removal is).
@@ -365,7 +411,7 @@ def _parse_classes_section(text: str) -> dict[str, dict[str, str]]:
             continue
         old_name, _, value = stripped.partition(":")
         old_name = old_name.strip()
-        value = value.strip()
+        value = _split_rename_todo(value.strip())[0]
         if value == _removed or not _is_aliasable_class_entry(old_name, value):
             continue
         current[old_name] = value
@@ -378,7 +424,10 @@ def _is_aliasable_class_entry(old_name: str, new_name: str) -> bool:
     Either both names are plain identifiers, for an attribute of the class itself, or
     both are dotted paths of identifiers differing only by their last segment, for an
     attribute of a class nested in the class, e.g. the member of an enumeration:
-    `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`.
+    `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`, or the old name is a
+    plain identifier and the new one the complete dotted path of a GEMSEO object, for
+    an attribute moved out of the class, e.g. a nested enumeration made a module-level
+    class: `Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`.
 
     Args:
         old_name: The old name of the attribute.
@@ -387,11 +436,27 @@ def _is_aliasable_class_entry(old_name: str, new_name: str) -> bool:
     Returns:
         Whether the entry is an aliasable rename.
     """
+    if is_moved_class_attribute(new_name):
+        return old_name.isidentifier()
     old_path = old_name.split(".")
     new_path = new_name.split(".")
     return old_path[:-1] == new_path[:-1] and all(
         segment.isidentifier() for segment in (*old_path, new_path[-1])
     )
+
+
+def is_moved_class_attribute(new_name: str) -> bool:
+    """Return whether the new name of a class attribute is that of an object.
+
+    Args:
+        new_name: The new name of the class attribute, from the `classes:` section.
+
+    Returns:
+        Whether `new_name` is the complete dotted path of a GEMSEO object, e.g.
+        `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, rather than the
+        name of an attribute of the class.
+    """
+    return new_name.startswith(_package_prefix) and _is_dotted(new_name)
 
 
 def _find_dissolved_packages(
@@ -532,6 +597,35 @@ def _find_live_modules(
     )
 
 
+def _find_reexported_old_modules(
+    module_renames: Mapping[str, str], *module_names: Iterable[str]
+) -> MappingProxyType[tuple[str, str], str]:
+    """Find the old paths of the modules a package may re-export under their own name.
+
+    E.g. `gemseo.mda.base_parallel_mda_settings` for
+    `gemseo.base_parallel_mda_settings`, whose rule gives the new module of the former.
+
+    Args:
+        module_renames: The old module name -> new module name mapping.
+        *module_names: The fully-qualified old module names.
+
+    Returns:
+        The last segment of the old name of a module and its new name -> the only old
+        module of `module_names` that is so named and redirected; a pair matching
+        several old modules is left out.
+    """
+    old_modules: dict[tuple[str, str], set[str]] = {}
+    for names in module_names:
+        for old in names:
+            name = old.rpartition(".")[2]
+            new = _resolve(old, module_renames)
+            if new != old and name != old:
+                old_modules.setdefault((name, new), set()).add(old)
+    return MappingProxyType({
+        key: next(iter(olds)) for key, olds in old_modules.items() if len(olds) == 1
+    })
+
+
 def _build() -> tuple[
     Mapping[str, str],
     Mapping[str, Mapping[str, str]],
@@ -539,18 +633,30 @@ def _build() -> tuple[
     Mapping[str, Mapping[str, str]],
     frozenset[str],
     Mapping[str, frozenset[str]],
+    Mapping[str, str],
 ]:
     """Build the alias tables from the configuration.
 
     Returns:
         The resolved module renames, the attribute renames grouped by old module,
         the manual migrations grouped by old module, the class-attribute renames
-        grouped by the class's current name, the removed modules and the removed
-        attributes grouped by old module.
+        grouped by the class's current name, the removed modules, the removed
+        attributes grouped by old module and the texts of the module renames.
     """
     text = _config_path.read_text(encoding="utf-8")
 
-    module_entries = _parse_section(text, "modules")
+    # The `TODO <text>` tail of a value is cut first, so that a `null TODO <text>`
+    # value is a removal like `null`.
+    split_module_entries = {
+        old: _split_rename_todo(value)
+        for old, value in _parse_section(text, "modules").items()
+    }
+    module_entries = {old: new for old, (new, _) in split_module_entries.items()}
+    module_notes = {
+        old: note
+        for old, (new, note) in split_module_entries.items()
+        if new != _removed and note
+    }
     removed_modules = frozenset(
         old for old, value in module_entries.items() if value == _removed
     )
@@ -563,7 +669,16 @@ def _build() -> tuple[
         if new != old:
             module_renames[old] = new
 
+    # An entry whose parent is the old name of another entry, e.g.
+    # `gemseo.x.module.Class.Method`, is that of an attribute of a class, not of a
+    # module: the runtime aliases it through the `classes:` section instead, as the
+    # module of the class cannot be told apart from the class in its old name.
     all_attribute_entries = _parse_section(text, "attributes")
+    all_attribute_entries = {
+        old: _split_rename_todo(value)[0]
+        for old, value in all_attribute_entries.items()
+        if _parent(old) not in all_attribute_entries
+    }
     manual_entries = {
         old: todo_text
         for old, value in all_attribute_entries.items()
@@ -602,6 +717,7 @@ def _build() -> tuple[
         }),
         removed_modules,
         _group_removed_attributes(all_attribute_entries),
+        MappingProxyType(module_notes),
     )
 
 
@@ -613,11 +729,19 @@ _tables: Final[
         Mapping[str, Mapping[str, str]],
         frozenset[str],
         Mapping[str, frozenset[str]],
+        Mapping[str, str],
     ]
 ] = _build()
 
 module_renames: Final[Mapping[str, str]] = _tables[0]
 """Old fully-qualified module name -> new one (fully resolved)."""
+
+module_rename_notes: Final[Mapping[str, str]] = _tables[6]
+"""Old fully-qualified module name -> the text of its `<new name> TODO <text>` rule.
+
+It is added as a note to the `ImportError` raised when importing the new module
+through the old one.
+"""
 
 attribute_renames: Final[Mapping[str, Mapping[str, str]]] = _tables[1]
 """Old module name -> {old attribute name: new attribute name}."""
@@ -665,6 +789,27 @@ Old package name -> the ordered new locations of its former submodules. Derived 
 `module_renames`, used to import the old package itself as a stand-in through which its
 submodules are redirected.
 """
+
+
+@cache
+def get_reexported_old_modules() -> Mapping[tuple[str, str], str]:
+    """Return the old paths of the modules a package may re-export as its own.
+
+    They are computed on the first call only, as they are rarely needed: they would
+    slow down every import of GEMSEO otherwise.
+
+    Returns:
+        The last segment of an old module name and its new name -> the old module
+        name, e.g. `("base_parallel_mda_settings",
+        "gemseo.mda.core.base_parallel_solver_settings")` ->
+        `gemseo.mda.base_parallel_mda_settings`, for the modules a package may
+        re-export under their own name, e.g. `gemseo.base_parallel_mda_settings`. A
+        pair matching several old modules is left out.
+    """
+    return _find_reexported_old_modules(
+        module_renames, module_renames, attribute_renames, unmigrated_attributes
+    )
+
 
 class_attribute_renames: Final[Mapping[str, Mapping[str, str]]] = _tables[3]
 """Class name -> {old attribute name: new attribute name}.

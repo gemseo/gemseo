@@ -1,0 +1,49 @@
+# serializer version: 1
+# name: test_bad_location[BadChain]
+  "The location 'sub:Outer.Nope' of the name 'BadChain' exported by 'fake_lazy_pkg' cannot be resolved (type object 'Outer' has no attribute 'Nope')."
+# ---
+# name: test_bad_location[Missing]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_deprecated_module_bad_location
+  "The name 'BadChain' of the module 'fake_old_pkg', moved to 'fake_lazy_pkg', cannot be resolved: The location 'sub:Outer.Nope' of the name 'BadChain' exported by 'fake_lazy_pkg' cannot be resolved (type object 'Outer' has no attribute 'Nope')."
+# ---
+# name: test_deprecated_module_unknown_name
+  "module 'fake_old_pkg' has no attribute 'unknown'"
+# ---
+# name: test_from_import_bad_location[lazy]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_bad_location[wrapped]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_from_deprecated_module_bad_location
+  "The name 'BadChain' of the module 'fake_old_pkg', moved to 'fake_lazy_pkg', cannot be resolved: The location 'sub:Outer.Nope' of the name 'BadChain' exported by 'fake_lazy_pkg' cannot be resolved (type object 'Outer' has no attribute 'Nope')."
+# ---
+# name: test_from_import_module_import_error_is_chained
+  "The import of the module 'lazy_tmp_pkg.broken' of the name 'Broken' exported by 'lazy_tmp_pkg' raised an error (Raised while importing broken.)."
+# ---
+# name: test_from_import_module_not_found_error_propagates
+  "No module named 'lazy_tmp_pkg.typo'"
+# ---
+# name: test_from_import_through_third_party_wrapper[marked]
+  "The location 'sub' of the name 'Missing' exported by 'fake_lazy_pkg' cannot be resolved (module 'fake_lazy_pkg.sub' has no attribute 'Missing')."
+# ---
+# name: test_from_import_through_third_party_wrapper[unmarked]
+  "cannot import name 'Missing' from 'fake_lazy_pkg' (unknown location)"
+# ---
+# name: test_module_import_error_propagates[Broken-AttributeError]
+  'Raised while importing broken.'
+# ---
+# name: test_module_import_error_propagates[Typo-ModuleNotFoundError]
+  "No module named 'lazy_tmp_pkg.typo'"
+# ---
+# name: test_reexport_is_lazy_without_loader[no-loader]
+  "the package 'package_without_loader' has no spec or loader to execute it again"
+# ---
+# name: test_reexport_is_lazy_without_loader[no-spec]
+  "the package 'package_without_loader' has no spec or loader to execute it again"
+# ---
+# name: test_unknown_name
+  "module 'fake_lazy_pkg' has no attribute 'unknown'"
+# ---

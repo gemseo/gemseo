@@ -154,6 +154,18 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         ])
     )
 
+    _reset_x0_before_exec: bool
+    """Whether to reset the current value of the design space before execution.
+
+    It is reset to the value it had when the problem of the scenario was created.
+    """
+
+    _set_bounds_before_exec: bool
+    """Whether to set the bounds of the design space from the input data."""
+
+    _set_x0_before_exec: bool
+    """Whether to set the current value of the design space from the input data."""
+
     __name_generator: NameGenerator
     """A name generator used to get unique file names when exporting databases."""
 

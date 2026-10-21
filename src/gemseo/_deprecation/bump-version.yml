@@ -6,8 +6,17 @@
 # The `classes:` section is read at runtime too, but only its scalar entries (a
 # class's own renamed attributes and methods, and the dotted renamed attributes of a
 # class nested in it, e.g. `DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER`
-# for an enumeration member); the nested method-parameter blocks and the entries whose
-# target is `null` remain codemod-only.
+# for an enumeration member); the nested method-parameter blocks, the YAML aliases
+# (`Foo: *anchor`, `<<: *anchor`), the expressions and the entries whose target is
+# `null` remain codemod-only. A scalar entry whose value is the complete `gemseo.`
+# dotted path of an object, e.g.
+# `Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, is an attribute
+# moved out of its class: the codemod replaces the attribute by the object, imported
+# from that path, and the runtime installs a read-only descriptor on the class
+# resolving the old name to the object, with a DeprecationWarning, provided the path
+# is in the module defining the class or in one of its parent packages, which binds or
+# exports the object. A `<new name> TODO <text>` scalar entry is read as the rename to
+# `<new name>`.
 
 # The `modules:` and `attributes:` sections below share the same syntax: each entry
 # is `old_qualified_name: new_qualified_name`, where the new value is always
@@ -19,6 +28,16 @@
 # was removed with no replacement: the codemod marks the code referring to it with a
 # TODO comment (a later rule of its package still rewrites its path), and importing it
 # raises an error saying so.
+#
+# A `<new name> TODO <text>` value (split on the first ` TODO `) means that the old
+# name was renamed, as with `<new name>` alone, but that the new name does not behave
+# as the old one in some cases, which the codemod cannot fix: it renames the name as
+# usual and also marks the code referring to the old name with
+# `# TODO(bump-gemseo): <old name>: <text>`. The runtime reads it as the plain rename
+# to `<new name>`, in `modules:` and in `attributes:`; it ignores `<text>`, which
+# follows the same rules as below, except in `modules:`, where it adds it as a note to
+# the ImportError raised when importing the new module through the old one, e.g. for
+# a dependency of the new module. `<new name>` is checked as in a plain rename.
 #
 # A `TODO <text>` value means that the old name was removed and that its migration
 # cannot be automated, e.g. because the new name alone does not preserve the behavior
@@ -44,11 +63,49 @@
 # rewrite an already-final path a second time).
 #
 # Keys are 6.3.2 names: `modules:` keys are renamed modules and packages, NOT the
-# names they define — see `attributes:`.
+# names they define — see `attributes:`. The one deliberate exception is the block
+# of the settings classes new in 7 in `attributes:`, keyed on would-be old paths for
+# the codemod: the runtime reads it too, so such a never-released old name resolves
+# with a DeprecationWarning when its old module no longer binds it, and silently,
+# through the module namespace, when the old module is still live and imports it.
 #
 # An `attributes:` key outside GEMSEO and its plugins (e.g. `strenum.StrEnum`, a
 # third-party name gemseo 6.3.2 required) is for the codemod only: the runtime never
-# sees the old name, since it only redirects the `gemseo` modules.
+# sees the old name, since it only redirects the `gemseo` modules. So is an
+# `attributes:` key of a class attribute, e.g.
+# `gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.Method`, whose parent
+# is the key of another entry: the runtime skips it, and aliases the attribute
+# through the `classes:` section instead.
+#
+# The `classes:` and `functions:` sections, which only the codemod reads in full,
+# also accept three forms in the rule of a parameter, i.e. in the nested block of a
+# method or a function, e.g. `__init__:`:
+# - `TODO[<guard>] <text>`, alone or ending what a ` TODO <text>` may end (`null`, a
+#   position, a new name or both), restricts the marking of the calls by the
+#   codemod: `[<Class>]` marks only a call whose argument for the parameter is of
+#   the class, `[!<Class>]` (e.g. `[!str]`, `[!Iterable]`) a call unless its argument
+#   is known to be of the class, and `[<param>.<field>]` (e.g.
+#   `[function.f_type]`) a call unless its argument for `<param>` is built in sight
+#   by a constructor leaving its `<field>` to the default; `<text>` follows the rules
+#   of a `TODO <text>` value.
+# - `IF[<Class>] <Entry>`, in the block of a constructor, gives a call passing an
+#   instance of `<Class>` for the parameter the `__init__` rules of the `classes:`
+#   entry `<Entry>`, the call then building that class, e.g. a DOEScenario over a
+#   ParameterSpace becoming an EvaluationScenario.
+# - `KEEP_DEFAULT`, for a parameter whose default changed, makes the codemod pass the
+#   old default, read from the GEMSEO 6 API, to a call not passing the argument, e.g.
+#   `use_and=False` to `pretty_str`.
+# These are codemod-only, and allowed only where the runtime does not read them, the
+# nested blocks: under `modules:` or `attributes:`, which are split on ` TODO `, not
+# on ` TODO[`, such a value would be checked as a new name and make `import gemseo`
+# fail.
+#
+# A scalar entry of a class in `classes:` may end with ` TODO <text>`: after a new
+# name, the codemod renames the attribute and marks an assignment or a deletion of it
+# with the text, e.g. for a property with no setter; after an expression of
+# `{receiver}`, e.g. `"{receiver}.target_class_name TODO <text>"`, the codemod
+# replaces a read through an instance by the expression and marks any other use; the
+# runtime reads the first as the rename to the new name and skips the second.
 #
 # Some public 6.3.2 names are mapped to a private target (a path with a segment
 # starting with `_`, e.g. gemseo.post._engine.colormap): this is deliberate, for the
@@ -148,7 +205,6 @@ modules:
   gemseo.algos.opt.augmented_lagrangian.augmented_lagrangian_order_0: gemseo.optimization.augmented_lagrangian.order_0
   gemseo.algos.opt.augmented_lagrangian.augmented_lagrangian_order_1: gemseo.optimization.augmented_lagrangian.order_1
   gemseo.algos.opt.augmented_lagrangian.penalty_heuristic: gemseo.optimization.augmented_lagrangian.base_penalty_heuristic
-  gemseo.algos.aggregation.aggregation_func: gemseo.optimization.aggregation.aggregation_func
   gemseo.algos.aggregation.core: gemseo.optimization.aggregation._functions
   gemseo.algos.aggregation: gemseo.optimization.aggregation
   gemseo.algos.base_problem: gemseo.core.problem.base
@@ -165,8 +221,6 @@ modules:
   gemseo.algos.optimization_problem: gemseo.optimization.problem
   gemseo.algos.optimization_result: gemseo.optimization.result
   gemseo.algos.optimization_history: gemseo.optimization.history
-  gemseo.algos.pareto.pareto_front: gemseo.optimization.pareto.pareto_front
-  gemseo.algos.pareto.pareto_plot_biobjective: gemseo.optimization.pareto.pareto_plot_biobjective
   gemseo.algos.pareto.utils: gemseo.optimization.pareto.util
   gemseo.algos.pareto: gemseo.optimization.pareto
   # ProblemFunction was removed; the recording half of what it did is
@@ -380,6 +434,8 @@ modules:
   gemseo.utils.string_tools: gemseo.util.string
   gemseo.utils.testing.helpers: gemseo.util.testing.helper
   gemseo.utils.testing.mocks: gemseo.util.testing.mock
+  # The fixtures of GEMSEO 7 import syrupy, which GEMSEO declares in no extra.
+  gemseo.utils.testing.pytest_conftest: gemseo.util.testing.pytest_conftest TODO add syrupy to the test dependencies of the project, as gemseo.util.testing.pytest_conftest imports it
   gemseo.utils.compatibility: gemseo.util._compatibility
   gemseo.utils: gemseo.util
 
@@ -398,28 +454,29 @@ modules:
 
 attributes:
   # Python 3.10 support was dropped, and gemseo no longer requires strenum. Beware
-  # that the value of auto() differs: enum.StrEnum lowercases the member name.
+  # that the value of auto() differs: enum.StrEnum lowercases the member name, hence
+  # the TODO the codemod adds to a class of strenum.StrEnum with an auto() member.
   strenum.StrEnum: enum.StrEnum
   gemseo.create_parameter_space: gemseo.create_random_space
   gemseo.ScenarioFactory: gemseo.scenario.factory.ScenarioFactory
-  gemseo.BaseScenario: gemseo.scenario.evaluation.EvaluationScenario
+  gemseo.BaseScenario: gemseo.scenario.EvaluationScenario
   gemseo.BaseParallelMDASettings: gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings
   # A module re-exported by the gemseo 6.3.2 package, not a submodule of it.
   gemseo.base_parallel_mda_settings: gemseo.mda.core.base_parallel_solver_settings
 
   gemseo.algos.base_algorithm_settings.BaseAlgorithmSettings: gemseo.util.pydantic.BaseSettings
-  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings: gemseo.optimization.augmented_lagrangian.settings.order_0.Augmented_Lagrangian_Order_0_Settings
-  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings.Augmented_Lagrangian_order_1_Settings: gemseo.optimization.augmented_lagrangian.settings.order_1.Augmented_Lagrangian_Order_1_Settings
+  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings: gemseo.optimization.Augmented_Lagrangian_Order_0_Settings
+  gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings.Augmented_Lagrangian_order_1_Settings: gemseo.optimization.Augmented_Lagrangian_Order_1_Settings
   gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings.BaseAugmentedLagragianSettings: gemseo.optimization.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings
   gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings.PenaltyHeuristicSettings: gemseo.optimization.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings
   gemseo.algos.opt.augmented_lagrangian.penalty_heuristic.AugmentedLagrangianPenaltyHeuristic: gemseo.optimization.augmented_lagrangian.base_penalty_heuristic.BaseAugmentedLagrangianPenaltyHeuristic
-  gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings.SciPyMILP_Settings: gemseo.optimization.scipy_milp.settings.scipy_milp_settings.MILP_Settings
-  gemseo.algos.opt.scipy_milp.SciPyMILP_Settings: gemseo.optimization.scipy_milp.MILP_Settings
-  gemseo.algos.parameter_space.ParameterSpace: gemseo.space.random.RandomSpace
+  gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings.SciPyMILP_Settings: gemseo.optimization.MILP_Settings
+  gemseo.algos.opt.scipy_milp.SciPyMILP_Settings: gemseo.optimization.MILP_Settings
+  gemseo.algos.parameter_space.ParameterSpace: gemseo.space.RandomSpace
   # gemseo.space.random, which replaces gemseo.algos.parameter_space, defines no logger.
   gemseo.algos.parameter_space.LOGGER: TODO use logging.getLogger("gemseo.space.random") instead
   gemseo.algos.parameter_space_factory.ParameterSpaceFactory: gemseo.space.factory.RandomSpaceFactory
-  gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: gemseo.problem.uncertainty.wing_weight.random_space.WingWeightRandomSpace
+  gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: gemseo.problem.uncertainty.wing_weight.WingWeightRandomSpace
   # One class became two, and which one replaces a given use depends on what
   # that use needed, so the codemod cannot choose.
   gemseo.algos.problem_function.ProblemFunction: TODO replace it with EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its argument to the coordinates an algorithm works on, or both stacked as EvaluationProblem.bind_functions and EvaluationProblem.create_working_problem do
@@ -432,12 +489,12 @@ attributes:
   gemseo.algos.stop_criteria.XtolReached: gemseo.core.problem.termination_criterion.XtolReached
   gemseo.algos.progress_bar_data.factory.PROGRESS_BAR_DATA_FACTORY: gemseo.core.algorithm.progress_bar_data.factory.progress_bar_data_factory
 
-  gemseo.core.chains.additive_chain.MDOAdditiveChain: gemseo.discipline.chain.additive_chain.AdditiveDisciplineChain
-  gemseo.core.chains.chain.MDOChain: gemseo.discipline.chain.chain.DisciplineChain
+  gemseo.core.chains.additive_chain.MDOAdditiveChain: gemseo.discipline.AdditiveDisciplineChain
+  gemseo.core.chains.chain.MDOChain: gemseo.discipline.DisciplineChain
   gemseo.core.chains.chain.traverse_add_diff_io: gemseo.core.derivative.graph_traversal.set_differentiated_ios
-  gemseo.core.chains.initialization_chain.MDOInitializationChain: gemseo.discipline.chain.initialization_chain.InitializationDisciplineChain
-  gemseo.core.chains.parallel_chain.MDOParallelChain: gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain
-  gemseo.core.chains.warm_started_chain.MDOWarmStartedChain: gemseo.discipline.chain.warm_started_chain.WarmStartedDisciplineChain
+  gemseo.core.chains.initialization_chain.MDOInitializationChain: gemseo.discipline.InitializationDisciplineChain
+  gemseo.core.chains.parallel_chain.MDOParallelChain: gemseo.discipline.ParallelDisciplineChain
+  gemseo.core.chains.warm_started_chain.MDOWarmStartedChain: gemseo.discipline.WarmStartedDisciplineChain
 
   gemseo.core.grammars.defaults.Defaults: gemseo.core.grammar.properties.GrammarProperties
 
@@ -452,21 +509,25 @@ attributes:
   gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper: gemseo.discipline.wrapper.job_scheduler.discipline.JobSchedulerDiscipline
   gemseo.disciplines.wrappers.job_schedulers.factory.JobSchedulerDisciplineWrapperFactory: gemseo.discipline.wrapper.job_scheduler.factory.JobSchedulerDisciplineFactory
 
-  gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: gemseo.formulation.bilevel_bcd_settings.BiLevelBCD_Settings
+  gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: gemseo.formulation.BiLevelBCD_Settings
   gemseo.formulations.factory.MDO_FORMULATION_FACTORY: gemseo.formulation.factory.mdo_formulation_factory
+  # The formulations are generic in the type of their input space too, which a
+  # subclass subscripting the base with the type of its settings alone must give.
+  gemseo.formulations.base_formulation.BaseFormulation: gemseo.formulation.core.base.BaseFormulation TODO BaseFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseFormulation[T] must derive from BaseFormulation[T, DesignSpace], DesignSpace being imported at run time
+  gemseo.formulations.base_mdo_formulation.BaseMDOFormulation: gemseo.formulation.core.base_mdo.BaseMDOFormulation TODO BaseMDOFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseMDOFormulation[T] must derive from BaseMDOFormulation[T, DesignSpace], DesignSpace being imported at run time
 
   gemseo.mda.base_parallel_mda_solver.BaseParallelMDASolver: gemseo.mda.core.base_parallel_solver.BaseMDAParallelSolver
   gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings: gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings
-  gemseo.mda.gs_newton.MDAGSNewton: gemseo.mda.gauss_seidel_newton_raphson.MDAGaussSeidelNewtonRaphson
-  gemseo.mda.gs_newton_settings.MDAGSNewton_Settings: gemseo.mda.gauss_seidel_newton_raphson_settings.MDAGaussSeidelNewtonRaphson_Settings
+  gemseo.mda.gs_newton.MDAGSNewton: gemseo.mda.MDAGaussSeidelNewtonRaphson
+  gemseo.mda.gs_newton_settings.MDAGSNewton_Settings: gemseo.mda.MDAGaussSeidelNewtonRaphson_Settings
 
   gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
 
   gemseo.uncertainty.BaseDistribution: gemseo.uncertainty.distribution.core.base.BaseDistribution
   gemseo.uncertainty.BaseSensitivityAnalysis: gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis
   gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
-  gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
-  gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset
+  gemseo.uncertainty.Dataset: gemseo.dataset.Dataset
+  gemseo.uncertainty.IODataset: gemseo.dataset.IODataset
 
   gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo: gemseo.machine_learning.core.model.base_ml_model.BaseMLModel
   gemseo.mlearning.core.algos.ml_algo_settings.BaseMLAlgoSettings: gemseo.machine_learning.core.model.base_ml_model_settings.BaseMLModelSettings
@@ -481,32 +542,33 @@ attributes:
   gemseo.mlearning.core.calibration.MLAlgoCalibration: gemseo.machine_learning.calibration.MLModelCalibration
   gemseo.mlearning.core.selection.MLAlgoSelection: gemseo.machine_learning.selection.MLModelSelection
   gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings: gemseo.machine_learning.regression.core.base_fce_settings.BaseFCERegressorSettings
-  gemseo.mlearning.regression.algos.moe_settings.MOE_Settings: gemseo.machine_learning.regression.model.moe_settings.MOERegressor_Settings
-  gemseo.mlearning.regression.algos.rbf_settings.Function: gemseo.machine_learning.regression.model.rbf_settings.RBF
+  gemseo.mlearning.regression.algos.moe_settings.MOE_Settings: gemseo.machine_learning.MOERegressor_Settings
+  gemseo.mlearning.regression.algos.rbf_settings.Function: gemseo.enum.RBF
   gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings: gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings.BaseLinearModelFitterSettings
   gemseo.mlearning.BaseMLSupervisedAlgo: gemseo.machine_learning.BaseMLSupervisedModel
   gemseo.mlearning.BaseMLAlgo: gemseo.machine_learning.core.model.base_ml_model.BaseMLModel
   gemseo.mlearning.BaseClassifier: gemseo.machine_learning.classification.core.base_classifier.BaseClassifier
-  gemseo.mlearning.Dataset: gemseo.dataset.dataset.Dataset
+  gemseo.mlearning.Dataset: gemseo.dataset.Dataset
 
-  gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix: gemseo.post.dataset.pair_plot.PairPlot
+  gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix: gemseo.post.dataset.PairPlot
   gemseo.post.dataset.plot_settings.PlotSettings: gemseo.post.dataset.base_settings.BaseDatasetPlotSettings
   gemseo.post.dataset.dataset_plot.DatasetPlot: gemseo.post.dataset.base.BaseDatasetPlot
-  gemseo.post.dataset.color_evolution.ColorEvolution: gemseo.post.dataset.heatmap.Heatmap
-  gemseo.post.dataset.radviz.Radar: gemseo.post.dataset.radviz.RadViz
+  gemseo.post.dataset.color_evolution.ColorEvolution: gemseo.post.dataset.Heatmap
+  gemseo.post.dataset.radviz.Radar: gemseo.post.dataset.RadViz
   gemseo.post.dataset.plots._matplotlib.radviz.Radar: gemseo.post.dataset.plot._matplotlib.radviz.RadViz
   gemseo.post.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings
-  gemseo.post.radar_chart.RadarChart: gemseo.post.constraint_radar.ConstraintRadar
-  gemseo.post.radar_chart_settings.RadarChart_Settings: gemseo.post.constraint_radar_settings.ConstraintRadar_Settings
+  gemseo.post.radar_chart.RadarChart: gemseo.post.ConstraintRadar
+  gemseo.post.radar_chart_settings.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings
 
-  gemseo.scenarios.doe_scenario.DOEScenario: gemseo.scenario.mdo.MDOScenario
-  gemseo.scenarios.base_scenario.BaseScenario: gemseo.scenario.evaluation.EvaluationScenario
+  gemseo.scenarios.doe_scenario.DOEScenario: gemseo.scenario.MDOScenario
+  gemseo.scenarios.base_scenario.BaseScenario: gemseo.scenario.EvaluationScenario
 
   gemseo.settings.base_settings.BaseSettings: gemseo.util.pydantic.BaseSettings
 
-  gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics: gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics
+  gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
   # The mixin became a base class deriving from BaseDistribution, which a class
-  # deriving from both keeps a valid method resolution order with.
+  # deriving from both keeps a valid method resolution order with only when
+  # BaseDistribution comes after it.
   gemseo.uncertainty.distributions.scalar_distribution_mixin.ScalarDistributionMixin: gemseo.uncertainty.distribution.core.base_univariate.BaseUnivariateDistribution
   gemseo.uncertainty.distributions.base_settings.beta_settings.BaseBetaDistribution_Settings: gemseo.uncertainty.distribution.core.base_univariate_settings.beta.BaseBetaDistributionSettings
   gemseo.uncertainty.distributions.base_settings.exponential_settings.BaseExponentialDistribution_Settings: gemseo.uncertainty.distribution.core.base_univariate_settings.exponential.BaseExponentialDistributionSettings
@@ -529,7 +591,7 @@ attributes:
   gemseo.utils.compatibility.scipy.SCIPY_VERSION: gemseo.util._compatibility.scipy.scipy_version
   gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.epsilon
   gemseo.utils.derivatives.finite_differences.FirstOrderFD: gemseo.util.derivative.approximator.forward_differences.ForwardDifferences
-  gemseo.utils.directory_creator.DirectoryNamingMethod: gemseo.util.directory_creator.Naming
+  gemseo.utils.directory_creator.DirectoryNamingMethod: gemseo.enum.Naming
 
   gemseo.utils.xdsm.XDSM: gemseo.util.xdsm.xdsm.XDSM
 
@@ -760,6 +822,7 @@ attributes:
   gemseo.disciplines.utils.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
   gemseo.mda.base_mda.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.base_parallel_mda_settings.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.mda.base_parallel_mda_settings._ENABLE_PARALLEL_EXECUTION: gemseo.util.constant._enable_parallel_execution
   gemseo.mda.base_parallel_mda_solver.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.gauss_seidel.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
   gemseo.mda.mda_chain.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
@@ -886,8 +949,8 @@ attributes:
   # The enumeration of the variable types, whose FLOAT member became REAL (see classes:).
   gemseo.algos._variable.DataType: gemseo.enum.VariableType
   gemseo.algos.design_space.DataType: gemseo.enum.VariableType
-  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULTSettings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
-  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULT_Settings: gemseo.linear.scipy_linalg.settings.lgmres.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULTSettings: gemseo.linear.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.DEFAULT_Settings: gemseo.linear.LGMRES_Settings
   gemseo.mlearning.core.algos.ml_algo.MLAlgoSettingsType: gemseo.machine_learning.core.model.base_ml_model.MLModelSettingsType
   gemseo.mlearning.regression.algos.moe.MLAlgoType: gemseo.machine_learning.regression.model.moe.MLModelType
   gemseo.post.core.colormaps.CMAPS: gemseo.post._engine.colormap._cmaps
@@ -896,7 +959,7 @@ attributes:
   gemseo.post.core.colormaps.PARULA_DATA: gemseo.post._engine.colormap._parula_data
   gemseo.post.core.colormaps.PLASMA_DATA: gemseo.post._engine.colormap._plasma_data
   gemseo.post.core.colormaps.VIRIDIS_DATA: gemseo.post._engine.colormap._viridis_data
-  gemseo.post.dataset.scatter_plot_matrix.ColormapName: gemseo.post.dataset.pair_plot_settings.ColormapName
+  gemseo.post.dataset.scatter_plot_matrix.ColormapName: gemseo.enum.ColormapName
   gemseo.utils.string_tools.VariableType: gemseo.util.string.VariableOrComponent
   gemseo.utils.logging.DEFAULT_DATE_FORMAT: gemseo.util.constant._logging_date_format
   gemseo.utils.logging.DEFAULT_MESSAGE_FORMAT: gemseo.util.constant._logging_message_format
@@ -924,10 +987,10 @@ attributes:
   gemseo.post.mlearning.ml_regressor_quality_viewer.DatasetPlotOption: null
   gemseo.post.som.LOGGER: null
   gemseo.scenarios.base_scenario.ScenarioInputDataType: null
-  gemseo.uncertainty.distributions.base_distribution.ParametersType: null
-  gemseo.uncertainty.distributions.base_distribution.StandardParametersType: null
-  gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: null
-  gemseo.uncertainty.distributions.scalar_distribution_mixin.StandardParametersType: null
+  gemseo.uncertainty.distributions.base_distribution.ParametersType: TODO use tuple[str, int, float] | Mapping[str, str | int | float] instead
+  gemseo.uncertainty.distributions.base_distribution.StandardParametersType: TODO use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings
+  gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: TODO use tuple[str, int, float] | Mapping[str, str | int | float] instead
+  gemseo.uncertainty.distributions.scalar_distribution_mixin.StandardParametersType: TODO use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings
   gemseo.utils.compatibility.openturns.OT_1_23: null
   gemseo.utils.compatibility.openturns.PEARSON_METHOD_NAME: null
   gemseo.utils.compatibility.openturns.create_trend_basis: null
@@ -936,8 +999,9 @@ attributes:
   gemseo.utils.compatibility.scipy.TOL_OPTION: null
   gemseo.utils.discipline.DummyBaseDiscipline: null
   gemseo.utils.locks.synchronized_hashes: null
-  gemseo.utils.testing.helpers.image_comparison: null
-  gemseo.utils.testing.pytest_conftest.baseline_images: null
+  # Replaced by the snapshot_matplotlib fixture of syrupy-matplotlib (changelog 1760).
+  gemseo.utils.testing.helpers.image_comparison: TODO use the snapshot_matplotlib fixture of syrupy-matplotlib instead; add syrupy-matplotlib to the test dependencies, set snapshot_matplotlib_tolerance = 0.01 in .pytest.ini, replace the @image_comparison([...]) decorator by a snapshot_matplotlib argument of the test, then run pytest --snapshot-update without -n (the baseline_images directories are no longer used)
+  gemseo.utils.testing.pytest_conftest.baseline_images: TODO the baseline_images fixture went with image_comparison; use the snapshot_matplotlib fixture of syrupy-matplotlib instead
   gemseo.utils.testing.pytest_conftest.disable_fault_handler: null
   gemseo.utils.testing.pytest_conftest.import_or_skip_xlwings: null
   gemseo.utils.testing.pytest_conftest.is_xlwings_usable: null
@@ -1053,6 +1117,333 @@ attributes:
   # Made private (_study_analysis_types), hence removed from the public API.
   gemseo.utils.study_analyses.study_analysis_cli.STUDY_ANALYSIS_TYPES: null
 
+  # Settings classes new in 7, which the old API has no counterpart of: NOT 6.3.2
+  # names. Each is keyed on a would-be old path, the module of the old class it is the
+  # settings of, so that the codemod, building such a Settings class (see the
+  # `={__class__}_Settings(**{...})` rules of the dataset plots in `classes:`), imports
+  # it from there, and this entry then moves it to its new path, renaming it if needed.
+  # The runtime reads them too (see the exception to "Keys are 6.3.2 names" above):
+  # importing one of these never-released names resolves it, with a DeprecationWarning
+  # only when its old module no longer binds it (e.g. not for
+  # `gemseo.post.dataset.boxplot.Boxplot_Settings`, which that live module imports).
+  gemseo.post.dataset.andrews_curves.AndrewsCurves_Settings: gemseo.post.dataset.andrews_curves_settings.AndrewsCurves_Settings
+  gemseo.post.dataset.bars.BarPlot_Settings: gemseo.post.dataset.bar_plot_settings.BarPlot_Settings
+  gemseo.post.dataset.boxplot.Boxplot_Settings: gemseo.post.dataset.boxplot_settings.Boxplot_Settings
+  gemseo.post.dataset.color_evolution.ColorEvolution_Settings: gemseo.post.dataset.heatmap_settings.Heatmap_Settings
+  gemseo.post.dataset.curves.Curves_Settings: gemseo.post.dataset.curves_settings.Curves_Settings
+  gemseo.post.dataset.lines.Lines_Settings: gemseo.post.dataset.lines_settings.Lines_Settings
+  gemseo.post.dataset.parallel_coordinates.ParallelCoordinates_Settings: gemseo.post.dataset.parallel_coordinates_settings.ParallelCoordinates_Settings
+  gemseo.post.dataset.radar_chart.RadarChart_Settings: gemseo.post.dataset.radar_chart_settings.RadarChart_Settings
+  gemseo.post.dataset.radviz.Radar_Settings: gemseo.post.dataset.radviz_settings.RadViz_Settings
+  gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix_Settings: gemseo.post.dataset.pair_plot_settings.PairPlot_Settings
+  gemseo.post.dataset.scatter.Scatter_Settings: gemseo.post.dataset.scatter_settings.Scatter_Settings
+  gemseo.post.dataset.surfaces.Surfaces_Settings: gemseo.post.dataset.surfaces_settings.Surfaces_Settings
+  gemseo.post.dataset.yvsx.YvsX_Settings: gemseo.post.dataset.yvsx_settings.YvsX_Settings
+  gemseo.post.dataset.zvsxy.ZvsXY_Settings: gemseo.post.dataset.zvsxy_settings.ZvsXY_Settings
+  # The names that a GEMSEO 7 package re-exports, imported from that package, e.g.
+  # gemseo.formulation.MDF_Settings rather than gemseo.formulation.mdf_settings.MDF_Settings.
+  # The modules rules above would otherwise move them to the module defining them.
+  gemseo.algos.design_space.DesignSpace: gemseo.space.DesignSpace
+  gemseo.algos.doe.custom_doe.settings.custom_doe_settings.CustomDOE_Settings: gemseo.doe.CustomDOE_Settings
+  gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings.DiagonalDOE_Settings: gemseo.doe.DiagonalDOE_Settings
+  gemseo.algos.doe.morris_doe.settings.morris_doe_settings.MorrisDOE_Settings: gemseo.doe.MorrisDOE_Settings
+  gemseo.algos.doe.oat_doe.settings.oat_doe_settings.OATDOE_Settings: gemseo.doe.OATDOE_Settings
+  gemseo.algos.doe.openturns.settings.ot_axial.OT_AXIAL_Settings: gemseo.doe.OT_AXIAL_Settings
+  gemseo.algos.doe.openturns.settings.ot_composite.OT_COMPOSITE_Settings: gemseo.doe.OT_COMPOSITE_Settings
+  gemseo.algos.doe.openturns.settings.ot_factorial.OT_FACTORIAL_Settings: gemseo.doe.OT_FACTORIAL_Settings
+  gemseo.algos.doe.openturns.settings.ot_faure.OT_FAURE_Settings: gemseo.doe.OT_FAURE_Settings
+  gemseo.algos.doe.openturns.settings.ot_fullfact.OT_FULLFACT_Settings: gemseo.doe.OT_FULLFACT_Settings
+  gemseo.algos.doe.openturns.settings.ot_halton.OT_HALTON_Settings: gemseo.doe.OT_HALTON_Settings
+  gemseo.algos.doe.openturns.settings.ot_haselgrove.OT_HASELGROVE_Settings: gemseo.doe.OT_HASELGROVE_Settings
+  gemseo.algos.doe.openturns.settings.ot_lhs.OT_LHS_Settings: gemseo.doe.OT_LHS_Settings
+  gemseo.algos.doe.openturns.settings.ot_lhsc.OT_LHSC_Settings: gemseo.doe.OT_LHSC_Settings
+  gemseo.algos.doe.openturns.settings.ot_monte_carlo.OT_MONTE_CARLO_Settings: gemseo.doe.OT_MONTE_CARLO_Settings
+  gemseo.algos.doe.openturns.settings.ot_opt_lhs.OT_OPT_LHS_Settings: gemseo.doe.OT_OPT_LHS_Settings
+  gemseo.algos.doe.openturns.settings.ot_random.OT_RANDOM_Settings: gemseo.doe.OT_RANDOM_Settings
+  gemseo.algos.doe.openturns.settings.ot_reverse_halton.OT_REVERSE_HALTON_Settings: gemseo.doe.OT_REVERSE_HALTON_Settings
+  gemseo.algos.doe.openturns.settings.ot_sobol.OT_SOBOL_Settings: gemseo.doe.OT_SOBOL_Settings
+  gemseo.algos.doe.openturns.settings.ot_sobol_indices.OT_SOBOL_INDICES_Settings: gemseo.doe.OT_SOBOL_INDICES_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_bbdesign.PYDOE_BBDESIGN_Settings: gemseo.doe.PYDOE_BBDESIGN_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.Alpha: gemseo.enum.Alpha
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.Face: gemseo.enum.Face
+  gemseo.algos.doe.pydoe.settings.pydoe_ccdesign.PYDOE_CCDESIGN_Settings: gemseo.doe.PYDOE_CCDESIGN_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_ff2n.PYDOE_FF2N_Settings: gemseo.doe.PYDOE_FF2N_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_fullfact.PYDOE_FULLFACT_Settings: gemseo.doe.PYDOE_FULLFACT_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_lhs.Criterion: gemseo.enum.Criterion
+  gemseo.algos.doe.pydoe.settings.pydoe_lhs.PYDOE_LHS_Settings: gemseo.doe.PYDOE_LHS_Settings
+  gemseo.algos.doe.pydoe.settings.pydoe_pbdesign.PYDOE_PBDESIGN_Settings: gemseo.doe.PYDOE_PBDESIGN_Settings
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Hypersphere: gemseo.enum.Hypersphere
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Optimizer: gemseo.enum.Optimizer
+  gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.Strength: gemseo.enum.Strength
+  gemseo.algos.doe.scipy.settings.halton.Halton_Settings: gemseo.doe.Halton_Settings
+  gemseo.algos.doe.scipy.settings.lhs.LHS_Settings: gemseo.doe.LHS_Settings
+  gemseo.algos.doe.scipy.settings.mc.MC_Settings: gemseo.doe.MC_Settings
+  gemseo.algos.doe.scipy.settings.poisson_disk.PoissonDisk_Settings: gemseo.doe.PoissonDisk_Settings
+  gemseo.algos.doe.scipy.settings.sobol.Sobol_Settings: gemseo.doe.Sobol_Settings
+  gemseo.algos.evaluation_problem.EvaluationProblem: gemseo.doe.EvaluationProblem
+  gemseo.algos.linear_solvers.linear_problem.LinearProblem: gemseo.linear.LinearProblem
+  gemseo.algos.linear_solvers.scipy_linalg.settings.bicg.BICG_Settings: gemseo.linear.BICG_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab.BICGSTAB_Settings: gemseo.linear.BICGSTAB_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.cg.CG_Settings: gemseo.linear.CG_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.cgs.CGS_Settings: gemseo.linear.CGS_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot.GCROT_Settings: gemseo.linear.GCROT_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.gmres.GMRES_Settings: gemseo.linear.GMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres.LGMRES_Settings: gemseo.linear.LGMRES_Settings
+  gemseo.algos.linear_solvers.scipy_linalg.settings.tfqmr.TFQMR_Settings: gemseo.linear.TFQMR_Settings
+  gemseo.algos.ode.ode_problem.ODEProblem: gemseo.ode.ODEProblem
+  gemseo.algos.ode.scipy_ode.settings.bdf.BDF_Settings: gemseo.ode.BDF_Settings
+  gemseo.algos.ode.scipy_ode.settings.dop853.DOP853_Settings: gemseo.ode.DOP853_Settings
+  gemseo.algos.ode.scipy_ode.settings.lsoda.LSODA_Settings: gemseo.ode.LSODA_Settings
+  gemseo.algos.ode.scipy_ode.settings.radau.Radau_Settings: gemseo.ode.Radau_Settings
+  gemseo.algos.ode.scipy_ode.settings.rk23.RK23_Settings: gemseo.ode.RK23_Settings
+  gemseo.algos.ode.scipy_ode.settings.rk45.RK45_Settings: gemseo.ode.RK45_Settings
+  gemseo.algos.opt.mnbi.settings.mnbi_settings.MNBI_Settings: gemseo.optimization.MNBI_Settings
+  gemseo.algos.opt.multi_start.settings.multi_start_settings.MultiStart_Settings: gemseo.optimization.MultiStart_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_bfgs_settings.NLOPT_BFGS_Settings: gemseo.optimization.NLOPT_BFGS_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_bobyqa_settings.NLOPT_BOBYQA_Settings: gemseo.optimization.NLOPT_BOBYQA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings.NLOPT_COBYLA_Settings: gemseo.optimization.NLOPT_COBYLA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_mma_settings.NLOPT_MMA_Settings: gemseo.optimization.NLOPT_MMA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_newuoa_settings.NLOPT_NEWUOA_Settings: gemseo.optimization.NLOPT_NEWUOA_Settings
+  gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings.NLOPT_SLSQP_Settings: gemseo.optimization.NLOPT_SLSQP_Settings
+  gemseo.algos.opt.scipy_global.settings.differential_evolution.DIFFERENTIAL_EVOLUTION_Settings: gemseo.optimization.DIFFERENTIAL_EVOLUTION_Settings
+  gemseo.algos.opt.scipy_global.settings.dual_annealing.DUAL_ANNEALING_Settings: gemseo.optimization.DUAL_ANNEALING_Settings
+  gemseo.algos.opt.scipy_global.settings.shgo.SHGO_Settings: gemseo.optimization.SHGO_Settings
+  gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex.DUAL_SIMPLEX_Settings: gemseo.optimization.DUAL_SIMPLEX_Settings
+  gemseo.algos.opt.scipy_linprog.settings.highs_interior_point.INTERIOR_POINT_Settings: gemseo.optimization.INTERIOR_POINT_Settings
+  gemseo.algos.opt.scipy_local.settings.cobyqa.COBYQA_Settings: gemseo.optimization.COBYQA_Settings
+  gemseo.algos.opt.scipy_local.settings.lbfgsb.L_BFGS_B_Settings: gemseo.optimization.L_BFGS_B_Settings
+  gemseo.algos.opt.scipy_local.settings.nelder_mead.NELDER_MEAD_Settings: gemseo.optimization.NELDER_MEAD_Settings
+  gemseo.algos.opt.scipy_local.settings.slsqp.SLSQP_Settings: gemseo.optimization.SLSQP_Settings
+  gemseo.algos.opt.scipy_local.settings.tnc.TNC_Settings: gemseo.optimization.TNC_Settings
+  gemseo.algos.optimization_problem.OptimizationProblem: gemseo.optimization.OptimizationProblem
+  gemseo.algos.progress_bar_data.factory.ProgressBarDataName: gemseo.enum.ProgressBarDataName
+  gemseo.algos.sequence_transformer.acceleration.AccelerationMethod: gemseo.enum.AccelerationMethod
+  gemseo.core.derivatives.derivation_modes.DerivationMode: gemseo.enum.DerivationMode
+  gemseo.core.discipline.base_discipline.CacheType: gemseo.enum.CacheType
+  gemseo.core.discipline.discipline.Discipline: gemseo.discipline.Discipline
+  gemseo.core.grammars.factory.GrammarType: gemseo.enum.GrammarType
+  gemseo.datasets.DatasetClassName: gemseo.enum.DatasetClassName
+  gemseo.datasets.dataset.Dataset: gemseo.dataset.Dataset
+  gemseo.datasets.io_dataset.IODataset: gemseo.dataset.IODataset
+  gemseo.datasets.optimization_dataset.OptimizationDataset: gemseo.dataset.OptimizationDataset
+  gemseo.disciplines.analytic.AnalyticDiscipline: gemseo.discipline.AnalyticDiscipline
+  gemseo.disciplines.array_based_function.ArrayBasedFunctionDiscipline: gemseo.discipline.ArrayBasedFunctionDiscipline
+  gemseo.disciplines.auto_py.AutoPyDiscipline: gemseo.discipline.AutoPyDiscipline
+  gemseo.disciplines.concatenater.Concatenater: gemseo.discipline.Concatenater
+  gemseo.disciplines.constraint_aggregation.ConstraintAggregation: gemseo.discipline.ConstraintAggregation
+  gemseo.disciplines.linear_combination.LinearCombination: gemseo.discipline.LinearCombination
+  gemseo.disciplines.ode.ode_discipline.ODEDiscipline: gemseo.discipline.ODEDiscipline
+  gemseo.disciplines.remapping.RemappingDiscipline: gemseo.discipline.RemappingDiscipline
+  gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter: gemseo.scenario.MDOScenarioAdapter
+  gemseo.disciplines.splitter.Splitter: gemseo.discipline.Splitter
+  gemseo.disciplines.surrogate.SurrogateDiscipline: gemseo.discipline.SurrogateDiscipline
+  gemseo.disciplines.taylor.TaylorDiscipline: gemseo.discipline.TaylorDiscipline
+  gemseo.disciplines.wrappers.disc_from_exe.DiscFromExe: gemseo.discipline.DiscFromExe
+  gemseo.disciplines.wrappers.disc_from_exe.Parser: gemseo.enum.Parser
+  gemseo.disciplines.wrappers.filtering_discipline.FilteringDiscipline: gemseo.discipline.FilteringDiscipline
+  gemseo.disciplines.wrappers.job_schedulers.lsf.LSF: gemseo.discipline.LSF
+  gemseo.disciplines.wrappers.job_schedulers.slurm.SLURM: gemseo.discipline.SLURM
+  gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline: gemseo.discipline.RetryDiscipline
+  gemseo.formulations.bilevel_settings.BiLevel_Settings: gemseo.formulation.BiLevel_Settings
+  gemseo.formulations.disciplinary_opt_settings.DisciplinaryOpt_Settings: gemseo.formulation.DisciplinaryOpt_Settings
+  gemseo.formulations.idf_settings.IDF_Settings: gemseo.formulation.IDF_Settings
+  gemseo.formulations.mdf_settings.MDF_Settings: gemseo.formulation.MDF_Settings
+  gemseo.mda.gauss_seidel.MDAGaussSeidel: gemseo.mda.MDAGaussSeidel
+  gemseo.mda.gauss_seidel_settings.MDAGaussSeidel_Settings: gemseo.mda.MDAGaussSeidel_Settings
+  gemseo.mda.jacobi.MDAJacobi: gemseo.mda.MDAJacobi
+  gemseo.mda.jacobi_settings.MDAJacobi_Settings: gemseo.mda.MDAJacobi_Settings
+  gemseo.mda.mda_chain.MDAChain: gemseo.mda.MDAChain
+  gemseo.mda.mda_chain_settings.MDAChain_Settings: gemseo.mda.MDAChain_Settings
+  gemseo.mda.newton_raphson.MDANewtonRaphson: gemseo.mda.MDANewtonRaphson
+  gemseo.mda.newton_raphson_settings.MDANewtonRaphson_Settings: gemseo.mda.MDANewtonRaphson_Settings
+  gemseo.mda.quasi_newton.MDAQuasiNewton: gemseo.mda.MDAQuasiNewton
+  gemseo.mda.quasi_newton_settings.MDAQuasiNewton_Settings: gemseo.mda.MDAQuasiNewton_Settings
+  gemseo.mda.quasi_newton_settings.QuasiNewtonMethod: gemseo.enum.QuasiNewtonMethod
+  gemseo.mda.sequential_mda.MDASequential: gemseo.mda.MDASequential
+  gemseo.mda.sequential_mda_settings.MDASequential_Settings: gemseo.mda.MDASequential_Settings
+  gemseo.mlearning.classification.algos.knn.KNNClassifier: gemseo.machine_learning.classification.model.KNNClassifier
+  gemseo.mlearning.classification.algos.knn_settings.KNNClassifier_Settings: gemseo.machine_learning.KNNClassifier_Settings
+  gemseo.mlearning.classification.algos.random_forest.RandomForestClassifier: gemseo.machine_learning.classification.model.RandomForestClassifier
+  gemseo.mlearning.classification.algos.random_forest_settings.RandomForestClassifier_Settings: gemseo.machine_learning.RandomForestClassifier_Settings
+  gemseo.mlearning.classification.algos.svm.SVMClassifier: gemseo.machine_learning.classification.model.SVMClassifier
+  gemseo.mlearning.classification.algos.svm_settings.SVMClassifier_Settings: gemseo.machine_learning.SVMClassifier_Settings
+  gemseo.mlearning.classification.quality.f1_measure.F1Measure: gemseo.machine_learning.classification.quality.F1Measure
+  gemseo.mlearning.clustering.algos.gaussian_mixture.GaussianMixture: gemseo.machine_learning.clustering.model.GaussianMixture
+  gemseo.mlearning.clustering.algos.gaussian_mixture_settings.GaussianMixture_Settings: gemseo.machine_learning.GaussianMixture_Settings
+  gemseo.mlearning.clustering.algos.kmeans.KMeans: gemseo.machine_learning.clustering.model.KMeans
+  gemseo.mlearning.clustering.algos.kmeans_settings.KMeans_Settings: gemseo.machine_learning.KMeans_Settings
+  gemseo.mlearning.clustering.quality.silhouette_measure.SilhouetteMeasure: gemseo.machine_learning.clustering.quality.SilhouetteMeasure
+  gemseo.mlearning.linear_model_fitting.ridge_cv_settings.GCVMode: gemseo.enum.GCVMode
+  gemseo.mlearning.linear_model_fitting.ridge_settings.Solver: gemseo.enum.Solver
+  gemseo.mlearning.regression.algos.fce.FCERegressor: gemseo.machine_learning.regression.model.FCERegressor
+  gemseo.mlearning.regression.algos.fce_settings.FCERegressor_Settings: gemseo.machine_learning.FCERegressor_Settings
+  gemseo.mlearning.regression.algos.fce_settings.OrthonormalFunctionBasis: gemseo.enum.OrthonormalFunctionBasis
+  gemseo.mlearning.regression.algos.gpr.GaussianProcessRegressor: gemseo.machine_learning.regression.model.GaussianProcessRegressor
+  gemseo.mlearning.regression.algos.gpr_settings.GaussianProcessRegressor_Settings: gemseo.machine_learning.GaussianProcessRegressor_Settings
+  gemseo.mlearning.regression.algos.gradient_boosting.GradientBoostingRegressor: gemseo.machine_learning.regression.model.GradientBoostingRegressor
+  gemseo.mlearning.regression.algos.gradient_boosting_settings.GradientBoostingRegressor_Settings: gemseo.machine_learning.GradientBoostingRegressor_Settings
+  gemseo.mlearning.regression.algos.linreg.LinearRegressor: gemseo.machine_learning.regression.model.LinearRegressor
+  gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings: gemseo.machine_learning.LinearRegressor_Settings
+  gemseo.mlearning.regression.algos.mlp.MLPRegressor: gemseo.machine_learning.regression.model.MLPRegressor
+  gemseo.mlearning.regression.algos.mlp_settings.MLPRegressor_Settings: gemseo.machine_learning.MLPRegressor_Settings
+  gemseo.mlearning.regression.algos.moe.MOERegressor: gemseo.machine_learning.regression.model.MOERegressor
+  gemseo.mlearning.regression.algos.moe_settings.MOERegressor_Settings: gemseo.machine_learning.MOERegressor_Settings
+  gemseo.mlearning.regression.algos.ot_gpr.OTGaussianProcessRegressor: gemseo.machine_learning.regression.model.OTGaussianProcessRegressor
+  gemseo.mlearning.regression.algos.ot_gpr_settings.OTGaussianProcessRegressor_Settings: gemseo.machine_learning.OTGaussianProcessRegressor_Settings
+  gemseo.mlearning.regression.algos.pce.PCERegressor: gemseo.machine_learning.regression.model.PCERegressor
+  gemseo.mlearning.regression.algos.pce_settings.PCERegressor_Settings: gemseo.machine_learning.PCERegressor_Settings
+  gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor: gemseo.machine_learning.regression.model.PolynomialRegressor
+  gemseo.mlearning.regression.algos.polyreg_settings.PolynomialRegressor_Settings: gemseo.machine_learning.PolynomialRegressor_Settings
+  gemseo.mlearning.regression.algos.random_forest.RandomForestRegressor: gemseo.machine_learning.regression.model.RandomForestRegressor
+  gemseo.mlearning.regression.algos.random_forest_settings.RandomForestRegressor_Settings: gemseo.machine_learning.RandomForestRegressor_Settings
+  gemseo.mlearning.regression.algos.rbf.RBFRegressor: gemseo.machine_learning.regression.model.RBFRegressor
+  gemseo.mlearning.regression.algos.rbf_settings.RBF: gemseo.enum.RBF
+  gemseo.mlearning.regression.algos.rbf_settings.RBFRegressor_Settings: gemseo.machine_learning.RBFRegressor_Settings
+  gemseo.mlearning.regression.algos.regressor_chain.RegressorChain: gemseo.machine_learning.regression.model.RegressorChain
+  gemseo.mlearning.regression.algos.regressor_chain_settings.RegressorChain_Settings: gemseo.machine_learning.RegressorChain_Settings
+  gemseo.mlearning.regression.algos.svm.SVMRegressor: gemseo.machine_learning.regression.model.SVMRegressor
+  gemseo.mlearning.regression.algos.svm_settings.SVMRegressor_Settings: gemseo.machine_learning.SVMRegressor_Settings
+  gemseo.mlearning.regression.algos.thin_plate_spline.TPSRegressor: gemseo.machine_learning.regression.model.TPSRegressor
+  gemseo.mlearning.regression.algos.thin_plate_spline_settings.TPSRegressor_Settings: gemseo.machine_learning.TPSRegressor_Settings
+  gemseo.mlearning.regression.quality.mae_measure.MAEMeasure: gemseo.machine_learning.regression.quality.MAEMeasure
+  gemseo.mlearning.regression.quality.me_measure.MEMeasure: gemseo.machine_learning.regression.quality.MEMeasure
+  gemseo.mlearning.regression.quality.mse_measure.MSEMeasure: gemseo.machine_learning.regression.quality.MSEMeasure
+  gemseo.mlearning.regression.quality.r2_measure.R2Measure: gemseo.machine_learning.regression.quality.R2Measure
+  gemseo.mlearning.regression.quality.rmse_measure.RMSEMeasure: gemseo.machine_learning.regression.quality.RMSEMeasure
+  gemseo.post.animation.Animation: gemseo.post.Animation
+  gemseo.post.animation_settings.Animation_Settings: gemseo.post.Animation_Settings
+  gemseo.post.basic_history.BasicHistory: gemseo.post.BasicHistory
+  gemseo.post.basic_history_settings.BasicHistory_Settings: gemseo.post.BasicHistory_Settings
+  gemseo.post.constraints_history.ConstraintsHistory: gemseo.post.ConstraintsHistory
+  gemseo.post.constraints_history_settings.ConstraintsHistory_Settings: gemseo.post.ConstraintsHistory_Settings
+  gemseo.post.correlations.Correlations: gemseo.post.Correlations
+  gemseo.post.correlations_settings.Correlations_Settings: gemseo.post.Correlations_Settings
+  gemseo.post.dataset.andrews_curves.AndrewsCurves: gemseo.post.dataset.AndrewsCurves
+  gemseo.post.dataset.bars.BarPlot: gemseo.post.dataset.BarPlot
+  gemseo.post.dataset.boxplot.Boxplot: gemseo.post.dataset.Boxplot
+  gemseo.post.dataset.curves.Curves: gemseo.post.dataset.Curves
+  gemseo.post.dataset.lines.Lines: gemseo.post.dataset.Lines
+  gemseo.post.dataset.parallel_coordinates.ParallelCoordinates: gemseo.post.dataset.ParallelCoordinates
+  gemseo.post.dataset.radar_chart.RadarChart: gemseo.post.dataset.RadarChart
+  gemseo.post.dataset.scatter.Scatter: gemseo.post.dataset.Scatter
+  gemseo.post.dataset.surfaces.Surfaces: gemseo.post.dataset.Surfaces
+  gemseo.post.dataset.yvsx.YvsX: gemseo.post.dataset.YvsX
+  gemseo.post.dataset.zvsxy.ZvsXY: gemseo.post.dataset.ZvsXY
+  gemseo.post.gradient_sensitivity.GradientSensitivity: gemseo.post.GradientSensitivity
+  gemseo.post.gradient_sensitivity_settings.GradientSensitivity_Settings: gemseo.post.GradientSensitivity_Settings
+  gemseo.post.hessian_history.HessianHistory: gemseo.post.HessianHistory
+  gemseo.post.hessian_history_settings.HessianHistory_Settings: gemseo.post.HessianHistory_Settings
+  gemseo.post.mlearning.ml_regressor_quality_viewer.MLRegressorQualityViewer: gemseo.post.machine_learning.MLRegressorQualityViewer
+  gemseo.post.obj_constr_hist.ObjConstrHist: gemseo.post.ObjConstrHist
+  gemseo.post.obj_constr_hist_settings.ObjConstrHist_Settings: gemseo.post.ObjConstrHist_Settings
+  gemseo.post.opt_history_view.OptHistoryView: gemseo.post.OptHistoryView
+  gemseo.post.opt_history_view_settings.OptHistoryView_Settings: gemseo.post.OptHistoryView_Settings
+  gemseo.post.parallel_coordinates.ParallelCoordinates: gemseo.post.ParallelCoordinates
+  gemseo.post.parallel_coordinates_settings.ParallelCoordinates_Settings: gemseo.post.ParallelCoordinates_Settings
+  gemseo.post.pareto_front.ParetoFront: gemseo.post.ParetoFront
+  gemseo.post.pareto_front_settings.ParetoFront_Settings: gemseo.post.ParetoFront_Settings
+  gemseo.post.quad_approx.QuadApprox: gemseo.post.QuadApprox
+  gemseo.post.quad_approx_settings.QuadApprox_Settings: gemseo.post.QuadApprox_Settings
+  gemseo.post.robustness.Robustness: gemseo.post.Robustness
+  gemseo.post.robustness_settings.Robustness_Settings: gemseo.post.Robustness_Settings
+  gemseo.post.scatter_plot_matrix.ScatterPlotMatrix: gemseo.post.ScatterPlotMatrix
+  gemseo.post.scatter_plot_matrix_settings.ScatterPlotMatrix_Settings: gemseo.post.ScatterPlotMatrix_Settings
+  gemseo.post.som.SOM: gemseo.post.SOM
+  gemseo.post.som_settings.SOM_Settings: gemseo.post.SOM_Settings
+  gemseo.post.topology_view.TopologyView: gemseo.post.TopologyView
+  gemseo.post.topology_view_settings.TopologyView_Settings: gemseo.post.TopologyView_Settings
+  gemseo.post.variable_influence.VariableInfluence: gemseo.post.VariableInfluence
+  gemseo.post.variable_influence_settings.VariableInfluence_Settings: gemseo.post.VariableInfluence_Settings
+  gemseo.problems.dataset.DatasetType: gemseo.enum.DatasetType
+  gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics: gemseo.problem.mdo.aerostructure.Aerodynamics
+  gemseo.problems.mdo.aerostructure.aerostructure.Mission: gemseo.problem.mdo.aerostructure.Mission
+  gemseo.problems.mdo.aerostructure.aerostructure.Structure: gemseo.problem.mdo.aerostructure.Structure
+  gemseo.problems.mdo.aerostructure.aerostructure_design_space.AerostructureDesignSpace: gemseo.problem.mdo.aerostructure.AerostructureDesignSpace
+  gemseo.problems.mdo.propane.propane.PropaneComb1: gemseo.problem.mdo.propane.PropaneComb1
+  gemseo.problems.mdo.propane.propane.PropaneComb2: gemseo.problem.mdo.propane.PropaneComb2
+  gemseo.problems.mdo.propane.propane.PropaneComb3: gemseo.problem.mdo.propane.PropaneComb3
+  gemseo.problems.mdo.propane.propane.PropaneReaction: gemseo.problem.mdo.propane.PropaneReaction
+  gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel: gemseo.problem.mdo.scalable.data_driven.ScalableDiagonalModel
+  gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline: gemseo.problem.mdo.scalable.data_driven.DataDrivenScalableDiscipline
+  gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem: gemseo.problem.mdo.scalable.data_driven.ScalableProblem
+  gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult: gemseo.problem.mdo.scalable.data_driven.ScalabilityResult
+  gemseo.problems.mdo.scalable.linear.linear_discipline.LinearDiscipline: gemseo.problem.mdo.scalable.linear.LinearDiscipline
+  gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline.MainDiscipline: gemseo.problem.mdo.scalable.parametric.MainDiscipline
+  gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline.ScalableDiscipline: gemseo.problem.mdo.scalable.parametric.ScalableDiscipline
+  gemseo.problems.mdo.scalable.parametric.scalable_design_space.ScalableDesignSpace: gemseo.problem.mdo.scalable.parametric.ScalableDesignSpace
+  gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem: gemseo.problem.mdo.scalable.parametric.ScalableProblem
+  gemseo.problems.mdo.sellar.sellar_1.Sellar1: gemseo.problem.mdo.sellar.Sellar1
+  gemseo.problems.mdo.sellar.sellar_2.Sellar2: gemseo.problem.mdo.sellar.Sellar2
+  gemseo.problems.mdo.sellar.sellar_design_space.SellarDesignSpace: gemseo.problem.mdo.sellar.SellarDesignSpace
+  gemseo.problems.mdo.sellar.sellar_system.SellarSystem: gemseo.problem.mdo.sellar.SellarSystem
+  gemseo.problems.mdo.sobieski.core.design_space.SobieskiDesignSpace: gemseo.problem.mdo.sobieski.SobieskiDesignSpace
+  gemseo.problems.mdo.sobieski.core.problem.SobieskiProblem: gemseo.problem.mdo.sobieski.SobieskiProblem
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics: gemseo.problem.mdo.sobieski.SobieskiAerodynamics
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiMission: gemseo.problem.mdo.sobieski.SobieskiMission
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion: gemseo.problem.mdo.sobieski.SobieskiPropulsion
+  gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure: gemseo.problem.mdo.sobieski.SobieskiStructure
+  gemseo.problems.uncertainty.ishigami.ishigami_discipline.IshigamiDiscipline: gemseo.problem.uncertainty.ishigami.IshigamiDiscipline
+  gemseo.problems.uncertainty.ishigami.ishigami_function.IshigamiFunction: gemseo.problem.uncertainty.ishigami.IshigamiFunction
+  gemseo.problems.uncertainty.ishigami.ishigami_problem.IshigamiProblem: gemseo.problem.uncertainty.ishigami.IshigamiProblem
+  gemseo.problems.uncertainty.ishigami.ishigami_space.IshigamiSpace: gemseo.problem.uncertainty.ishigami.IshigamiSpace
+  gemseo.problems.uncertainty.utils.UniformDistribution: gemseo.enum.UniformDistribution
+  gemseo.problems.uncertainty.wing_weight.discipline.WingWeightDiscipline: gemseo.problem.uncertainty.wing_weight.WingWeightDiscipline
+  gemseo.scenarios.mdo_scenario.MDOScenario: gemseo.scenario.MDOScenario
+  gemseo.uncertainty.distributions.openturns.beta.OTBetaDistribution: gemseo.uncertainty.distribution.OTBetaDistribution
+  gemseo.uncertainty.distributions.openturns.beta_settings.OTBetaDistribution_Settings: gemseo.uncertainty.distribution.OTBetaDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.dirac.OTDiracDistribution: gemseo.uncertainty.distribution.OTDiracDistribution
+  gemseo.uncertainty.distributions.openturns.dirac_settings.OTDiracDistribution_Settings: gemseo.uncertainty.distribution.OTDiracDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.distribution.OTDistribution: gemseo.uncertainty.distribution.OTDistribution
+  gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter: gemseo.uncertainty.distribution.OTDistributionFitter
+  gemseo.uncertainty.distributions.openturns.distribution_settings.OTDistribution_Settings: gemseo.uncertainty.distribution.OTDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.exponential.OTExponentialDistribution: gemseo.uncertainty.distribution.OTExponentialDistribution
+  gemseo.uncertainty.distributions.openturns.exponential_settings.OTExponentialDistribution_Settings: gemseo.uncertainty.distribution.OTExponentialDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.joint.OTJointDistribution: gemseo.uncertainty.distribution.OTJointDistribution
+  gemseo.uncertainty.distributions.openturns.log_normal.OTLogNormalDistribution: gemseo.uncertainty.distribution.OTLogNormalDistribution
+  gemseo.uncertainty.distributions.openturns.log_normal_settings.OTLogNormalDistribution_Settings: gemseo.uncertainty.distribution.OTLogNormalDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.normal.OTNormalDistribution: gemseo.uncertainty.distribution.OTNormalDistribution
+  gemseo.uncertainty.distributions.openturns.normal_settings.OTNormalDistribution_Settings: gemseo.uncertainty.distribution.OTNormalDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.triangular.OTTriangularDistribution: gemseo.uncertainty.distribution.OTTriangularDistribution
+  gemseo.uncertainty.distributions.openturns.triangular_settings.OTTriangularDistribution_Settings: gemseo.uncertainty.distribution.OTTriangularDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution: gemseo.uncertainty.distribution.OTUniformDistribution
+  gemseo.uncertainty.distributions.openturns.uniform_settings.OTUniformDistribution_Settings: gemseo.uncertainty.distribution.OTUniformDistribution_Settings
+  gemseo.uncertainty.distributions.openturns.weibull.OTWeibullDistribution: gemseo.uncertainty.distribution.OTWeibullDistribution
+  gemseo.uncertainty.distributions.openturns.weibull_settings.OTWeibullDistribution_Settings: gemseo.uncertainty.distribution.OTWeibullDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.beta.SPBetaDistribution: gemseo.uncertainty.distribution.SPBetaDistribution
+  gemseo.uncertainty.distributions.scipy.beta_settings.SPBetaDistribution_Settings: gemseo.uncertainty.distribution.SPBetaDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.distribution.SPDistribution: gemseo.uncertainty.distribution.SPDistribution
+  gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter: gemseo.uncertainty.distribution.SPDistributionFitter
+  gemseo.uncertainty.distributions.scipy.distribution_settings.SPDistribution_Settings: gemseo.uncertainty.distribution.SPDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.exponential.SPExponentialDistribution: gemseo.uncertainty.distribution.SPExponentialDistribution
+  gemseo.uncertainty.distributions.scipy.exponential_settings.SPExponentialDistribution_Settings: gemseo.uncertainty.distribution.SPExponentialDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution: gemseo.uncertainty.distribution.SPJointDistribution
+  gemseo.uncertainty.distributions.scipy.log_normal.SPLogNormalDistribution: gemseo.uncertainty.distribution.SPLogNormalDistribution
+  gemseo.uncertainty.distributions.scipy.log_normal_settings.SPLogNormalDistribution_Settings: gemseo.uncertainty.distribution.SPLogNormalDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution: gemseo.uncertainty.distribution.SPNormalDistribution
+  gemseo.uncertainty.distributions.scipy.normal_settings.SPNormalDistribution_Settings: gemseo.uncertainty.distribution.SPNormalDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.triangular.SPTriangularDistribution: gemseo.uncertainty.distribution.SPTriangularDistribution
+  gemseo.uncertainty.distributions.scipy.triangular_settings.SPTriangularDistribution_Settings: gemseo.uncertainty.distribution.SPTriangularDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.uniform.SPUniformDistribution: gemseo.uncertainty.distribution.SPUniformDistribution
+  gemseo.uncertainty.distributions.scipy.uniform_settings.SPUniformDistribution_Settings: gemseo.uncertainty.distribution.SPUniformDistribution_Settings
+  gemseo.uncertainty.distributions.scipy.weibull.SPWeibullDistribution: gemseo.uncertainty.distribution.SPWeibullDistribution
+  gemseo.uncertainty.distributions.scipy.weibull_settings.SPWeibullDistribution_Settings: gemseo.uncertainty.distribution.SPWeibullDistribution_Settings
+  # The nested enumeration Method of each analysis is a module-level class. These
+  # entries precede that of the analysis, as a nested name's rule precedes its
+  # parent's.
+  gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis.Method: gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysisMethod
+  gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis: gemseo.uncertainty.sensitivity.CorrelationAnalysis
+  gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.Method: gemseo.uncertainty.sensitivity.hsic.HSICAnalysisMethod
+  gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis: gemseo.uncertainty.sensitivity.HSICAnalysis
+  gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.Method: gemseo.uncertainty.sensitivity.morris.MorrisAnalysisMethod
+  gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis: gemseo.uncertainty.sensitivity.MorrisAnalysis
+  gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod
+  gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis: gemseo.uncertainty.sensitivity.SobolAnalysis
+  gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics: gemseo.uncertainty.statistic.EmpiricalStatistics
+  gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics: gemseo.uncertainty.statistic.OTParametricStatistics
+  gemseo.uncertainty.statistics.sp_parametric_statistics.SPParametricStatistics: gemseo.uncertainty.statistic.SPParametricStatistics
+  gemseo.utils.derivatives.approximation_modes.ApproximationMode: gemseo.enum.ApproximationMode
+  gemseo.utils.derivatives.approximation_modes.HybridApproximationMode: gemseo.enum.HybridApproximationMode
+
 classes:
   #### Machine learning
   BaseMLAlgo:
@@ -1060,15 +1451,29 @@ classes:
     SHORT_ALGO_NAME: short_name
     LIBRARY: library
     DEFAULT_TRANSFORMER: default_transformer
-    __init__:
+    # The keywords **settings catches go to settings=<the model class>_Settings(...)
+    # (changelog 1696). The classes redefining __init__, which stops the lookup of
+    # the rules of their base classes at a constructor call, repeat them; the MDA
+    # classes share the rule.
+    __init__: &settings-init
       settings_model: settings
+      settings: settings={__class__}_Settings(**{settings})
 
   #### Surrogate model
   SurrogateDiscipline:
     regression_model: regressor
+    # A surrogate discipline is built from a regressor only; create_surrogate, which
+    # takes a regressor, its name or its settings, as the old constructor did, is the
+    # successor of the constructor (changelog 1706).
     __init__:
-      surrogate: regressor
-      disc_name: name
+      __name__: gemseo.create_surrogate
+      <<: &create-surrogate
+        surrogate: regressor
+        disc_name: name
+        # The loose settings, and the input and output names, go to the settings of
+        # the regressor, which replace its name.
+        settings: regressor={surrogate}_Settings(**{settings}, input_names={input_names}, output_names={output_names})
+        default_input_data: io.input_grammar.defaults.update({default_input_data})
 
   #### ML model quality
   BaseMLAlgoQuality:
@@ -1090,38 +1495,36 @@ classes:
     classif_cands: classification_candidates
     regress_cands: regression_candidates
     regress_models: regressors
-    add_classifier_candidate:
-      name: settings
+    # The name of a candidate becomes its Settings instance, the loose keywords
+    # remaining its catalogs, and the calibration algorithm, a mapping whose
+    # algo_name entry names it, its Settings instance (changelog 1696).
+    add_classifier_candidate: &ml-candidate
+      name: settings={name}_Settings()
       calib_space: calibration_space
-    #      calib_algo: calibration_settings
-    add_clusterer_candidate:
-      name: settings
-      calib_space: calibration_space
-    #      calib_algo: calibration_settings
-    add_regressor_candidate:
-      name: settings
-      calib_space: calibration_space
-    #      calib_algo: calibration_settings
-  #      calib_algo: calibration_settings
-  #    set_classifier:
-  #      classif_algo: settings
-  #    set_clusterer:
-  #      cluster_algo: settings
-  #    set_regressor:
-  #      regress_algo: settings
+      calib_algo: calibration_settings={calib_algo[algo_name]}_Settings(**{calib_algo})
+      # The loose keywords are catalogs of the fields of the Settings class of the
+      # candidate, which get the rules of these fields, e.g. smooth -> smoothing.
+      option_lists: "{name}_Settings"
+    add_clusterer_candidate: *ml-candidate
+    add_regressor_candidate: *ml-candidate
+    # The name of a sub-model and its loose settings go to its Settings instance.
+    set_classifier:
+      classif_algo: settings={classif_algo}_Settings(**{classif_params})
+    set_clusterer:
+      cluster_algo: settings={cluster_algo}_Settings(**{cluster_params})
+    set_regressor:
+      regress_algo: settings={regress_algo}_Settings(**{regress_params})
   RegressorChain:
     add_algo: add_regressor
   RBF:
     THIN_PLATE: THIN_PLATE_SPLINE
   RBFRegressor:
-    LIBRARY: library
     function: kernel
     y_average: null
     der_function: null
     EUCLIDEAN: null
     RBFDerivatives: null
   TPSRegressor:
-    function: kernel
     y_average: null
     der_function: null
     EUCLIDEAN: null
@@ -1132,7 +1535,10 @@ classes:
     der_function: null
     norm: null
     __init__:
-      function: kernel
+      # kernel only accepts a member of the RBF enumeration (or its name) now: a
+      # Python callable is no longer accepted, so mark the calls unless they pass a
+      # string.
+      function: kernel TODO[!str] kernel only accepts a member of the RBF enumeration or its name, e.g. RBF.CUBIC or "cubic"; a Python callable is no longer accepted
       smooth: smoothing
       der_function: null
       norm: null
@@ -1148,18 +1554,21 @@ classes:
       smooth: smoothing
       der_function: null
       norm: null
+  # The DOE algorithm of the multi-start and its settings, the number of samples among
+  # them, are now one settings model.
+  OTGaussianProcessRegressor_Settings:
+    multi_start_algo_name: null
+    multi_start_n_samples: null
+    __init__:
+      multi_start_algo_name: multi_start_algo_settings={multi_start_algo_name}_Settings(**{multi_start_algo_settings}, n_samples={multi_start_n_samples})
+      # When no string literal names the DOE algorithm, e.g. the default one.
+      multi_start_n_samples: TODO use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start
   BaseFCERegressor:
-    Settings: settings_class
-    __init__:
-      settings_model: settings
+    __init__: *settings-init
   FCERegressor:
-    LIBRARY: library
-    __init__:
-      settings_model: settings
+    __init__: *settings-init
   PCERegressor:
-    LIBRARY: library
-    __init__:
-      settings_model: settings
+    __init__: *settings-init
 
   #### Model calibration
   MLAlgoAssessor:
@@ -1167,23 +1576,26 @@ classes:
     LEARNING: learning
     MULTIOUTPUT: multioutput
     algos: models
-  #    __init__:
-  #      algo: settings
+    # The name of the model, its loose settings and its transformer go to
+    # settings=<the model class>_Settings(...) (changelog 1696).
+    __init__:
+      algo: settings={algo}_Settings(**{algo_settings}, transformer={transformer})
   MLAlgoCalibration:
     algo_assessor: model_assessor
     optimal_algorithm: optimal_model
     algos: models
     execute:
       algo_name: settings={algo_name}_Settings(**{algo_settings})
-    #    __init__:
-    #      algo: settings
+    # As for MLAlgoAssessor; the names of the parameters to calibrate are those of
+    # the variables of the calibration space now.
+    __init__:
+      algo: settings={algo}_Settings(**{algo_settings}, transformer={transformer})
+      parameters: null
   MLAlgoSelection:
     #    __init__:
     #      calibration_algorithm: calibration_settings
-    add_candidate:
-      #      calib_algo: calibration_settings
-      calib_space: calibration_space
-  #      name: settings
+    # As MOERegressor.add_regressor_candidate.
+    add_candidate: *ml-candidate
   DatasetMetric:
     __init__:
       composed_metric: metric
@@ -1193,68 +1605,66 @@ classes:
     Settings: settings_class
     NORMALIZED_RESIDUAL_NORM: normalized_residual_norm_name
     normed_residual: normalized_residual_norm
-    check_jacobian: null
-    # TODO: use gemseo.util.derivative.check.mda.MDAJacobianChecker instead.
+    check_jacobian: TODO use gemseo.util.derivative.check.mda.MDAJacobianChecker instead
     # The keywords **settings catches go to settings=<the MDA class>_Settings(...).
     # Every MDA class redefines __init__, which stops the lookup of its base classes'
     # rules at a constructor call, so each one repeats them.
-    __init__: &mda-init
-      settings_model: settings
-      settings: settings={__class__}_Settings
+    __init__: *settings-init
   MDAGaussSeidel:
-    __init__: *mda-init
+    __init__: *settings-init
   MDAJacobi:
-    __init__: *mda-init
+    __init__: *settings-init
   MDANewtonRaphson:
-    __init__: *mda-init
+    __init__: *settings-init
   MDAGSNewton:
-    __init__: *mda-init
+    __init__: *settings-init
   BaseMDASettings:
     linear_solver: null
     linear_solver_tolerance: null
+    use_lu_fact: null
     __init__:
       # The name of a sub-algorithm and its settings are now one settings model, e.g.
       # linear_solver="GMRES", linear_solver_settings={"rtol": 1e-8} becomes
-      # linear_solver_settings=GMRES_Settings(rtol=1e-8). A settings class whose own
-      # __init__ rules shadow these ones repeats them.
-      linear_solver: &linear-solver-settings linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings})
+      # linear_solver_settings=GMRES_Settings(rtol=1e-8), the tolerance of the linear
+      # solver being its rtol field. A settings class whose own __init__ rules shadow
+      # these ones merges them.
+      <<: &mda-settings-init
+        linear_solver: linear_solver_settings={linear_solver}_Settings(**{linear_solver_settings}, rtol={linear_solver_tolerance})
+        # When no string literal names the linear solver, e.g. the default one.
+        linear_solver_tolerance: TODO use the rtol field of the linear_solver_settings instead
+        # use_lu_fact=True is linear_solver_settings=None, use_lu_fact=False the default.
+        use_lu_fact: TODO set linear_solver_settings=None instead of use_lu_fact=True, and remove use_lu_fact=False
   BaseMDASolver:
-    Settings: settings_class
     add_iteration_callback:
       __name__: add_iteration_listener
       iteration_callback: iteration_listener
     clear_iteration_callbacks: clear_iteration_listeners
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
-  BaseParallelMDASolver:
-    Settings: settings_class
   MDAChain:
-    __init__: *mda-init
+    __init__: *settings-init
     mdo_chain: discipline_chain
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
   MDAChain_Settings:
     inner_mda_name: null
     __init__:
-      linear_solver: *linear-solver-settings
+      <<: *mda-settings-init
       inner_mda_name: inner_mda_settings={inner_mda_name}_Settings(**{inner_mda_settings})
   MDAGSNewton_Settings:
     newton_settings: newton_raphson_settings
     __init__:
       # A mapping is still accepted: the field reads it as its settings model, so
       # gauss_seidel_settings needs no rule.
+      <<: *mda-settings-init
       newton_settings: newton_raphson_settings
-      linear_solver: *linear-solver-settings
   MDANewtonRaphson_Settings:
     newton_linear_solver_name: null
     __init__:
-      linear_solver: *linear-solver-settings
+      <<: *mda-settings-init
       newton_linear_solver_name: newton_linear_solver_settings={newton_linear_solver_name}_Settings(**{newton_linear_solver_settings})
   MDAQuasiNewton:
-    __init__: *mda-init
-    add_iteration_callback:
-      __name__: add_iteration_listener
-      iteration_callback: iteration_listener
+    __init__: *settings-init
 
   #  Monitoring:
   #    __init__:
@@ -1270,34 +1680,53 @@ classes:
   #### DesignSpace
   DesignSpace:
     VARIABLE_TYPES_TO_DTYPES: variable_types_to_dtypes
-    DesignVariableType: null
-    # TODO: use gemseo.enum.VariableType instead.
+    DesignVariableType: TODO use gemseo.enum.VariableType instead
+    # The name of the HDF5 group of a design space is now private.
+    DESIGN_SPACE_GROUP: '"design_space"'
     # The shortcuts to the variables of the space were removed; a design space
-    # is read through its variables view, like a random space.
-    variable_names: null
-    # TODO: use list(space.variables) instead.
-    variable_sizes: null
-    # TODO: use {n: v.size for n, v in space.variables.items()} instead.
-    variable_types: null
-    # TODO: use {n: v.type for n, v in space.variables.items()} instead.
-    names_to_indices: null
-    # TODO: use space.variables.name_to_indices instead.
-    get_size: null
-    # TODO: use space.variables[name].size instead.
-    get_type: null
-    # TODO: use space.variables[name].type instead.
-    get_lower_bound: null
-    # TODO: use space.variables[name].lower_bound instead.
-    get_upper_bound: null
-    # TODO: use space.variables[name].upper_bound instead.
-    has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead.
+    # is read through its variables view, like a random space. A `{name}` stands
+    # for the argument of the call of the method.
+    <<: &variables-view
+      variable_names: list({receiver}.variables)
+      variable_sizes: "{n: v.size for n, v in {receiver}.variables.items()}"
+      variable_types: "{n: v.type for n, v in {receiver}.variables.items()}"
+      names_to_indices: "{receiver}.variables.name_to_indices"
+      # An unknown name now raises a KeyError, where get_size raised a ValueError:
+      # code catching ValueError around get_size must catch KeyError instead.
+      get_size: "{receiver}.variables[{name}].size"
+      get_type: "{receiver}.variables[{name}].type"
+      # VariableType is a StrEnum: its value spares the migrated code an import of it.
+      # It is always False on a RandomSpace, as a random variable is of random type.
+      has_integer_variables: '{receiver}.variables.has_variables_of_type("integer")'
+    get_lower_bound: "{receiver}.variables[{name}].lower_bound"
+    get_upper_bound: "{receiver}.variables[{name}].upper_bound"
     to_csv:
       header_char: null
     get_variables_indexes:
       use_design_space_order: use_space_order
     convert_dict_to_array:
       design_values: variable_values
+    # Renamed in GEMSEO 7, which keeps the old names as deprecated aliases (changelog
+    # 1801); the out argument of the methods of vectors was removed, as it was not used
+    # (changelog 1673). A ParameterSpace removes them instead (see ParameterSpace).
+    normalize: name_to_normalization_mask
+    unnormalize_grad: denormalize_grad
+    unnormalize_vect:
+      __name__: denormalize_vect
+      out: null
+    normalize_vect:
+      out: null
+    transform_vect:
+      out: null
+    untransform_vect:
+      out: null
+    # In a driver library, problem.input_space is the working space, already
+    # normalized when normalize_design_space is set, so a point of it is clipped to
+    # its bounds with normalized=False; normalized=True would clip every component
+    # to [0, 1], the unnormalized ones too. The codemod cannot tell that space from
+    # another one, so the call passing normalized is marked.
+    project_into_bounds:
+      normalized: TODO in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so clip a point of it with project_into_bounds(x) and no normalized argument; normalized=True would clip every component to [0, 1], including those the working space leaves unnormalized
   SellarDesignSpace:
     __init__:
       dtype: null
@@ -1307,39 +1736,39 @@ classes:
   # deterministic and random variables, so the members below either moved to the
   # variables view, belong to DesignSpace only, or have no equivalent at all.
   ParameterSpace:
+    # A random space holds random variables only.
+    add_variable: TODO a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead
     add_random_variable:
       __name__: add_variable
-      # There is one distribution settings model per component now, so a variable
-      # of size n is added with add_variable(name, *[settings] * n). The old
-      # arguments cannot be rewritten mechanically: distribution was the name of a
-      # distribution and its parameters were passed apart.
-      distribution: null
-      size: null
-      interfaced_distribution: null
-      interfaced_distribution_parameters: null
+      # There is one distribution settings model per component now, passed by
+      # position, so a variable of size n is added with
+      # add_variable(name, *[settings] * n). The Settings class of a distribution
+      # bears its name and its parameters are fields of it: a distribution name is
+      # converted, with its parameters, into an instance of its Settings class,
+      # passed in its place, and a settings model is kept. A call that cannot be
+      # converted, e.g. naming the distribution by a variable, is marked.
+      distribution: "{distribution}_Settings(**{parameters}, interfaced_distribution={interfaced_distribution}, parameters={interfaced_distribution_parameters})"
+      size: TODO repeat the settings model size times, i.e. add_variable(name, *[settings] * size)
+      interfaced_distribution: &random-variable-interfaced-distribution TODO set interfaced_distribution in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
+      interfaced_distribution_parameters: &random-variable-interfaced-distribution-parameters TODO set parameters in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable
     add_random_vector:
       __name__: add_variable
-      # Same restructuring as add_random_variable.
-      distribution: null
-      size: null
-      interfaced_distribution: null
-      interfaced_distribution_parameters: null
-    distribution: null
-    # TODO: use space.variables.distribution instead.
-    distributions: null
-    # TODO: use space.variables[name].distribution instead.
-    uncertain_variables: null
-    # TODO: use list(space.variables) instead.
-    get_range: null
-    # TODO: use space.variables[name].distribution.range instead.
-    get_support: null
-    # TODO: use space.variables[name].distribution.support instead.
-    get_tabular_view: null
-    # TODO: use get_pretty_table instead.
-    build_joint_distribution: null
-    # TODO: use add_copula, and read the joint distribution from space.variables.
-    evaluate_cdf: null
-    # TODO: use transform_vect and untransform_vect instead.
+      # Same restructuring as add_random_variable, but the parameters of a vector
+      # give those of its components, which cannot be split mechanically into one
+      # settings model per component. The arguments are kept, and the call is
+      # marked.
+      distribution: TODO pass the distribution settings models, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), by position, one per component; a distribution name with its parameters must be written as settings models
+      size: TODO pass one distribution settings model per component, i.e. add_variable(name, *settings)
+      interfaced_distribution: *random-variable-interfaced-distribution
+      interfaced_distribution_parameters: *random-variable-interfaced-distribution-parameters
+    distribution: "{receiver}.variables.distribution"
+    distributions: TODO use space.variables[name].distribution instead
+    uncertain_variables: list({receiver}.variables)
+    get_range: "{receiver}.variables[{variable}].distribution.range"
+    get_support: "{receiver}.variables[{variable}].distribution.support"
+    get_tabular_view: TODO use get_pretty_table instead
+    build_joint_distribution: TODO use add_copula, and read the joint distribution from space.variables
+    evaluate_cdf: TODO use transform_vect and untransform_vect instead
     normalize_vect: null
     unnormalize_vect: null
     add_variables_from: null
@@ -1367,31 +1796,15 @@ classes:
     from_csv: null
     # a random space has no file persistence; rebuild it from the settings of
     # the marginal probability distributions of its random variables.
-    variable_names: null
-    # TODO: use list(space.variables) instead.
-    variable_sizes: null
-    # TODO: use {n: v.size for n, v in space.variables.items()} instead.
-    variable_types: null
-    # TODO: use {n: v.type for n, v in space.variables.items()} instead;
-    # a random variable is of random type, where it was of type "float".
-    names_to_indices: null
-    # TODO: use space.variables.name_to_indices instead.
-    get_size: null
-    # TODO: use space.variables[name].size instead.
-    get_type: null
-    # TODO: use space.variables[name].type instead;
-    # a random variable is of random type, where it was of type "float".
-    has_integer_variables: null
-    # TODO: use space.variables.has_variables_of_type(VariableType.INTEGER) instead;
-    # it is always False, as a random variable is of random type.
-    has_current_value: null
-    get_current_value: null
-    set_current_value: null
-    set_current_variable: null
-    initialize_missing_current_values: null
-    to_complex: null
-    # TODO: a current value is a DesignSpace notion; use nominal_value to read the
-    # reference point of a space, which is the mean of the distributions here.
+    # A random variable is of random type, where it was of type "float": the
+    # variable_types and get_type of a RandomSpace return VariableType.RANDOM.
+    <<: *variables-view
+    has_current_value: &current-value TODO a current value is a DesignSpace notion; use nominal_value to read the reference point of a space, which is the mean of the distributions here
+    get_current_value: *current-value
+    set_current_value: *current-value
+    set_current_variable: *current-value
+    initialize_missing_current_values: *current-value
+    to_complex: *current-value
     get_lower_bound: null
     get_upper_bound: null
     get_lower_bounds: null
@@ -1404,6 +1817,7 @@ classes:
     # bounds are a DesignSpace notion; the bounds of a random variable are the
     # limits of the support of its distribution and are read-only, through
     # space.variables[name].lower_bound and upper_bound.
+    normalize: null
     normalize_grad: null
     unnormalize_grad: null
     round_vect: null
@@ -1411,47 +1825,94 @@ classes:
     extend: null
     to_scalar_variables: null
     # normalization, integer rounding and extension are DesignSpace notions.
-    get_variables_indexes:
-      use_design_space_order: use_space_order
-    convert_dict_to_array:
-      design_values: variable_values
-
-  # The argument parameter_space of the sampling methods of the sensitivity
-  # analyses is renamed random_space, as these spaces are purely made of random variables.
-  # The DOE algorithm and its settings, and the formulation and its settings, are now
-  # two settings models. These are the rules of BaseSensitivityAnalysis.compute_samples,
-  # repeated on each analysis, whose own compute_samples rules would shadow them.
-  CorrelationAnalysis:
-    compute_samples: &sensitivity-compute-samples
-      parameter_space: random_space
-      algo: algo_settings={algo}_Settings(**{algo_settings})
-      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-    DEFAULT_DRIVER: default_driver
-  HSICAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
-  MorrisAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
-  SobolAnalysis:
-    compute_samples: *sensitivity-compute-samples
-    DEFAULT_DRIVER: default_driver
 
   IshigamiProblem:
-    objective: null
     # the problem is an EvaluationProblem defined over the IshigamiSpace, which
-    # is a RandomSpace, so the Ishigami function is an observable of the problem;
-    # TODO: use problem.observables[0] instead.
+    # is a RandomSpace, so the Ishigami function is an observable of the problem.
+    objective: "{receiver}.observables[0]"
+    # The rule of OptimizationProblem keeps design_space; an EvaluationProblem has
+    # input_space only.
+    design_space: input_space
+    to_dataset:
+      # Not a parameter of EvaluationProblem.to_dataset.
+      opt_naming: null
+
+  #### Dataset plots
+  # The arguments of a plot, but its dataset, go to
+  # settings=<the plot class>_Settings(...), each one becoming the field of its name;
+  # the keywords **options catches become the dict field of that name, and the
+  # positional arguments *datasets catches the tuple field datasets. The rule is keyed
+  # on the first argument to gather. Every plot class redefines __init__, which stops
+  # the lookup of the rules of its base classes at a constructor call, so each one has
+  # its own.
+  AndrewsCurves:
+    __init__:
+      classifier: settings={__class__}_Settings(**{classifier})
+  BarPlot:
+    __init__:
+      n_digits: settings={__class__}_Settings(**{n_digits})
+  Boxplot:
+    __init__:
+      datasets: settings={__class__}_Settings(**{datasets})
+  ColorEvolution:
+    __init__:
+      variables: settings={__class__}_Settings(**{variables})
+  Curves:
+    __init__:
+      mesh: settings={__class__}_Settings(**{mesh})
+  Lines:
+    __init__:
+      variables: settings={__class__}_Settings(**{variables})
+  ParallelCoordinates:
+    __init__:
+      classifier: settings={__class__}_Settings(**{classifier})
+  RadarChart:
+    __init__:
+      display_zero: settings={__class__}_Settings(**{display_zero})
+  Radar:
+    __init__:
+      classifier: settings={__class__}_Settings(**{classifier})
+  ScatterMatrix:
+    __init__:
+      variable_names: settings={__class__}_Settings(**{variable_names})
+  Scatter:
+    __init__:
+      x: settings={__class__}_Settings(**{x})
+  Surfaces:
+    __init__:
+      mesh: settings={__class__}_Settings(**{mesh})
+  YvsX:
+    __init__:
+      x: settings={__class__}_Settings(**{x})
+  ZvsXY:
+    __init__:
+      x: settings={__class__}_Settings(**{x})
+  # The fields renamed in the Settings classes gathering the arguments.
+  ScatterMatrix_Settings:
+    __init__:
+      kde: use_kde
+  Boxplot_Settings:
+    __init__:
+      boxplot_options: options
+  ColorEvolution_Settings:
+    __init__:
+      options: matplotlib_options
 
   #### Distributions
-  # TODO
+  # A distribution takes its parameters from a settings model (changelog 1716): the
+  # keywords passed to the factory go to settings=<the distribution class>_Settings(...),
+  # the name of the class being kept.
+  DistributionFactory:
+    create:
+      kwargs: settings={class_name}_Settings(**{kwargs})
 
   #### Global configuration
-  # TODO: fast is removed; use the methods enable_fast_mode and disable_fast_mode.
   GlobalConfiguration:
-    fast: null
+    # An assignment of fast becomes a call of enable_fast_mode or disable_fast_mode;
+    # a read of it has no equivalent and is marked.
+    fast: "{receiver}.enable_fast_mode() if {value} else {receiver}.disable_fast_mode()"
     __init__:
-      fast: null
+      fast: null TODO call configuration.enable_fast_mode() after creating it
 
   #### Constraint aggregation
   ConstraintAggregation:
@@ -1464,8 +1925,8 @@ classes:
   # DistributionName are generated from the colormaps of matplotlib and the
   # continuous distributions of SciPy: only the names of the oldest supported
   # versions are listed, as a name the installed version lacks is not aliased.
-  # The OpenTURNS enumerations of OTDistributionFitter are listed in its block
-  # below, with its protected class attributes.
+  # The OpenTURNS enumerations of OTDistributionFitter, which OTParametricStatistics
+  # shares, are listed in its block below, with its protected class attributes.
   # N.B. Criterion.center is not aliased as an attribute, as it would shadow the
   # str.center method of the members; Criterion["center"] is aliased all the same.
   Alpha:
@@ -1683,42 +2144,6 @@ classes:
   Strength:
     one: ONE
     two: TWO
-  OTParametricStatistics:
-    DistributionName.Arcsine: DistributionName.ARCSINE
-    DistributionName.Beta: DistributionName.BETA
-    DistributionName.Burr: DistributionName.BURR
-    DistributionName.Chi: DistributionName.CHI
-    DistributionName.ChiSquare: DistributionName.CHI_SQUARE
-    DistributionName.Dirichlet: DistributionName.DIRICHLET
-    DistributionName.Exponential: DistributionName.EXPONENTIAL
-    DistributionName.FisherSnedecor: DistributionName.FISHER_SNEDECOR
-    DistributionName.Frechet: DistributionName.FRECHET
-    DistributionName.Gamma: DistributionName.GAMMA
-    DistributionName.GeneralizedPareto: DistributionName.GENERALIZED_PARETO
-    DistributionName.Gumbel: DistributionName.GUMBEL
-    DistributionName.Histogram: DistributionName.HISTOGRAM
-    DistributionName.InverseNormal: DistributionName.INVERSE_NORMAL
-    DistributionName.Laplace: DistributionName.LAPLACE
-    DistributionName.LogNormal: DistributionName.LOG_NORMAL
-    DistributionName.LogUniform: DistributionName.LOG_UNIFORM
-    DistributionName.Logistic: DistributionName.LOGISTIC
-    DistributionName.MeixnerDistribution: DistributionName.MEIXNER_DISTRIBUTION
-    DistributionName.Normal: DistributionName.NORMAL
-    DistributionName.Pareto: DistributionName.PARETO
-    DistributionName.Rayleigh: DistributionName.RAYLEIGH
-    DistributionName.Rice: DistributionName.RICE
-    DistributionName.Student: DistributionName.STUDENT
-    DistributionName.Trapezoidal: DistributionName.TRAPEZOIDAL
-    DistributionName.Triangular: DistributionName.TRIANGULAR
-    DistributionName.TruncatedNormal: DistributionName.TRUNCATED_NORMAL
-    DistributionName.Uniform: DistributionName.UNIFORM
-    DistributionName.VonMises: DistributionName.VON_MISES
-    DistributionName.WeibullMax: DistributionName.WEIBULL_MAX
-    DistributionName.WeibullMin: DistributionName.WEIBULL_MIN
-    FittingCriterion.ChiSquared: FittingCriterion.CHI_SQUARED
-    FittingCriterion.Kolmogorov: FittingCriterion.KOLMOGOROV
-    SignificanceTest.ChiSquared: SignificanceTest.CHI_SQUARED
-    SignificanceTest.Kolmogorov: SignificanceTest.KOLMOGOROV
   SPDistributionFitter: &sp-distribution-name
     DistributionName.ksone: DistributionName.KSONE
     DistributionName.kstwo: DistributionName.KSTWO
@@ -1830,9 +2255,12 @@ classes:
 
   #### Misc
   BaseSettings:
-    _TARGET_CLASS_NAME: null
     # The target class name is now derived from the name of the settings class,
-    # X_Settings targeting X; see target_class_name.
+    # X_Settings targeting X, and read with the target_class_name property. A read
+    # through an instance becomes a read of the property; the codemod removes the
+    # assignment in the body of a settings class when the derived name is right, and
+    # marks it otherwise; any other use is marked with the text below.
+    _TARGET_CLASS_NAME: "{receiver}.target_class_name TODO _TARGET_CLASS_NAME is no longer read, the target class name being derived from the name of the settings class (X_Settings targets X); read it with the target_class_name property of a settings instance, or, for a class, remove the suffix _Settings from its name"
   PCERegressor_Settings:
     __init__:
       probability_space: null
@@ -1843,17 +2271,43 @@ classes:
   # Scenario
   MDOScenario: &scenario-class
     design_space: design_space
-    __init__:
+    # Of BaseScenario in GEMSEO 6, of MDOScenario alone in GEMSEO 7.
+    _execute_plot_callback: _plot_history
+    __init__: &scenario-init
       # The objective is now set by add_objective, called on the scenario right after
       # the statement creating it (or marked with a TODO when the scenario is not
       # assigned to a name). The rule also takes maximize_objective out of the call,
       # since its template names it, and carries it into add_objective.
-      objective_name: add_objective(output_names={objective_name}, minimize=not {maximize_objective})
+      objective_name: add_objective({objective_name}, minimize=not {maximize_objective})
       formulation_settings_model: formulation_settings
       formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
-  DOEScenario: *scenario-class
+      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
+  # The rules of MDOScenario, plus a switch on the space: a DOEScenario over a
+  # ParameterSpace (now a RandomSpace) cannot become an MDOScenario, which takes a
+  # DesignSpace only, and becomes an EvaluationScenario, with the rules below.
+  DOEScenario:
+    design_space: design_space
+    __init__:
+      <<: *scenario-init
+      design_space: IF[ParameterSpace] EvaluationScenario
+  # The rules of a DOEScenario over a ParameterSpace, which becomes an
+  # EvaluationScenario: the space is its input space, and the objective an observable.
+  EvaluationScenario:
+    __init__:
+      __name__: gemseo.scenario.EvaluationScenario
+      objective_name: add_observable({objective_name})
+      maximize_objective: null TODO an observable is neither minimized nor maximized
+      design_space: input_space
+      formulation_settings_model: formulation_settings
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      formulation_settings: TODO pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword
   OptAsMDOScenario: *scenario-class
-  MDOScenarioAdapter: &scenario-adapter-class
+  MDOScenarioAdapter:
+    _reset_optimization_problem: _reset_problem
+    # The protected attributes follow the arguments of __init__.
+    _reset_x0_before_opt: _reset_x0_before_exec
+    _set_x0_before_opt: _set_x0_before_exec
+    _set_bounds_before_opt: _set_bounds_before_exec
     keep_opt_history: keep_databases
     save_opt_history: save_databases
     LOWER_BND_SUFFIX: lower_bnd_suffix
@@ -1867,7 +2321,6 @@ classes:
       keep_opt_history: keep_databases
       save_opt_history: save_databases
       opt_history_file_prefix: database_file_prefix
-  MDOObjectiveScenarioAdapter: *scenario-adapter-class
   # Only the classes that may hold a RandomSpace rename design_space to
   # input_space. MDOScenario and OptimizationProblem keep design_space, typed
   # DesignSpace: the codemod applies the rules of a class to its subclasses, so
@@ -1875,14 +2328,24 @@ classes:
   # from churning user code that is already correct.
   BaseScenario:
     design_space: input_space
+    # The settings of the driver, which BaseScenario.Settings gathered with its name
+    # (algo_name, algo_settings), are now the settings model execute is given.
+    _settings: TODO _settings was replaced by _algorithm_settings, the settings model of the driver given to execute, or None before; read its target_class_name for algo_name and its fields for the items of algo_settings
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     _ALGO_FACTORY_CLASS: _algo_factory_class
+    _opt_hist_backup_path: _backup_file_path
+    _execute_backup_callback: _write_backup_file
     # BaseScenario alone defines save_optimization_history,
     # set_optimization_history_backup, clear_history_before_execute, execute,
     # set_algorithm and post_process, which MDOScenario, DOEScenario and
     # OptAsMDOScenario inherit, and create_scenario returns a BaseScenario: a rule on
     # a subclass would miss the scenario it returns.
-    save_optimization_history: to_hdf
+    # It was split into to_hdf and to_ggobi (changelog 1666), which the codemod cannot
+    # choose between from a file format given as a variable: the argument is removed,
+    # which is right for the HDF5 format, and the call marked.
+    save_optimization_history:
+      __name__: to_hdf
+      file_format: null TODO to_hdf(file_path) writes the HDF5 format; if the file format was ggobi, use to_ggobi(file_path) instead
     set_optimization_history_backup: set_backup_settings
     clear_history_before_execute: clear_database_before_execute
     __init__:
@@ -1896,7 +2359,7 @@ classes:
     # The post-processor name and the keywords **settings catches go to
     # settings=<post_name>_Settings(...), when the name is a string literal.
     # BasePost.execute and BaseAlgorithmLibrary.execute take no post_name, hence
-    # their own settings_model block (&settings-model).
+    # their own settings_model rule.
     post_process:
       settings_model: settings
       post_name: settings={post_name}_Settings(**{settings})
@@ -1906,28 +2369,24 @@ classes:
     Settings: settings_class
     __init__:
       Settings: settings_class
-  DriverDescription:
-    Settings: settings_class
-  DOEAlgorithmDescription:
-    Settings: settings_class
-  OptimizationAlgorithmDescription:
-    Settings: settings_class
-  LinearSolverDescription:
-    Settings: settings_class
-  ODESolverDescription:
-    Settings: settings_class
   BaseAlgoFactory:
     algo_names_to_libraries: algo_name_to_library
     _CLASS: _class
     _PACKAGE_NAMES: _package_names
+    create:
+      algo_name: name
     execute:
       settings_model: settings
       # The algorithm name and the keywords **settings catches go to
       # settings=<algo_name>_Settings(...), when the name is a string literal.
       algo_name: settings={algo_name}_Settings(**{settings})
   BaseAlgorithmLibrary:
-    execute: &settings-model
+    execute:
       settings_model: settings
+      # The loose settings go to settings=<the algorithm>_Settings(...), the algorithm
+      # being the one the library was created with, e.g. a factory's
+      # create("OT_LHS"), when it is known.
+      settings: settings={receiver.algo_name}_Settings(**{settings})
     # The settings to exclude are now the class attributes _settings_class_to_exclude
     # and _additional_settings_classes_to_exclude. Their defaults are what the 6.3.2
     # calls of the optimization, linear solver, ODE and pyDOE libraries excluded;
@@ -1935,8 +2394,8 @@ classes:
     # _settings_class_to_exclude itself, and a settings mapping other than
     # self._settings.model_dump() is lost.
     _filter_settings:
-      settings: null
-      model_to_exclude: null
+      settings: null TODO _filter_settings() now dumps self._settings by field name, not by alias; filter the mapping yourself if it was not self._settings.model_dump()
+      model_to_exclude: null TODO _filter_settings() now excludes the fields of the classes of _settings_class_to_exclude and _additional_settings_classes_to_exclude; set these class attributes if model_to_exclude was another class
   BaseDriverLibrary:
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
     _RESULT_CLASS: _result_class
@@ -1951,6 +2410,14 @@ classes:
       # evaluates non-integral points instead.
       skip_int_check: null
       settings_model: settings
+      # The loose settings, with these two, go to settings=<the algorithm>_Settings(...),
+      # the algorithm being the one the library was created with, e.g.
+      # OpenTURNS("OT_LHS") or a factory's create("OT_LHS"), when it is known.
+      settings: settings={receiver.algo_name}_Settings(**{settings}, eval_obs_jac={eval_obs_jac}, max_design_space_dimension_to_log={max_design_space_dimension_to_log})
+  # The default algorithm of ScipyMILP is now MILP, its new name: a subclass
+  # registering its own algorithm names, e.g. Scipy_MILP, inherits that default.
+  ScipyMILP:
+    ALGORITHM_INFOS: TODO ScipyMILP.__init__ now defaults algo_name to "MILP"; a subclass registering its own algorithm names in ALGORITHM_INFOS must define __init__(self, algo_name="<its algorithm name>") calling super().__init__(algo_name)
   BaseDriverSettings:
     round_ints: null
     # the rounding at every evaluation no longer exists.
@@ -1967,13 +2434,44 @@ classes:
       variables_space: space
       unit_sampling: use_unit_samples
       settings_model: settings
+      # The loose settings go to the settings model of the algorithm of the library,
+      # named by the algo_name its constructor was given.
+      settings: "settings={receiver.algo_name}_Settings(**{settings})"
+  # The settings model of the regressor is passed to its constructor as settings.
+  RegressorFactory:
+    create:
+      settings_model: settings
+  # The name of a sub-algorithm, its settings and the scalar settings set next to
+  # them are now one settings model, e.g. sub_optim_algo="SLSQP",
+  # sub_optim_max_iter=200 becomes sub_optim_algo_settings=SLSQP_Settings(max_iter=200).
+  MNBI_Settings:
+    sub_optim_algo: null
+    sub_optim_max_iter: null
+    doe_algo: null
+    __init__:
+      sub_optim_algo: sub_optim_algo_settings={sub_optim_algo}_Settings(**{sub_optim_algo_settings}, max_iter={sub_optim_max_iter})
+      doe_algo: doe_algo_settings={doe_algo}_Settings(**{doe_algo_settings})
+  MultiStart_Settings:
+    opt_algo_name: null
+    opt_algo_max_iter: null
+    doe_algo_name: null
+    n_start: null
+    __init__:
+      opt_algo_name: opt_algo_settings={opt_algo_name}_Settings(**{opt_algo_settings}, max_iter={opt_algo_max_iter})
+      doe_algo_name: doe_algo_settings={doe_algo_name}_Settings(**{doe_algo_settings}, n_samples={n_start})
+  MorrisDOE_Settings:
+    doe_algo_name: null
+    __init__:
+      doe_algo_name: doe_algo_settings={doe_algo_name}_Settings(**{doe_algo_settings})
+  BaseAugmentedLagragianSettings:
+    sub_algorithm_name: null
+    __init__:
+      sub_algorithm_name: sub_algorithm_settings={sub_algorithm_name}_Settings(**{sub_algorithm_settings})
   EvaluationProblem:
     design_space: input_space
     DifferentiationMethod.USER_GRAD: DifferentiationMethod.USER
-    preprocess_functions: null
-    # use EvaluationProblem.bind_functions to bind the functions to the database
-    # and the counters, and EvaluationProblem.create_working_problem to derive a problem whose
-    # functions work in the coordinates an algorithm manipulates.
+    preprocess_functions: TODO use bind_functions to bind the functions to the database and the counters, and create_working_problem to derive a problem whose functions work in the coordinates an algorithm manipulates
+    _functions_are_preprocessed: TODO the flag was removed with preprocess_functions; bind_functions needs none, as it rebuilds the wrappers from the original functions when called again
     __init__:
       design_space: input_space
     reset:
@@ -1993,15 +2491,28 @@ classes:
     optimization_problem: problem
     design_space: input_space
     _update_design_space: _update_input_space
+    _set_default_input_values_from_design_space: _set_default_input_values_from_space
+    # The hooks of a formulation changed: the codemod cannot rewrite an override,
+    # so the overrides, and the calls, of the removed or changed ones are marked.
+    _init_before_design_space_and_objective: TODO _init_before_design_space_and_objective was removed; implement the abstract method _create_multidisciplinary_process instead, or the formulation is abstract and the factory drops it, and build in create_objective what needs the objective, which the formulation no longer receives at construction; see the formulation section of the GEMSEO 7 upgrading guide
+    add_constraint: TODO a formulation no longer adds a constraint; implement create_constraint(...), returning the constraint function or None, which MDOScenario.add_constraint attaches to the problem; see the formulation section of the GEMSEO 7 upgrading guide
+    get_top_level_disciplines: TODO get_top_level_disciplines now takes an argument include_sub_formulations, False by default; an override must take it too
     __init__:
       # The arguments are kept, and the call marked with this TODO.
       objective_name: &formulation-problem TODO pass the problem first, e.g. OptimizationProblem(design_space), then set its objective; the loose settings go into settings=<Formulation>_Settings(...)
       design_space: *formulation-problem
       minimize_objective: *formulation-problem
       settings_model: settings
+    # GEMSEO 7 iterates the output names, so a single name gives its characters;
+    # EvaluationScenario.add_observable still takes a single name.
+    add_observable:
+      output_names: TODO[str] add_observable of a formulation takes an iterable of output names and no longer a single one, which it would iterate character by character; wrap it in a list, e.g. add_observable([output_name])
   BiLevel_Settings:
     apply_cstr_tosub_scenarios: apply_constraints_to_sub_scenarios
     apply_cstr_to_system: apply_constraints_to_system
+    __init__:
+      apply_cstr_tosub_scenarios: apply_constraints_to_sub_scenarios
+      apply_cstr_to_system: apply_constraints_to_system
   MDF_Settings:
     main_mda_name: null
     __init__:
@@ -2010,18 +2521,42 @@ classes:
   # Post-processors
   BasePost:
     Settings: settings_class
-    execute: *settings-model
+    execute:
+      settings_model: settings
+      # GEMSEO 7 takes a settings model only: the keywords **settings catches go to
+      # settings=<the post-processor class>_Settings(...).
+      settings: settings={__class__}_Settings(**{settings})
     _USE_JACOBIAN_DATA: _use_jacobian_data
   PostFactory:
     execute:
       settings_model: settings
+      post_name: settings={post_name}_Settings(**{settings})
 
   # Sensitivity analysis
   BaseSensitivityAnalysis:
     DEFAULT_DRIVER: default_driver
     _DEFAULT_MAIN_METHOD: _default_main_method
     _INTERACTION_METHODS: _interaction_methods
-    compute_samples: *sensitivity-compute-samples
+    # The argument parameter_space of the sampling methods of the sensitivity analyses
+    # is renamed random_space, as these spaces are purely made of random variables.
+    # The DOE algorithm and its settings, and the formulation and its settings, are
+    # now two settings models. These rules apply to every analysis, even one
+    # redefining compute_samples: only a class redefining __init__ stops the lookup of
+    # the rules of its base classes, at a constructor call.
+    compute_samples:
+      parameter_space: random_space
+      algo: algo_settings={algo}_Settings(**{algo_settings})
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+  # The nested enumeration Method of each analysis is a module-level class, imported
+  # from its public module.
+  CorrelationAnalysis:
+    Method: gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysisMethod
+  HSICAnalysis:
+    Method: gemseo.uncertainty.sensitivity.hsic.HSICAnalysisMethod
+  MorrisAnalysis:
+    Method: gemseo.uncertainty.sensitivity.morris.MorrisAnalysisMethod
+  SobolAnalysis:
+    Method: gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod
 
   LinearDiscipline:
     DEFAULT_MATRIX_DENSITY: default_matrix_density
@@ -2040,6 +2575,9 @@ classes:
       input_names_to_sizes: input_name_to_size
       output_names_to_sizes: output_name_to_size
   BaseCache:
+    # A cache is now a mapping from the input data to the entries: iterating over it
+    # yields the input data, and over its values the entries, as iterating over it did.
+    __iter__: "{receiver}.values()"
     get_all_entries: items
     last_entry: last_item
     names_to_sizes: name_to_size
@@ -2053,13 +2591,22 @@ classes:
     DATA_CONVERTER_CLASS: data_converter_class
     update_from_types:
       names_to_types: name_to_type
+  # The nested enumeration of JacobianAssembly was renamed.
+  JacobianAssembly:
+    DerivationMode: MDADerivationMode
+  # The mapping was split in two (input_mapping and output_mapping).
+  NameMapping:
+    __init__:
+      mapping: TODO split the mapping into input_mapping and output_mapping, two positional arguments
+  # The algorithm and the formulation are given by their settings.
+  ScalabilityStudy:
+    add_optimization_strategy:
+      algo_name: algo_settings={algo_name}_Settings(**{algo_settings}, max_iter={max_iter})
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
   MDASequential:
-    __init__: *mda-init
+    __init__: *settings-init
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds
-  BiLevelScenarioResult:
-    optimization_problems_to_results: optimization_problem_to_result
-    design_variable_names_to_values: design_variable_name_to_value
   Database:
     DEFAULT_INPUT_NAME: default_input_name
     MISSING_VALUE_TAG: missing_value_tag
@@ -2080,6 +2627,8 @@ classes:
     from_txt:
       variable_names_to_n_components: variable_name_to_n_components
       variable_names_to_group_names: variable_name_to_group_name
+    add_group: &variable-name-to-n-components
+      variable_names_to_n_components: variable_name_to_n_components
   DisciplineAdapter:
     __init__:
       names_to_sizes: name_to_size
@@ -2088,36 +2637,43 @@ classes:
       names_to_sizes: name_to_size
   OptimizationMetadata:
     output_names_to_constraint_names: output_name_to_constraint_names
-    use_standardized_objective: null # TODO: use `use_standardized_objective` field of the post-processor settings instead.
+    use_standardized_objective: &use-standardized-objective TODO use the use_standardized_objective field of the post-processor settings instead
+    __init__:
+      output_names_to_constraint_names: output_name_to_constraint_names
+      use_standardized_objective: *use-standardized-objective
   ScalableDesignSpace:
     __init__:
       names_to_default_values: name_to_default_value
       add_uncertain_variables: null
     # ScalableDesignSpace derived from ParameterSpace and is now a DesignSpace,
-    # which has no random variable. These identity rules stop the inherited
-    # ParameterSpace renames to add_variable, which would silently add a
-    # deterministic variable; the call is left unchanged and fails loudly.
-    # TODO: add the random variables to a separate RandomSpace instead.
-    add_random_variable:
-      __name__: add_random_variable
-    add_random_vector:
-      __name__: add_random_vector
+    # which has no random variable. These rules stop the inherited ParameterSpace
+    # renames to add_variable, which would silently add a deterministic variable,
+    # and its TODO on add_variable, which adds one indeed.
+    add_variable: add_variable
+    add_random_variable: TODO add the random variables to a separate RandomSpace instead
+    add_random_vector: TODO add the random variables to a separate RandomSpace instead
   ScenarioResult:
     POST_FACTORY: post_factory
     optimization_problems_to_results: optimization_problem_to_result
     design_variable_names_to_values: design_variable_name_to_value
   SimpleGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
     __init__:
       names_to_types: name_to_type
   Splitter:
     __init__:
       output_names_to_input_indices: output_name_to_input_indices
+  # The renaming API now tells inputs from outputs (changelog 1659), which only the
+  # user knows: the calls keep their arguments and are marked.
   VariableRenamer:
+    from_translations: TODO the tuples are now (discipline_name, is_input, variable_name, new_variable_name)
+    from_dictionary: TODO the values are now a pair (input_name_to_new_input_name, output_name_to_new_output_name)
+    from_csv: TODO the file now has an is_input column in second position, True or False
+    from_spreadsheet: TODO the file now has an is_input column in second position, True or False
+    add_translation: TODO a translation is now (discipline_name, is_input, variable_name, new_variable_name)
     add_translations_by_discipline:
-      variable_names_to_new_variable_names: null
+      variable_names_to_new_variable_names: TODO split the mapping into input_name_to_new_input_name and output_name_to_new_output_name, two positional arguments
     add_translations_by_variable:
-      discipline_names_to_variable_names: null
+      discipline_names_to_variable_names: TODO the values are now (variable_name, is_input) pairs; the argument is renamed discipline_name_and_io_mapping
 
   FilteringDiscipline:
     __init__:
@@ -2127,7 +2683,7 @@ classes:
   CallableParallelExecution:
     MULTI_PROCESSING_START_METHOD: multi_processing_start_method
     execute:
-      exec_callback: exec_callbacks
+      exec_callback: exec_callbacks TODO[!Iterable] exec_callbacks takes an iterable of callables only; wrap a single callable in a list, e.g. exec_callbacks=[callback]
 
   DirectoryCreator:
     __init__:
@@ -2161,8 +2717,10 @@ classes:
     DISC_INPUT_FILE_NAME: disc_input_file_name
     DISC_OUTPUT_FILE_NAME: disc_output_file_name
 
+  # The inputs of a CacheEntry were removed (changelog misc.removed), but a read of
+  # inputs is not marked: last_entry, renamed last_item above, now returns a CacheItem,
+  # which has inputs, and the codemod cannot tell it from a CacheEntry.
   CacheEntry:
-    inputs: null
     __init__:
       inputs: null
 
@@ -2175,18 +2733,22 @@ classes:
     INEQUALITY_CONSTRAINT_GROUP: inequality_constraint_group
     EQUALITY_CONSTRAINT_GROUP: equality_constraint_group
     OBSERVABLE_GROUP: observable_group
-    FUNCTION_GROUP: null
-    # TODO: use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
-    CONSTRAINT_GROUP: null
-    # TODO: use `EQUALITY_CONSTRAINT_GROUP` and/or `INEQUALITY_CONSTRAINT_GROUP` instead.
-    add_constraint_variable: null
-    # TODO: use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
-    add_constraint_group: null
-    # TODO: use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
-    constraint_names: null
-    # TODO: use `inequality_constraint_names` or `equality_constraint_names` instead.
-    constraint_dataset: null
-    # TODO: use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
+    add_design_group: *variable-name-to-n-components
+    add_objective_group: *variable-name-to-n-components
+    add_observable_group: *variable-name-to-n-components
+    add_equality_constraint_group: *variable-name-to-n-components
+    add_inequality_constraint_group: *variable-name-to-n-components
+    # The generic groups of the functions and of the constraints were removed, in
+    # favour of OBJECTIVE_GROUP, EQUALITY_CONSTRAINT_GROUP,
+    # INEQUALITY_CONSTRAINT_GROUP and OBSERVABLE_GROUP. As a dataset accepts any
+    # group name, the code using them keeps their names, and thus its behavior;
+    # OptimizationProblem.to_dataset no longer writes these groups, though.
+    FUNCTION_GROUP: '"functions"'
+    CONSTRAINT_GROUP: '"constraints"'
+    add_constraint_variable: '{receiver}.add_variable({variable_name}, {data}, group_name="constraints", components={components})'
+    add_constraint_group: '{receiver}.add_group("constraints", {data}, {variable_names}, {variable_names_to_n_components})'
+    constraint_names: '{receiver}.get_variable_names("constraints")'
+    constraint_dataset: '{receiver}.get_view(group_names="constraints")'
 
   OptimizationHistory:
     __init__:
@@ -2194,35 +2756,77 @@ classes:
       # the history never used it.
 
   OptimizationProblem:
-    # See the comment above BaseScenario.
-    design_space: design_space
+    # See the comment above BaseScenario. GEMSEO 7 makes it a property with no setter,
+    # so an assignment of it, which the codemod cannot rewrite, is marked.
+    design_space: design_space TODO design_space is a read-only property in GEMSEO 7, the input space of the problem; change the variables of the existing space instead, e.g. with add_variable and remove_variable, or create the problem with the new space
     __init__:
       design_space: design_space
+      # The linearity of the problem is now deduced from its functions.
+      is_linear: null
     to_dataset:
       group_functions: null
+    # GEMSEO 7 returns early when the function is already of a constraint type,
+    # ignoring value and positive, which GEMSEO 6 applied: the codemod cannot tell
+    # the type of the function, so a call passing either is marked, unless it builds
+    # the function in sight with the default function type, e.g. MDOFunction(f, "c").
+    add_constraint:
+      value: &constraint-of-constraint-type TODO[function.f_type] if the function was created with a constraint type (ConstraintType.EQ or INEQ as its function type), value and positive are now ignored without warning; create it with the default function type, or apply the offset and the sign to the function itself
+      positive: *constraint-of-constraint-type
 
   # Jacobian checkers (changelog 747)
   Discipline:
-    check_jacobian: null
-    # TODO: use gemseo.check_jacobian instead.
+    # The method became a function; auto_set_step=True became step=None, and parallel
+    # has no equivalent.
+    check_jacobian: "gemseo.check_jacobian({receiver}, input_value={input_data}, approximation_mode={derr_approx}, step=None if {auto_set_step} else {step}, atol={threshold}, rtol={threshold}, linearization_mode={linearization_mode}, input_names={input_names}, output_names={output_names}, n_processes={n_processes}, use_threading={use_threading}, wait_time_between_fork={wait_time_between_fork}, plot_result={plot_result}, file_path={file_path}, show={show}, fig_size_x={fig_size_x}, fig_size_y={fig_size_y}, reference_jacobian_path={reference_jacobian_path}, save_reference_jacobian={save_reference_jacobian}, indices={indices})"
+    # The hybrid modes moved from ApproximationMode to HybridApproximationMode
+    # (changelog 1812).
+    ApproximationMode.HYBRID_COMPLEX_STEP: HybridApproximationMode.HYBRID_COMPLEX_STEP
+    ApproximationMode.HYBRID_FINITE_DIFFERENCES: HybridApproximationMode.HYBRID_FINITE_DIFFERENCES
+    ApproximationMode.HYBRID_CENTERED_DIFFERENCES: HybridApproximationMode.HYBRID_CENTERED_DIFFERENCES
 
   MDOLinearFunction:
     normalize: null
+    # GEMSEO 6 accepted any third argument; GEMSEO 7 checks that it is a function
+    # type, a StrEnum, so a sequence of input names passed there raises a ValueError.
+    __init__:
+      f_type: TODO[!str] the third positional argument of LinearFunction is its function type; pass the input names as input_names=...
     # the normalization of a design space is a transformation of the space, see
     # gemseo.space.transformation, applied by EvaluationProblem.create_working_problem.
 
   DisciplineJacApprox:
     generator_class: null
-    check_jacobian:
-      threshold: atol
+    # In GEMSEO 6, threshold was both the absolute and the relative tolerance.
+    check_jacobian: "{receiver}.check_jacobian(output_names={output_names}, input_names={input_names}, analytic_jacobian={analytic_jacobian}, atol={threshold}, rtol={threshold}, plot_result={plot_result}, file_path={file_path}, show={show}, fig_size_x={fig_size_x}, fig_size_y={fig_size_y}, reference_jacobian_path={reference_jacobian_path}, save_reference_jacobian={save_reference_jacobian}, indices={indices}, input_data={input_data})"
 
   ODEProblem:
     check_jacobian:
       error_max: atol
+  ODEDiscipline:
+    __init__:
+      ode_solver_name: ode_solver_settings={ode_solver_name}_Settings(**{ode_solver_settings})
+  # The loose options of the ODE solver, the name of the solver among them, RK45 by
+  # default (that of ODEDiscipline), are now one settings model: the solver, when the
+  # call does not name it, is RK45.
+  SpringODEDiscipline:
+    __init__:
+      ode_solver_name: &ode-solver-options ode_solver_settings={ode_solver_name=RK45}_Settings(**{ode_solver_options})
+  CoupledSpringsGenerator:
+    create_coupled_ode_disciplines:
+      ode_solver_name: *ode-solver-options
+    create_discipline_with_coupled_dynamics:
+      ode_solver_name: *ode-solver-options
+
+  # The merged data are deprecated (changelog 1269): they are now a copy of the input
+  # and output data, so that an item set through them is lost, as is an output that
+  # a _run produces through them.
+  IO:
+    data: TODO IO.data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or update_output_data(data)), write the inputs to input_data, and read input_data, output_data or get_merged_data()
 
   # Lowercased class constants (the ALL_CAPS class-attribute campaign)
   BaseDiscipline:
     GRAMMAR_DIRECTORY: grammar_directory
+    # Deprecated, as IO.data above.
+    local_data: TODO local_data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or io.update_output_data(data)), write the inputs to input_data, and read input_data, output_data or io.get_merged_data()
     # Of the scalable parametric BaseDiscipline of the same name; the entry is
     # skipped on whichever of the two classes does not declare the new name.
     _CORE_DISCIPLINE_CLASS: _core_discipline_class
@@ -2242,28 +2846,29 @@ classes:
     _UPPER: _upper
     _WEBSITE: _website
     DEFAULT_VARIABLE_NAME: default_variable_name
+    # A distribution is now built from a settings model, BaseDistribution(settings),
+    # which the codemod cannot write from the arguments of a class of a plugin: the
+    # super().__init__ call of such a class, and a call passing the name of the
+    # interfaced distribution, are marked, so are the overrides of
+    # _create_distribution, now _create_distribution(settings).
+    __init__:
+      interfaced_distribution: TODO a distribution now takes a settings model, BaseDistribution.__init__(settings), so pass an instance of its Settings class; a distribution class of your own declares its parameters as the fields of a <Distribution>_Settings class deriving from BaseDistributionSettings, with a _library_name class attribute, sets it as its settings_class class attribute, and creates the interfaced distribution in _create_distribution(settings), as gemseo.uncertainty.distribution.scipy.distribution.SPDistribution does
+    _create_distribution: TODO _create_distribution now takes the settings model of the distribution, _create_distribution(settings), and reads the name and the parameters of the interfaced distribution from its fields, as gemseo.uncertainty.distribution.scipy.distribution.SPDistribution does
+  # A joint distribution is now built from a settings model whose marginal_settings
+  # are the settings of its marginals, and a joint class of a plugin needs a
+  # settings_class deriving from BaseJointDistributionSettings.
+  BaseJointDistribution:
+    __init__:
+      distributions: TODO a joint distribution now takes a settings model, BaseJointDistribution.__init__(settings), whose marginal_settings are the settings models of the marginal distributions; a joint class of your own sets a settings_class class attribute deriving from BaseJointDistributionSettings, as gemseo.uncertainty.distribution.scipy.joint.SPJointDistribution does
   BaseFactory:
     _CLASS: _class
     _PACKAGE_NAMES: _package_names
     PLUGIN_ENTRY_POINT: plugin_entry_point
-  BaseMLSupervisedAlgo:
-    Settings: settings_class
-    DEFAULT_TRANSFORMER: default_transformer
-  BaseMLUnsupervisedAlgo:
-    Settings: settings_class
-  BaseClassifier:
-    Settings: settings_class
-  BaseClusterer:
-    Settings: settings_class
-  BaseRegressor:
-    Settings: settings_class
-    DEFAULT_TRANSFORMER: default_transformer
   BaseStatistics:
     SYMBOLS: symbols
   BaseTransformer:
     CROSSED: crossed
   BiLevel:
-    DEFAULT_SCENARIO_RESULT_CLASS_NAME: default_scenario_result_class_name
     CHAIN_NAME: chain_name
     MDA1_RESIDUAL_NAMESPACE: mda1_residual_namespace
     MDA2_RESIDUAL_NAMESPACE: mda2_residual_namespace
@@ -2274,86 +2879,84 @@ classes:
   DatasetPlot:
     DEFAULT_PLOT_ENGINE: default_plot_engine
     FILE_FORMATS_TO_PLOT_ENGINES: file_formats_to_plot_engines
+    # A plot is now configured by a settings model, self.settings, of a class
+    # <Plot>_Settings set as its settings_class attribute, with no __init__ of its own.
+    _specific_settings: TODO the settings of a plot are now a model, so declare its fields in a <Plot>_Settings class set as the settings_class attribute of the plot, remove its __init__, and read them from self.settings
+    _common_settings: settings
+    _n_items: settings.n_items
+    # The display options of a plot moved to its settings.
+    color: settings.color
+    colormap: settings.colormap
+    font_size: settings.font_size
+    legend_location: settings.legend_location
+    linestyle: settings.linestyle
+    marker: settings.marker
+    title: settings.title
+    xtick_rotation: settings.xtick_rotation
+    rmin: settings.rmin
+    rmax: settings.rmax
+    xmin: settings.xmin
+    xmax: settings.xmax
+    ymin: settings.ymin
+    ymax: settings.ymax
+    zmin: settings.zmin
+    zmax: settings.zmax
+    xlabel: settings.xlabel
+    ylabel: settings.ylabel
+    zlabel: settings.zlabel
+    grid: settings.grid
+    labels: settings.labels
+    fig_size: settings.fig_size
+    fig_size_x: TODO use settings.fig_size, the pair of the width and the height, instead
+    fig_size_y: TODO use settings.fig_size, the pair of the width and the height, instead
+  MatplotlibPlot:
+    _common_settings: _settings
   DependencyGraph:
     IO: io
-  F1Measure:
-    SMALLER_IS_BETTER: smaller_is_better
-  GaussianMixture:
-    LIBRARY: library
-  GaussianProcessRegressor:
-    LIBRARY: library
-  GradientBoostingRegressor:
-    LIBRARY: library
   IODataset:
     INPUT_GROUP: input_group
     OUTPUT_GROUP: output_group
-  JSONGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
-  KMeans:
-    LIBRARY: library
-  KNNClassifier:
-    LIBRARY: library
+    add_input_group: *variable-name-to-n-components
+    add_output_group: *variable-name-to-n-components
   LagrangeMultipliers:
     LOWER_BOUNDS: lower_bounds
     UPPER_BOUNDS: upper_bounds
     INEQUALITY: inequality
     EQUALITY: equality
     CSTR_LABELS: cstr_labels
-  LinearRegressor:
-    LIBRARY: library
   MDOFunction:
     DICT_REPR_ATTR: dict_repr_attr
     DEFAULT_BASE_INPUT_NAME: default_base_input_name
     COEFF_FORMAT_1D: coeff_format_1d
     COEFF_FORMAT_ND: coeff_format_nd
-    check_grad: null
-    # TODO: use gemseo.util.derivative.check.function.FunctionJacobianChecker instead.
+    check_grad: TODO use gemseo.util.derivative.check.function.FunctionJacobianChecker instead
     rel_err: null
     filt_0: null
-  MLPRegressor:
-    LIBRARY: library
   MultiLineString:
     INDENTATION: indentation
     DEFAULT_LEVEL: default_level
   OTDistribution:
-    Settings: settings_class
     JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   OTGaussianProcessRegressor:
-    LIBRARY: library
     MAX_SIZE_FOR_LAPACK: max_size_for_lapack
     HMATRIX_ASSEMBLY_EPSILON: hmatrix_assembly_epsilon
     HMATRIX_RECOMPRESSION_EPSILON: hmatrix_recompression_epsilon
-  PLS:
-    CROSSED: crossed
   PostOptimalAnalysis:
     MULT_DOT_CONSTR_JAC: mult_dot_constr_jac
   PostScalabilityStudy:
     NOMENCLATURE: nomenclature
-  PydanticGrammar:
-    DATA_CONVERTER_CLASS: data_converter_class
-  R2Measure:
-    SMALLER_IS_BETTER: smaller_is_better
-  RandomForestClassifier:
-    LIBRARY: library
-  RandomForestRegressor:
-    LIBRARY: library
   Robustness:
     SR1_APPROX: sr1_approx
   SPDistribution:
-    Settings: settings_class
     JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   SR1Approx:
     EPSILON: epsilon
-  SVMClassifier:
-    LIBRARY: library
-  SVMRegressor:
-    LIBRARY: library
-  ScalableDiagonalModel:
-    ABBR: abbr
   ScalableModel:
     ABBR: abbr
-  SilhouetteMeasure:
-    SMALLER_IS_BETTER: smaller_is_better
+  # The class attribute of the mixin, overridden by the distributions of the
+  # plugins, is that of BaseUnivariateDistribution.
+  ScalarDistributionMixin:
+    JOINT_DISTRIBUTION_CLASS: joint_distribution_class
   SobieskiAerodynamics:
     PRESSURE_GRADIENT_LIMIT: pressure_gradient_limit
   SobieskiProblem:
@@ -2399,6 +3002,10 @@ classes:
   BaseDistributionFitter:
     _CRITERIA_TO_WRAPPED_OBJECTS: _criteria_to_wrapped_objects
     _FITTING_CRITERIA_TO_MINIMIZE: _fitting_criteria_to_minimize
+    # A fitter no longer takes the name of its variable, which it did not use.
+    variable: null
+    __init__:
+      variable: null
   BaseExecutionSequence:
     _PREFIX: _prefix
     _SUFFIX: _suffix
@@ -2463,9 +3070,51 @@ classes:
     FittingCriterion.Kolmogorov: FittingCriterion.KOLMOGOROV
     SignificanceTest.ChiSquared: SignificanceTest.CHI_SQUARED
     SignificanceTest.Kolmogorov: SignificanceTest.KOLMOGOROV
+  # It shares the enumerations of OTDistributionFitter, not its protected attribute,
+  # so they are written out: an alias would share the whole mapping.
+  OTParametricStatistics:
+    DistributionName.Arcsine: DistributionName.ARCSINE
+    DistributionName.Beta: DistributionName.BETA
+    DistributionName.Burr: DistributionName.BURR
+    DistributionName.Chi: DistributionName.CHI
+    DistributionName.ChiSquare: DistributionName.CHI_SQUARE
+    DistributionName.Dirichlet: DistributionName.DIRICHLET
+    DistributionName.Exponential: DistributionName.EXPONENTIAL
+    DistributionName.FisherSnedecor: DistributionName.FISHER_SNEDECOR
+    DistributionName.Frechet: DistributionName.FRECHET
+    DistributionName.Gamma: DistributionName.GAMMA
+    DistributionName.GeneralizedPareto: DistributionName.GENERALIZED_PARETO
+    DistributionName.Gumbel: DistributionName.GUMBEL
+    DistributionName.Histogram: DistributionName.HISTOGRAM
+    DistributionName.InverseNormal: DistributionName.INVERSE_NORMAL
+    DistributionName.Laplace: DistributionName.LAPLACE
+    DistributionName.LogNormal: DistributionName.LOG_NORMAL
+    DistributionName.LogUniform: DistributionName.LOG_UNIFORM
+    DistributionName.Logistic: DistributionName.LOGISTIC
+    DistributionName.MeixnerDistribution: DistributionName.MEIXNER_DISTRIBUTION
+    DistributionName.Normal: DistributionName.NORMAL
+    DistributionName.Pareto: DistributionName.PARETO
+    DistributionName.Rayleigh: DistributionName.RAYLEIGH
+    DistributionName.Rice: DistributionName.RICE
+    DistributionName.Student: DistributionName.STUDENT
+    DistributionName.Trapezoidal: DistributionName.TRAPEZOIDAL
+    DistributionName.Triangular: DistributionName.TRIANGULAR
+    DistributionName.TruncatedNormal: DistributionName.TRUNCATED_NORMAL
+    DistributionName.Uniform: DistributionName.UNIFORM
+    DistributionName.VonMises: DistributionName.VON_MISES
+    DistributionName.WeibullMax: DistributionName.WEIBULL_MAX
+    DistributionName.WeibullMin: DistributionName.WEIBULL_MIN
+    FittingCriterion.ChiSquared: FittingCriterion.CHI_SQUARED
+    FittingCriterion.Kolmogorov: FittingCriterion.KOLMOGOROV
+    SignificanceTest.ChiSquared: SignificanceTest.CHI_SQUARED
+    SignificanceTest.Kolmogorov: SignificanceTest.KOLMOGOROV
   Power:
     _TRANSFORMER_NAME: _transformer_name
   ScalableProblem:
+    create_scenario:
+      formulation_name: formulation_settings={formulation_name}_Settings(**{formulation_settings})
+      scenario_type: TODO remove it, as the scenario is an MDOScenario
+      use_optimizer: TODO remove it, as the scenario is an MDOScenario
     _DESIGN_SPACE_CLASS: _design_space_class
     _MAIN_DISCIPLINE_CLASS: _main_discipline_class
     _SCALABLE_DISCIPLINE_CLASS: _scalable_discipline_class
@@ -2480,18 +3129,56 @@ classes:
 # never needed to remove or locate an argument. Only give a position when the
 # argument actually moves; drop it once the argument no longer needs repositioning.
 # old_func_name:
-#   old_arg_name: new_arg_name             # rename argument
-#   old_arg_name: new_arg_name N           # rename and reposition to index N
-#   old_arg_name: N                        # reposition only to index N (integer value)
-#   old_arg_name: null                     # remove argument
-#   old_arg_name: new_arg_name={old_arg}_Settings  # rename and wrap value in a Settings instance
+#   old_arg_name: new_arg_name                   # rename argument
+#   old_arg_name: new_arg_name N                 # rename and reposition to index N
+#   old_arg_name: N                              # reposition only to index N (integer value)
+#   old_arg_name: null                           # remove argument
+#   name: new_name={name}_Settings(**{mapping})  # merge both arguments into a Settings instance
 
 functions:
+  # See VariableRenamer in classes:.
+  rename_discipline_variables:
+    translators: TODO the translators are now a mapping from the discipline name to a pair (input_name_to_new_input_name, output_name_to_new_output_name)
+  # The loose settings go to settings_model=<the MDA class>_Settings(...), which gives
+  # them the rules of its fields, e.g. inner_mda_name of MDAChain_Settings.
+  # These functions keep their loose settings, and build the settings of the object
+  # from them: the loose keywords get the rules of the fields of the settings class the
+  # call names, e.g. function of RBFRegressor_Settings, renamed kernel.
+  create_regression_model:
+    parameters: "{name}_Settings"
+  create_classification_model:
+    parameters: "{name}_Settings"
+  create_clustering_model:
+    parameters: "{name}_Settings"
+  create_mlearning_model:
+    parameters: "{name}_Settings"
+  create_scenario:
+    formulation_settings: "{formulation_name}_Settings"
+  execute_post:
+    settings: "{post_name}_Settings"
+  sample_disciplines:
+    algo_settings: "{algo_name}_Settings"
+  # The algorithm name is a keyword caught by **settings, e.g. L-BFGS-B, which is
+  # now L_BFGS_B_Settings: the name of the algorithm is the one of its settings class.
+  execute_algo:
+    algo_name: settings_model={algo_name}_Settings(**{settings})
+  create_mda:
+    settings: settings_model={mda_name}_Settings(**{settings})
+    # An argument of MDASequential, not a setting: kept in the call.
+    mda_sequence: mda_sequence
+  # See DistributionFactory in classes:.
+  create_distribution:
+    options: settings={distribution_name}_Settings(**{options})
   write_design_space:
     header_char: null
-  create_surrogate:
-    surrogate: regressor
-    disc_name: name
+  # The default of use_and is now True (changelog 1874): a call not passing it passes
+  # the old default, use_and=False, to keep its formatting.
+  pretty_repr:
+    use_and: KEEP_DEFAULT
+  pretty_str:
+    use_and: KEEP_DEFAULT
+  # See SurrogateDiscipline in classes:.
+  create_surrogate: *create-surrogate
   generate_xdsm:
     discipline: process
 
@@ -2500,3 +3187,28 @@ functions:
     input_names_to_default_values: input_name_to_default_value
   get_variables_with_components:
     names_to_sizes: name_to_size
+
+  # normalize_ds is removed (changelog 1528): a driver normalizes the space itself.
+  get_value_and_bounds:
+    normalize_ds: null TODO get_value_and_bounds returns the value and the bounds of the space it is passed as they are; in a driver library, problem.input_space is the working space, already normalized when normalize_design_space is set, so pass it and map a point back to the coordinates the user declared with self._transformation.inverse_transform_value(x), always, rather than with unnormalize_vect guarded by normalize_design_space, which would map it twice (see gemseo.space.transformation); the other way round, the problem a library is given (self._problem, and the argument of _pre_run and _run) is the working problem, so what refers to the problem of the user, such as points the user gives (an initial design as an array or a dataset, the database) and the flags of its space read in _pre_run (enable_integer_variables_normalization), must be read from self._original_problem.input_space; a library that builds its problem from the coefficients and the bounds of the functions, e.g. a linear one reading their coefficients, which are not normalized, must instead set the class attribute _iterates_on_working_problem = False, as ScipyMILP and ScipyLinprog do
+
+# The factories returning an object of the class one of their arguments names, by
+# the name of that parameter: the codemod applies the rules of that class, which the
+# return type of the factory, a base class, does not tell, to the result, e.g. to
+# `model.set_clusterer(...)` after `model = create_regression_model("MOERegressor", data)`.
+# A key is a function, or a method as Class.method.
+factories:
+  create_cache: cache_type
+  create_classification_model: name
+  create_clustering_model: name
+  # A member of DatasetClassName, named after the class, the default being Dataset.
+  create_dataset: class_name
+  create_discipline: discipline_name
+  create_distribution: distribution_name
+  create_mda: mda_name
+  create_mlearning_model: name
+  create_regression_model: name
+  # MDOScenario or DOEScenario, MDO by default.
+  create_scenario: "{scenario_type}Scenario"
+  BaseFactory.create: class_name
+  DisciplineFactory.create: discipline_name

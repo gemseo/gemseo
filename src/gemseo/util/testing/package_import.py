@@ -24,19 +24,25 @@ and each expected object is resolved with the same shared
 from __future__ import annotations
 
 import ast
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 import pytest
 
+from gemseo.util.package_import import get_location_module_name
 from gemseo.util.package_import import resolve_lazy_export
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import ModuleType
+
+_subprocess_timeout: Final[float] = 120.0
+"""The time limit, in seconds, of the fresh interpreter of a test."""
 
 
 def _is_type_checking_guard(test: ast.expr) -> bool:
@@ -53,34 +59,61 @@ def _is_type_checking_guard(test: ast.expr) -> bool:
     return isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
 
 
+def _get_target_names(target: ast.expr) -> list[str]:
+    """Return the names bound by the target of an assignment.
+
+    Args:
+        target: The target of the assignment.
+
+    Returns:
+        The names bound by the target, walking tuple and list targets recursively;
+        none for an attribute or a subscript target.
+    """
+    if isinstance(target, ast.Name):
+        return [target.id]
+    if isinstance(target, ast.Starred):
+        return _get_target_names(target.value)
+    if isinstance(target, (ast.Tuple, ast.List)):
+        return [name for elt in target.elts for name in _get_target_names(elt)]
+    return []
+
+
 def _get_static_import_names(package: ModuleType) -> tuple[set[str], set[str]]:
-    """Return the names imported under `if TYPE_CHECKING:` in a package.
+    """Return the names bound under `if TYPE_CHECKING:` in a package.
 
     Args:
         package: The package whose `__init__.py` is scanned.
 
     Returns:
-        The names bound by the module-level `if TYPE_CHECKING:` imports,
-        and the names referenced anywhere in the module
-        (an imported name that is referenced is an annotation import,
+        The names bound by the module-level `if TYPE_CHECKING:` block,
+        by an import or an assignment,
+        and the names read anywhere in the module
+        (an imported name that is read is an annotation import,
         not the static mirror of a lazy re-export).
     """
     # A regular package always has a file; only namespace packages do not.
     assert package.__file__ is not None
     tree = ast.parse(Path(package.__file__).read_text(encoding="utf-8"))
-    imported_names: set[str] = set()
+    static_names: set[str] = set()
     for stmt in tree.body:
         if not (isinstance(stmt, ast.If) and _is_type_checking_guard(stmt.test)):
             continue
         for sub_stmt in stmt.body:
             if isinstance(sub_stmt, (ast.Import, ast.ImportFrom)):
-                imported_names.update(
+                static_names.update(
                     alias.asname or alias.name.split(".")[0] for alias in sub_stmt.names
                 )
+            elif isinstance(sub_stmt, ast.Assign):
+                for target in sub_stmt.targets:
+                    static_names.update(_get_target_names(target))
+            elif isinstance(sub_stmt, ast.AnnAssign):
+                static_names.update(_get_target_names(sub_stmt.target))
     referenced_names = {
-        node.id for node in ast.walk(tree) if isinstance(node, ast.Name)
+        node.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
     }
-    return imported_names, referenced_names
+    return static_names, referenced_names
 
 
 def make_lazy_reexport_tests(
@@ -99,7 +132,8 @@ def make_lazy_reexport_tests(
             (e.g. eagerly imported names).
         deferred_sample: The name of a lazily re-exported entry used to assert, in a
             fresh interpreter, that its defining module stays out of `sys.modules`
-            until the name is first accessed. If `None`, this stronger check is skipped.
+            until the name is first accessed. If `None`, this stronger check,
+            the only one starting an interpreter, is skipped.
 
     Returns:
         A mapping from test function name to test function,
@@ -119,11 +153,54 @@ def make_lazy_reexport_tests(
         """Check that `__all__` exposes exactly the expected names."""
         assert set(package.__all__) == set(names) | set(extra_all)
 
+    def test_mapping_is_sorted() -> None:
+        """Check that the names of the mapping are sorted."""
+        assert names == sorted(names)
+
     def test_reexport_is_lazy() -> None:
-        """Check that the names are served lazily, not eagerly bound."""
-        namespace = vars(package)
-        for name in names:
-            assert name not in namespace
+        """Check that the names are served lazily, not eagerly bound.
+
+        The `__init__.py` of the package is executed again in a fresh module object,
+        as the resolved names are cached in the namespace of the package
+        by the first access; so are its module-level side effects, which must be
+        idempotent.
+        """
+        spec = package.__spec__
+        if spec is None or spec.loader is None:
+            pytest.fail(
+                f"the package {package.__name__!r} has no spec or loader "
+                "to execute it again"
+            )
+        fresh_package = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fresh_package)
+        assert not [name for name in names if name in vars(fresh_package)]
+
+    if deferred_sample is not None:
+        module_name = get_location_module_name(
+            package.__name__, name_to_location[deferred_sample]
+        )
+
+        def test_deferred_module_import() -> None:
+            """Check that the module of `deferred_sample` is imported on first access.
+
+            Run in a fresh interpreter, so that probing `sys.modules` does not depend
+            on and mutate the import state of the current test session.
+            """
+            code = (
+                "import sys\n"
+                "from importlib import import_module\n"
+                f"package = import_module({package.__name__!r})\n"
+                f"assert {module_name!r} not in sys.modules\n"
+                f"getattr(package, {deferred_sample!r})\n"
+                f"assert {module_name!r} in sys.modules\n"
+            )
+            result = subprocess.run(  # noqa: S603
+                [sys.executable, "-c", code],
+                capture_output=True,
+                text=True,
+                timeout=_subprocess_timeout,
+            )
+            assert result.returncode == 0, result.stderr
 
     def test_unknown_attribute(snapshot) -> None:
         """Check that accessing an unknown attribute raises `AttributeError`."""
@@ -136,7 +213,7 @@ def make_lazy_reexport_tests(
         assert name in dir(package)
 
     def test_static_names_match_lazy_reexports() -> None:
-        """Check that the `if TYPE_CHECKING:` imports mirror the lazy re-exports.
+        """Check that the `if TYPE_CHECKING:` block mirrors the lazy re-exports.
 
         The `if TYPE_CHECKING:` block of the package gives mypy and IDEs static
         visibility of the names served at runtime by `_name_to_location`; the two
@@ -154,9 +231,10 @@ def make_lazy_reexport_tests(
             f"exported name: {sorted(unknown)}"
         )
 
-    tests = {
+    tests: dict[str, object] = {
         "test_lazy_reexport": test_lazy_reexport,
         "test_all": test_all,
+        "test_mapping_is_sorted": test_mapping_is_sorted,
         "test_reexport_is_lazy": test_reexport_is_lazy,
         "test_unknown_attribute": test_unknown_attribute,
         "test_dir": test_dir,
@@ -164,34 +242,6 @@ def make_lazy_reexport_tests(
             test_static_names_match_lazy_reexports
         ),
     }
-
     if deferred_sample is not None:
-        name = deferred_sample
-        module_path = name_to_location[name].partition(":")[0]
-        if module_path.split(".", 1)[0] == "gemseo":
-            full_module = module_path
-        else:
-            full_module = f"{package.__name__}.{module_path}"
-
-        def test_reexport_defers_import() -> None:
-            """Check that the module is imported only on first attribute access.
-
-            Run in a fresh interpreter so that probing `sys.modules` does not
-            mutate the import state of the current test session.
-            """
-            code = (
-                "import sys\n"
-                "from importlib import import_module\n"
-                f"package = import_module({package.__name__!r})\n"
-                f"assert {full_module!r} not in sys.modules\n"
-                f"getattr(package, {name!r})\n"
-                f"assert {full_module!r} in sys.modules\n"
-            )
-            result = subprocess.run(  # noqa: S603
-                [sys.executable, "-c", code], capture_output=True, text=True
-            )
-            assert result.returncode == 0, result.stderr
-
-        tests["test_reexport_defers_import"] = test_reexport_defers_import
-
+        tests["test_deferred_module_import"] = test_deferred_module_import
     return tests

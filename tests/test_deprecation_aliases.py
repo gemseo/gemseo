@@ -257,6 +257,178 @@ def test_build_rejects_a_value_that_is_no_manual_migration(
         aliases._build()
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("gemseo.x.New TODO check the values", ("gemseo.x.New", "check the values")),
+        (
+            "enum.StrEnum TODO  a text with TODO inside, and a: colon ",
+            ("enum.StrEnum", "a text with TODO inside, and a: colon"),
+        ),
+        ("null TODO use another one", ("null", "use another one")),
+        # A value starting with `TODO ` is a manual migration, not a rename.
+        (
+            "TODO use gemseo.x.New TODO again",
+            ("TODO use gemseo.x.New TODO again", ""),
+        ),
+        # A plain value, and a `TODO` with no text, are returned as they are.
+        ("gemseo.x.New", ("gemseo.x.New", "")),
+        ("gemseo.x.New TODO", ("gemseo.x.New TODO", "")),
+    ],
+    ids=["rename", "text-with-todo", "removal", "manual", "plain", "no-text"],
+)
+def test_split_rename_todo(value, expected):
+    """A `<new name> TODO <text>` value is split into its head and its text.
+
+    Args:
+        value: The rule value.
+        expected: The expected new name and text.
+    """
+    assert aliases._split_rename_todo(value) == expected
+
+
+def test_build_renames_a_rename_and_todo_value(tmp_wd, monkeypatch):
+    """`_build` reads a `<new name> TODO <text>` value as a rename, in both sections.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory, which holds the
+            configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_wd / "bump-version.yml"
+    config.write_text(
+        "modules:\n"
+        "  gemseo.old_pkg: gemseo.new_pkg TODO check the module TODO twice\n"
+        "attributes:\n"
+        "  strenum.StrEnum: enum.StrEnum TODO the values of auto() differ\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    (
+        module_renames,
+        attribute_renames,
+        manual_migrations,
+        _,
+        removed_modules,
+        removed_attributes,
+        module_rename_notes,
+    ) = aliases._build()
+
+    assert module_renames == {"gemseo.old_pkg": "gemseo.new_pkg"}
+    assert attribute_renames == {"strenum": {"StrEnum": "enum.StrEnum"}}
+    assert not manual_migrations
+    assert not removed_modules
+    assert not removed_attributes
+    # The text of a module rename is kept, to explain an error of the new module.
+    assert module_rename_notes == {"gemseo.old_pkg": "check the module TODO twice"}
+
+
+@pytest.mark.parametrize(
+    ("section", "value"),
+    [
+        ("modules", "c TODO check it"),
+        ("modules", "scipy.sparse TODO check it"),
+        ("attributes", "New TODO check it"),
+    ],
+    ids=["module-relative", "module-third-party", "attribute-relative"],
+)
+def test_build_checks_the_head_of_a_rename_and_todo_value(
+    section, value, tmp_wd, monkeypatch, snapshot
+):
+    """`_build` rejects a `<new name> TODO <text>` value whose new name is invalid.
+
+    Args:
+        section: The name of the section of the rule.
+        value: The rule value.
+        tmp_wd: Fixture to move into a temporary directory, which holds the
+            configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    config = tmp_wd / "bump-version.yml"
+    config.write_text(f"{section}:\n  gemseo.a.b: {value}\n", encoding="utf-8")
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    with assert_exception(ValueError, snapshot):
+        aliases._build()
+
+
+def test_build_removes_a_null_and_todo_value(tmp_wd, monkeypatch):
+    """`_build` reads a `null TODO <text>` value as a removal, in both sections.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory, which holds the
+            configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_wd / "bump-version.yml"
+    config.write_text(
+        "modules:\n"
+        "  gemseo.old_pkg: null TODO use another package\n"
+        "attributes:\n"
+        "  gemseo.other_pkg.Old: null TODO use another class\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    (
+        module_renames,
+        attribute_renames,
+        manual_migrations,
+        _,
+        removed_modules,
+        removed_attributes,
+        module_rename_notes,
+    ) = aliases._build()
+
+    assert removed_modules == {"gemseo.old_pkg"}
+    assert removed_attributes == {"gemseo.other_pkg": {"Old"}}
+    assert not module_renames
+    assert not attribute_renames
+    assert not manual_migrations
+    # The text of a removal is for the codemod only.
+    assert not module_rename_notes
+
+
+def test_build_leaves_out_the_attribute_entries_of_a_class(tmp_wd, monkeypatch):
+    """`_build` leaves out of the module tables an `attributes:` entry of a class.
+
+    Such an entry is aliased through the `classes:` section instead, and is not the
+    rename of a class which this section is keyed on.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory, which holds the
+            configuration.
+        monkeypatch: Fixture to patch the path of the configuration.
+    """
+    config = tmp_wd / "bump-version.yml"
+    config.write_text(
+        "attributes:\n"
+        "  gemseo.old_pkg.Cls.Method: gemseo.new_pkg.ClsMethod\n"
+        "  gemseo.old_pkg.Cls.Gone: null\n"
+        "  gemseo.old_pkg.Cls: gemseo.new_pkg.Cls\n"
+        "classes:\n"
+        "  Cls:\n"
+        "    Method: gemseo.new_pkg.ClsMethod\n"
+        "  Method:\n"
+        "    OLD: new\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(aliases, "_config_path", config)
+
+    _, attribute_renames, _, class_attribute_renames, _, removed_attributes, _ = (
+        aliases._build()
+    )
+
+    assert attribute_renames == {"gemseo.old_pkg": {"Cls": "gemseo.new_pkg.Cls"}}
+    assert not removed_attributes
+    assert class_attribute_renames == {
+        "Cls": {"Method": "gemseo.new_pkg.ClsMethod"},
+        "Method": {"OLD": "new"},
+    }
+
+
 def test_build_does_not_rename_a_todo_value(tmp_path, monkeypatch):
     """`_build` reads a `TODO <text>` value of `attributes:` as a manual migration.
 
@@ -285,6 +457,7 @@ def test_build_does_not_rename_a_todo_value(tmp_path, monkeypatch):
         class_attribute_renames,
         removed_modules,
         removed_attributes,
+        _,
     ) = aliases._build()
 
     assert manual_migrations == {
@@ -451,6 +624,7 @@ def test_build_from_synthetic_config(tmp_path, monkeypatch):
         class_attribute_renames,
         removed_modules,
         removed_attributes,
+        _,
     ) = aliases._build()
 
     assert module_renames["gemseo.old_pkg"] == "gemseo.new_pkg"
@@ -601,7 +775,8 @@ def test_module_and_attribute_values_are_absolute():
 
     A complete `modules:` value is in GEMSEO (`gemseo.*`) or in the package of a plugin
     (`gemseo_*.*`), while an `attributes:` value may be a dotted path in any package,
-    or, for a name whose migration cannot be automated, a `TODO <text>` instruction.
+    or, for a name whose migration cannot be automated, a `TODO <text>` instruction;
+    a `<new name> TODO <text>` value is checked on its new name.
 
     Values are never relative (a bare last segment): each rule is applied once, so
     the runtime and the external codemod never need to chain rules to reach the
@@ -616,7 +791,7 @@ def test_module_and_attribute_values_are_absolute():
         )
         for old, new in aliases._parse_section(text, section).items()
         if new != aliases._removed
-        and not is_complete(new)
+        and not is_complete(aliases._split_rename_todo(new)[0])
         and not (section == "attributes" and aliases._get_todo_text(new))
     ]
     assert not relative
@@ -703,6 +878,54 @@ def test_parse_classes_section_keeps_renames_of_nested_classes():
         "    Enum.BAD: Enum.not an identifier\n"
     )
     assert aliases._parse_classes_section(text) == {"Foo": {"Enum.OLD": "Enum.NEW"}}
+
+
+def test_parse_classes_section_keeps_attributes_moved_out_of_their_class():
+    """An entry whose new name is the complete path of a GEMSEO object is kept.
+
+    Its old name must be an identifier.
+    """
+    text = (
+        "classes:\n"
+        "  Foo:\n"
+        "    Method: gemseo.x.FooMethod\n"
+        "    Enum.OLD: gemseo.x.FooMethod\n"
+        "    Other: enum.StrEnum\n"
+    )
+    assert aliases._parse_classes_section(text) == {
+        "Foo": {"Method": "gemseo.x.FooMethod"}
+    }
+
+
+def test_parse_classes_section_keeps_a_rename_and_todo_value():
+    """An entry `old: new TODO <text>` is the rename to `new`, as in the other sections.
+
+    A `TODO <text>` entry, and a `TODO[<guard>] <text>` one, are not renames.
+    """
+    text = (
+        "classes:\n"
+        "  Foo:\n"
+        "    OLD: new TODO check the values\n"
+        "    MANUAL: TODO use other instead\n"
+        "    GUARDED: new TODO[!str] check the values\n"
+    )
+    assert aliases._parse_classes_section(text) == {"Foo": {"OLD": "new"}}
+
+
+def test_ot_parametric_statistics_gets_only_the_enumerations_of_the_fitter():
+    """`OTParametricStatistics` shares the enumerations of `OTDistributionFitter`.
+
+    It does not get the protected attribute of the latter.
+    """
+    fitter_renames = aliases.class_attribute_renames["OTDistributionFitter"]
+    statistics_renames = aliases.class_attribute_renames["OTParametricStatistics"]
+
+    assert statistics_renames == {
+        old_name: new_name
+        for old_name, new_name in fitter_renames.items()
+        if not old_name.startswith("_")
+    }
+    assert len(statistics_renames) == len(fitter_renames) - 1
 
 
 def test_parse_classes_section_drops_null_targets():
