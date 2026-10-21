@@ -19,6 +19,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 There is also a page containing the history of the breaking changes in GEMSEO:
 <https://gemseo.readthedocs.io/en/stable/software/upgrading.html>.
 
+<!-- towncrier release notes start -->
+
 ## Version 6.3.3 (2026-07-22)
 
 ### Fixed

@@ -1,10 +1,9 @@
 [tool.towncrier]
 directory = "changelog/fragments"
 filename = "CHANGELOG.md"
-template = "changelog/template.jinja2"
-title_format = "Version {version} ({project_date})"
-issue_format = "`#{issue} <https://gitlab.com/gemseo/dev/gemseo/-/issues/{issue}>`_"
-underlines = "*-"
+template = "changelog/template.md"
+title_format = "## Version {version} ({project_date})"
+issue_format = "[#{issue}](https://gitlab.com/gemseo/dev/gemseo/-/issues/{issue})"
 
 [[tool.towncrier.type]]
 directory = "added"
