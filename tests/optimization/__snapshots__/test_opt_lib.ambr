@@ -6,7 +6,7 @@
   '''
   1 validation error for DUAL_ANNEALING_Settings
     Value error, The 'maxfun' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
-  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.htmlfor more informations. [type=value_error, input_value={'maxfun': 'foo'}, input_type=dict]
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.html) for more information. [type=value_error, input_value={'maxfun': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -14,7 +14,7 @@
   '''
   1 validation error for SLSQP_Settings
     Value error, The 'maxiter' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
-  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.htmlfor more informations. [type=value_error, input_value={'maxiter': 'foo'}, input_type=dict]
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.html) for more information. [type=value_error, input_value={'maxiter': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -22,7 +22,7 @@
   '''
   1 validation error for TNC_Settings
     Value error, The 'eps' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
-  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.htmlfor more informations. [type=value_error, input_value={'eps': 'foo'}, input_type=dict]
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.readthedocs.io/en/stable/algorithms/index.html) for more information. [type=value_error, input_value={'eps': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
