@@ -343,16 +343,22 @@ def test_check_membership_dict_outside_a_catalog_domain(
         )
 
 
+@pytest.mark.parametrize(
+    "value",
+    [array([1.0, 1.5]), array([[1.0, 2.0], [1.0, 1.5]])],
+    ids=["one-point", "several-points"],
+)
 def test_check_membership_array_outside_a_catalog_domain(
-    catalog_variables: DesignVariables, catalog_bounds: Bounds, snapshot
+    catalog_variables: DesignVariables, catalog_bounds: Bounds, value, snapshot
 ) -> None:
     """Check that the array path rejects a non-integral position.
 
     The value lies within the derived bounds, so the bound comparison accepts it
-    and the check must fall back to the per-variable path.
+    and the check must fall back to the per-variable path,
+    for a single point as for several ones.
     """
     with assert_exception(ValueError, snapshot):
-        check_membership(catalog_variables, catalog_bounds, array([1.0, 1.5]))
+        check_membership(catalog_variables, catalog_bounds, value)
 
 
 def test_check_membership_array_within_a_catalog_domain(

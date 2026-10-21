@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Tests for the formatting of the categories of a categorical variable."""
+"""Tests for the formatting of the labels of a categorical variable."""
 
 from __future__ import annotations
 
@@ -22,14 +22,14 @@ from gemseo.space.variable import CategoricalVariable
 
 
 @pytest.mark.parametrize(
-    ("categories", "expected"),
+    ("labels", "expected"),
     [
-        (["a", "b"], "[a, b]"),
-        (list("abcdef"), "[a, b, c, d, e, f]"),
-        (list("abcdefg"), "[a, b, c, ..., e, f, g] (7 categories)"),
+        (["a", "b"], "['a', 'b']"),
+        (list("abcdef"), "['a', 'b', 'c', 'd', 'e', 'f']"),
+        (list("abcdefg"), "['a', 'b', 'c', ..., 'e', 'f', 'g'] (7 labels)"),
     ],
 )
-def test_format_categories(categories, expected) -> None:
-    """Check the rendering of the categories, elided beyond six labels."""
-    variable = CategoricalVariable(categories=categories)
-    assert variable._format_categories() == expected
+def test_format_labels(labels, expected) -> None:
+    """Check the rendering of the labels, elided beyond six labels."""
+    variable = CategoricalVariable(labels=labels)
+    assert variable._format_labels() == expected

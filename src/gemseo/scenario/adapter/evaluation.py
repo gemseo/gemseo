@@ -34,7 +34,8 @@ from numpy import clip
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
-from gemseo.enum import VariableType
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
+from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.discipline import update_default_input_values
 from gemseo.util.logging import LoggingContext
 from gemseo.util.name_generator import NameGenerator
@@ -293,12 +294,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                     self.upper_bnd_suffix,
                 ),
             ]:
-                # A categorical variable has no bounds.
-                bounds = {
-                    f"{name}{suffix}": val
-                    for name, val in bounds.items()
-                    if design_space.variables[name].type != VariableType.CATEGORICAL
-                }
+                # A variable without bounds, e.g. a categorical one,
+                # is left out of the dictionary of bounds.
+                bounds = {f"{name}{suffix}": val for name, val in bounds.items()}
                 defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
@@ -356,8 +354,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             bounds_grammar.update_from_data({
                 variable_name + suffix: variable_value
                 for variable_name, variable_value in current_value.items()
-                if design_space.variables[variable_name].type
-                != VariableType.CATEGORICAL
+                if isinstance(
+                    design_space.variables[variable_name], BaseNumericVariable
+                )
                 for suffix in {
                     self.lower_bnd_suffix,
                     self.upper_bnd_suffix,
@@ -417,8 +416,8 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             lower_bound_suffix = self.lower_bnd_suffix
             upper_bound_suffix = self.upper_bnd_suffix
             for name, variable in design_space.variables.items():
-                # A categorical variable has no bounds.
-                if variable.type == VariableType.CATEGORICAL:
+                # A variable without bounds, e.g. a categorical one, is skipped.
+                if not isinstance(variable, BaseNumericVariable):
                     continue
 
                 design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
@@ -430,17 +429,18 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             if dv_values:
                 # The design variables that are not inputs keep their current value,
                 # projected into the bounds as these may have just been set.
-                # A categorical variable has no bounds to project into.
+                # A variable without bounds, e.g. a categorical one,
+                # has no bounds to project into.
                 variables = design_space.variables
                 dv_values = {
                     **{
-                        name: value
-                        if variables[name].type == VariableType.CATEGORICAL
-                        else clip(
+                        name: clip(
                             value,
                             variables[name].lower_bound,
                             variables[name].upper_bound,
                         )
+                        if isinstance(variables[name], BaseNumericVariable)
+                        else value
                         for name, value in design_space.get_current_value(
                             as_dict=True
                         ).items()
@@ -541,7 +541,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         data_converter = self.io.output_grammar.data_converter
         for name, value in current_value.items():
             variable = design_space.variables[name]
-            if name in self._output_names and variable.type == VariableType.CATEGORICAL:
+            if name in self._output_names and isinstance(
+                variable, BaseCategoricalVariable
+            ):
                 current_value[name] = data_converter.convert_array_to_value(
                     name, variable.decode(value)
                 )

@@ -100,7 +100,7 @@ def test_common_dtype_without_value(variable_names, expected) -> None:
     """Check that the common dtype without current value derives from the types."""
     name_to_variable = {
         "integer": IntegerVariable(size=1, lower_bound=-10, upper_bound=10),
-        "categorical": CategoricalVariable(categories=("a", "b")),
+        "categorical": CategoricalVariable(labels=("a", "b")),
         "real": RealVariable(size=1, lower_bound=0.0, upper_bound=1.0),
     }
     variables = DesignVariables()

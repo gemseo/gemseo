@@ -50,8 +50,8 @@ size_group: Final[str] = "size"
 choices_group: Final[str] = _choices
 """The name of the HDF dataset storing the choices of a variable."""
 
-categories_group: Final[str] = "categories"
-"""The name of the HDF dataset storing the categories of a variable."""
+labels_group: Final[str] = "labels"
+"""The name of the HDF dataset storing the labels of a variable."""
 
 catalog_group: Final[str] = "catalog"
 """The name of the HDF group storing the catalog of a variable."""

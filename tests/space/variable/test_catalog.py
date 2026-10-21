@@ -17,13 +17,10 @@
 from __future__ import annotations
 
 import pickle
-import warnings
 
 import pytest
 from numpy import array
-from numpy import inf
 from numpy import int64
-from numpy import nan
 from numpy.testing import assert_array_equal
 from pandas import DataFrame
 from pydantic import ValidationError
@@ -55,10 +52,7 @@ def test_fields(variable, table) -> None:
     assert variable.size == 1
     assert variable.coordinate_type is int64
     assert variable.catalog == Catalog(properties=table)
-    # The bounds are derived from the number of alternatives.
-    assert_array_equal(variable.lower_bound, array([0]))
-    assert_array_equal(variable.upper_bound, array([2]))
-    assert variable.lower_bound.dtype == int64
+    assert variable.labels == ("aluminium", "steel", "titanium")
 
 
 @pytest.mark.parametrize("catalog_", ["table", "mapping", "catalog"])
@@ -113,104 +107,22 @@ def test_one_row_catalog() -> None:
     """
     variable = CatalogVariable(catalog={"mass": 2.7})
 
-    assert_array_equal(variable.lower_bound, array([0]))
-    assert_array_equal(variable.upper_bound, array([0]))
     assert variable.find_components_outside_domain(array([0])) == set()
     assert variable.find_components_outside_domain(array([1])) == {0}
 
 
-@pytest.mark.parametrize("bound", ["lower_bound", "upper_bound"])
-def test_bounds_are_not_settable(table, bound, snapshot) -> None:
-    """Check that a bound cannot be passed explicitly."""
-    with assert_exception(ValidationError, snapshot):
-        CatalogVariable(catalog=table, **{bound: 0})
-
-
-def test_size_is_not_settable(table, snapshot) -> None:
-    """Check that a catalog variable is scalar and its size read-only."""
-    with assert_exception(ValidationError, snapshot):
-        CatalogVariable(catalog=table, size=2)
-
-
 @pytest.mark.parametrize(
-    ("value", "expected"),
-    [
-        (array([0]), set()),
-        (array([1]), set()),
-        (array([2]), set()),
-        (array([-1]), {0}),
-        (array([3]), {0}),
-        (array([1.5]), {0}),
-        (array([0.0]), set()),
-        (array([None]), set()),
-    ],
+    ("name", "value"), [("size", 2), ("labels", ("aluminium", "steel"))]
 )
-def test_find_components_outside_domain(variable, value, expected) -> None:
-    """Check the domain of a catalog variable.
-
-    The domain is the integers from zero to the number of alternatives minus one;
-    `None` stands for a value that is not set yet.
-    """
-    assert variable.find_components_outside_domain(value) == expected
-
-
-@pytest.mark.parametrize("value", [array([inf]), array([-inf]), array([nan])])
-def test_find_components_outside_domain_with_non_finite_value(variable, value) -> None:
-    """Check that a non-finite value is out of the domain without any warning.
-
-    An infinite or NaN position must be reported as out of the domain.
-    An infinite one must also not reach `mod`,
-    which emits a spurious `RuntimeWarning` on it
-    (see `IntegerVariable.check_finite_bound_components`);
-    `mod` is silent on a NaN, so that case only pins the returned set.
-    """
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        assert variable.find_components_outside_domain(value) == {0}
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        array(["steel"]),
-        array([b"steel"]),
-        array(["steel"], dtype=object),
-    ],
-)
-def test_find_components_outside_domain_with_a_label(variable, value) -> None:
-    """Check that a label passed instead of a position is out of the domain.
-
-    A catalog variable's value is the position of an alternative,
-    not its label; passing a label must not crash with a raw numpy error.
-    """
-    assert variable.find_components_outside_domain(value) == {0}
-
-
-def test_get_normalization_mask(variable) -> None:
-    """Check that a catalog variable is never normalized."""
-    for enable_integer_normalization in (False, True):
-        assert_array_equal(
-            variable.get_normalization_mask(enable_integer_normalization),
-            array([False]),
-        )
-
-
-def test_get_default_value(variable) -> None:
-    """Check that the default value is the position of the first alternative."""
-    value = variable.get_default_value()
-
-    assert_array_equal(value, array([0]))
-    assert value.dtype == int64
+def test_derived_member_is_not_settable(table, name, value, snapshot) -> None:
+    """Check that the size and the labels derive from the catalog."""
+    with assert_exception(ValidationError, snapshot):
+        CatalogVariable(catalog=table, **{name: value})
 
 
 def test_get_out_of_domain_message(variable, snapshot) -> None:
     """Check the wording naming the items when a value is rejected."""
     assert variable._get_out_of_domain_message("x", array([5]), [0]) == snapshot
-
-
-def test_get_out_of_domain_component_message(variable, snapshot) -> None:
-    """Check the wording naming the items when a component is rejected."""
-    assert variable._get_out_of_domain_component_message("x", 0, 5) == snapshot
 
 
 def test_eq(variable, table) -> None:
@@ -224,5 +136,5 @@ def test_pickle(variable) -> None:
     restored = pickle.loads(pickle.dumps(variable))
 
     assert restored == variable
-    assert not restored.lower_bound.flags.writeable
+    assert restored.labels == variable.labels
     assert not restored.catalog.labels.flags.writeable

@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import dataclasses
 import logging
 import pickle
 from pathlib import Path
@@ -32,6 +33,7 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
+from pandas import DataFrame
 
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -836,18 +838,43 @@ class VectorizedMaterialDiscipline(Discipline):
 
 
 @pytest.fixture
-def material_design_space() -> DesignSpace:
-    """A design space with a categorical variable and a real one."""
+def material_design_space(request) -> DesignSpace:
+    """A design space with a categorical variable and a real one.
+
+    The categorical variable is a catalog one
+    when the fixture is parametrized with `"catalog"`.
+    """
     design_space = DesignSpace()
-    design_space.add_categorical_variable(
-        "material", ("steel", "aluminium", "titanium")
-    )
+    if getattr(request, "param", None) == "catalog":
+        design_space.add_catalog_variable(
+            "material", DataFrame({"density": density.values()}, index=density.keys())
+        )
+    else:
+        design_space.add_categorical_variable("material", tuple(density))
+
     design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
     return design_space
 
 
-def test_full_factorial_on_a_categorical_variable(material_design_space) -> None:
-    """Check that a full-factorial DOE samples a categorical variable."""
+@pytest.mark.parametrize(
+    "material_design_space", ["categorical", "catalog"], indirect=True
+)
+def test_full_factorial_on_a_categorical_variable(
+    material_design_space, monkeypatch
+) -> None:
+    """Check that a full-factorial DOE samples a categorical variable.
+
+    A catalog variable is a categorical variable;
+    the DOE is made to handle it, as no GEMSEO driver does yet.
+    """
+    monkeypatch.setitem(
+        PyDOELibrary.ALGORITHM_INFOS,
+        "PYDOE_FULLFACT",
+        dataclasses.replace(
+            PyDOELibrary.ALGORITHM_INFOS["PYDOE_FULLFACT"],
+            handle_catalog_variables=True,
+        ),
+    )
     discipline = MaterialDiscipline()
     discipline.cache = None
     scenario = MDOScenario([discipline], material_design_space)
@@ -936,7 +963,7 @@ def test_full_factorial_on_categorical_variables_only_with_jacobian_vectorized()
 
 @pytest.mark.parametrize("vectorize", [False, True])
 def test_lhs_on_a_categorical_variable(material_design_space, vectorize) -> None:
-    """Check that an LHS samples every category, also when vectorized."""
+    """Check that an LHS samples every label, also when vectorized."""
     discipline = (VectorizedMaterialDiscipline if vectorize else MaterialDiscipline)()
     discipline.cache = None
     scenario = MDOScenario([discipline], material_design_space)

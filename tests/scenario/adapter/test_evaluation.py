@@ -16,15 +16,18 @@
 
 from __future__ import annotations
 
+import dataclasses
 from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
 from numpy import array
 from numpy.testing import assert_allclose
+from pandas import DataFrame
 
 from gemseo.core.discipline import Discipline
 from gemseo.doe import CustomDOE_Settings
+from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.scenario import EvaluationScenario
 from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter
 from gemseo.space import DesignSpace
@@ -150,10 +153,33 @@ class DisciplineWithMaterial(Discipline):
         return {"y": density * input_data["x"]}
 
 
-def test_set_x0_and_bounds_with_a_categorical_variable() -> None:
-    """Check that the adapter handles a categorical design variable."""
+@pytest.mark.parametrize(
+    ("method", "domain"),
+    [
+        ("add_categorical_variable", ("steel", "aluminium")),
+        (
+            "add_catalog_variable",
+            DataFrame({"density": [7.8, 2.7]}, index=["steel", "aluminium"]),
+        ),
+    ],
+)
+def test_set_x0_and_bounds_with_a_categorical_variable(
+    method, domain, monkeypatch
+) -> None:
+    """Check that the adapter handles a categorical design variable.
+
+    A catalog variable is a categorical variable;
+    the DOE is made to handle it, as no GEMSEO driver does yet.
+    """
+    monkeypatch.setitem(
+        CustomDOE.ALGORITHM_INFOS,
+        "CustomDOE",
+        dataclasses.replace(
+            CustomDOE.ALGORITHM_INFOS["CustomDOE"], handle_catalog_variables=True
+        ),
+    )
     design_space = DesignSpace()
-    design_space.add_categorical_variable("material", ("steel", "aluminium"))
+    getattr(design_space, method)("material", domain)
     design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = EvaluationScenario([DisciplineWithMaterial()], design_space)
     scenario.add_observable("y")

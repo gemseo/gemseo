@@ -210,7 +210,7 @@ the materials cannot be sorted,
 and there is no material halfway between two of them,
 unlike the integer `2` between `1` and `3`.
 
-The categories are passed to
+The labels are passed to
 [add_categorical_variable()][gemseo.space.design.DesignSpace.add_categorical_variable];
 they must be strings without duplication,
 and cannot be changed afterwards.
@@ -220,7 +220,7 @@ and has no bounds.
 A discipline receives the label,
 e.g. `"titanium"`,
 while the current value, the design vector and the database
-store the position of this label among the categories,
+store the position of this label among the labels,
 starting from zero,
 e.g. `1`.
 [set_current_value()][gemseo.space.design.DesignSpace.set_current_value],
@@ -231,21 +231,25 @@ and the table view of the design space displays the label.
 
 When a variable has no value,
 [initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values]
-gives it its first category.
+gives it its first label.
 
 [variables][gemseo.space.design.DesignSpace.variables]
-reads the categories back,
-as `design_space.variables["material"].categories`,
+reads the labels back,
+as `design_space.variables["material"].labels`,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
 called with `VariableType.CATEGORICAL`,
 tells whether the design space holds a categorical variable.
+A [catalog variable][concept-catalog-variables] is a categorical variable
+of type `VariableType.CATALOG`,
+so this call does not count it.
 
 !!! warning
     The optimization algorithms reject a problem including a categorical variable,
     and no option relaxes it,
-    as its categories have no order.
+    as its labels have no order.
     The DOE algorithms sample it
-    ([read more][concept-samplers-doe]).
+    ([read more][concept-samplers-doe]),
+    but not a catalog variable.
 
 !!! note
     When a design space is saved to a file,
@@ -264,9 +268,9 @@ tells whether the design space holds a categorical variable.
 
 ### Catalog variables { #concept-catalog-variables }
 
-A catalog variable chooses one alternative in a **catalog**,
-and its value is the **position** of that alternative in the catalog,
-from $0$ to the number of alternatives minus one.
+A catalog variable chooses one alternative in a **catalog**.
+It is a [categorical variable][concept-categorical-variables]
+whose labels are those of the catalog.
 
 Think of a material picked from a qualified list,
 of a supplier, or of an off-the-shelf component:
@@ -291,31 +295,28 @@ but are not part of the catalog:
 | 2        | titanium    | 4.5       | 50.0   |
 
 A variable `material` built from this catalog
-takes the values $0$, $1$ and $2$,
-standing for aluminium, steel and titanium.
-Its value can also be given by label,
-e.g. `"steel"` for $1$,
-both to [add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable]
-and to [set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable];
-a label naming no alternative is rejected,
-while a label given to a variable that is neither a catalog
-nor a categorical variable
-raises a `TypeError`.
-[Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+takes the labels `"aluminium"`, `"steel"` and `"titanium"`.
+A discipline receives the label,
+while the current value, the design vector and the database
+store the position of the alternative,
+from $0$ to the number of alternatives minus one.
+[add_catalog_variable()][gemseo.space.design.DesignSpace.add_catalog_variable],
+[set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable]
+and [set_current_value()][gemseo.space.design.DesignSpace.set_current_value],
+when passed a mapping,
+accept the label as well as its position.
+A label naming no alternative is rejected,
+and so is a catalog whose labels are not unique.
+[encode()][gemseo.space.variable.base_categorical.BaseCategoricalVariable.encode],
+called on `design_space.variables["material"]`,
 returns the position of the alternative named by a label.
-The lower (resp. upper) bound is $0$ (resp. $2$);
-it cannot be set manually.
-Since its value is a position,
-the design space handles it as an integer:
-[get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask] marks it,
-[round_vect()][gemseo.space.design.DesignSpace.round_vect] rounds it,
-and so does [denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]
-with `minus_lb=True`.
-A catalog variable is scalar:
+A catalog variable has no bounds,
+and the table view of the design space displays its label.
+It is scalar:
 declare several of them rather than a vector.
 When a variable has no value,
 [initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values]
-gives it the position $0$, i.e. the first alternative.
+gives it the first alternative.
 
 [variables][gemseo.space.design.DesignSpace.variables]
 reads the catalog back,
@@ -323,8 +324,6 @@ as `design_space.variables["material"].catalog`,
 while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
 called with `VariableType.CATALOG`,
 tells whether the design space holds a catalog variable.
-The tabular view shows such a variable as a bounded integer;
-it adds no column.
 
 The catalog is **read** when the `Catalog` is built,
 which `add_catalog_variable()` does from the properties it is given,
@@ -402,10 +401,11 @@ Changing a catalog means declaring a new variable.
     cannot be exported to CSV,
     since a CSV file only stores real and integer variables;
     [to_hdf()][gemseo.space.design.DesignSpace.to_hdf] writes it,
+    with the label as value and no bounds,
     and [from_hdf()][gemseo.space.design.DesignSpace.from_hdf] reads it back.
     Appending to an HDF file, or loading one,
     requires the catalogs to be those stored in the file,
-    since the stored values are positions in them;
+    since a stored database holds positions in them;
     otherwise a `ValueError` is raised and the file is left untouched.
     This holds for a design space, e.g. `to_hdf(append=True)`,
     and for a database, e.g. `OptimizationProblem.to_hdf(append=True)`,
@@ -429,7 +429,7 @@ Changing a catalog means declaring a new variable.
     - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [CatalogVariable][gemseo.space.variable.CatalogVariable]
     - [Catalog][gemseo.space.catalog.catalog.Catalog]
-    - [Catalog.get_position()][gemseo.space.catalog.catalog.Catalog.get_position]
+    - [CatalogVariable.encode()][gemseo.space.variable.CatalogVariable.encode]
     - [Catalog.clean()][gemseo.space.catalog.catalog.Catalog.clean]
 
 ## Integer relaxation { #concept-integer-relaxation }

@@ -325,9 +325,7 @@ def create_categorical_function(vectorized: bool) -> DisciplineAdapter:
         discipline,
         {"material": 1, "x": 1},
         name_to_categorical_variable={
-            "material": CategoricalVariable(
-                categories=("steel", "aluminium", "titanium")
-            )
+            "material": CategoricalVariable(labels=("steel", "aluminium", "titanium"))
         },
     )
 
@@ -388,7 +386,7 @@ def test_jacobian_wrt_categorical_inputs_only() -> None:
     generator = DisciplineAdapterGenerator(
         OnlyMaterialDiscipline(),
         {"material": 1},
-        {"material": CategoricalVariable(categories=("steel", "aluminium"))},
+        {"material": CategoricalVariable(labels=("steel", "aluminium"))},
     )
     function = generator.get_function(["material"], ["y"])
     assert function.differentiated_input_names_substitute == []

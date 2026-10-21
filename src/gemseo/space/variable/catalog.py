@@ -17,16 +17,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING
+from functools import cached_property
 from typing import ClassVar
-from typing import Final
 
-from numpy import array
-from numpy import atleast_1d
-from numpy import int64
-from numpy import isfinite
-from numpy import isreal
-from numpy import mod
 from pandas import DataFrame
 from pydantic import Field
 from pydantic import field_validator
@@ -35,50 +28,21 @@ from gemseo.enum import VariableType
 from gemseo.space.catalog._input import CatalogPropertiesType
 from gemseo.space.catalog._input import properties_field
 from gemseo.space.catalog.catalog import Catalog
-from gemseo.space.variable._formatting import format_components
-from gemseo.space.variable.base import CoordinateDType
-from gemseo.space.variable.deterministic import BaseDeterministicVariable
-from gemseo.space.variable.numeric import BaseNumericVariable
-from gemseo.util._numpy import freeze_array
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from collections.abc import Sequence
-    from typing import Any
-    from typing import Self
-
-    from gemseo.space.variable.numeric import BoundArray
-    from gemseo.util.typing import BooleanArray
-    from gemseo.util.typing import NumberArray
-
-_normalization_mask: Final[BooleanArray] = freeze_array(array([False]))
-"""The normalization mask of a catalog variable (read-only).
-
-A catalog variable is never normalized,
-so this mask is the same for every catalog variable;
-it is frozen once and for all,
-and `CatalogVariable.get_normalization_mask` hands out views of it.
-"""
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 
 
-class CatalogVariable(
-    BaseDeterministicVariable, BaseNumericVariable, arbitrary_types_allowed=True
-):
-    """A scalar catalog variable.
+class CatalogVariable(BaseCategoricalVariable):
+    """A scalar categorical variable defined by a catalog.
 
     Its domain is the alternatives of a
     [Catalog][gemseo.space.catalog.catalog.Catalog],
-    and its value is the **position** of an alternative in that catalog,
-    from `0` to the number of alternatives minus one.
+    and its labels are those of this catalog:
+    a label names an alternative,
+    and a property of the catalog holds a value per alternative.
 
     The catalog is the only input of the variable;
-    its size, which is one, and its bounds derive from it and are read-only.
-
-    A label of the catalog names an alternative;
-    a property of the catalog holds a value per alternative.
+    its labels and its size, which is one, derive from it and are read-only.
     """
-
-    coordinate_type: ClassVar[CoordinateDType] = int64
 
     type: ClassVar[VariableType] = VariableType.CATALOG
 
@@ -133,94 +97,10 @@ class CatalogVariable(
         # pass a Catalog or the fields of a catalog to also supply the labels.
         return Catalog(properties=value)
 
-    @property
-    def size(self) -> int:
-        """The size of the variable."""
-        return 1
+    @cached_property
+    def labels(self) -> tuple[str, ...]:
+        """The labels of the catalog (read-only)."""
+        return tuple(self.catalog.labels.tolist())
 
-    @property
-    def lower_bound(self) -> BoundArray:
-        """The lower bound of the variable (read-only)."""
-        return self.__create_bound(0)
-
-    @property
-    def upper_bound(self) -> BoundArray:
-        """The upper bound of the variable (read-only)."""
-        return self.__create_bound(len(self.catalog) - 1)
-
-    def __create_bound(self, position: int) -> BoundArray:
-        """Create a bound of the variable from a position in its catalog.
-
-        The bound array is built on demand and handed out read-only.
-
-        Args:
-            position: The position in the catalog defining the bound.
-
-        Returns:
-            The bound of the variable.
-        """
-        return freeze_array(array([position], dtype=self.coordinate_type))
-
-    def get_normalization_mask(  # noqa: D102
-        self, enable_integer_normalization: bool
-    ) -> BooleanArray:
-        # A view, so that reassigning the shape, the strides or the data type
-        # of the mask handed out, which NumPy allows on a read-only array,
-        # cannot reach the mask shared by every catalog variable.
-        return _normalization_mask.view()
-
-    def find_components_outside_domain(self, value: NumberArray) -> set[int]:  # noqa: D102
-        value_0 = atleast_1d(value)[0]
-        if value_0 is None:
-            return set()
-
-        # A label, or any other non-numeric value, is never a valid position
-        # in the catalog; return early to avoid the raw numpy error that
-        # `.real` or `isfinite` would otherwise raise on it.
-        if not isreal(value_0):
-            return {0}
-
-        value_0_real = value_0.real
-        # An infinite or NaN position is never a valid position in the catalog;
-        # return early to avoid calling mod on it,
-        # which would otherwise emit a spurious RuntimeWarning
-        # (as opposed to floor, see IntegerVariable.check_finite_bound_components).
-        if not isfinite(value_0_real):
-            return {0}
-
-        if mod(value_0_real, 1) == 0 and 0 <= value_0_real <= len(self.catalog) - 1:
-            return set()
-
-        return {0}
-
-    def get_default_value(self) -> NumberArray:
-        """
-        Returns:
-            The position of the first alternative of the catalog.
-        """  # noqa: D205, D212
-        return array([0], dtype=self.coordinate_type)
-
-    def filter_components(self, components: Sequence[int]) -> Self:  # noqa: D102
-        return self._filter_scalar_components(components)
-
-    def _get_out_of_domain_message(
-        self, name: str, value: NumberArray, indices: Iterable[int]
-    ) -> str:
-        # A catalog variable is scalar, so its only caller,
-        # `check_addable_value`, can never pass more than the single component
-        # `find_components_outside_domain` may return; no plural wording is needed.
-        return (
-            f"The following value of variable '{name}' "
-            f"is not a position in its catalog with the labels "
-            f"{self.catalog.format_labels()}: "
-            f"{format_components(value, indices)}."
-        )
-
-    def _get_out_of_domain_component_message(
-        self, name: str, index: int, value_i: Any
-    ) -> str:
-        return (
-            f"The variable {name} is a catalog variable "
-            f"with the labels {self.catalog.format_labels()}; "
-            f"got {name}[{index}] = {value_i}."
-        )
+    def _format_labels(self) -> str:
+        return self.catalog.format_labels()

@@ -29,7 +29,9 @@ from numpy import vectorize
 
 from gemseo.enum import VariableType
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable.base_categorical import BaseCategoricalVariable
 from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
@@ -41,16 +43,14 @@ if TYPE_CHECKING:
     from gemseo.space.variable.deterministic import BaseDeterministicVariable
     from gemseo.util.typing import NumberArray
 
-_types_checked_per_variable: Final[frozenset[VariableType]] = frozenset({
-    VariableType.CATALOG,
-    VariableType.CATEGORICAL,
-    VariableType.DISCRETE,
-})
-"""The types of the variables whose domain the bounds do not describe.
+_kinds_checked_per_variable: Final[tuple[type[BaseDeterministicVariable], ...]] = (
+    BaseCategoricalVariable,
+    DiscreteVariable,
+)
+"""The kinds of the variables whose domain the bounds do not describe.
 
 The bounds of a discrete variable are derived from its choices,
-those of a catalog variable from its catalog,
-and a categorical variable has none,
+and a categorical variable, e.g. a catalog variable, has none,
 so the vectorized bound comparison cannot tell a non-candidate value
 lying inside the bounds from a candidate one;
 a design space holding such a variable asks each variable about its own domain.
@@ -187,7 +187,7 @@ def check_membership(
             raise ValueError(msg)
 
         if not names and any(
-            variable.type in _types_checked_per_variable
+            isinstance(variable, _kinds_checked_per_variable)
             for variable in variables.values()
         ):
             # Fall back to the per-variable path,
@@ -227,7 +227,7 @@ def check_membership(
 def are_full_values_surely_valid(
     variables: DesignVariables, bounds: Bounds, full_values: NumberArray
 ) -> bool:
-    """Check quickly that full values stay within the bounds and the categories.
+    """Check quickly that full values stay within the bounds and the labels.
 
     This vectorized test only handles design spaces
     whose variables are real, integer or categorical and whose values are real,
@@ -251,14 +251,8 @@ def are_full_values_surely_valid(
         return False
 
     # The integer and categorical components must be whole numbers.
-    whole_number_indices = [
-        index
-        for name, variable in variables.items()
-        if variable.type in {VariableType.CATEGORICAL, VariableType.INTEGER}
-        for index in variables.name_to_indices[name]
-    ]
     return bool(
-        (full_values[..., whole_number_indices] % 1 == 0).all()
+        (full_values[..., variables.get_integer_mask()] % 1 == 0).all()
         and (full_values >= bounds.full_lower_bound - bound_atol).all()
         and (full_values <= bounds.full_upper_bound + bound_atol).all()
     )
