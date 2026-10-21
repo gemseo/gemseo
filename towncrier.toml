@@ -15,6 +15,12 @@ directory = "fixed"
 name = "Fixed"
 showcontent = true
 
+# A breaking change is rendered first in the Changed section.
+[[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking changes"
+showcontent = true
+
 [[tool.towncrier.type]]
 directory = "changed"
 name = "Changed"

@@ -188,7 +188,11 @@ releases.
 ### Changelog Fragments
 
 Fragments go in `changelog/fragments/` as `<issue>.<type>.md`, e.g. `1269.fixed.md`;
-types are `added`, `changed`, `deprecated`, `fixed`, `removed`. Preview with
+types are `added`, `breaking`, `changed`, `deprecated`, `fixed`, `removed`. A
+`breaking` fragment is a change of an existing feature requiring a change of the code
+of the users; the template renders it first in the Changed section, under a
+"Breaking changes" heading. A removal is a `removed` fragment, not a `breaking` one:
+the Removed section states that all its items are breaking changes. Preview with
 `towncrier build --draft`.
 
 A fragment named only for its type (`added.md`, `fixed.md`, ...) is **silently dropped**:
