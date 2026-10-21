@@ -2,6 +2,15 @@
 # name: test_check_constraints_handling_fail
   'Requested optimization algorithm L_BFGS_B can not handle equality constraints.'
 # ---
+# name: test_linear_algorithm_rejects_nonlinear_problem[DUAL_SIMPLEX]
+  'The algorithm DUAL_SIMPLEX is not adapted to the problem because it does not handle non-linear problems.'
+# ---
+# name: test_linear_algorithm_rejects_nonlinear_problem[INTERIOR_POINT]
+  'The algorithm INTERIOR_POINT is not adapted to the problem because it does not handle non-linear problems.'
+# ---
+# name: test_linear_algorithm_rejects_nonlinear_problem[MILP]
+  'The algorithm MILP is not adapted to the problem because it does not handle non-linear problems.'
+# ---
 # name: test_removal_redundant_settings[DUAL_ANNEALING_Settings-maxfun]
   '''
   1 validation error for DUAL_ANNEALING_Settings
