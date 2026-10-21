@@ -124,7 +124,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The filter `HSICAnalysis.filter` returns the components of the inputs that have a significant impact on the output components. [#1746](https://gitlab.com/gemseo/dev/gemseo/-/issues/1746)
 - The `EvaluationScenario` class has a method `observe_all_outputs` to automatically add all disciplines' outputs as observables. [#1748](https://gitlab.com/gemseo/dev/gemseo/-/issues/1748)
 - The subplots of `SOM` are connected: if you zoom in on one, it zooms in on the same place in the others. [#1750](https://gitlab.com/gemseo/dev/gemseo/-/issues/1750)
-- BREAKING CHANGE: The `ScatterMatrix` class was renamed to `PairPlot`.
 - When the `use_ranks` option of the `PairPlot` is `True` (default: `False`), the visualization uses the component-wise ranks normalized in $[0,1]$ for the sub-plots of the upper part; these ranks defines the empirical copula converging towards the true copula.
 - When the `use_scatter` option of the `PairPlot` is `False` (default: `True`), the visualization uses density surfaces for the sub-plots of the lower and upper parts. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
 - `DesignSpace.add_catalog_variable` adds a catalog variable,
@@ -418,7 +417,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     point missing a constraint value as infeasible, with an infinite constraint
     violation measure, instead of ignoring this constraint and the next ones;
     such a point can no longer be reported as the least infeasible optimum. [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739)
-- BREAKING CHANGE: the default grammar type of disciplines is now `SimpleGrammar` instead of `JSONGrammar`. [#1741](https://gitlab.com/gemseo/dev/gemseo/-/issues/1741)
 - The `SOM` post-processor now trains its self-organizing map on normalized data. [#1752](https://gitlab.com/gemseo/dev/gemseo/-/issues/1752)
 - The `OptHistoryView` post-processing no longer crashes when the objective function is also a design variable. [#1779](https://gitlab.com/gemseo/dev/gemseo/-/issues/1779)
 - `DesignSpace.convert_dict_to_array` supports any dictionary of the form `{variable_name: variable_value, ...}` with `variable_value` of shape `(..., variable_dimension)`, e.g. `(n_samples, variable_dimension)`. [#1782](https://gitlab.com/gemseo/dev/gemseo/-/issues/1782)
@@ -612,11 +610,427 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
 ### Changed
 
-- BREAKING CHANGE: The arguments of `BaseFormulation` are now `problem` (an `EvaluationProblem`), `disciplines` and `settings`,
+#### Breaking changes
+
+- The arguments of `BaseFormulation` are now `problem` (an `EvaluationProblem`), `disciplines` and `settings`,
   instead of `disciplines`, `objective_name`, `design_space`, `settings_model`, `minimize_objective` and `**settings`.
-- BREAKING CHANGE: The attribute `optimization_problem` of `BaseFormulation` has been renamed `problem`
+- The attribute `optimization_problem` of `BaseFormulation` has been renamed `problem`
   since it can be either an `EvaluationProblem` or an `OptimizationProblem`.
-- BREAKING CHANGE: The argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`; use `[output_name]` in the case of a single output name.
+- The argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`; use `[output_name]` in the case of a single output name.
+- `gemseo.formulations.base_formulation` was renamed to `gemseo.formulation.core.base`.
+- `gemseo.formulations.base_formulation_settings` was renamed to `gemseo.formulation.core.base_settings`.
+- `gemseo.formulations.base_mdo_formulation` was renamed to `gemseo.formulation.core.base_mdo`. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
+- The `MDOChain` class was renamed to `DisciplineChain`.
+- The `MDOInitializationChain` class was renamed to `InitializationDisciplineChain`.
+- The `MDOParallelChain` class was renamed to `ParallelDisciplineChain`.
+- The `MDOAdditiveChain` class was renamed to `AdditiveDisciplineChain`.
+- The `MDOWarmStartedChain` class was renamed to `WarmStartedDisciplineChain`.
+- The `gemseo.problems.mdo.sobieski.process.mdo_chain` module was renamed to `gemseo.problem.mdo.sobieski.process.discipline_chain`.
+- The `MDAChain.mdo_chain` attribute was renamed to `MDAChain.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
+- `BaseDiscipline.execute()` now returns the output data only, where it previously returned the merged dict of inputs and outputs. Code that read inputs from the return value of `execute()` must be migrated to read them from `discipline.input_data[name]` instead. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
+- `Dataset.group_names`, `Dataset.variable_names`, `Dataset.variable_identifiers`, `Dataset.get_group_names` and `Dataset.get_variable_names` no longer return sorted values; they now preserve insertion order.
+- For the same reason, `IODataset.input_names` and `IODataset.output_names` no longer return sorted values.
+- For the same reason, `OptimizationDataset.design_variable_names`, `OptimizationDataset.equality_constraint_names`, `OptimizationDataset.inequality_constraint_names`, `OptimizationDataset.objective_names` and `OptimizationDataset.observable_names` no longer return sorted values. [#1411](https://gitlab.com/gemseo/dev/gemseo/-/issues/1411)
+- The `ToleranceIntervalFactory` only supports class names, for consistency with the other factories; use `"NormalToleranceInterval"` instead of `"Normal"`. [#1412](https://gitlab.com/gemseo/dev/gemseo/-/issues/1412)
+- The `add_iteration_callback` and `clear_iteration_callbacks` methods of `BaseMDASolver` were renamed to `add_iteration_listener` and `clear_iteration_listeners`, and the `iteration_callback` argument of `add_iteration_callback` was renamed to `iteration_listener`. A callable registered on an object and removable is now called a *listener* everywhere, whereas a *callback* is a callable passed as an argument for a single execution, e.g. the `callbacks` setting of the DOE algorithms. [#1597](https://gitlab.com/gemseo/dev/gemseo/-/issues/1597)
+- The `apply_cstr_tosub_scenarios` field of `BiLevel_Settings` was renamed to `apply_constraints_to_sub_scenarios`.
+- The `apply_cstr_to_system` field of `BiLevel_Settings` was renamed to `apply_constraints_to_system`. [#1598](https://gitlab.com/gemseo/dev/gemseo/-/issues/1598)
+- `MDOScenario.save_optimization_history` was renamed to `MDOScenario.to_hdf` and `MDOScenario.to_ggobi`.
+- `MDOScenario.set_optimization_history_backup` was renamed to `MDOScenario.set_backup_settings`.
+- `MDOScenario.clear_history_before_execute` was renamed to `MDOScenario.clear_database_before_execute`.
+- `MDOScenario.to_dataset` exports all the samples in the case of a DOE algorithm, including replicates.
+- The signature of `MDOScenario` is now `disciplines: Sequence[BaseDiscipline], design_space: DesignSpace, name: str = "", formulation_settings: BaseFormulationSettings | None = None, default_input_data: StrKeyMapping = ...`.
+- The arguments `objective_name` and `maximize_objective` of `MDOScenario` have been removed; use the new method `add_objective` instead.
+- The arguments `objective_name` and `maximize_objective` of `OptAsMDOScenario` have been removed; use the new method `add_objective` instead.
+- `gemseo.scenarios.mdo_scenario` was renamed to `gemseo.scenario.mdo`.
+- The single argument of `MDOScenario.execute` and `MDOScenario.set_algorithm` is `algorithm_settings`.
+- The `Settings` attribute of `MDOScenario` was removed because it was no longer useful. [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
+- The `restriction_indices` argument was renamed to `frozen_indexes`.
+- The `restriction_values` argument was renamed to `frozen_values`.
+- A `name` argument was added; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
+- The `composed_metric` argument of `DatasetMetric` was renamed to `metric`, for consistency with the parent class.
+- The `step` argument of `BaseGradientApproximator` can no longer be `None`; use `0.0` instead.
+- The `data` argument of `PCERegressor` can no longer be `None`; use an empty `dataset = IODataset(); dataset.misc["input_space"] = parameter_space` instead.
+- The `input_size` argument of `LinearCombination` can no longer be `None`; use `1` instead.
+- The `Settings` attributes defining settings classes were renamed to `settings_class`.
+- The `normed_residual` attribute of `BaseMDA` was renamed to `normalized_residual_norm`.
+- The `scenario` argument of `Monitoring` was replaced by `execution_sequence` of type `BaseExecutionSequence`; use `Monitoring(scenario.get_process_flow().get_execution_flow())` instead.
+- The `gemseo.mda.base_mda` module was renamed to `gemseo.mda.core.base`.
+- The `gemseo.mda.base_mda_settings` module was renamed to `gemseo.mda.core.base_settings`.
+- The `gemseo.mda.mda_chain` module was renamed to `gemseo.mda.chain`.
+- The `gemseo.mda.mda_chain_settings` module was renamed to `gemseo.mda.chain_settings`.
+- The `gemseo.mda.sequential_mda` module was renamed to `gemseo.mda.sequential`.
+- The `gemseo.mda.sequential_mda_settings` module was renamed to `gemseo.mda.sequential_settings`.
+- The `gemseo.mda.base_mda_root_settings` module was renamed to `gemseo.mda.core.base_root_settings`.
+- The `gemseo.mda.base_mda_solver` module was renamed to `gemseo.mda.core.base_solver`.
+- The `gemseo.mda.base_mda_solver_settings` module was renamed to `gemseo.mda.core.base_solver_settings`.
+- The `gemseo.mda.composed_mda_settings` module was renamed to `gemseo.mda.core.composed_settings`.
+- The `gemseo.mda.base_parallel_mda_solver` module was renamed to `gemseo.mda.core.base_parallel_solver`.
+- The `gemseo.mda.base_parallel_mda_settings` module was renamed to `gemseo.mda.core.base_parallel_solver_settings`.
+- The `BaseParallelMDASolver` class was renamed to `BaseMDAParallelSolver`.
+- The `directory_naming_method` argument of `DiscFromExe` was renamed to `naming`.
+- The `naming_method` argument of `BaseNameGenerator` was renamed to `naming`.
+- The `directory_naming_method` argument of `DirectoryCreator` was renamed to `naming` and has be swapped with `root_directory`.
+- The `DirectoryNamingMethod` constant of `gemseo.utils.directory_creator` was renamed to `Naming` and the module to `gemseo.util.directory_creator`.
+- The `BaseSettings` class was moved from `gemseo.settings.base_settings` to `gemseo.util.pydantic`.
+- The `keep_in` argument of `FilteringDiscipline` was renamed to `use_input_names`.
+- The `keep_out` argument of `FilteringDiscipline` was renamed to `use_output_names`.
+- The `exec_callback` argument of `CallableParallelExecution.execute` was renamed to `exec_callbacks`.
+- The `exec_callback` argument of `DiscParallelLinearization.execute` was renamed to `exec_callbacks`.
+- The `BackupSettings` class is a Pydantic model instead of a dataclass: it can no longer be built with a positional argument; use `BackupSettings(file_path=...)` instead, and note that unknown setting names now raise a validation error instead of being ignored.
+- The `get_sub_disciplines` function of `gemseo.utils.discipline` now flattens any object with a non-empty `disciplines` attribute whereas it used to flatten scenarios, formulations and `ProcessDiscipline` objects only. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
+- The `discipline` argument of `generate_xdsm` and `XDSMizer` was renamed to `process`. [#1683](https://gitlab.com/gemseo/dev/gemseo/-/issues/1683)
+- `JobSchedulerDisciplineWrapper` and its module `gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper` were renamed to `JobSchedulerDiscipline` and `gemseo.discipline.wrapper.job_scheduler.discipline` respectively.
+- `JobSchedulerDisciplineWrapperFactory` was renamed to `JobSchedulerDisciplineFactory`. [#1687](https://gitlab.com/gemseo/dev/gemseo/-/issues/1687)
+- `gemseo.mlearning` was renamed to `gemseo.machine_learning`.
+- `gemseo.post.mlearning` was renamed to `gemseo.post.machine_learning`.
+- `gemseo.settings.mlearning` was renamed to `gemseo.machine_learning`.
+- `BaseMLAlgo` was renamed to `BaseMLModel`.
+- `BaseMLAlgoSettings` was renamed to `BaseMLModelSettings`.
+- `MLAlgoFactory` was renamed to `MLModelFactory`.
+- `BaseMLSupervisedAlgo` was renamed to `BaseMLSupervisedModel`.
+- `BaseMLSupervisedAlgoSettings` was renamed to `BaseMLSupervisedModelSettings`.
+- `BaseMLUnsupervisedAlgo` was renamed to `BaseMLUnsupervisedModel`.
+- `BaseMLUnsupervisedAlgoSettings` was renamed to `BaseMLUnsupervisedModelSettings`.
+- `gemseo.mlearning.core.algos` was renamed to `gemseo.machine_learning.core.model`.
+- `gemseo.mlearning.classification.algos` was renamed to `gemseo.machine_learning.classification.model`.
+- `gemseo.mlearning.clustering.algos` was renamed to `gemseo.machine_learning.clustering.model`.
+- `gemseo.mlearning.regression.algos` was renamed to `gemseo.machine_learning.regression.model`.
+- The attribute `SHORT_ALGO_NAME` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `short_name`.
+- The argument `settings_model` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `settings`.
+- The arguments `**settings` of `BaseMLModel` (formerly `BaseMLAlgo`) were removed; use `settings` instead,
+  e.g. `regressor = LinearRegressor(data, settings=LinearRegressor_Settings(fit_intercept=False))`
+  instead of `regressor = LinearRegressor(data, fit_intercept=False)`.
+- Surrogate model
+    - The attribute `regression_model` of `SurrogateDiscipline` was renamed to `regressor`.
+- ML model quality
+    - `BaseMLAlgoQuality` was renamed to `BaseMLModelQuality`.
+    - `MLAlgoQualityFactory` was renamed to `MLModelQualityFactory`.
+    - The argument `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
+    - The attribute `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
+    - The argument `algo` of `BaseClustererQuality` was renamed to `model`.
+    - The argument `algo` of `BaseRegressorQuality` was renamed to `model`.
+    - The argument `algo` of `BasePredictiveClustererQuality` was renamed to `model`.
+    - The argument `algo` of `F1Measure` was renamed to `model`.
+    - The argument `algo` of `SilhouetteMeasure` was renamed to `model`.
+    - The argument `algo` of `MAEMeasure` was renamed to `model`.
+    - The argument `algo` of `MEMeasure` was renamed to `model`.
+    - The argument `algo` of `MSEMeasure` was renamed to `model`.
+    - The argument `algo` of `RMSEMeasure` was renamed to `model`.
+    - The argument `algo` of `R2Measure` was renamed to `model`.
+- Regression
+    - The attribute `cluster_algo` of `MOERegressor` was removed; use the class name of the `clusterer` attribute instead.
+    - The attribute `classif_algo` of `MOERegressor` was removed; use the class name of the `classifier` attribute instead.
+    - The attribute `regress_algo` of `MOERegressor` was removed; use the class name of the elements of the `regressors` attribute instead.
+    - The attribute `cluster_params` of `MOERegressor` was renamed to `clusterer_settings`, its type is `BaseClustererSettings` and its initial value is `KMeans_Settings()`.
+    - The attribute `classif_params` of `MOERegressor` was renamed to `classifier_settings`, its type is `BaseClassifierSettings` and its initial value is `KNNClassifier_Settings()`.
+    - The attribute `regress_params` of `MOERegressor` was renamed to `regressor_settings`, its type is `BaseRegressorSettings` and its initial value is `LinearRegressor_Settings()`.
+    - The attribute `cluster_measure` of `MOERegressor` was renamed to `clustering_quality`.
+    - The attribute `classif_measure` of `MOERegressor` was renamed to `classification_quality`.
+    - The attribute `regress_measure` of `MOERegressor` was renamed to `regression_quality`.
+    - The attribute `cluster_cands` of `MOERegressor` was renamed to `clustering_candidates`.
+    - The attribute `classif_cands` of `MOERegressor` was renamed to `classification_candidates`.
+    - The attribute `regress_cands` of `MOERegressor` was renamed to `regression_candidates`.
+    - The attribute `regress_models` of `MOERegressor` was renamed to `regressors`.
+    - The arguments `cluster_algo` and `**cluster_params` of `MOERegressor.set_clusterer` were removed and replaced by the argument `settings` with `BaseClustererSettings` type,
+      e.g. `moe.set_clusterer(KMeans_Settings(n_clusters=3))` instead of `moe.set_clusterer("KMeans", n_clusters=3)`.
+    - The arguments `classif_algo` and `**classif_params` of `MOERegressor.set_classifier` were removed and replaced by the argument `settings` with `BaseClassifierSettings` type,
+      e.g. `moe.set_classifier(KNNClassifier_Settings(n_neighbors=10))` instead of `moe.set_classifier("KNNClassifier", n_neighbors=10)`.
+    - The arguments `regress_algo` and `**regress_params` of `MOERegressor.set_regressor` were removed and replaced by the argument `settings` with `BaseRegressorSettings` type,
+      e.g. `moe.set_regressor(LinearRegressor_Settings(fit_intercept=False))` instead of `moe.set_regressor("LinearRegressor", fit_intercept=False)`.
+    - The argument `name` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the `settings` argument with `BaseClustererSettings` type.
+    - The argument `calib_space` of `MOERegressor.add_clusterer_candidate` was renamed to `calibration_space`.
+    - The argument `calib_algo` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
+      e.g. `moe.add_clusterer_candidate(KMeans_Settings(n_clusters=3), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_clusterer_candidate("KMeans", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_clusters=3)`.
+    - The argument `name` of `MOERegressor.add_classifier_candidate` was removed and replaced by the `settings` argument with `BaseClassifierSettings` type.
+    - The argument `calib_space` of `MOERegressor.add_classifier_candidate` was renamed to `calibration_space`.
+    - The argument `calib_algo` of `MOERegressor.add_classifier_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
+      e.g. `moe.add_classifier_candidate(KNNClassifier_Settings(n_neighbors=10), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_classifier_candidate("KNNClassifier", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_neighbors=10)`.
+    - The argument `name` of `MOERegressor.add_regressor_candidate` was removed and replaced by the `settings` argument with `BaseRegressorSettings` type.
+    - The argument `calib_space` of `MOERegressor.add_regressor_candidate` was renamed to `calibration_space`.
+    - The argument `calib_algo` of `MOERegressor.add_regressor_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
+      e.g. `moe.add_regressor_candidate(LinearRegressor_Settings(fit_intercept=False), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_regressor_candidate("LinearRegressor", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, fit_intercept=False)`.
+    - The method `add_algo` of `RegressorChain` was renamed to `add_regressor`.
+    - The argument `settings_model` of `BaseFCERegressor` was renamed to `settings`.
+    - The arguments `**settings` of `BaseFCERegressor` were removed; use `settings` instead.
+    - The argument `settings_model` of `FCERegressor` was renamed to `settings`.
+    - The arguments `**settings` of `FCERegressor` were removed; use `settings` instead.
+    - The argument `settings_model` of `PCERegressor` was renamed to `settings`.
+    - The arguments `**settings` of `PCERegressor` were removed; use `settings` instead.
+    - The arguments `name`, `transformer` and `**parameters` of `RegressorChain.add_regressor` were removed and replaced by the `settings` argument of type `BaseRegressorSettings`;
+      e.g. `regressor_chain.add_regressor(LinearRegressor_Settings(fit_intercept=False, transformer={"inputs": "MinMaxScaler"}))` instead of `regressor_chain.add_regressor("LinearRegressor", transformer={"inputs": "MinMaxScaler"}, fit_intercept=False)`.
+- ML model calibration
+    - `MLAlgoAssessor` was renamed to `MLModelAssessor`.
+    - The attribute `algos` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was renamed to `models`.
+    - The attribute `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The attribute `parameters` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The attribute `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The attribute `measure` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The attribute `measure_options` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The attribute `dataset` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
+    - The argument `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use `settings` instead.
+    - The argument `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use the `transformer` field of the `settings` argument instead.
+    - The arguments `**algo_settings` of `MLModelAssessor` (formerly `MLAlgoAssessor`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type.
+    - `MLAlgoCalibration` was renamed to `MLModelCalibration`.
+    - The argument `algo` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use `settings` instead.
+    - The argument `parameters` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed, as it duplicated the names of the variables of the `calibration_space` argument, i.e. `list(calibration_space.variables)`.
+    - The argument `transformer` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use the `transformer` field of the `settings` argument instead.
+    - The arguments `**algo_settings` of `MLModelCalibration` (formerly `MLAlgoCalibration`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
+      e.g. `MLModelCalibration(PolynomialRegressor_Settings(fit_intercept=False), dataset, calibration_space)` instead of `MLAlgoCalibration("PolynomialRegressor", dataset, ["degree"], calibration_space, fit_intercept=False)`.
+    - The arguments `algo_name` and `**algo_settings` of `MLModelCalibration.execute` (formerly `MLAlgoCalibration.execute`) were removed and replaced by the argument `settings` with `BaseDriverSettings` type;
+      e.g. `calibration.execute(NLOPT_COBYLA_Settings(max_iter=100))` instead of `calibration.execute("NLOPT_COBYLA", max_iter=100)`.
+    - The attribute `algo_assessor` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `model_assessor`.
+    - The attribute `optimal_algorithm` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `optimal_model`.
+    - The attribute `algos` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `models`.
+- ML model selection
+    - `MLAlgoSelection` was renamed to `MLModelSelection`.
+    - The argument `name` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
+      e.g. `selection.add_candidate(LinearRegressor_Settings(fit_intercept=False))` instead of `selection.add_candidate("LinearRegressor", fit_intercept=False)`.
+    - The argument `calib_space` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was renamed to `calibration_space`.
+    - The argument `calib_algo` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type. [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
+- The `gemseo.core.mdo_functions` package was renamed to `gemseo.core.function`.
+- The `gemseo.core.mdo_functions.mdo_function` module was renamed to `gemseo.core.function.array_function`.
+- The `gemseo.core.mdo_functions.mdo_linear_function` module was renamed to `gemseo.core.function.linear_function`.
+- The `gemseo.core.mdo_functions.mdo_quadratic_function` module was renamed to `gemseo.core.function.quadratic_function`.
+- The `MDOFunction` class was renamed to `ArrayFunction`.
+- The `MDOLinearFunction` class was renamed to `LinearFunction`.
+- The `MDOQuadraticFunction` class was renamed to `QuadraticFunction`.
+- The `mdo_function` argument of `Offset`, `ConvexLinearApprox` and `SetPtFromDatabase` was renamed to `function`. [#1699](https://gitlab.com/gemseo/dev/gemseo/-/issues/1699)
+- The argument `disc_name` of `SurrogateDiscipline` was renamed to `name`.
+- The argument `disc_name` of `create_surrogate` was renamed to `name`.
+- The regressor settings can no longer be passed to `SurrogateDiscipline` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
+- The regressor settings can no longer be passed to `create_surrogate` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
+- The argument `surrogate` of `SurrogateDiscipline` was renamed to `regressor`.
+- The argument `surrogate` of `create_surrogate` was renamed to `regressor`.
+- The argument `data` of `SurrogateDiscipline` was removed; use `SurrogateDiscipline.from_settings` instead.
+- The argument `transformer` of `SurrogateDiscipline` was removed; use `SurrogateDiscipline.from_settings` instead.
+- The argument `regressor` of `SurrogateDiscipline` can only be a `BaseRegressor` now; use `SurrogateDiscipline.from_settings` to create a surrogate discipline from a training dataset and regressor settings. [#1706](https://gitlab.com/gemseo/dev/gemseo/-/issues/1706)
+- `BaseDistribution` has a unique argument, namely `settings: BaseDistributionSettings | None = None`; if `None`, it will use default settings.
+- `OTBetaDistribution` has a unique argument, namely `settings: OTBetaDistribution_Settings | None = None`; if `None`, it will use `OTBetaDistribution_Settings()`.
+- `OTDiracDistribution` has a unique argument, namely `settings: OTDiracDistribution_Settings | None = None`; if `None`, it will use `OTDiracDistribution_Settings()`.
+- `OTDistribution` has a unique argument, namely `settings: OTDistribution_Settings | None = None`; if `None`, it will use `OTDistribution_Settings()`.
+- `OTExponentialDistribution` has a unique argument, namely `settings: OTExponentialDistribution_Settings | None = None`; if `None`, it will use `OTExponentialDistribution_Settings()`.
+- `OTJointDistribution` has a unique argument, namely `settings: OTJointDistribution_Settings`.
+- `OTLogNormalDistribution` has a unique argument, namely `settings: OTLogNormalDistribution_Settings | None = None`; if `None`, it will use `OTLogNormalDistribution_Settings()`.
+- `OTNormalDistribution` has a unique argument, namely `settings: OTNormalDistribution_Settings | None = None`; if `None`, it will use `OTNormalDistribution_Settings()`.
+- `OTTriangularDistribution` has a unique argument, namely `settings: OTTriangularDistribution_Settings | None = None`; if `None`, it will use `OTTriangularDistribution_Settings()`.
+- `OTUniformDistribution` has a unique argument, namely `settings: OTUniformDistribution_Settings | None = None`; if `None`, it will use `OTUniformDistribution_Settings()`.
+- `OTWeibullDistribution` has a unique argument, namely `settings: OTWeibullDistribution_Settings | None = None`; if `None`, it will use `OTWeibullDistribution_Settings()`.
+- `SPBetaDistribution` has a unique argument, namely `settings: SPBetaDistribution_Settings | None = None`; if `None`, it will use `SPBetaDistribution_Settings()`.
+- `SPDistribution` has a unique argument, namely `settings: SPDistribution_Settings | None = None`; if `None`, it will use `SPDistribution_Settings()`.
+- `SPExponentialDistribution` has a unique argument, namely `settings: SPExponentialDistribution_Settings | None = None`; if `None`, it will use `SPExponentialDistribution_Settings()`.
+- `SPJointDistribution` has a unique argument, namely `settings: SPJointDistribution_Settings`.
+- `SPLogNormalDistribution` has a unique argument, namely `settings: SPLogNormalDistribution_Settings | None = None`; if `None`, it will use `SPLogNormalDistribution_Settings()`.
+- `SPNormalDistribution` has a unique argument, namely `settings: SPNormalDistribution_Settings | None = None`; if `None`, it will use `SPNormalDistribution_Settings()`.
+- `SPTriangularDistribution` has a unique argument, namely `settings: SPTriangularDistribution_Settings | None = None`; if `None`, it will use `SPTriangularDistribution_Settings()`.
+- `SPUniformDistribution` has a unique argument, namely `settings: SPUniformDistribution_Settings | None = None`; if `None`, it will use `SPUniformDistribution_Settings()`.
+- `SPWeibullDistribution` has a unique argument, namely `settings: SPWeibullDistribution_Settings | None = None`; if `None`, it will use `SPWeibullDistribution_Settings()`.
+- The `**settings` arguments of `BaseAlgoFactory.execute` (renamed `BaseAlgorithmFactory`) were removed and the `settings_model` argument renamed to `settings` is now mandatory.
+- The `**settings` arguments of `BaseAlgorithmLibrary.execute` were removed and the `settings_model` argument renamed to `settings` is still optional.
+- The `eval_obs_jac` argument of `BaseDriverLibrary.execute` was removed
+  and replaced by the `evaluate_observable_jacobian` field of `BaseDriverSettings`.
+- The `max_design_space_dimension_to_log` argument of `BaseDriverLibrary.execute` was removed
+  and replaced by the `max_input_space_dimension_to_log` field of `BaseDriverLibrarySettings`.
+- The `skip_int_check` argument of `BaseDriverLibrary.execute` was removed
+  without replacement; see the `relax_integer_variables` field of `BaseDriverSettings`,
+  which relaxes the integer variables instead of rounding them at every evaluation.
+- The `settings_model` argument of `BaseDriverLibrary.execute` was renamed to `settings` and is still optional.
+- The settings of every DOE algorithm with a `n_samples` field have a default value for this field; by default, this default value is 1.
+- The `doe_algo_name` field of `MorrisDOE_Settings` was removed; use its `doe_algo_settings` field instead.
+- The type of the `doe_algo_settings` field of `MorrisDOE_Settings` is `BaseDOESettings`.
+- The `sub_algorithm_name` field of `BaseAugmentedLagragianSettings`, renamed `BaseAugmentedLagrangianSettings`, was removed; use its `sub_algorithm_settings` field instead.
+- The type of the `sub_algorithm_settings` field of `BaseAugmentedLagrangianSettings` is `BaseOptimizerSettings`.
+- The `n_start` field of `MultiStart_Settings` was removed; use its `doe_algo_settings` instead, with its `n_samples` or `samples` field for example.
+- The `doe_algo_name` field of `MultiStart_Settings` was removed; use its `doe_algo_settings` instead.
+- The type of the `doe_algo_settings` field of `MultiStart_Settings` is `BaseDOESettings`.
+- The `opt_algo_max_iter` field of `MultiStart_Settings` was removed; use its `opt_algo_settings` instead.
+- The `opt_algo_name` field of `MultiStart_Settings` was removed; use its `opt_algo_settings` instead.
+- The type of the `opt_algo_settings` field of `MultiStart_Settings` is `BaseOptimizerSettings`.
+- The `sub_optim_algo` field of `MNBI_Settings` was removed; use its `sub_optim_algo_settings` instead.
+- The `sub_optim_max_iter` field of `MNBI_Settings` was removed; use its `sub_optim_algo_settings` instead.
+- The type of the `sub_optim_algo_settings` field of `MNBI_Settings` is `BaseOptimizerSettings`.
+- The `doe_algo` field of `MNBI_Settings` was removed; use its `doe_algo_settings` instead.
+- The type of the `doe_algo_settings` field of `MNBI_Settings` is `BaseDOESettings`.
+- The `multi_start_n_samples` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
+- The `multi_start_algo_name` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
+- The type of the `multi_start_algo_settings` field of `OTGaussianProcessRegressor_Settings` is `BaseDOESettings | None`.
+- The `compute_doe` of `BaseDOELibrary` was removed and replaced by the `sample_space` and `sample_unit_hypercube` methods.
+- The `**settings` arguments of `BasePost.execute` were removed and the `settings_model` argument renamed to `settings` is now mandatory.
+- The `**settings` arguments of `PostFactory.execute`, which included the post-processor name (`post_name`), were removed and the `settings_model` argument renamed to `settings`, of type `BasePostSettings`, is now mandatory.
+- The `**settings` arguments of `BaseScenario.post_process`, now only available as `MDOScenario.post_process`, were removed and the `settings_model` argument renamed to `settings` is now mandatory.
+- The `formulation_name` and `**formulation_settings` arguments of `BaseSensitivityAnalysis.compute_samples` were removed and replaced by the `formulation_settings` argument of type `BaseFormulationSettings | None`.
+- The `algo` argument of `BaseSensitivityAnalysis.compute_samples` was removed; use its `algo_settings` argument instead, whose type is `BaseDOESettings | None`.
+- The `**settings` arguments of `BaseFormulation` were removed and the `settings_model` argument renamed to `settings` is still optional.
+- The `settings_model` of `BaseMDA` was renamed to `settings: BaseMDASettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
+- The `settings_model` of `BaseParallelMDASolver`, renamed `BaseMDAParallelSolver`, was renamed to `settings: BaseMDAParallelSolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
+- The `settings_model` of `BaseMDASolver` was renamed to `settings: BaseMDASolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
+- The `settings_model` of `MDAChain` was renamed to `settings: MDAChain_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAChain_Settings()`.
+- The `settings_model` of `MDAGaussSeidel` was renamed to `settings: MDAGaussSeidel_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidel_Settings()`.
+- The `settings_model` of `MDAGSNewton`, renamed `MDAGaussSeidelNewtonRaphson`, was renamed to `settings: MDAGaussSeidelNewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidelNewtonRaphson_Settings()`.
+- The `settings_model` of `MDAJacobi` was renamed to `settings: MDAJacobi_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAJacobi_Settings()`.
+- The `settings_model` of `MDANewtonRaphson` was renamed to `settings: MDANewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDANewtonRaphson_Settings()`.
+- The `settings_model` of `MDAQuasiNewton` was renamed to `settings: MDAQuasiNewton_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAQuasiNewton_Settings()`.
+- The `settings_model` of `MDASequential` was renamed to `settings: MDASequential_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDASequential_Settings()`.
+- `BaseParallelMDASettings` was renamed to `BaseMDAParallelSolverSettings`.
+- The `linear_solver` field of `BaseMDASettings` was removed; use `linear_solver_settings` instead.
+- The `linear_solver_settings` field of `BaseMDASettings` can no longer be a `dict`; you must use an instance of a settings class associated with a linear solver.
+- The `inner_mda_name` field of `MDAChain_Settings` was removed; use `inner_mda_settings` instead.
+- The `inner_mda_settings` field of `MDAChain_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with an MDA.
+- The `gauss_seidel_settings` field of `MDAGSNewton_Settings`, renamed `MDAGaussSeidelNewtonRaphson_Settings`, can no longer be a `dict`; you must use an instance of `MDAGaussSeidel_Settings`.
+- The `newton_settings` field of `MDAGSNewton_Settings` was renamed to `newton_raphson_settings` and can no longer be a `dict`; you must use an instance of `MDANewtonRaphson_Settings`.
+- The `newton_linear_solver_name` field of `MDANewtonRaphson_Settings` was removed; use `newton_linear_solver_settings` instead.
+- The `newton_linear_solver_settings` field of `MDANewtonRaphson_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with a linear solver.
+- The `linear_solver_tolerance` field of `BaseMDASettings` was removed; use the `rtol` field of the settings of the linear solver, e.g. a SciPy one, given to `BaseMDASettings.linear_solver_settings` instead.
+- The `main_mda_name` field of `MDF_Settings` was removed; use `main_mda_settings` instead.
+- The `main_mda_settings` field of `MDF_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with an MDA. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- The `build_joint_distribution` method of `ParameterSpace` has been removed and replaced by the `add_copula(names, copula)` method of `RandomSpace`; the latter allows to add copulas associated with independent groups of dependent random variables. `names` is the name of a random variable or an iterable of names, and the arguments are ordered as `space.variables.copulas` yields them, so a dependency structure is copied with `for names, copula in space.variables.copulas: other_space.add_copula(names, copula)`.
+    The string and HTML representations of a `RandomSpace` list its copulas under the tabular view, e.g. `Copulas: (x, y) -> NormalCopula`, as a copula relates several random variables and so has no place in a view with one row per component. [#1717](https://gitlab.com/gemseo/dev/gemseo/-/issues/1717)
+- The `gemseo.settings` aggregator package was removed; the settings classes are now re-exported by their domain packages, e.g. `from gemseo.optimization import SLSQP_Settings`. Mapping: `gemseo.settings.opt` → `gemseo.optimization`, `gemseo.settings.doe` → `gemseo.doe`, `gemseo.settings.mda` → `gemseo.mda`, `gemseo.settings.post` → `gemseo.post`, `gemseo.settings.formulations` → `gemseo.formulation`, `gemseo.settings.linear_solvers` → `gemseo.linear`, `gemseo.settings.ode` → `gemseo.ode`, `gemseo.settings.mlearning` → `gemseo.machine_learning`, `gemseo.settings.probability_distributions` → `gemseo.uncertainty.distribution` and `gemseo.settings.base_settings` → `gemseo.util.pydantic`. [#1719](https://gitlab.com/gemseo/dev/gemseo/-/issues/1719)
+- The `gemseo.post.dataset.dataset_plot` module was renamed to `gemseo.post.dataset.base`.
+- The `DatasetPlot` class was renamed to `BaseDatasetPlot`.
+- The `BasePlot`, `MatplotlibPlot` and `PlotlyPlot` classes use a single `settings` positional arguments instead of `common_settings` and `specific_settings`, whose type depends on the class.
+- The `BaseDatasetPlot` class has a `settings_class: type[BaseDatasetPlotSettings]` class attribute, where `BaseDatasetPlotSettings` is a specific `BaseSettings`.
+- The keyword arguments of the `BaseDatasetPlot` class and its subclasses have been replaced by the `settings: BaseDatasetPlotSettings | None = None` keyword argument. If `None`, the default settings are used, if any.
+- The following arguments and attributes of `BaseDatasetPlot` (formerly `DatasetPlot`) have been moved to `BaseDatasetPlotSettings` or to one of its subclasses, namely `BaseCartesianDatasetPlotSettings` and `BasePolarDatasetPlotSettings`: `color`, `colormap`, `font_size`, `legend_location`, `linestyle`, `marker`, `title`, `xtick_rotation`, `rmin`, `rmax`, `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`, `xlabel`, `ylabel`, `zlabel`, `grid` and `labels`.
+- The `fig_size_x` and `fig_size_y` attributes of `BaseDatasetPlot` have been removed; use `BaseDatasetPlotSettings.fig_size` instead.
+- The `ClassName` class, defined as a subclass of `BaseDatasetPlot`, has a settings class named `ClassName_Settings` deriving from `BaseDatasetPlotSettings` and including the options of the dataset plots (formerly passed at instantiation or using the removed attributes).
+- The `gemseo.post.radar_chart` module was renamed to `gemseo.post.constraint_radar`.
+- The `RadarChart` class subclassing `BasePost` was renamed to `ConstraintRadar`.
+- The `RadarChart_Settings` class subclassing `BasePostSettings` was renamed to `ConstraintRadar_Settings`.
+- The `Radar` class was renamed to `RadViz`. [#1720](https://gitlab.com/gemseo/dev/gemseo/-/issues/1720)
+- The default grammar type of disciplines is now `SimpleGrammar` instead of `JSONGrammar`. [#1741](https://gitlab.com/gemseo/dev/gemseo/-/issues/1741)
+- The `ScatterMatrix` class was renamed to `PairPlot`. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
+- The `ScalarDistributionMixin` mixin (`gemseo.uncertainty.distributions.scalar_distribution_mixin`) has been replaced by the `BaseUnivariateDistribution` class (`gemseo.uncertainty.distribution.core.base_univariate`) deriving from `BaseDistribution`.
+- The `gemseo.uncertainty.distributions.base_settings` package was renamed to `gemseo.uncertainty.distribution.core.base_univariate_settings`.
+- The modules `base_distribution`, `base_distribution_settings` and `base_distribution_fitter` of `gemseo.uncertainty.distributions` were renamed to `gemseo.uncertainty.distribution.core.base`, `gemseo.uncertainty.distribution.core.base_settings` and `gemseo.uncertainty.distribution.core.base_fitter` respectively. [#1783](https://gitlab.com/gemseo/dev/gemseo/-/issues/1783)
+- The public attributes and method arguments following the `plural_to_plural` naming convention
+  (e.g. `names_to_sizes`)
+  were renamed to follow the `key_to_value` convention
+  where the key and value parts are plural only when each entry maps to a collection.
+  Sorted by class and method:
+    - `AnalyticDiscipline`: attribute `output_names_to_symbols` → `output_name_to_symbols`.
+    - `ArrayBasedFunctionDiscipline.__init__`: arguments `input_names_to_sizes` → `input_name_to_size`,
+      `output_names_to_sizes` → `output_name_to_size`; same for the corresponding attributes.
+    - `BaseAlgoFactory` (now `BaseAlgorithmFactory`): property `algo_names_to_libraries` → `algo_name_to_library`.
+    - `BaseCache`: property `names_to_sizes` → `name_to_size`.
+    - `BaseDataConverter`: methods `compute_names_to_slices` → `compute_name_to_slice`,
+      `compute_names_to_sizes` → `compute_name_to_size`;
+      argument `names_to_sizes` of `compute_name_to_slice` → `name_to_size`.
+    - `BaseGrammar.update_from_types`: argument `names_to_types` → `name_to_type`.
+    - `BaseMDASolver.set_bounds`,
+      `MDAChain.set_bounds`,
+      `MDASequential.set_bounds`: argument `variable_names_to_bounds` → `variable_name_to_bounds`.
+    - `BaseMLAlgo` (now `BaseMLModel`): attribute `variable_names_to_n_components` → `variable_name_to_n_components`.
+    - `BaseMLSupervisedAlgo` (now `BaseMLSupervisedModel`): attribute `names_to_sizes` → `name_to_size`.
+    - `BiLevelScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
+      `design_variable_names_to_values` → `design_variable_name_to_value`.
+    - `Database.to_dataset`: argument `groups_to_variables` → `group_to_variables`.
+    - `Dataset`: properties `variable_names_to_n_components` → `variable_name_to_n_components`,
+      `group_names_to_n_components` → `group_name_to_n_components`;
+      argument `variable_names_to_n_components` of `from_array`, `from_csv` and `from_txt`
+      → `variable_name_to_n_components`;
+      argument `variable_names_to_group_names` of `from_array`, `from_csv` and `from_txt` → `variable_name_to_group_name`.
+    - `DisciplineAdapter.__init__`: argument `names_to_sizes` → `name_to_size`.
+    - `DisciplineAdapterGenerator.__init__`: argument `names_to_sizes` → `name_to_size`.
+    - `OptimizationMetadata`: attribute `output_names_to_constraint_names` → `output_name_to_constraint_names`.
+    - `OptimizationProblem.to_dataset`: argument `output_names_to_constraint_names` → `output_name_to_constraint_names`.
+    - `ScalableDesignSpace.__init__`: argument `names_to_default_values` → `name_to_default_value`;
+      same for the corresponding attribute.
+    - `ScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
+      `design_variable_names_to_values` → `design_variable_name_to_value`.
+    - `SimpleGrammar.__init__`: argument `names_to_types` → `name_to_type`.
+    - `Splitter.__init__`: argument `output_names_to_input_indices` → `output_name_to_input_indices`.
+    - `gemseo.util.discipline.update_default_input_values` (formerly in `gemseo.utils.discipline`): argument `input_names_to_default_values`
+      → `input_name_to_default_value`.
+    - `gemseo.util.string.get_variables_with_components` (formerly in `gemseo.utils.string_tools`): argument `names_to_sizes` → `name_to_size`. [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
+- The `Method` enumeration of each sensitivity analysis moved out of its class and
+  became a module-level class, e.g. `from gemseo.enum import SobolAnalysisMethod`:
+  `CorrelationAnalysis.Method` is now `CorrelationAnalysisMethod`,
+  `HSICAnalysis.Method` is now `HSICAnalysisMethod`,
+  `MorrisAnalysis.Method` is now `MorrisAnalysisMethod`
+  and `SobolAnalysis.Method` is now `SobolAnalysisMethod`.
+  The old names still give the new enumerations, with a `DeprecationWarning`.
+  A subclass that defines its own `Method` keeps it, but the analysis no longer
+  reads it, and a `DeprecationWarning` says so.
+- The hybrid modes were removed from `Discipline.ApproximationMode`, which now holds only `COMPLEX_STEP`, `FINITE_DIFFERENCES` and `CENTERED_DIFFERENCES`; use the new `Discipline.HybridApproximationMode` instead.
+- `MDOChain.LinearizationMode.REVERSE`, renamed `DisciplineChain`, no longer exists; the chain rule accumulation modes are gathered in the new `ChainDerivationMode` enumeration, which defines `FORWARD`, `REVERSE` and `AUTO` and is available as `DisciplineChain.ChainDerivationMode`.
+- `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`; `DIRECT`/`ADJOINT` denote the MDA resolution modes and `FORWARD`/`REVERSE` the chain-rule accumulation modes. The MDA-specific subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`) and the chain-specific subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`); both are importable from `gemseo.enum`.
+- `Discipline.LinearizationMode` no longer exposes the `DerivationMode` members (`DIRECT`, `ADJOINT`, `REVERSE`); a discipline either computes its analytical Jacobian (`AUTO`) or approximates it. It now holds only `AUTO`, the approximation modes and the hybrid ones.
+- The unused member `SciPyDOE.Optimizer.NONE` was removed.
+- The `EvaluationProblem.DifferentiationMethod.USER_GRAD` member was renamed to `USER`; its value is unchanged. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
+- All GEMSEO packages and modules now use singular names, e.g. `gemseo.utils` is now `gemseo.util`, `gemseo.datasets` is now `gemseo.dataset`, `gemseo.disciplines` is now `gemseo.discipline`, `gemseo.formulations` is now `gemseo.formulation`, `gemseo.problems` is now `gemseo.problem`, `gemseo.scenarios` is now `gemseo.scenario`, `gemseo.uncertainty.distributions` is now `gemseo.uncertainty.distribution`, `gemseo.uncertainty.statistics` is now `gemseo.uncertainty.statistic`, `gemseo.core.grammars` is now `gemseo.core.grammar`, `gemseo.core.derivatives` is now `gemseo.core.derivative`, `gemseo.core.data_converters` is now `gemseo.core.data_converter`, `gemseo.mlearning.regression.algos` is now `gemseo.machine_learning.regression.model`, `gemseo.utils.derivatives.error_estimators` is now `gemseo.util.derivative.error_estimator` and `gemseo.post.dataset.bars` is now `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class). Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
+- The `gemseo.algos` package was split by domain:
+    - `gemseo.algos.opt` is now the top-level package `gemseo.optimization`, which also hosts the optimization problem definition: `gemseo.algos.optimization_problem` is now `gemseo.optimization.problem`, `gemseo.algos.optimization_result` is now `gemseo.optimization.result`, `gemseo.algos.optimization_history` is now `gemseo.optimization.history`, `gemseo.algos.multiobjective_optimization_result` is now `gemseo.optimization.multiobjective_result`, and `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
+    - `gemseo.algos.doe` is now the top-level package `gemseo.doe`.
+    - `gemseo.algos.linear_solvers` is now the top-level package `gemseo.linear`; `gemseo.algos.linear_solvers.linear_problem` is now `gemseo.linear.problem`.
+    - `gemseo.algos.ode` is now the top-level package `gemseo.ode`; `gemseo.algos.ode.ode_problem` is now `gemseo.ode.problem` and `gemseo.algos.ode.ode_result` is now `gemseo.ode.result`.
+    - `DesignSpace` and its related modules moved to the new top-level package `gemseo.space`: `gemseo.algos.design_space` is now `gemseo.space.design`, `gemseo.algos.design_space_utils` is now `gemseo.space.util`, and the design space factory is now in `gemseo.space.factory`.
+    - The shared driver and algorithm infrastructure (`BaseAlgorithmLibrary`, `BaseDriverLibrary`, `BaseAlgoFactory`, the progress bar machinery) moved to `gemseo.core.algorithm`.
+    - The generic problem infrastructure moved to the new `gemseo.core.problem` package: `gemseo.algos.base_problem` is now `gemseo.core.problem.base`, `gemseo.algos.database` is now `gemseo.core.problem.database`, `gemseo.algos.evaluation_problem` is now `gemseo.core.problem.evaluation` and `gemseo.algos.evaluation_counter` is now `gemseo.core.problem.counter`. The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
+    - `gemseo.algos.hashable_ndarray` is now `gemseo.util.hashable_ndarray` and `gemseo.algos.sequence_transformer` is now `gemseo.mda.sequence_transformer`.
+- The `gemseo.caches` package is now `gemseo.core.cache` and the redundant `_cache` suffix was removed from its module names, e.g. `gemseo.caches.hdf5_cache` is now `gemseo.core.cache.hdf5`.
+- The `gemseo.core.chains` package is now `gemseo.discipline.chain`, next to the other public discipline building blocks.
+- The `gemseo.core.mdo_functions` package (the `ArrayFunction` family) is now `gemseo.core.function`.
+- `ExecutionStatus`, `ExecutionStatistics`, the namespace helpers and `ProcessDiscipline` moved into the `gemseo.core.discipline` package: `gemseo.core.execution_status` is now `gemseo.core.discipline.execution_status`, `gemseo.core.execution_statistics` is now `gemseo.core.discipline.execution_statistics`, `gemseo.core.namespaces` is now `gemseo.core.discipline.namespace` and `gemseo.core.process_discipline` is now `gemseo.core.discipline.process_discipline`.
+- `gemseo.utils.string_tools` is now `gemseo.util.string` and `gemseo.utils.show_utils` is now `gemseo.util.xdsm.html`.
+- The redundant `_metric` suffix was removed from the module names of the `gemseo.utils.metrics` package (now `gemseo.util.metric`), e.g. `gemseo.utils.metrics.base_metric` is now `gemseo.util.metric.base` and `gemseo.utils.metrics.metric_factory` is now `gemseo.util.metric.factory`.
+- `gemseo.post.dataset.plots` is now `gemseo.post.dataset.plot` and `gemseo.post.dataset.dataset_plot` is now `gemseo.post.dataset.base`.
+- `gemseo.typing` is now `gemseo.util.typing`.
+- `BaseAlgoFactory` is renamed to `BaseAlgorithmFactory` and its module `gemseo.algos.base_algo_factory` is now `gemseo.core.algorithm.base_algorithm_factory`; the `DriverLibraryFactory` module is now `gemseo.core.algorithm.factory`.
+- `Constraints` (ex `gemseo.core.mdo_functions.collections.constraints`) moved to `gemseo.optimization.core.constraints`.
+- `JacobianAssembly` (ex `gemseo.core.derivatives.jacobian_assembly`) moved to `gemseo.mda.jacobian_assembly`.
+- The base classes and settings extenders of each algorithm family were gathered into a domain `core` package: `gemseo.doe.core`, `gemseo.linear.core`, `gemseo.ode.core`, `gemseo.optimization.core`, `gemseo.mda.core`, `gemseo.formulation.core`, `gemseo.post.core`, `gemseo.uncertainty.distribution.core`, `gemseo.uncertainty.sensitivity.core`, `gemseo.uncertainty.statistic.core`, and, in `gemseo.machine_learning`, the `core`, `regression.core`, `classification.core`, `clustering.core`, `linear_model_fitting.core`, `transformer.core` and `resampling.core` packages.
+- The machine learning modules were renamed to match their class names: `ml_algo` is now `base_ml_model`, `ml_algo_settings` is now `base_ml_model_settings`, `supervised`/`supervised_settings` are now `base_supervised`/`base_supervised_settings`, `unsupervised`/`unsupervised_settings` are now `base_unsupervised`/`base_unsupervised_settings` and `base_ml_algo_quality` is now `base_ml_model_quality`; `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`); `thin_plate_spline`/`thin_plate_spline_settings` are now `tps`/`tps_settings` (matching the `TPSRegressor` class).
+- `gemseo.post.core.gantt_chart` is now `gemseo.post.gantt_chart`.
+- `gemseo.disciplines.scenario_adapters` is now `gemseo.scenario.adapter`.
+- `gemseo.problems.mdo.sobieski.core` is now `gemseo.problem.mdo.sobieski.standalone` and `gemseo.problems.mdo.scalable.parametric.core` is now `gemseo.problem.mdo.scalable.parametric.standalone`.
+- `TerminationCriterion` and its subclasses now carry their stop message (`TerminationCriterion.message`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- `RBFRegressor` and `TPSRegressor` are now based on
+  [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
+  instead of the deprecated `Rbf` SciPy class:
+    - The `function` setting of `RBFRegressor_Settings` was renamed to `kernel`
+      and no longer accepts a callable;
+      the kernels `linear`, `thin_plate_spline` (formerly `thin_plate`), `cubic`,
+      `quintic`, `multiquadric`, `inverse_multiquadric` and `gaussian` are available,
+      as well as the new `inverse_quadratic`.
+    - The enum member `RBF.THIN_PLATE` was renamed to `RBF.THIN_PLATE_SPLINE`.
+    - The `smooth` setting was renamed to `smoothing`.
+    - `TPSRegressor_Settings` no longer exposes the `function` (now `kernel`) and `epsilon` settings:
+      the kernel is fixed to `thin_plate_spline` and the shape parameter to `1`.
+    - The `der_function` and `norm` settings were removed
+      (kernels are no longer callables and the distance is always Euclidean).
+    - The new settings `degree` (degree of the added polynomial; `-1` for none)
+      and `neighbors` (local interpolation using the nearest learning points)
+      are available;
+      the Jacobian is not implemented when `neighbors` is set,
+      as the model is then a local interpolant,
+      discontinuous where the set of nearest learning points changes.
+    - The meaning of `epsilon` is inverted:
+      the kernels are functions of `epsilon*r` instead of `r/epsilon`;
+      use `epsilon_new = 1/epsilon_old`.
+      Its default value for the scale-dependent kernels
+      matches the legacy default accordingly.
+    - By default the model now includes a polynomial term
+      whose degree is the per-kernel minimum,
+      so that predictions may differ slightly from previous versions
+      even with identical settings.
+    - The attribute `RBFRegressor.y_average` and the property `RBFRegressor.function`
+      were removed; use the `RBFRegressor.kernel` property.
+    - The class constant `RBFRegressor.EUCLIDEAN` was removed
+      (the distance is always Euclidean).
+    - The nested class `RBFRegressor.RBFDerivatives` was removed;
+      the derivatives of the kernels are now an implementation detail.
+- The `rbf` trend of `Scatter` and `PairPlot` is now based on
+  `scipy.interpolate.RBFInterpolator` with its default thin plate spline kernel. [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861)
+- The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
+- The arguments of the scenario adapters no longer refer to an optimization: `reset_x0_before_opt`, `set_x0_before_opt` and `set_bounds_before_opt` were renamed to `reset_x0_before_exec`, `set_x0_before_exec` and `set_bounds_before_exec`, while `keep_opt_history`, `save_opt_history` and `opt_history_file_prefix` were renamed to `keep_databases`, `save_databases` and `database_file_prefix`. The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
+- `HSICAnalysis.compute_indices` no longer estimates the p-values through permutations by default; set its new `use_permutations` argument to `True` to do so. This estimation costs `n_permutations` HSIC estimations and used to dominate the computation time.
+- Consequently, `HSICAnalysis.indices.p_value_permutation` is empty unless `use_permutations` is `True`, and both `HSICAnalysis.filter(use_asymptotic=False)` and `HSICAnalysis.main_indices` (when `HSICAnalysis.main_method` is `p-value-permutation`) raise a `ValueError` in that case.
+- As the asymptotic p-values do not exist for a conditional HSIC analysis, `HSICAnalysis.filter` now requires `use_permutations` to be `True` for this analysis type.
+- `HSICAnalysis.main_indices` raises a `ValueError` when the p-values associated with `HSICAnalysis.main_method` are not available, instead of returning an empty dictionary. [#1908](https://gitlab.com/gemseo/dev/gemseo/-/issues/1908)
+
+#### Other changes
+
 - `BaseFormulation` has a method `create_objective` to create an objective function from output names;
   `BaseFormulation` is no longer responsible for attaching the objective function to the optimization problem,
   this is done by the `MDOScenario`.
@@ -626,10 +1040,7 @@ There is also a page containing the history of the breaking changes in GEMSEO:
   this is done by the `MDOScenario`;
   `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level`
   instead of the argument `levels` used by `add_constraint` which was a list of literals;
-  these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method.
-- BREAKING CHANGE: `gemseo.formulations.base_formulation` was renamed to `gemseo.formulation.core.base`.
-- BREAKING CHANGE: `gemseo.formulations.base_formulation_settings` was renamed to `gemseo.formulation.core.base_settings`.
-- BREAKING CHANGE: `gemseo.formulations.base_mdo_formulation` was renamed to `gemseo.formulation.core.base_mdo`. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
+  these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
 - The `threshold` argument of `DisciplineJacApprox.check_jacobian` and `error_max` argument of `ODEProblem.check_jacobian`
   have been replaced by separate `atol` (absolute tolerance) and `rtol` (relative tolerance) arguments,
   both defaulting to `1e-8`.
@@ -643,22 +1054,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `CenteredDifferences` and `ForwardDifferences` approximators now share a common base class
   `gemseo.util.derivative.approximator.base_finite_differences.BaseFiniteDifferences`,
   which holds the finite-difference-specific `compute_optimal_step` method. [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
-- BREAKING CHANGES:
-
-    - The `MDOChain` class was renamed to `DisciplineChain`.
-    - The `MDOInitializationChain` class was renamed to `InitializationDisciplineChain`.
-    - The `MDOParallelChain` class was renamed to `ParallelDisciplineChain`.
-    - The `MDOAdditiveChain` class was renamed to `AdditiveDisciplineChain`.
-    - The `MDOWarmStartedChain` class was renamed to `WarmStartedDisciplineChain`.
-    - The `gemseo.problems.mdo.sobieski.process.mdo_chain` module was renamed to `gemseo.problem.mdo.sobieski.process.discipline_chain`.
-    - The `MDAChain.mdo_chain` attribute was renamed to `MDAChain.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
-- **Breaking change**: `BaseDiscipline.execute()` now returns the output data only, where it previously returned the merged dict of inputs and outputs. Code that read inputs from the return value of `execute()` must be migrated to read them from `discipline.input_data[name]` instead. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
-- BREAKING CHANGES:
-
-    - `Dataset.group_names`, `Dataset.variable_names`, `Dataset.variable_identifiers`, `Dataset.get_group_names` and `Dataset.get_variable_names` no longer return sorted values; they now preserve insertion order.
-    - For the same reason, `IODataset.input_names` and `IODataset.output_names` no longer return sorted values.
-    - For the same reason, `OptimizationDataset.design_variable_names`, `OptimizationDataset.equality_constraint_names`, `OptimizationDataset.inequality_constraint_names`, `OptimizationDataset.objective_names` and `OptimizationDataset.observable_names` no longer return sorted values. [#1411](https://gitlab.com/gemseo/dev/gemseo/-/issues/1411)
-- BREAKING CHANGE: The `ToleranceIntervalFactory` only supports class names, for consistency with the other factories; use `"NormalToleranceInterval"` instead of `"Normal"`. [#1412](https://gitlab.com/gemseo/dev/gemseo/-/issues/1412)
 - The default grammar type of the `AutoPyDiscipline` is `SimpleGrammar`. [#1496](https://gitlab.com/gemseo/dev/gemseo/-/issues/1496)
 - A function output holding a `NaN` is now recorded in the history before the evaluation stops. The point an algorithm stopped at is therefore visible in the database, where it used to be evaluated, refused and left out of it. This concerns `stop_if_nan=True`, the default; a problem tolerating `NaN` recorded them already.
 
@@ -677,13 +1072,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     The driver now also checks that the algorithm handles discrete variables, not only integer ones. The new `DriverDescription.handle_discrete_variables` field mirrors `handle_integer_variables`: an algorithm that does not handle discrete variables raises a `ValueError` on one, unless `relax_discrete_variables` is `True`. SciPy MILP handles integer variables but not discrete ones. Among the SciPy global optimization algorithms, only `DIFFERENTIAL_EVOLUTION` handles integer variables, which it now keeps integral through SciPy's own `integrality` option instead of exploring them continuously; `DUAL_ANNEALING` and `SHGO` no longer declare handling them, so an integer variable now needs `relax_integer_variables=True` to be run with either of them. None of the three handles discrete variables. In 6.3.2, all three declared handling integer variables and rounded them at each evaluation through `round_ints`.
 
     `is_algorithm_suited` and `filter_adapted_algorithms` now take the integer and discrete variables of a problem into account: an algorithm that does not handle a kind of variable present in the problem is no longer reported as suited to it, relaxing being an opt-in choice made at execution and not something a description alone accounts for. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
-- BREAKING CHANGES:
-
-    - The `add_iteration_callback` and `clear_iteration_callbacks` methods of `BaseMDASolver` were renamed to `add_iteration_listener` and `clear_iteration_listeners`, and the `iteration_callback` argument of `add_iteration_callback` was renamed to `iteration_listener`. A callable registered on an object and removable is now called a *listener* everywhere, whereas a *callback* is a callable passed as an argument for a single execution, e.g. the `callbacks` setting of the DOE algorithms. [#1597](https://gitlab.com/gemseo/dev/gemseo/-/issues/1597)
-- BREAKING CHANGES:
-
-    - The `apply_cstr_tosub_scenarios` field of `BiLevel_Settings` was renamed to `apply_constraints_to_sub_scenarios`.
-    - The `apply_cstr_to_system` field of `BiLevel_Settings` was renamed to `apply_constraints_to_system`. [#1598](https://gitlab.com/gemseo/dev/gemseo/-/issues/1598)
 - The documentation is now generated by Mkdocs instead of Sphinx, and the docstrings are written in Markdown instead of reStructuredText. [#1647](https://gitlab.com/gemseo/dev/gemseo/-/issues/1647)
 - The methods from the `VariableRenamer` class now differentiate inputs and outputs:
     - The `from_translations` method now needs an additional entry as the tuple's second position, to differentiate inputs and outputs.
@@ -694,274 +1082,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The `VariableTranslation` class now differentiates inputs and outputs through the `is_input` key, which is added to the translation pattern.
 - The `rename_discipline_variables` function input now requires a tuple that separates inputs and outputs by their respective position.
 - The `NameMapping` data processor constructor now requires two mappings, `input_mapping` and `output_mapping`, instead of a single one. Calling `NameMapping(mapping)` now is changed to `NameMapping(mapping, mapping)`. [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659)
-- The `name` argument of `Concatenate` is now optional; its default value is `""`, in which case the name of the function joins the names of the concatenated functions.
-- BREAKING CHANGES for scenario:
-    - `MDOScenario.save_optimization_history` was renamed to `MDOScenario.to_hdf` and `MDOScenario.to_ggobi`.
-    - `MDOScenario.set_optimization_history_backup` was renamed to `MDOScenario.set_backup_settings`.
-    - `MDOScenario.clear_history_before_execute` was renamed to `MDOScenario.clear_database_before_execute`.
-    - `MDOScenario.to_dataset` exports all the samples in the case of a DOE algorithm, including replicates.
-    - The signature of `MDOScenario` is now `disciplines: Sequence[BaseDiscipline], design_space: DesignSpace, name: str = "", formulation_settings: BaseFormulationSettings | None = None, default_input_data: StrKeyMapping = ...`.
-    - The arguments `objective_name` and `maximize_objective` of `MDOScenario` have been removed; use the new method `add_objective` instead.
-    - The arguments `objective_name` and `maximize_objective` of `OptAsMDOScenario` have been removed; use the new method `add_objective` instead.
-    - `gemseo.scenarios.mdo_scenario` was renamed to `gemseo.scenario.mdo`.
-    - The single argument of `MDOScenario.execute` and `MDOScenario.set_algorithm` is `algorithm_settings`.
-    - The `Settings` attribute of `MDOScenario` was removed because it was no longer useful. [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
-- BREAKING CHANGES for `RestrictedFunction`:
-    - The `restriction_indices` argument was renamed to `frozen_indexes`.
-    - The `restriction_values` argument was renamed to `frozen_values`.
-    - A `name` argument was added; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
-- BREAKING CHANGES:
-
-    - The `composed_metric` argument of `DatasetMetric` was renamed to `metric`, for consistency with the parent class.
-    - The `step` argument of `BaseGradientApproximator` can no longer be `None`; use `0.0` instead.
-    - The `data` argument of `PCERegressor` can no longer be `None`; use an empty `dataset = IODataset(); dataset.misc["input_space"] = parameter_space` instead.
-    - The `input_size` argument of `LinearCombination` can no longer be `None`; use `1` instead.
-    - The `Settings` attributes defining settings classes were renamed to `settings_class`.
-    - The `normed_residual` attribute of `BaseMDA` was renamed to `normalized_residual_norm`.
-    - The `scenario` argument of `Monitoring` was replaced by `execution_sequence` of type `BaseExecutionSequence`; use `Monitoring(scenario.get_process_flow().get_execution_flow())` instead.
-    - The `gemseo.mda.base_mda` module was renamed to `gemseo.mda.core.base`.
-    - The `gemseo.mda.base_mda_settings` module was renamed to `gemseo.mda.core.base_settings`.
-    - The `gemseo.mda.mda_chain` module was renamed to `gemseo.mda.chain`.
-    - The `gemseo.mda.mda_chain_settings` module was renamed to `gemseo.mda.chain_settings`.
-    - The `gemseo.mda.sequential_mda` module was renamed to `gemseo.mda.sequential`.
-    - The `gemseo.mda.sequential_mda_settings` module was renamed to `gemseo.mda.sequential_settings`.
-    - The `gemseo.mda.base_mda_root_settings` module was renamed to `gemseo.mda.core.base_root_settings`.
-    - The `gemseo.mda.base_mda_solver` module was renamed to `gemseo.mda.core.base_solver`.
-    - The `gemseo.mda.base_mda_solver_settings` module was renamed to `gemseo.mda.core.base_solver_settings`.
-    - The `gemseo.mda.composed_mda_settings` module was renamed to `gemseo.mda.core.composed_settings`.
-    - The `gemseo.mda.base_parallel_mda_solver` module was renamed to `gemseo.mda.core.base_parallel_solver`.
-    - The `gemseo.mda.base_parallel_mda_settings` module was renamed to `gemseo.mda.core.base_parallel_solver_settings`.
-    - The `BaseParallelMDASolver` class was renamed to `BaseMDAParallelSolver`.
-    - The `directory_naming_method` argument of `DiscFromExe` was renamed to `naming`.
-    - The `naming_method` argument of `BaseNameGenerator` was renamed to `naming`.
-    - The `directory_naming_method` argument of `DirectoryCreator` was renamed to `naming` and has be swapped with `root_directory`.
-    - The `DirectoryNamingMethod` constant of `gemseo.utils.directory_creator` was renamed to `Naming` and the module to `gemseo.util.directory_creator`.
-    - The `BaseSettings` class was moved from `gemseo.settings.base_settings` to `gemseo.util.pydantic`.
-    - The `keep_in` argument of `FilteringDiscipline` was renamed to `use_input_names`.
-    - The `keep_out` argument of `FilteringDiscipline` was renamed to `use_output_names`.
-    - The `exec_callback` argument of `CallableParallelExecution.execute` was renamed to `exec_callbacks`.
-    - The `exec_callback` argument of `DiscParallelLinearization.execute` was renamed to `exec_callbacks`.
-    - The `BackupSettings` class is a Pydantic model instead of a dataclass: it can no longer be built with a positional argument; use `BackupSettings(file_path=...)` instead, and note that unknown setting names now raise a validation error instead of being ignored.
-    - The `get_sub_disciplines` function of `gemseo.utils.discipline` now flattens any object with a non-empty `disciplines` attribute whereas it used to flatten scenarios, formulations and `ProcessDiscipline` objects only. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
-- BREAKING CHANGE: The `discipline` argument of `generate_xdsm` and `XDSMizer` was renamed to `process`. [#1683](https://gitlab.com/gemseo/dev/gemseo/-/issues/1683)
-- BREAKING CHANGES:
-
-    - `JobSchedulerDisciplineWrapper` and its module `gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper` were renamed to `JobSchedulerDiscipline` and `gemseo.discipline.wrapper.job_scheduler.discipline` respectively.
-    - `JobSchedulerDisciplineWrapperFactory` was renamed to `JobSchedulerDisciplineFactory`. [#1687](https://gitlab.com/gemseo/dev/gemseo/-/issues/1687)
+- The `name` argument of `Concatenate` is now optional; its default value is `""`, in which case the name of the function joins the names of the concatenated functions. [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666)
 - An `EvaluationScenarioAdapter` (and hence an `MDOScenarioAdapter`) with `set_x0_before_exec=True` and `input_names` covering only a part of the design variables sets the starting point of the scenario from these inputs and the current value of the other design variables, projected into the bounds when `set_bounds_before_exec=True`, instead of raising an error. [#1688](https://gitlab.com/gemseo/dev/gemseo/-/issues/1688)
-- BREAKING CHANGES about machine learning features:
-    - `gemseo.mlearning` was renamed to `gemseo.machine_learning`.
-    - `gemseo.post.mlearning` was renamed to `gemseo.post.machine_learning`.
-    - `gemseo.settings.mlearning` was renamed to `gemseo.machine_learning`.
-    - `BaseMLAlgo` was renamed to `BaseMLModel`.
-    - `BaseMLAlgoSettings` was renamed to `BaseMLModelSettings`.
-    - `MLAlgoFactory` was renamed to `MLModelFactory`.
-    - `BaseMLSupervisedAlgo` was renamed to `BaseMLSupervisedModel`.
-    - `BaseMLSupervisedAlgoSettings` was renamed to `BaseMLSupervisedModelSettings`.
-    - `BaseMLUnsupervisedAlgo` was renamed to `BaseMLUnsupervisedModel`.
-    - `BaseMLUnsupervisedAlgoSettings` was renamed to `BaseMLUnsupervisedModelSettings`.
-    - `gemseo.mlearning.core.algos` was renamed to `gemseo.machine_learning.core.model`.
-    - `gemseo.mlearning.classification.algos` was renamed to `gemseo.machine_learning.classification.model`.
-    - `gemseo.mlearning.clustering.algos` was renamed to `gemseo.machine_learning.clustering.model`.
-    - `gemseo.mlearning.regression.algos` was renamed to `gemseo.machine_learning.regression.model`.
-    - The attribute `SHORT_ALGO_NAME` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `short_name`.
-    - The argument `settings_model` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `settings`.
-    - The arguments `**settings` of `BaseMLModel` (formerly `BaseMLAlgo`) were removed; use `settings` instead,
-      e.g. `regressor = LinearRegressor(data, settings=LinearRegressor_Settings(fit_intercept=False))`
-      instead of `regressor = LinearRegressor(data, fit_intercept=False)`.
-    - Surrogate model
-        - The attribute `regression_model` of `SurrogateDiscipline` was renamed to `regressor`.
-    - ML model quality
-        - `BaseMLAlgoQuality` was renamed to `BaseMLModelQuality`.
-        - `MLAlgoQualityFactory` was renamed to `MLModelQualityFactory`.
-        - The argument `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
-        - The attribute `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
-        - The argument `algo` of `BaseClustererQuality` was renamed to `model`.
-        - The argument `algo` of `BaseRegressorQuality` was renamed to `model`.
-        - The argument `algo` of `BasePredictiveClustererQuality` was renamed to `model`.
-        - The argument `algo` of `F1Measure` was renamed to `model`.
-        - The argument `algo` of `SilhouetteMeasure` was renamed to `model`.
-        - The argument `algo` of `MAEMeasure` was renamed to `model`.
-        - The argument `algo` of `MEMeasure` was renamed to `model`.
-        - The argument `algo` of `MSEMeasure` was renamed to `model`.
-        - The argument `algo` of `RMSEMeasure` was renamed to `model`.
-        - The argument `algo` of `R2Measure` was renamed to `model`.
-    - Regression
-        - The attribute `cluster_algo` of `MOERegressor` was removed; use the class name of the `clusterer` attribute instead.
-        - The attribute `classif_algo` of `MOERegressor` was removed; use the class name of the `classifier` attribute instead.
-        - The attribute `regress_algo` of `MOERegressor` was removed; use the class name of the elements of the `regressors` attribute instead.
-        - The attribute `cluster_params` of `MOERegressor` was renamed to `clusterer_settings`, its type is `BaseClustererSettings` and its initial value is `KMeans_Settings()`.
-        - The attribute `classif_params` of `MOERegressor` was renamed to `classifier_settings`, its type is `BaseClassifierSettings` and its initial value is `KNNClassifier_Settings()`.
-        - The attribute `regress_params` of `MOERegressor` was renamed to `regressor_settings`, its type is `BaseRegressorSettings` and its initial value is `LinearRegressor_Settings()`.
-        - The attribute `cluster_measure` of `MOERegressor` was renamed to `clustering_quality`.
-        - The attribute `classif_measure` of `MOERegressor` was renamed to `classification_quality`.
-        - The attribute `regress_measure` of `MOERegressor` was renamed to `regression_quality`.
-        - The attribute `cluster_cands` of `MOERegressor` was renamed to `clustering_candidates`.
-        - The attribute `classif_cands` of `MOERegressor` was renamed to `classification_candidates`.
-        - The attribute `regress_cands` of `MOERegressor` was renamed to `regression_candidates`.
-        - The attribute `regress_models` of `MOERegressor` was renamed to `regressors`.
-        - The arguments `cluster_algo` and `**cluster_params` of `MOERegressor.set_clusterer` were removed and replaced by the argument `settings` with `BaseClustererSettings` type,
-          e.g. `moe.set_clusterer(KMeans_Settings(n_clusters=3))` instead of `moe.set_clusterer("KMeans", n_clusters=3)`.
-        - The arguments `classif_algo` and `**classif_params` of `MOERegressor.set_classifier` were removed and replaced by the argument `settings` with `BaseClassifierSettings` type,
-          e.g. `moe.set_classifier(KNNClassifier_Settings(n_neighbors=10))` instead of `moe.set_classifier("KNNClassifier", n_neighbors=10)`.
-        - The arguments `regress_algo` and `**regress_params` of `MOERegressor.set_regressor` were removed and replaced by the argument `settings` with `BaseRegressorSettings` type,
-          e.g. `moe.set_regressor(LinearRegressor_Settings(fit_intercept=False))` instead of `moe.set_regressor("LinearRegressor", fit_intercept=False)`.
-        - The argument `name` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the `settings` argument with `BaseClustererSettings` type.
-        - The argument `calib_space` of `MOERegressor.add_clusterer_candidate` was renamed to `calibration_space`.
-        - The argument `calib_algo` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
-          e.g. `moe.add_clusterer_candidate(KMeans_Settings(n_clusters=3), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_clusterer_candidate("KMeans", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_clusters=3)`.
-        - The argument `name` of `MOERegressor.add_classifier_candidate` was removed and replaced by the `settings` argument with `BaseClassifierSettings` type.
-        - The argument `calib_space` of `MOERegressor.add_classifier_candidate` was renamed to `calibration_space`.
-        - The argument `calib_algo` of `MOERegressor.add_classifier_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
-          e.g. `moe.add_classifier_candidate(KNNClassifier_Settings(n_neighbors=10), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_classifier_candidate("KNNClassifier", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_neighbors=10)`.
-        - The argument `name` of `MOERegressor.add_regressor_candidate` was removed and replaced by the `settings` argument with `BaseRegressorSettings` type.
-        - The argument `calib_space` of `MOERegressor.add_regressor_candidate` was renamed to `calibration_space`.
-        - The argument `calib_algo` of `MOERegressor.add_regressor_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
-          e.g. `moe.add_regressor_candidate(LinearRegressor_Settings(fit_intercept=False), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_regressor_candidate("LinearRegressor", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, fit_intercept=False)`.
-        - The method `add_algo` of `RegressorChain` was renamed to `add_regressor`.
-        - The argument `settings_model` of `BaseFCERegressor` was renamed to `settings`.
-        - The arguments `**settings` of `BaseFCERegressor` were removed; use `settings` instead.
-        - The argument `settings_model` of `FCERegressor` was renamed to `settings`.
-        - The arguments `**settings` of `FCERegressor` were removed; use `settings` instead.
-        - The argument `settings_model` of `PCERegressor` was renamed to `settings`.
-        - The arguments `**settings` of `PCERegressor` were removed; use `settings` instead.
-        - The arguments `name`, `transformer` and `**parameters` of `RegressorChain.add_regressor` were removed and replaced by the `settings` argument of type `BaseRegressorSettings`;
-          e.g. `regressor_chain.add_regressor(LinearRegressor_Settings(fit_intercept=False, transformer={"inputs": "MinMaxScaler"}))` instead of `regressor_chain.add_regressor("LinearRegressor", transformer={"inputs": "MinMaxScaler"}, fit_intercept=False)`.
-    - ML model calibration
-        - `MLAlgoAssessor` was renamed to `MLModelAssessor`.
-        - The attribute `algos` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was renamed to `models`.
-        - The attribute `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The attribute `parameters` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The attribute `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The attribute `measure` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The attribute `measure_options` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The attribute `dataset` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-        - The argument `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use `settings` instead.
-        - The argument `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use the `transformer` field of the `settings` argument instead.
-        - The arguments `**algo_settings` of `MLModelAssessor` (formerly `MLAlgoAssessor`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type.
-        - `MLAlgoCalibration` was renamed to `MLModelCalibration`.
-        - The argument `algo` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use `settings` instead.
-        - The argument `parameters` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed, as it duplicated the names of the variables of the `calibration_space` argument, i.e. `list(calibration_space.variables)`.
-        - The argument `transformer` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use the `transformer` field of the `settings` argument instead.
-        - The arguments `**algo_settings` of `MLModelCalibration` (formerly `MLAlgoCalibration`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
-          e.g. `MLModelCalibration(PolynomialRegressor_Settings(fit_intercept=False), dataset, calibration_space)` instead of `MLAlgoCalibration("PolynomialRegressor", dataset, ["degree"], calibration_space, fit_intercept=False)`.
-        - The arguments `algo_name` and `**algo_settings` of `MLModelCalibration.execute` (formerly `MLAlgoCalibration.execute`) were removed and replaced by the argument `settings` with `BaseDriverSettings` type;
-          e.g. `calibration.execute(NLOPT_COBYLA_Settings(max_iter=100))` instead of `calibration.execute("NLOPT_COBYLA", max_iter=100)`.
-        - The attribute `algo_assessor` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `model_assessor`.
-        - The attribute `optimal_algorithm` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `optimal_model`.
-        - The attribute `algos` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `models`.
-    - ML model selection
-        - `MLAlgoSelection` was renamed to `MLModelSelection`.
-        - The argument `name` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
-          e.g. `selection.add_candidate(LinearRegressor_Settings(fit_intercept=False))` instead of `selection.add_candidate("LinearRegressor", fit_intercept=False)`.
-        - The argument `calib_space` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was renamed to `calibration_space`.
-        - The argument `calib_algo` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type. [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
-- BREAKING CHANGES:
-    - The `gemseo.core.mdo_functions` package was renamed to `gemseo.core.function`.
-    - The `gemseo.core.mdo_functions.mdo_function` module was renamed to `gemseo.core.function.array_function`.
-    - The `gemseo.core.mdo_functions.mdo_linear_function` module was renamed to `gemseo.core.function.linear_function`.
-    - The `gemseo.core.mdo_functions.mdo_quadratic_function` module was renamed to `gemseo.core.function.quadratic_function`.
-    - The `MDOFunction` class was renamed to `ArrayFunction`.
-    - The `MDOLinearFunction` class was renamed to `LinearFunction`.
-    - The `MDOQuadraticFunction` class was renamed to `QuadraticFunction`.
-    - The `mdo_function` argument of `Offset`, `ConvexLinearApprox` and `SetPtFromDatabase` was renamed to `function`. [#1699](https://gitlab.com/gemseo/dev/gemseo/-/issues/1699)
-- BREAKING CHANGES:
-    - The argument `disc_name` of `SurrogateDiscipline` was renamed to `name`.
-    - The argument `disc_name` of `create_surrogate` was renamed to `name`.
-    - The regressor settings can no longer be passed to `SurrogateDiscipline` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
-    - The regressor settings can no longer be passed to `create_surrogate` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
-    - The argument `surrogate` of `SurrogateDiscipline` was renamed to `regressor`.
-    - The argument `surrogate` of `create_surrogate` was renamed to `regressor`.
-    - The argument `data` of `SurrogateDiscipline` was removed; use `SurrogateDiscipline.from_settings` instead.
-    - The argument `transformer` of `SurrogateDiscipline` was removed; use `SurrogateDiscipline.from_settings` instead.
-    - The argument `regressor` of `SurrogateDiscipline` can only be a `BaseRegressor` now; use `SurrogateDiscipline.from_settings` to create a surrogate discipline from a training dataset and regressor settings. [#1706](https://gitlab.com/gemseo/dev/gemseo/-/issues/1706)
-- BREAKING CHANGES for probability distributions
-    - `BaseDistribution` has a unique argument, namely `settings: BaseDistributionSettings | None = None`; if `None`, it will use default settings.
-    - `OTBetaDistribution` has a unique argument, namely `settings: OTBetaDistribution_Settings | None = None`; if `None`, it will use `OTBetaDistribution_Settings()`.
-    - `OTDiracDistribution` has a unique argument, namely `settings: OTDiracDistribution_Settings | None = None`; if `None`, it will use `OTDiracDistribution_Settings()`.
-    - `OTDistribution` has a unique argument, namely `settings: OTDistribution_Settings | None = None`; if `None`, it will use `OTDistribution_Settings()`.
-    - `OTExponentialDistribution` has a unique argument, namely `settings: OTExponentialDistribution_Settings | None = None`; if `None`, it will use `OTExponentialDistribution_Settings()`.
-    - `OTJointDistribution` has a unique argument, namely `settings: OTJointDistribution_Settings`.
-    - `OTLogNormalDistribution` has a unique argument, namely `settings: OTLogNormalDistribution_Settings | None = None`; if `None`, it will use `OTLogNormalDistribution_Settings()`.
-    - `OTNormalDistribution` has a unique argument, namely `settings: OTNormalDistribution_Settings | None = None`; if `None`, it will use `OTNormalDistribution_Settings()`.
-    - `OTTriangularDistribution` has a unique argument, namely `settings: OTTriangularDistribution_Settings | None = None`; if `None`, it will use `OTTriangularDistribution_Settings()`.
-    - `OTUniformDistribution` has a unique argument, namely `settings: OTUniformDistribution_Settings | None = None`; if `None`, it will use `OTUniformDistribution_Settings()`.
-    - `OTWeibullDistribution` has a unique argument, namely `settings: OTWeibullDistribution_Settings | None = None`; if `None`, it will use `OTWeibullDistribution_Settings()`.
-    - `SPBetaDistribution` has a unique argument, namely `settings: SPBetaDistribution_Settings | None = None`; if `None`, it will use `SPBetaDistribution_Settings()`.
-    - `SPDistribution` has a unique argument, namely `settings: SPDistribution_Settings | None = None`; if `None`, it will use `SPDistribution_Settings()`.
-    - `SPExponentialDistribution` has a unique argument, namely `settings: SPExponentialDistribution_Settings | None = None`; if `None`, it will use `SPExponentialDistribution_Settings()`.
-    - `SPJointDistribution` has a unique argument, namely `settings: SPJointDistribution_Settings`.
-    - `SPLogNormalDistribution` has a unique argument, namely `settings: SPLogNormalDistribution_Settings | None = None`; if `None`, it will use `SPLogNormalDistribution_Settings()`.
-    - `SPNormalDistribution` has a unique argument, namely `settings: SPNormalDistribution_Settings | None = None`; if `None`, it will use `SPNormalDistribution_Settings()`.
-    - `SPTriangularDistribution` has a unique argument, namely `settings: SPTriangularDistribution_Settings | None = None`; if `None`, it will use `SPTriangularDistribution_Settings()`.
-    - `SPUniformDistribution` has a unique argument, namely `settings: SPUniformDistribution_Settings | None = None`; if `None`, it will use `SPUniformDistribution_Settings()`.
-    - `SPWeibullDistribution` has a unique argument, namely `settings: SPWeibullDistribution_Settings | None = None`; if `None`, it will use `SPWeibullDistribution_Settings()`.
-- BREAKING CHANGES for algorithms
-    - The `**settings` arguments of `BaseAlgoFactory.execute` (renamed `BaseAlgorithmFactory`) were removed and the `settings_model` argument renamed to `settings` is now mandatory.
-    - The `**settings` arguments of `BaseAlgorithmLibrary.execute` were removed and the `settings_model` argument renamed to `settings` is still optional.
-    - The `eval_obs_jac` argument of `BaseDriverLibrary.execute` was removed
-      and replaced by the `evaluate_observable_jacobian` field of `BaseDriverSettings`.
-    - The `max_design_space_dimension_to_log` argument of `BaseDriverLibrary.execute` was removed
-      and replaced by the `max_input_space_dimension_to_log` field of `BaseDriverLibrarySettings`.
-    - The `skip_int_check` argument of `BaseDriverLibrary.execute` was removed
-      without replacement; see the `relax_integer_variables` field of `BaseDriverSettings`,
-      which relaxes the integer variables instead of rounding them at every evaluation.
-    - The `settings_model` argument of `BaseDriverLibrary.execute` was renamed to `settings` and is still optional.
-    - The settings of every DOE algorithm with a `n_samples` field have a default value for this field; by default, this default value is 1.
-    - The `doe_algo_name` field of `MorrisDOE_Settings` was removed; use its `doe_algo_settings` field instead.
-    - The type of the `doe_algo_settings` field of `MorrisDOE_Settings` is `BaseDOESettings`.
-    - The `sub_algorithm_name` field of `BaseAugmentedLagragianSettings`, renamed `BaseAugmentedLagrangianSettings`, was removed; use its `sub_algorithm_settings` field instead.
-    - The type of the `sub_algorithm_settings` field of `BaseAugmentedLagrangianSettings` is `BaseOptimizerSettings`.
-    - The `n_start` field of `MultiStart_Settings` was removed; use its `doe_algo_settings` instead, with its `n_samples` or `samples` field for example.
-    - The `doe_algo_name` field of `MultiStart_Settings` was removed; use its `doe_algo_settings` instead.
-    - The type of the `doe_algo_settings` field of `MultiStart_Settings` is `BaseDOESettings`.
-    - The `opt_algo_max_iter` field of `MultiStart_Settings` was removed; use its `opt_algo_settings` instead.
-    - The `opt_algo_name` field of `MultiStart_Settings` was removed; use its `opt_algo_settings` instead.
-    - The type of the `opt_algo_settings` field of `MultiStart_Settings` is `BaseOptimizerSettings`.
-    - The `sub_optim_algo` field of `MNBI_Settings` was removed; use its `sub_optim_algo_settings` instead.
-    - The `sub_optim_max_iter` field of `MNBI_Settings` was removed; use its `sub_optim_algo_settings` instead.
-    - The type of the `sub_optim_algo_settings` field of `MNBI_Settings` is `BaseOptimizerSettings`.
-    - The `doe_algo` field of `MNBI_Settings` was removed; use its `doe_algo_settings` instead.
-    - The type of the `doe_algo_settings` field of `MNBI_Settings` is `BaseDOESettings`.
-    - The `multi_start_n_samples` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
-    - The `multi_start_algo_name` field of `OTGaussianProcessRegressor_Settings` was removed; use its `multi_start_algo_settings` instead.
-    - The type of the `multi_start_algo_settings` field of `OTGaussianProcessRegressor_Settings` is `BaseDOESettings | None`.
-    - The `compute_doe` of `BaseDOELibrary` was removed and replaced by the `sample_space` and `sample_unit_hypercube` methods.
-- BREAKING CHANGES for post-processors
-    - The `**settings` arguments of `BasePost.execute` were removed and the `settings_model` argument renamed to `settings` is now mandatory.
-    - The `**settings` arguments of `PostFactory.execute`, which included the post-processor name (`post_name`), were removed and the `settings_model` argument renamed to `settings`, of type `BasePostSettings`, is now mandatory.
-    - The `**settings` arguments of `BaseScenario.post_process`, now only available as `MDOScenario.post_process`, were removed and the `settings_model` argument renamed to `settings` is now mandatory.
-- BREAKING CHANGES for sensitivity analyses
-    - The `formulation_name` and `**formulation_settings` arguments of `BaseSensitivityAnalysis.compute_samples` were removed and replaced by the `formulation_settings` argument of type `BaseFormulationSettings | None`.
-    - The `algo` argument of `BaseSensitivityAnalysis.compute_samples` was removed; use its `algo_settings` argument instead, whose type is `BaseDOESettings | None`.
-- BREAKING CHANGES for formulations
-    - The `**settings` arguments of `BaseFormulation` were removed and the `settings_model` argument renamed to `settings` is still optional.
-- BREAKING CHANGES for MDAs:
-    - The `settings_model` of `BaseMDA` was renamed to `settings: BaseMDASettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-    - The `settings_model` of `BaseParallelMDASolver`, renamed `BaseMDAParallelSolver`, was renamed to `settings: BaseMDAParallelSolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-    - The `settings_model` of `BaseMDASolver` was renamed to `settings: BaseMDASolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-    - The `settings_model` of `MDAChain` was renamed to `settings: MDAChain_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAChain_Settings()`.
-    - The `settings_model` of `MDAGaussSeidel` was renamed to `settings: MDAGaussSeidel_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidel_Settings()`.
-    - The `settings_model` of `MDAGSNewton`, renamed `MDAGaussSeidelNewtonRaphson`, was renamed to `settings: MDAGaussSeidelNewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidelNewtonRaphson_Settings()`.
-    - The `settings_model` of `MDAJacobi` was renamed to `settings: MDAJacobi_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAJacobi_Settings()`.
-    - The `settings_model` of `MDANewtonRaphson` was renamed to `settings: MDANewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDANewtonRaphson_Settings()`.
-    - The `settings_model` of `MDAQuasiNewton` was renamed to `settings: MDAQuasiNewton_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAQuasiNewton_Settings()`.
-    - The `settings_model` of `MDASequential` was renamed to `settings: MDASequential_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDASequential_Settings()`.
-    - `BaseParallelMDASettings` was renamed to `BaseMDAParallelSolverSettings`.
-    - The `linear_solver` field of `BaseMDASettings` was removed; use `linear_solver_settings` instead.
-    - The `linear_solver_settings` field of `BaseMDASettings` can no longer be a `dict`; you must use an instance of a settings class associated with a linear solver.
-    - The `inner_mda_name` field of `MDAChain_Settings` was removed; use `inner_mda_settings` instead.
-    - The `inner_mda_settings` field of `MDAChain_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with an MDA.
-    - The `gauss_seidel_settings` field of `MDAGSNewton_Settings`, renamed `MDAGaussSeidelNewtonRaphson_Settings`, can no longer be a `dict`; you must use an instance of `MDAGaussSeidel_Settings`.
-    - The `newton_settings` field of `MDAGSNewton_Settings` was renamed to `newton_raphson_settings` and can no longer be a `dict`; you must use an instance of `MDANewtonRaphson_Settings`.
-    - The `newton_linear_solver_name` field of `MDANewtonRaphson_Settings` was removed; use `newton_linear_solver_settings` instead.
-    - The `newton_linear_solver_settings` field of `MDANewtonRaphson_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with a linear solver.
-    - The `linear_solver_tolerance` field of `BaseMDASettings` was removed; use the `rtol` field of the settings of the linear solver, e.g. a SciPy one, given to `BaseMDASettings.linear_solver_settings` instead.
-- BREAKING CHANGES for formulations:
-    - The `main_mda_name` field of `MDF_Settings` was removed; use `main_mda_settings` instead.
-    - The `main_mda_settings` field of `MDF_Settings` can no longer be a `dict`; you must use an instance of a settings class associated with an MDA. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
-- BREAKING CHANGE: The `build_joint_distribution` method of `ParameterSpace` has been removed and replaced by the `add_copula(names, copula)` method of `RandomSpace`; the latter allows to add copulas associated with independent groups of dependent random variables. `names` is the name of a random variable or an iterable of names, and the arguments are ordered as `space.variables.copulas` yields them, so a dependency structure is copied with `for names, copula in space.variables.copulas: other_space.add_copula(names, copula)`.
-    The string and HTML representations of a `RandomSpace` list its copulas under the tabular view, e.g. `Copulas: (x, y) -> NormalCopula`, as a copula relates several random variables and so has no place in a view with one row per component. [#1717](https://gitlab.com/gemseo/dev/gemseo/-/issues/1717)
 - The `Dataset.variable_name_to_n_components` attribute (formerly `Dataset.variable_names_to_n_components`) uses the same order as the variables in the dataset.
 - The `Dataset.get_normalized` method returns a new dataset using the same order as the variables in the original dataset.
 - When the `var_names` option is empty, unsupervised machine learning models uses all the variables of the dataset while keeping their order.
@@ -969,21 +1091,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - When the `variables` option is empty, `Heatmap` (formerly `ColorEvolution`) uses all the variables of the dataset while keeping their order.
 - When the `variables` option is empty, `Lines` uses all the variables of the dataset while keeping their order.
 - When the `variable_names` argument is empty, `BaseStatistics` uses all the variables of the dataset while keeping their order. [#1718](https://gitlab.com/gemseo/dev/gemseo/-/issues/1718)
-- BREAKING CHANGE: The `gemseo.settings` aggregator package was removed; the settings classes are now re-exported by their domain packages, e.g. `from gemseo.optimization import SLSQP_Settings`. Mapping: `gemseo.settings.opt` → `gemseo.optimization`, `gemseo.settings.doe` → `gemseo.doe`, `gemseo.settings.mda` → `gemseo.mda`, `gemseo.settings.post` → `gemseo.post`, `gemseo.settings.formulations` → `gemseo.formulation`, `gemseo.settings.linear_solvers` → `gemseo.linear`, `gemseo.settings.ode` → `gemseo.ode`, `gemseo.settings.mlearning` → `gemseo.machine_learning`, `gemseo.settings.probability_distributions` → `gemseo.uncertainty.distribution` and `gemseo.settings.base_settings` → `gemseo.util.pydantic`. [#1719](https://gitlab.com/gemseo/dev/gemseo/-/issues/1719)
-- BREAKING CHANGES about dataset plots:
-
-    - The `gemseo.post.dataset.dataset_plot` module was renamed to `gemseo.post.dataset.base`.
-    - The `DatasetPlot` class was renamed to `BaseDatasetPlot`.
-    - The `BasePlot`, `MatplotlibPlot` and `PlotlyPlot` classes use a single `settings` positional arguments instead of `common_settings` and `specific_settings`, whose type depends on the class.
-    - The `BaseDatasetPlot` class has a `settings_class: type[BaseDatasetPlotSettings]` class attribute, where `BaseDatasetPlotSettings` is a specific `BaseSettings`.
-    - The keyword arguments of the `BaseDatasetPlot` class and its subclasses have been replaced by the `settings: BaseDatasetPlotSettings | None = None` keyword argument. If `None`, the default settings are used, if any.
-    - The following arguments and attributes of `BaseDatasetPlot` (formerly `DatasetPlot`) have been moved to `BaseDatasetPlotSettings` or to one of its subclasses, namely `BaseCartesianDatasetPlotSettings` and `BasePolarDatasetPlotSettings`: `color`, `colormap`, `font_size`, `legend_location`, `linestyle`, `marker`, `title`, `xtick_rotation`, `rmin`, `rmax`, `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`, `xlabel`, `ylabel`, `zlabel`, `grid` and `labels`.
-    - The `fig_size_x` and `fig_size_y` attributes of `BaseDatasetPlot` have been removed; use `BaseDatasetPlotSettings.fig_size` instead.
-    - The `ClassName` class, defined as a subclass of `BaseDatasetPlot`, has a settings class named `ClassName_Settings` deriving from `BaseDatasetPlotSettings` and including the options of the dataset plots (formerly passed at instantiation or using the removed attributes).
-    - The `gemseo.post.radar_chart` module was renamed to `gemseo.post.constraint_radar`.
-    - The `RadarChart` class subclassing `BasePost` was renamed to `ConstraintRadar`.
-    - The `RadarChart_Settings` class subclassing `BasePostSettings` was renamed to `ConstraintRadar_Settings`.
-    - The `Radar` class was renamed to `RadViz`. [#1720](https://gitlab.com/gemseo/dev/gemseo/-/issues/1720)
 - By default,
     `MultiStart` skips the starting points whose sub-optimization fails
     instead of stopping:
@@ -1005,53 +1112,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The boolean option `kde` was renamed to `use_kde` (`PairPlot`, formerly `ScatterMatrix`).
 - The histograms on the diagonal (when `use_kde` is `False`) are superimposed histograms by category when `classifier` is set.
 - The density functions on the diagonal (when `use_kde` is `True`) are superimposed density functions by category when `classifier` is set. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
-- BREAKING CHANGES:
-
-    - The `ScalarDistributionMixin` mixin (`gemseo.uncertainty.distributions.scalar_distribution_mixin`) has been replaced by the `BaseUnivariateDistribution` class (`gemseo.uncertainty.distribution.core.base_univariate`) deriving from `BaseDistribution`.
-    - The `gemseo.uncertainty.distributions.base_settings` package was renamed to `gemseo.uncertainty.distribution.core.base_univariate_settings`.
-    - The modules `base_distribution`, `base_distribution_settings` and `base_distribution_fitter` of `gemseo.uncertainty.distributions` were renamed to `gemseo.uncertainty.distribution.core.base`, `gemseo.uncertainty.distribution.core.base_settings` and `gemseo.uncertainty.distribution.core.base_fitter` respectively. [#1783](https://gitlab.com/gemseo/dev/gemseo/-/issues/1783)
-- BREAKING CHANGES:
-
-    - The public attributes and method arguments following the `plural_to_plural` naming convention
-      (e.g. `names_to_sizes`)
-      were renamed to follow the `key_to_value` convention
-      where the key and value parts are plural only when each entry maps to a collection.
-      Sorted by class and method:
-        - `AnalyticDiscipline`: attribute `output_names_to_symbols` → `output_name_to_symbols`.
-        - `ArrayBasedFunctionDiscipline.__init__`: arguments `input_names_to_sizes` → `input_name_to_size`,
-          `output_names_to_sizes` → `output_name_to_size`; same for the corresponding attributes.
-        - `BaseAlgoFactory` (now `BaseAlgorithmFactory`): property `algo_names_to_libraries` → `algo_name_to_library`.
-        - `BaseCache`: property `names_to_sizes` → `name_to_size`.
-        - `BaseDataConverter`: methods `compute_names_to_slices` → `compute_name_to_slice`,
-          `compute_names_to_sizes` → `compute_name_to_size`;
-          argument `names_to_sizes` of `compute_name_to_slice` → `name_to_size`.
-        - `BaseGrammar.update_from_types`: argument `names_to_types` → `name_to_type`.
-        - `BaseMDASolver.set_bounds`,
-          `MDAChain.set_bounds`,
-          `MDASequential.set_bounds`: argument `variable_names_to_bounds` → `variable_name_to_bounds`.
-        - `BaseMLAlgo` (now `BaseMLModel`): attribute `variable_names_to_n_components` → `variable_name_to_n_components`.
-        - `BaseMLSupervisedAlgo` (now `BaseMLSupervisedModel`): attribute `names_to_sizes` → `name_to_size`.
-        - `BiLevelScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
-          `design_variable_names_to_values` → `design_variable_name_to_value`.
-        - `Database.to_dataset`: argument `groups_to_variables` → `group_to_variables`.
-        - `Dataset`: properties `variable_names_to_n_components` → `variable_name_to_n_components`,
-          `group_names_to_n_components` → `group_name_to_n_components`;
-          argument `variable_names_to_n_components` of `from_array`, `from_csv` and `from_txt`
-          → `variable_name_to_n_components`;
-          argument `variable_names_to_group_names` of `from_array`, `from_csv` and `from_txt` → `variable_name_to_group_name`.
-        - `DisciplineAdapter.__init__`: argument `names_to_sizes` → `name_to_size`.
-        - `DisciplineAdapterGenerator.__init__`: argument `names_to_sizes` → `name_to_size`.
-        - `OptimizationMetadata`: attribute `output_names_to_constraint_names` → `output_name_to_constraint_names`.
-        - `OptimizationProblem.to_dataset`: argument `output_names_to_constraint_names` → `output_name_to_constraint_names`.
-        - `ScalableDesignSpace.__init__`: argument `names_to_default_values` → `name_to_default_value`;
-          same for the corresponding attribute.
-        - `ScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
-          `design_variable_names_to_values` → `design_variable_name_to_value`.
-        - `SimpleGrammar.__init__`: argument `names_to_types` → `name_to_type`.
-        - `Splitter.__init__`: argument `output_names_to_input_indices` → `output_name_to_input_indices`.
-        - `gemseo.util.discipline.update_default_input_values` (formerly in `gemseo.utils.discipline`): argument `input_names_to_default_values`
-          → `input_name_to_default_value`.
-        - `gemseo.util.string.get_variables_with_components` (formerly in `gemseo.utils.string_tools`): argument `names_to_sizes` → `name_to_size`. [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
 - `OTGaussianProcessRegressor` uses the OpenTURNS `GaussianProcessFitter` and `GaussianProcessRegression` API for OpenTURNS 1.27 and later, instead of the deprecated `KrigingAlgorithm`.
     Its `algo` attribute is now a `GaussianProcessRegressionResult`, whose `result` attribute is the Gaussian process regression result from OpenTURNS and methods such as `getConditionalMean` are common to the `KrigingResult` object used in the deprecated API.
     If you are using an older version of OpenTURNS, the deprecated API is used. [#1798](https://gitlab.com/gemseo/dev/gemseo/-/issues/1798)
@@ -1118,22 +1178,6 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - Documented that the logging configuration only applies to GEMSEO and its plugins
     and that client code is responsible for configuring its own loggers,
     in line with the Python recommendation for library logging. [#1811](https://gitlab.com/gemseo/dev/gemseo/-/issues/1811)
-- BREAKING CHANGES for enumerations:
-    - The `Method` enumeration of each sensitivity analysis moved out of its class and
-      became a module-level class, e.g. `from gemseo.enum import SobolAnalysisMethod`:
-      `CorrelationAnalysis.Method` is now `CorrelationAnalysisMethod`,
-      `HSICAnalysis.Method` is now `HSICAnalysisMethod`,
-      `MorrisAnalysis.Method` is now `MorrisAnalysisMethod`
-      and `SobolAnalysis.Method` is now `SobolAnalysisMethod`.
-      The old names still give the new enumerations, with a `DeprecationWarning`.
-      A subclass that defines its own `Method` keeps it, but the analysis no longer
-      reads it, and a `DeprecationWarning` says so.
-    - The hybrid modes were removed from `Discipline.ApproximationMode`, which now holds only `COMPLEX_STEP`, `FINITE_DIFFERENCES` and `CENTERED_DIFFERENCES`; use the new `Discipline.HybridApproximationMode` instead.
-    - `MDOChain.LinearizationMode.REVERSE`, renamed `DisciplineChain`, no longer exists; the chain rule accumulation modes are gathered in the new `ChainDerivationMode` enumeration, which defines `FORWARD`, `REVERSE` and `AUTO` and is available as `DisciplineChain.ChainDerivationMode`.
-    - `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`; `DIRECT`/`ADJOINT` denote the MDA resolution modes and `FORWARD`/`REVERSE` the chain-rule accumulation modes. The MDA-specific subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`) and the chain-specific subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`); both are importable from `gemseo.enum`.
-    - `Discipline.LinearizationMode` no longer exposes the `DerivationMode` members (`DIRECT`, `ADJOINT`, `REVERSE`); a discipline either computes its analytical Jacobian (`AUTO`) or approximates it. It now holds only `AUTO`, the approximation modes and the hybrid ones.
-    - The unused member `SciPyDOE.Optimizer.NONE` was removed.
-    - The `EvaluationProblem.DifferentiationMethod.USER_GRAD` member was renamed to `USER`; its value is unchanged. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 - `JacobianOperator` now supports `array + operator` and `array - operator` (via the new `__radd__` and `__rsub__` methods) with `array` representing NumPy array or SciPy sparse arrays. Consequently, `JacobianOperator` now supports addition, subtraction and matrix multiplication with NumPy arrays and SciPy sparse arrays in either order.
 - The NumPy function forms (`numpy.add(array, operator)`, `numpy.matmul(array, operator)`) remain unsupported since `scipy.sparse.linalg.LinearOperator` sets `__array_ufunc__ = None`. [#1816](https://gitlab.com/gemseo/dev/gemseo/-/issues/1816)
 - The members of all the enumerations now follow the upper-case convention; only the member *names* changed, their *values* are unchanged (e.g. `ColormapName.cool` became `ColormapName.COOL` but still equals `"cool"`, and `DatasetClassName.IODataset` became `DatasetClassName.IO_DATASET` but still equals `"IODataset"`). This affects `Strength`, `Alpha`, `Face`, `Criterion`, `Hypersphere`, `ColormapName`, `ProgressBarDataName`, `DatasetClassName`, the OpenTURNS `DistributionName`/`FittingCriterion`/`SignificanceTest` and the SciPy `DistributionName` enumerations. The old member names keep resolving, with a `DeprecationWarning`, both as attributes and by name, e.g. `ColormapName["cool"]`, except the attribute `Criterion.center`, which is now the method `str.center`: use `Criterion.CENTER` or `Criterion["center"]` instead. [#1838](https://gitlab.com/gemseo/dev/gemseo/-/issues/1838)
@@ -1173,76 +1217,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     are now stored and returned as `float64`
     and the finite bounds of an integer variable set with an array of floats
     as `int64`. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
-- BREAKING CHANGES:
-
-    - All GEMSEO packages and modules now use singular names, e.g. `gemseo.utils` is now `gemseo.util`, `gemseo.datasets` is now `gemseo.dataset`, `gemseo.disciplines` is now `gemseo.discipline`, `gemseo.formulations` is now `gemseo.formulation`, `gemseo.problems` is now `gemseo.problem`, `gemseo.scenarios` is now `gemseo.scenario`, `gemseo.uncertainty.distributions` is now `gemseo.uncertainty.distribution`, `gemseo.uncertainty.statistics` is now `gemseo.uncertainty.statistic`, `gemseo.core.grammars` is now `gemseo.core.grammar`, `gemseo.core.derivatives` is now `gemseo.core.derivative`, `gemseo.core.data_converters` is now `gemseo.core.data_converter`, `gemseo.mlearning.regression.algos` is now `gemseo.machine_learning.regression.model`, `gemseo.utils.derivatives.error_estimators` is now `gemseo.util.derivative.error_estimator` and `gemseo.post.dataset.bars` is now `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class). Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
-    - The `gemseo.algos` package was split by domain:
-        - `gemseo.algos.opt` is now the top-level package `gemseo.optimization`, which also hosts the optimization problem definition: `gemseo.algos.optimization_problem` is now `gemseo.optimization.problem`, `gemseo.algos.optimization_result` is now `gemseo.optimization.result`, `gemseo.algos.optimization_history` is now `gemseo.optimization.history`, `gemseo.algos.multiobjective_optimization_result` is now `gemseo.optimization.multiobjective_result`, and `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
-        - `gemseo.algos.doe` is now the top-level package `gemseo.doe`.
-        - `gemseo.algos.linear_solvers` is now the top-level package `gemseo.linear`; `gemseo.algos.linear_solvers.linear_problem` is now `gemseo.linear.problem`.
-        - `gemseo.algos.ode` is now the top-level package `gemseo.ode`; `gemseo.algos.ode.ode_problem` is now `gemseo.ode.problem` and `gemseo.algos.ode.ode_result` is now `gemseo.ode.result`.
-        - `DesignSpace` and its related modules moved to the new top-level package `gemseo.space`: `gemseo.algos.design_space` is now `gemseo.space.design`, `gemseo.algos.design_space_utils` is now `gemseo.space.util`, and the design space factory is now in `gemseo.space.factory`.
-        - The shared driver and algorithm infrastructure (`BaseAlgorithmLibrary`, `BaseDriverLibrary`, `BaseAlgoFactory`, the progress bar machinery) moved to `gemseo.core.algorithm`.
-        - The generic problem infrastructure moved to the new `gemseo.core.problem` package: `gemseo.algos.base_problem` is now `gemseo.core.problem.base`, `gemseo.algos.database` is now `gemseo.core.problem.database`, `gemseo.algos.evaluation_problem` is now `gemseo.core.problem.evaluation` and `gemseo.algos.evaluation_counter` is now `gemseo.core.problem.counter`. The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
-        - `gemseo.algos.hashable_ndarray` is now `gemseo.util.hashable_ndarray` and `gemseo.algos.sequence_transformer` is now `gemseo.mda.sequence_transformer`.
-    - The `gemseo.caches` package is now `gemseo.core.cache` and the redundant `_cache` suffix was removed from its module names, e.g. `gemseo.caches.hdf5_cache` is now `gemseo.core.cache.hdf5`.
-    - The `gemseo.core.chains` package is now `gemseo.discipline.chain`, next to the other public discipline building blocks.
-    - The `gemseo.core.mdo_functions` package (the `ArrayFunction` family) is now `gemseo.core.function`.
-    - `ExecutionStatus`, `ExecutionStatistics`, the namespace helpers and `ProcessDiscipline` moved into the `gemseo.core.discipline` package: `gemseo.core.execution_status` is now `gemseo.core.discipline.execution_status`, `gemseo.core.execution_statistics` is now `gemseo.core.discipline.execution_statistics`, `gemseo.core.namespaces` is now `gemseo.core.discipline.namespace` and `gemseo.core.process_discipline` is now `gemseo.core.discipline.process_discipline`.
-    - `gemseo.utils.string_tools` is now `gemseo.util.string` and `gemseo.utils.show_utils` is now `gemseo.util.xdsm.html`.
-    - The redundant `_metric` suffix was removed from the module names of the `gemseo.utils.metrics` package (now `gemseo.util.metric`), e.g. `gemseo.utils.metrics.base_metric` is now `gemseo.util.metric.base` and `gemseo.utils.metrics.metric_factory` is now `gemseo.util.metric.factory`.
-    - `gemseo.post.dataset.plots` is now `gemseo.post.dataset.plot` and `gemseo.post.dataset.dataset_plot` is now `gemseo.post.dataset.base`.
-    - `gemseo.typing` is now `gemseo.util.typing`.
-    - `BaseAlgoFactory` is renamed to `BaseAlgorithmFactory` and its module `gemseo.algos.base_algo_factory` is now `gemseo.core.algorithm.base_algorithm_factory`; the `DriverLibraryFactory` module is now `gemseo.core.algorithm.factory`.
-    - `Constraints` (ex `gemseo.core.mdo_functions.collections.constraints`) moved to `gemseo.optimization.core.constraints`.
-    - `JacobianAssembly` (ex `gemseo.core.derivatives.jacobian_assembly`) moved to `gemseo.mda.jacobian_assembly`.
-    - The base classes and settings extenders of each algorithm family were gathered into a domain `core` package: `gemseo.doe.core`, `gemseo.linear.core`, `gemseo.ode.core`, `gemseo.optimization.core`, `gemseo.mda.core`, `gemseo.formulation.core`, `gemseo.post.core`, `gemseo.uncertainty.distribution.core`, `gemseo.uncertainty.sensitivity.core`, `gemseo.uncertainty.statistic.core`, and, in `gemseo.machine_learning`, the `core`, `regression.core`, `classification.core`, `clustering.core`, `linear_model_fitting.core`, `transformer.core` and `resampling.core` packages.
-    - The machine learning modules were renamed to match their class names: `ml_algo` is now `base_ml_model`, `ml_algo_settings` is now `base_ml_model_settings`, `supervised`/`supervised_settings` are now `base_supervised`/`base_supervised_settings`, `unsupervised`/`unsupervised_settings` are now `base_unsupervised`/`base_unsupervised_settings` and `base_ml_algo_quality` is now `base_ml_model_quality`; `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`); `thin_plate_spline`/`thin_plate_spline_settings` are now `tps`/`tps_settings` (matching the `TPSRegressor` class).
-    - `gemseo.post.core.gantt_chart` is now `gemseo.post.gantt_chart`.
-    - `gemseo.disciplines.scenario_adapters` is now `gemseo.scenario.adapter`.
-    - `gemseo.problems.mdo.sobieski.core` is now `gemseo.problem.mdo.sobieski.standalone` and `gemseo.problems.mdo.scalable.parametric.core` is now `gemseo.problem.mdo.scalable.parametric.standalone`.
-    - `TerminationCriterion` and its subclasses now carry their stop message (`TerminationCriterion.message`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 - The default `MorrisAnalysis.plot()` title format is `<output_name> - R=<n_replicates> - delta_r=<round(100 * step)>% - <doe_algo_name> - <elementary effects | finite differences>`. [#1850](https://gitlab.com/gemseo/dev/gemseo/-/issues/1850)
 - `ColorEvolution` (`gemseo.post.dataset.color_evolution`) has been merged into `Heatmap` (`gemseo.post.dataset.heatmap.Heatmap`), selected via the new `Heatmap_Settings.symmetric` boolean (`False` reproduces the old `ColorEvolution` behavior, `True` plots a symmetric variable-versus-variable matrix). [#1854](https://gitlab.com/gemseo/dev/gemseo/-/issues/1854)
-- BREAKING CHANGES:
-
-    - `RBFRegressor` and `TPSRegressor` are now based on
-      [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
-      instead of the deprecated `Rbf` SciPy class:
-        - The `function` setting of `RBFRegressor_Settings` was renamed to `kernel`
-          and no longer accepts a callable;
-          the kernels `linear`, `thin_plate_spline` (formerly `thin_plate`), `cubic`,
-          `quintic`, `multiquadric`, `inverse_multiquadric` and `gaussian` are available,
-          as well as the new `inverse_quadratic`.
-        - The enum member `RBF.THIN_PLATE` was renamed to `RBF.THIN_PLATE_SPLINE`.
-        - The `smooth` setting was renamed to `smoothing`.
-        - `TPSRegressor_Settings` no longer exposes the `function` (now `kernel`) and `epsilon` settings:
-          the kernel is fixed to `thin_plate_spline` and the shape parameter to `1`.
-        - The `der_function` and `norm` settings were removed
-          (kernels are no longer callables and the distance is always Euclidean).
-        - The new settings `degree` (degree of the added polynomial; `-1` for none)
-          and `neighbors` (local interpolation using the nearest learning points)
-          are available;
-          the Jacobian is not implemented when `neighbors` is set,
-          as the model is then a local interpolant,
-          discontinuous where the set of nearest learning points changes.
-        - The meaning of `epsilon` is inverted:
-          the kernels are functions of `epsilon*r` instead of `r/epsilon`;
-          use `epsilon_new = 1/epsilon_old`.
-          Its default value for the scale-dependent kernels
-          matches the legacy default accordingly.
-        - By default the model now includes a polynomial term
-          whose degree is the per-kernel minimum,
-          so that predictions may differ slightly from previous versions
-          even with identical settings.
-        - The attribute `RBFRegressor.y_average` and the property `RBFRegressor.function`
-          were removed; use the `RBFRegressor.kernel` property.
-        - The class constant `RBFRegressor.EUCLIDEAN` was removed
-          (the distance is always Euclidean).
-        - The nested class `RBFRegressor.RBFDerivatives` was removed;
-          the derivatives of the kernels are now an implementation detail.
-    - The `rbf` trend of `Scatter` and `PairPlot` is now based on
-      `scipy.interpolate.RBFInterpolator` with its default thin plate spline kernel. [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861)
 - The PyDOE algorithms library now relies on the maintained [PyDOE](https://pydoe.github.io/pydoe/) package (`pydoe`) instead of the unmaintained `pyDOE3`.
 - The `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
 - Since the hash of an array whose data type is `int32` (resp. `uint32`) is now computed as for `int64` (resp. `uint64`) on all platforms, a cache persisted with a previous version whose input data include 32-bit integer arrays leads to cache misses and recomputations, not to corruption. [#1865](https://gitlab.com/gemseo/dev/gemseo/-/issues/1865)
@@ -1257,18 +1233,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - `Boxplot` draws its grid in the color given by the matplotlib rcParam `grid.color`, instead of light grey.
 - `OptHistoryView` marks the iteration of the best design, when the problem has one, with a star on the x-axis and a dashed line, mentioned in the label of the x-axis, instead of a red line and a legend; the color of the mark reads on both light and dark backgrounds and is not the red of a violated constraint.
 - `OptHistoryView` marks the iterations whose values are `NaN` with a cross on the x-axis and a dashed line, mentioned in the label of the x-axis, in the same color as the mark of the best design, instead of purple lines that nothing documented. [#1880](https://gitlab.com/gemseo/dev/gemseo/-/issues/1880)
-- BREAKING CHANGES:
-
-    - The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
-    - The arguments of the scenario adapters no longer refer to an optimization: `reset_x0_before_opt`, `set_x0_before_opt` and `set_bounds_before_opt` were renamed to `reset_x0_before_exec`, `set_x0_before_exec` and `set_bounds_before_exec`, while `keep_opt_history`, `save_opt_history` and `opt_history_file_prefix` were renamed to `keep_databases`, `save_databases` and `database_file_prefix`. The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
 - The figure of `OptHistoryView` about the distance to the best design is titled "Evolution of the distance to the best design" instead of "Evolution of the distance to the optimum".
 - `OptHistoryView` draws neither the mark of the best design nor the figure of the distance to it when the problem has no optimum solution, e.g. when every feasible design has a `NaN` objective. [#1900](https://gitlab.com/gemseo/dev/gemseo/-/issues/1900)
-- BREAKING CHANGES:
-
-    - `HSICAnalysis.compute_indices` no longer estimates the p-values through permutations by default; set its new `use_permutations` argument to `True` to do so. This estimation costs `n_permutations` HSIC estimations and used to dominate the computation time.
-    - Consequently, `HSICAnalysis.indices.p_value_permutation` is empty unless `use_permutations` is `True`, and both `HSICAnalysis.filter(use_asymptotic=False)` and `HSICAnalysis.main_indices` (when `HSICAnalysis.main_method` is `p-value-permutation`) raise a `ValueError` in that case.
-    - As the asymptotic p-values do not exist for a conditional HSIC analysis, `HSICAnalysis.filter` now requires `use_permutations` to be `True` for this analysis type.
-    - `HSICAnalysis.main_indices` raises a `ValueError` when the p-values associated with `HSICAnalysis.main_method` are not available, instead of returning an empty dictionary. [#1908](https://gitlab.com/gemseo/dev/gemseo/-/issues/1908)
 - `BaseMDAParallelSolverSettings.set_default_n_processes` (`BaseMDAParallelSolverSettings` was `BaseParallelMDASettings`)
     now sets the default number of threads/processes
     for all the settings classes deriving from `BaseMDAParallelSolverSettings`,
@@ -1392,6 +1358,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 - The enumeration of the functions aggregating constraints is named `ConstraintAggregation.AggregationFunction`, as the argument taking it already was, and is exported as `gemseo.enum.AggregationFunction`; it was named `ConstraintAggregation.EvaluationFunction`, which named neither what it holds nor what it is passed to. `OptimizationProblem.AggregationFunction` and `Constraints.AggregationFunction` are unchanged.
 
 ### Removed
+
+All the removals are breaking changes.
 
 - The `BiLevel` attributes `SYSTEM_LEVEL`, `SUBSCENARIOS_LEVEL` and `LEVELS` were removed. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
 - `MDOFunction.rel_err()` was removed.
