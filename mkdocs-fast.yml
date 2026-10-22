@@ -213,7 +213,6 @@ nav:
       - Uncertainty: generated/examples/howtos/uncertainty
       - Ordinary differential equations: generated/examples/howtos/ode
       - Global configuration: generated/examples/howtos/configuration
-      - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/
 
