@@ -31,7 +31,10 @@ GEMSEO source code and documentation include software with compatible licenses t
 | [FileSaver.js](https://github.com/eligrey/FileSaver.js) | `gemseo/util/n2d3/js/FileSave.js` | MIT |
 | [Font Awesome](https://fontawesome.com/) 4 icons, built with [Fontello](https://fontello.com/) | `docs/assets/css/fontello.css` | SIL OFL 1.1 |
 | [Font Awesome Free](https://fontawesome.com/) 5.14.0 | `docs/_static/webfonts/` | SIL OFL 1.1 |
+| [Griffe](https://github.com/mkdocstrings/griffe) | `docs/_scripts/credits.py` | ISC |
+| [Material for MkDocs](https://github.com/squidfunk/mkdocs-material) | `docs/overrides/partials/footer.html`, `docs/overrides/partials/header.html` | MIT |
 | [Materialize](https://materializecss.com/) 1.0.0 | `gemseo/util/n2d3/css/materialize*.css`, `gemseo/util/n2d3/js/materialize*.js` | MIT |
+| [mkdocstrings](https://github.com/mkdocstrings/mkdocstrings) | `docs/gen_ref_nav.py` | ISC |
 | [Parallel Coordinates](https://github.com/syntagmatic/parallel-coordinates) | `gemseo/util/n2d3/js/d3.parcoords.js` | BSD 3-Clause |
 | [Reorder.js](https://github.com/jdfekete/reorder.js) | `gemseo/util/n2d3/js/reorder.v1.js` | BSD 3-Clause |
 | [science.js](https://github.com/jasondavies/science.js) | `gemseo/util/n2d3/js/science.v1.js` | BSD 3-Clause |
