@@ -263,7 +263,7 @@ extra_css:
 
 extra_javascript:
   # The home page panel is rendered by home.js, so it comes first: behind
-  # xdsmjs.js it waited for 70 kB of a library the home page never uses.
+  # xdsmjs.js it waited for 110 kB of a library the home page never uses.
   - assets/js/home.js
   - assets/js/legacy-versions.js
   - assets/js/version-selector.js

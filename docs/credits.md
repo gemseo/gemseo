@@ -27,7 +27,7 @@ GEMSEO source code and documentation include software with compatible licenses t
 | [canvas-toBlob.js](https://github.com/eligrey/canvas-toBlob.js) | `gemseo/util/n2d3/js/canvas_toBlob.js` | MIT |
 | colormap | `gemseo/post/_engine/colormap.py` | CC0 1.0 |
 | [D3](https://github.com/d3/d3) 3.5.5 | `gemseo/util/n2d3/js/d3.v3.js` | BSD 3-Clause |
-| [D3](https://github.com/d3/d3) modules d3-color, d3-fetch, d3-selection and d3-transition | Bundled in `xdsmjs.js`, see XDSMjs | BSD 3-Clause (2.x) or ISC (3.x) |
+| [D3](https://github.com/d3/d3) modules d3-color, d3-fetch, d3-selection and d3-transition | Bundled in `xdsmjs.js`, see XDSMjs | ISC |
 | [FileSaver.js](https://github.com/eligrey/FileSaver.js) | `gemseo/util/n2d3/js/FileSave.js` | MIT |
 | [Font Awesome](https://fontawesome.com/) 4 icons, built with [Fontello](https://fontello.com/) | `docs/assets/css/fontello.css` | SIL OFL 1.1 |
 | [Font Awesome Free](https://fontawesome.com/) 5.14.0 | `docs/_static/webfonts/` | SIL OFL 1.1 |
@@ -38,7 +38,7 @@ GEMSEO source code and documentation include software with compatible licenses t
 | [tiny-queue](https://github.com/nolanlawson/tiny-queue) | `gemseo/util/n2d3/js/tiny-queue.js` | Apache v2.0 |
 | [Werkzeug](https://github.com/pallets/werkzeug) | `gemseo/util/_filename_sanitizer.py` | BSD 3-Clause |
 | [WhatsOpt-CLI](https://github.com/OneraHub/WhatsOpt-CLI) | `gemseo/util/xdsm/html.py` | Apache v2.0 |
-| [XDSMjs](https://github.com/OneraHub/XDSMjs) | `docs/assets/js/xdsmjs.js`, `docs/assets/css/xdsmjs.css` | Apache v2.0 |
+| [XDSMjs](https://github.com/OneraHub/XDSMjs) 2.1.0 | `docs/assets/js/xdsmjs.js`, `docs/assets/css/xdsmjs.css` | Apache v2.0 |
 
 The N2 chart pages of the documentation, `docs/_static/n2.html` and `docs/_static/n2_small.html`,
 embed the JavaScript and CSS files of `gemseo/util/n2d3` listed above.
