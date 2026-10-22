@@ -28,7 +28,7 @@ This can be particularly useful if upgrading to a new major version involves sig
 However,
 this should not be taken as a reason not to use the rest of the API.
 The GEMSEO team is committed to supporting its users during API changes,
-whether through a [dedicated page][upgrading-gemseo],
+whether through a [dedicated page](../../software/upgrading/6_to_7/index.md),
 the [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) tool to automatically apply most of the changes to your scripts,
 or via the [discussion forum](https://gemseo.discourse.group/).
 

@@ -359,14 +359,12 @@ def _render_summary(pages: list[_Page]) -> str:
         pages: The pages, the newest first.
 
     Returns:
-        The navigation: the landing page, the upgrading guide,
-        then the pages, the newest first.
+        The navigation: the landing page, then the pages, the newest first.
     """
     return "".join(
         f"- [{title}]({file_name})\n"
         for title, file_name in [
             ("Overview", "index.md"),
-            ("Upgrading", "../software/upgrading.md"),
             *((page.title, page.file_name) for page in pages),
         ]
     )

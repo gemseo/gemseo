@@ -464,7 +464,7 @@ Almost every renamed module, class, function and attribute keeps working under i
 for a full deprecation cycle, with a `DeprecationWarning` telling you its replacement:
 your GEMSEO 6 scripts keep running while you migrate.
 [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) rewrites most of your code automatically,
-and the [Upgrading GEMSEO][upgrading-gemseo] page covers the rest, case by case.
+and the guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) covers the rest, case by case.
 
 GEMSEO 7 requires Python 3.11 or later
 and raises the minimum versions of several dependencies,

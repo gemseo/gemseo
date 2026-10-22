@@ -19,7 +19,7 @@ search:
 
 ## Upgrading GEMSEO { #upgrading-gemseo-faq }
 
-As GEMSEO code evolves, some calling signatures and behavior may change. These changes may break the codes that use GEMSEO and require modifications of them. See [Upgrading GEMSEO](software/upgrading.md) for more information.
+As GEMSEO code evolves, some calling signatures and behavior may change. These changes may break the codes that use GEMSEO and require modifications of them. See the guide [From GEMSEO 6 to GEMSEO 7](software/upgrading/6_to_7/index.md) and the pages of the previous versions that follow it for more information.
 
 ## Create a simple DOE on a single discipline
 

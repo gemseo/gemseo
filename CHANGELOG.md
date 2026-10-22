@@ -16,8 +16,8 @@ The format is based on [Keep a
 Changelog](https://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-There is also a page containing the history of the breaking changes in GEMSEO:
-[Upgrading GEMSEO][upgrading-gemseo].
+There is also a page per major version to migrate your code, starting with
+[From GEMSEO 6 to GEMSEO 7][upgrading-gemseo].
 
 <!-- towncrier release notes start -->
 
