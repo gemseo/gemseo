@@ -17,11 +17,114 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 The changes of GEMSEO 7 about evaluation and optimization problems, functions, databases, benchmark problems that bump-gemseo does not migrate on its own. Run bump-gemseo first (see [Running bump-gemseo](bump_gemseo.md)), then use this page. Each example was executed: the code for GEMSEO 6.3 with GEMSEO 6.3.3, the code for GEMSEO 7 with GEMSEO 7.0.0rc0; both print the same values unless the entry says otherwise. The code for GEMSEO 7 also contains the renames bump-gemseo does on its own.
 
+## Silent changes
+
+The code runs after bump-gemseo, without error or comment, and gives other results.
+
+### A `Database` over a `RandomSpace` is written to HDF without its space
+
+In GEMSEO 6.3, `Database.to_hdf` wrote the input space of a database over a `ParameterSpace`, a design space, and `Database.from_hdf` read it back as a `DesignSpace` with the same variables. In GEMSEO 7, the `ParameterSpace` becomes a `RandomSpace`, which cannot be written to a file: `to_hdf` logs a warning and writes the evaluations without the space. `from_hdf` then describes the input values with a plain `DesignSpace` holding a single variable named `input`, so the names of the input variables are lost, e.g. in the columns of `Database.to_dataset()`.
+
+bump-gemseo leaves no comment, and the results change silently. To read such a file, create a `Database` from the random space and update it from the file with `update_from_hdf`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo import execute_algo
+    from gemseo.algos.database import Database
+    from gemseo.algos.evaluation_problem import EvaluationProblem
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = ParameterSpace()
+    space.add_random_variable("u", "SPUniformDistribution", minimum=0.0, maximum=4.0)
+    problem = EvaluationProblem(space)
+    problem.add_observable(MDOFunction(lambda u: 2 * u, "f"))
+    execute_algo(problem, algo_name="OT_MONTE_CARLO", algo_type="doe", n_samples=3, seed=1)
+    problem.database.to_hdf("database.h5")
+    database = Database.from_hdf("database.h5")
+    print([list(database.input_space.variable_names), database.get_function_history("f"), sorted(database.to_dataset().variable_names)])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.core.problem.database import Database
+    from gemseo.doe import EvaluationProblem
+    from gemseo.doe import OT_MONTE_CARLO_Settings
+    from gemseo.space import RandomSpace
+    from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
+    space = RandomSpace()
+    space.add_variable("u", SPUniformDistribution_Settings(minimum=0.0, maximum=4.0))
+    problem = EvaluationProblem(space)
+    problem.add_observable(ArrayFunction(lambda u: 2 * u, "f"))
+    execute_algo(problem, algo_type="doe", settings_model=OT_MONTE_CARLO_Settings(n_samples=3, seed=1))
+    problem.database.to_hdf("database.h5")
+    database = Database(input_space=space)
+    database.update_from_hdf("database.h5")
+    print([list(database.input_space.variables), database.get_function_history("f"), sorted(database.to_dataset().variable_names)])
+    ```
+
+### A `NaN` output is recorded in the database before the run stops
+
+In GEMSEO 6.3, when a function returned a `NaN` and `stop_if_nan` was set, its default, the driver stopped without recording this evaluation in the database. In GEMSEO 7, the evaluation is recorded first, so the database has one more entry, holding the `NaN`, and the iteration counts and post-processings read from the database include it. Besides, a design point holding a `NaN` now stops the evaluation also when no database is kept (`use_database=False`).
+
+bump-gemseo leaves no comment, and the results change silently: in the example below, the database has two entries instead of one. Skip the `NaN` values where your code reads the history of a function, as in the example below; the optimum is unchanged.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** issue [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528), merge request [!2759](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2759).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    import numpy as np
+    from gemseo import execute_algo
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: np.where(x > 4.0, np.nan, (x - 6.0) ** 2), "f", jac=lambda x: np.atleast_2d(2 * (x - 6.0)))
+    result = execute_algo(problem, algo_name="SLSQP", max_iter=10)
+    history = problem.database.get_function_history("f")
+    print([len(history), history, result.x_opt, result.f_opt])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.optimization import SLSQP_Settings
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=1.0)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(lambda x: np.where(x > 4.0, np.nan, (x - 6.0) ** 2), "f", jac=lambda x: np.atleast_2d(2 * (x - 6.0)))
+    result = execute_algo(problem, settings_model=SLSQP_Settings(max_iter=10))
+    history = problem.database.get_function_history("f")
+    history = history[~np.isnan(history)]
+    print([len(history), history, result.x_opt, result.f_opt])
+    ```
+
 ## Changes that fail without a comment
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
 
-### Some constants of the example problems are now tuples
+### Some module constants are now tuples
 
 In GEMSEO 7, the constants of `gemseo.problem.mdo.scalable.linear.disciplines_generator` are renamed and change type: `LETTERS` is now `letters`, a `tuple` instead of a NumPy `ndarray`, and the `DESC_*` constants are now `desc_*`, tuples of tuples instead of lists of lists. Likewise, `NUMERICS` of `gemseo.discipline.wrapper.disc_from_exe` is now `numerics`, a `tuple` instead of a `list`.
 
@@ -138,6 +241,101 @@ bump-gemseo leaves no comment, and the assignment raises `AttributeError: proper
     print(problem.input_space.dimension)
     ```
 
+### A function declaring `with_normalized_inputs=True` is refused by the drivers
+
+In GEMSEO 6.3, the `with_normalized_inputs` argument of `MDOFunction` was not honoured by an optimizer working with `normalize_design_space=True`: the function was given the unnormalized design point, whatever it declared, and the flag only changed how the database recorded the points of some other runs. In GEMSEO 7, the evaluations of a problem are recorded in the coordinates of its input space, so a function expecting a normalized point cannot be given one, and a driver refuses it instead of evaluating it at another point.
+
+bump-gemseo renames `MDOFunction` to `ArrayFunction` and leaves the argument as is, so running the driver raises a `ValueError` saying that the function expects normalized inputs. Remove `with_normalized_inputs=True`, as in the example below, where the function was already given unnormalized points by GEMSEO 6.3; if your function really needs a normalized point, normalize its input inside the function, e.g. with `design_space.normalize_vect`.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `ValueError: The function f expects normalized inputs while the evaluations are recorded in the coordinates the input space declares.`
+    - **See** issue [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528), merge request [!2759](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2759).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo import execute_algo
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=5.0)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: (x - 3.0) ** 2, "f", jac=lambda x: 2 * (x - 3.0), with_normalized_inputs=True)
+    result = execute_algo(problem, algo_name="SLSQP", max_iter=20)
+    print([result.x_opt, result.f_opt, problem.database.get_x_vect(1)])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.optimization import SLSQP_Settings
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=10.0, value=5.0)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(lambda x: (x - 3.0) ** 2, "f", jac=lambda x: 2 * (x - 3.0))
+    result = execute_algo(problem, settings_model=SLSQP_Settings(max_iter=20))
+    print([result.x_opt, result.f_opt, problem.database.get_x_vect(1)])
+    ```
+
+### `Functions.reset` was removed
+
+In GEMSEO 6.3, a driver replaced the functions of a problem by wrappers, and `Functions.reset()`, e.g. `problem.constraints.reset()`, put the original functions back in the collection. GEMSEO 7 removes this method with the preprocessing of the functions it undid: the functions of a problem are rebuilt from the original ones at each run, and a wrapper gives the function it was built from through its `original` attribute.
+
+bump-gemseo leaves no comment, and the call raises `AttributeError: 'Constraints' object has no attribute 'reset'`. Remove the call, and read the original functions with `get_originals()` where you need them, as in the example below; evaluating them does not record anything in the database, as after a reset in GEMSEO 6.3.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `AttributeError: 'Constraints' object has no attribute 'reset'`
+    - **See** issue [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528), merge request [!2759](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2759).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: x ** 2, "f")
+    g = MDOFunction(lambda x: x - 0.8, "g", f_type="ineq")
+    problem.add_constraint(g)
+    execute_algo(problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.2]]))
+    problem.constraints.reset()
+    constraint = problem.constraints[0]
+    print([constraint is g, constraint.evaluate(array([0.5])), len(problem.database)])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.doe import CustomDOE_Settings
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(lambda x: x ** 2, "f")
+    g = ArrayFunction(lambda x: x - 0.8, "g", f_type="ineq")
+    problem.add_constraint(g)
+    execute_algo(problem, algo_type="doe", settings_model=CustomDOE_Settings(samples=array([[0.2]])))
+    constraint = next(problem.constraints.get_originals())
+    print([constraint is g, constraint.evaluate(array([0.5])), len(problem.database)])
+    ```
+
 ### The parallel differentiation options of a problem are an attribute
 
 In GEMSEO 6.3, the constructors of `EvaluationProblem` and `OptimizationProblem` accepted `**parallel_differentiation_options`, such as `n_processes`, and `OptimizationProblem` had an `is_linear` argument. GEMSEO 7 removes these arguments. The `is_linear` argument was useless, as the `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
@@ -183,11 +381,57 @@ bump-gemseo removes `is_linear` but leaves the parallel differentiation options 
     print([problem.is_linear, problem.parallel_differentiation_options.get("n_processes"), len(dataset)])
     ```
 
-### Read-only arrays in the Sobieski and springs problems
+### A problem over a `RandomSpace` is evaluated at unnormalized points only
 
-In GEMSEO 7, the design bounds of the Sobieski problem, `SobieskiBase.design_bounds` and `SobieskiProblem.design_bounds`, are read-only arrays. So are the initial state arrays `initial_time`, `initial_position` and `initial_velocity` of `gemseo.problem.ode.spring.springs_dynamics_discipline` (`INITIAL_TIME` and so on in GEMSEO 6.3), and so the default input data of `SpringsDynamicsDiscipline`.
+In GEMSEO 6.3, a `ParameterSpace` was a design space: `EvaluationProblem.evaluate_functions` evaluated the functions at its current value by default, the mean of the distributions, and took a point normalized with the bounds of the variables by default. In GEMSEO 7, the `ParameterSpace` becomes a `RandomSpace`, which has neither a current value nor a normalization, so the features specific to a design space are unavailable: `evaluate_functions` raises a `ValueError` when it is given no input value or a normalized one, its default, and so does a driver run with `normalize_design_space=True`.
 
-bump-gemseo renames these constants but leaves no comment, and an in-place assignment raises `ValueError: assignment destination is read-only`. Copy the arrays to get mutable arrays before modifying them, as in the example below.
+bump-gemseo renames the arguments of `evaluate_functions`, e.g. `design_vector` to `input_value`, without comment, and the call raises `ValueError: The input value cannot be None because a RandomSpace has no current value.` Pass the point explicitly, unnormalized, with `input_value_is_normalized=False`, as in the example below; the reference point of a random space, the mean of the distributions, is given by `reference_value`.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `ValueError: The input value cannot be None because a RandomSpace has no current value.`
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    import numpy as np
+    from gemseo.algos.evaluation_problem import EvaluationProblem
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = ParameterSpace()
+    space.add_random_variable("u", "SPUniformDistribution", minimum=0.0, maximum=4.0)
+    problem = EvaluationProblem(space)
+    problem.add_observable(MDOFunction(lambda u: u ** 2, "f"))
+    at_mean, _ = problem.evaluate_functions(output_functions=problem.observables)
+    at_one, _ = problem.evaluate_functions(design_vector=np.array([0.25]), output_functions=problem.observables)
+    print([at_mean["f"], at_one["f"]])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.doe import EvaluationProblem
+    from gemseo.space import RandomSpace
+    from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
+    space = RandomSpace()
+    space.add_variable("u", SPUniformDistribution_Settings(minimum=0.0, maximum=4.0))
+    problem = EvaluationProblem(space)
+    problem.add_observable(ArrayFunction(lambda u: u ** 2, "f"))
+    mean = space.convert_dict_to_array(space.reference_value)
+    at_mean, _ = problem.evaluate_functions(input_value=mean, input_value_is_normalized=False, output_functions=problem.observables)
+    at_one, _ = problem.evaluate_functions(input_value=np.array([1.0]), input_value_is_normalized=False, output_functions=problem.observables)
+    print([at_mean["f"], at_one["f"]])
+    ```
+
+### The arrays of the Sobieski and springs problems are read-only
+
+In GEMSEO 7, the design bounds of the Sobieski problem, `SobieskiBase.design_bounds` and `SobieskiProblem.design_bounds`, are read-only arrays. So are the initial state arrays `initial_time`, `initial_position` and `initial_velocity` of `gemseo.problem.ode.spring.springs_dynamics_discipline`, and so are the default input data of `SpringsDynamicsDiscipline`.
+
+bump-gemseo renames the springs constants, e.g. `INITIAL_TIME` to `initial_time`, but leaves no comment on any of these arrays, and an in-place assignment raises `ValueError: assignment destination is read-only`. Copy the arrays to get mutable arrays before modifying them, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -224,7 +468,7 @@ bump-gemseo renames these constants but leaves no comment, and an in-place assig
     print([lower[0], float(initial_time[0])])
     ```
 
-### New argument names of `RestrictedFunction`
+### The arguments of `RestrictedFunction` were renamed
 
 In GEMSEO 7, the `restriction_indices` and `restriction_values` arguments of `RestrictedFunction` are renamed `frozen_indexes` and `frozen_values`, and a `name` argument is added; if empty, it defaults to `"{function.name}_restriction"`. The public attribute `restriction_values` is removed.
 
@@ -295,7 +539,7 @@ bump-gemseo converts the calls to `add_optimization_strategy` but leaves no comm
     print([list(study.algorithms), list(study.formulations), [settings.max_iter for settings in study.algorithms_options]])
     ```
 
-### Renamed argument of `SobieskiProblem.get_constraints`
+### An argument of `SobieskiProblem.get_constraints` was renamed
 
 The `design_vector` argument of `SobieskiProblem.get_constraints` is renamed `input_value` in GEMSEO 7, and the module `gemseo.problems.mdo.sobieski.core` is now `gemseo.problem.mdo.sobieski.standalone`.
 
@@ -322,6 +566,56 @@ bump-gemseo leaves no comment on the argument, so a call with the old keyword ra
     problem = SobieskiProblem()
     constraints = problem.get_constraints(input_value=problem.initial_design)
     print([len(constraints), constraints[0]])
+    ```
+
+### `OptimizationProblem.to_dataset` always groups the functions by category
+
+In GEMSEO 6.3, `OptimizationProblem.to_dataset` put all the functions in the group `"functions"` (`OptimizationDataset.FUNCTION_GROUP`), unless `group_functions=True` was passed. GEMSEO 7 removes the `group_functions` argument and always puts the functions in one group per category: `objectives`, `inequality_constraints`, `equality_constraints` and `observables`.
+
+bump-gemseo removes the `group_functions` argument and replaces `OptimizationDataset.FUNCTION_GROUP` by the string `"functions"`, without comment, but the dataset has no such group any more: `dataset.get_variable_names("functions")` raises `KeyError: 'functions'`, and other ways of reading the group may silently get no variable. Read the groups of the categories instead, e.g. `dataset.objective_group` and `dataset.inequality_constraint_group`, or the properties such as `dataset.objective_names`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `KeyError: 'functions'`
+    - **See** merge request [!2551](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2551).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: x ** 2, "f")
+    problem.add_constraint(MDOFunction(lambda x: x - 0.8, "g", f_type="ineq"))
+    execute_algo(problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.2], [0.6]]))
+    dataset = problem.to_dataset()
+    print([dataset.get_variable_names("functions"), dataset.get_view(group_names="functions").to_numpy()])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.doe import CustomDOE_Settings
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(lambda x: x ** 2, "f")
+    problem.add_constraint(ArrayFunction(lambda x: x - 0.8, "g", f_type="ineq"))
+    execute_algo(problem, algo_type="doe", settings_model=CustomDOE_Settings(samples=array([[0.2], [0.6]])))
+    dataset = problem.to_dataset()
+    groups = [dataset.objective_group, dataset.inequality_constraint_group]
+    print([dataset.objective_names + dataset.inequality_constraint_names, dataset.get_view(group_names=groups).to_numpy()])
     ```
 
 ## Changes flagged by bump-gemseo
@@ -392,7 +686,7 @@ bump-gemseo cannot tell the data-driven `ScalableProblem` from the parametric on
 
 `EvaluationProblem.preprocess_functions()` and the `preprocessing` argument of `EvaluationProblem.reset()` are removed in GEMSEO 7. `EvaluationProblem.bind_functions()` binds the functions of a problem to its database and counters, and `EvaluationProblem.create_working_problem(transformation)` returns a new problem whose functions work in the coordinates of a space transformation. Code that only solves problems needs no change.
 
-bump-gemseo removes the `preprocessing` argument and marks the call to `preprocess_functions` with a comment pointing to these two methods; left as is, the call raises an `AttributeError`. If you only evaluate the functions, remove the call, as in the example below; otherwise call `bind_functions` or `create_working_problem`, depending on what you need. Note also that the `design_vector_is_normalized` argument of `EvaluationProblem.evaluate_functions` is renamed `input_value_is_normalized`.
+bump-gemseo removes the `preprocessing` argument and marks the call to `preprocess_functions` with a comment pointing to these two methods; left as is, the call raises an `AttributeError`. If you only evaluate the functions, remove the call, as in the example below; otherwise call `bind_functions` or `create_working_problem`, depending on what you need.
 
 !!! info "After bump-gemseo"
 
@@ -435,7 +729,7 @@ bump-gemseo removes the `preprocessing` argument and marks the call to `preproce
 
 `MDOFunction.check_grad()` is removed in GEMSEO 7, where `MDOFunction` is renamed `ArrayFunction`; use `gemseo.util.derivative.check.function.FunctionJacobianChecker` instead, which checks the Jacobian of an `ArrayFunction`. bump-gemseo marks the call with a comment saying so; left as is, it raises `AttributeError: 'ArrayFunction' object has no attribute 'check_grad'`.
 
-Create a `FunctionJacobianChecker` from the function and call its `check` method with the input value, as in the example below, where the `error_max` argument becomes `atol`. While `check_grad` raised a `ValueError` for a wrong Jacobian, `check` returns a value that is false in that case, so replace a `try`/`except` block by a test of this value.
+Create a `FunctionJacobianChecker` from the function and call its `check` method with the input value, as in the example below. `check_grad` compared a relative error with `error_max`; `check` compares the Jacobians with an absolute tolerance `atol` and a relative tolerance `rtol`, both `1e-8` by default. The example passes the former `error_max` as `atol`; set `rtol` too if needed. While `check_grad` raised a `ValueError` for a wrong Jacobian, `check` returns `False` in that case, so replace a `try`/`except` block by a test of this value.
 
 !!! info "After bump-gemseo"
 
@@ -498,9 +792,7 @@ bump-gemseo marks the call with the comment `MDOLinearFunction.normalize was rem
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### `ProblemFunction` was replaced by `EvaluationFunction` and `TransformedInputFunction`
 
@@ -511,7 +803,7 @@ bump-gemseo marks the import with a comment giving these options; left as is, th
 !!! info "After bump-gemseo"
 
     - **Comment**: `gemseo.algos.problem_function.ProblemFunction: replace it with EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its argument to the coordinates an algorithm works on, or both stacked as EvaluationProblem.bind_functions and EvaluationProblem.create_working_problem do`
-    - **Error with GEMSEO 7**: `ImportError: The attribute 'ProblemFunction' of the module 'gemseo.algos.problem_function' was removed; replace it with EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its ar`
+    - **Error with GEMSEO 7**: `ImportError: The attribute 'ProblemFunction' of the module 'gemseo.algos.problem_function' was removed; replace it with EvaluationFunction to record the evaluations of a function, TransformedInputFunction to adapt its ...`
     - **See** issue [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846), merge request [!2579](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2579).
 
 === "GEMSEO 6.3"
@@ -558,9 +850,7 @@ bump-gemseo marks the line reading the flag and the call to `preprocess_function
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### `ScalableProblem.create_scenario` no longer takes `use_optimizer`
 
@@ -591,7 +881,7 @@ bump-gemseo marks the call with the comment `remove it, as the scenario is an MD
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `FunctionFromDiscipline.generator_class`
 - `MDOFunction.filt_0`

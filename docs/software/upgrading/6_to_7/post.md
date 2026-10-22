@@ -26,13 +26,13 @@ bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quot
 In GEMSEO 6.3, `Boxplot` passed its `**boxplot_options` keyword arguments to matplotlib, including `orientation`, `vert` and `labels`.
 In GEMSEO 7, they are the `options` setting of `Boxplot_Settings`, which no longer accepts `orientation`, `vert` and `labels`.
 
-bump-gemseo leaves the call unchanged and writes no comment, so the code fails with a `ValidationError` for `Boxplot_Settings` saying that the boxplot options `['labels']` are not supported.
+bump-gemseo moves the arguments of `Boxplot` into `Boxplot_Settings`, with `labels` inside `options`, and writes no comment; the code then fails with a `ValidationError` for `Boxplot_Settings` saying that the boxplot options `['labels']` are not supported.
 Set the orientation with the setting `use_vertical_bars`, and replace `labels` by the matplotlib option `tick_labels` in `options`, as in the example below.
 
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for Boxplot_Settings options Value error, The boxplot options ['labels'] are not supported; use the matplotlib option tick_labels instead. [type=value_error, input_value={'labels': ['f`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for Boxplot_Settings options Value error, The boxplot options ['labels'] are not supported; use the matplotlib option tick_labels instead. [type=value_error, input_value={'labels' ...`
     - **See** merge request [!2768](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2768).
 
 === "GEMSEO 6.3"
@@ -58,7 +58,73 @@ Set the orientation with the setting `use_vertical_bars`, and replace `labels` b
     print(len(plot.execute(save=False)))
     ```
 
-### Dataset plots renamed `PairPlot`, `Heatmap` and `RadViz`
+### The plot engine classes take a single settings model, `_settings`
+
+In GEMSEO 6.3, the engine class of a dataset plot, a subclass of `MatplotlibPlot` or `PlotlyPlot` with the same name as the plot, was built with two settings, `common_settings` and `specific_settings`, then the specific data, and read them from `self._common_settings` and `self._specific_settings`.
+In GEMSEO 7, `BasePlot`, `MatplotlibPlot` and `PlotlyPlot` take a single `settings` argument, the settings model of the dataset plot, i.e. an instance of its `settings_class`, and the engine reads it from `self._settings`; the engine classes are generic in this class, e.g. `MatplotlibPlot[YvsX_Settings]`.
+
+bump-gemseo replaces `_common_settings` by `_settings` in an engine class, but leaves `_specific_settings` and the arguments unchanged, without comment; built with two settings, the engine fails with `TypeError: ScaledCurve._create_figures() takes 5 positional arguments but 6 were given`, since the second settings is passed as data.
+Declare the specific settings as fields of a subclass of `BaseDatasetPlotSettings`, build the engine with one instance of it, and read all the settings from `self._settings`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `TypeError: ScaledCurve._create_figures() takes 5 positional arguments but 6 were given`
+    - **See** merge request [!2325](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2325).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from collections import namedtuple
+    import numpy as np
+    from gemseo.datasets.dataset import Dataset
+    from gemseo.post.dataset.plot_settings import PlotSettings
+    from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+
+    class ScaledCurve(MatplotlibPlot):
+        """The matplotlib engine of a plot of y scaled versus x."""
+
+        def _create_figures(self, fig, ax, x_values, y_values):
+            fig, ax = self._get_figure_and_axes(fig, ax)
+            ax.plot(x_values, self._specific_settings.scale * y_values, color=self._common_settings.color)
+            return [fig]
+
+    dataset = Dataset.from_array(np.array([[1.0, 2.0], [3.0, 4.0]]), ["x", "y"])
+    specific_settings = namedtuple("specific_settings", ["scale"])(2.0)
+    plot = ScaledCurve(dataset, PlotSettings(color="red"), specific_settings, dataset.get_view(variable_names="x").to_numpy(), dataset.get_view(variable_names="y").to_numpy())
+    line = plot.figures[0].axes[0].lines[0]
+    print([line.get_ydata().ravel(), line.get_color()])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    from gemseo.dataset import Dataset
+    from gemseo.post.dataset.base_settings import BaseDatasetPlotSettings
+    from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
+
+    class ScaledCurve_Settings(BaseDatasetPlotSettings):
+        """The settings of a plot of y scaled versus x."""
+
+        scale: float = 1.0
+
+    class ScaledCurve(MatplotlibPlot[ScaledCurve_Settings]):
+        """The matplotlib engine of a plot of y scaled versus x."""
+
+        def _create_figures(self, fig, ax, x_values, y_values):
+            fig, ax = self._get_figure_and_axes(fig, ax)
+            ax.plot(x_values, self._settings.scale * y_values, color=self._settings.color)
+            return [fig]
+
+    dataset = Dataset.from_array(np.array([[1.0, 2.0], [3.0, 4.0]]), ["x", "y"])
+    settings = ScaledCurve_Settings(scale=2.0, color="red")
+    plot = ScaledCurve(dataset, settings, dataset.get_view(variable_names="x").to_numpy(), dataset.get_view(variable_names="y").to_numpy())
+    line = plot.figures[0].axes[0].lines[0]
+    print([line.get_ydata().ravel(), line.get_color()])
+    ```
+
+### Dataset plots were renamed `PairPlot`, `Heatmap` and `RadViz`
 
 GEMSEO 7 renamed three dataset plots: `ScatterMatrix` is now `PairPlot`, `Radar` is now `RadViz`, and `ColorEvolution` was merged into `Heatmap`, where `Heatmap_Settings.symmetric` set to `False` reproduces the old `ColorEvolution` behavior.
 The names given to `DatasetPlotFactory` change accordingly.
@@ -69,7 +135,7 @@ Replace the names, and pass the specific arguments of a plot through its setting
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ImportError: The class ScatterMatrix is not available; the available ones are: AndrewsCurves, BarPlot, BaseDatasetPlot, Boxplot, Curves, Heatmap, Lines, PairPlot, ParallelCoordinates, RadViz, RadarChart, Scatter, Surface`
+    - **Error with GEMSEO 7**: `ImportError: The class ScatterMatrix is not available; the available ones are: AndrewsCurves, BarPlot, BaseDatasetPlot, Boxplot, Curves, Heatmap, Lines, PairPlot, ParallelCoordinates, RadViz, RadarChart, Scatter ...`
     - **See** issue [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780), merge request [!2436](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2436); issue [#1854](https://gitlab.com/gemseo/dev/gemseo/-/issues/1854), merge request [!2621](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2621); issue [#1720](https://gitlab.com/gemseo/dev/gemseo/-/issues/1720), merge request [!2325](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2325).
 
 === "GEMSEO 6.3"
@@ -108,8 +174,8 @@ Replace the names, and pass the specific arguments of a plot through its setting
 In GEMSEO 6.3, the trends of `Scatter` and `ScatterMatrix` were the nested enumerations `Scatter.Trend` and `ScatterMatrix.Trend`.
 GEMSEO 7 removed them; use the enumeration `Trend` of `gemseo.post.dataset.trend`, for `Scatter` as for `PairPlot`, the new name of `ScatterMatrix`.
 
-bump-gemseo renames `DatasetPlot` to `BaseDatasetPlot` but leaves the nested enumerations unchanged and writes no comment, so the code fails with `AttributeError: type object 'Scatter' has no attribute 'Trend'`.
-Import `Trend` and give it to the `trend` field of the settings model of the plot, e.g. `Scatter_Settings`, since the keyword arguments of the dataset plots were replaced by `settings`, as in the example below.
+bump-gemseo moves the arguments of the plot into its settings model, e.g. `Scatter_Settings`, but leaves the nested enumerations unchanged and writes no comment, so the code fails with `AttributeError: type object 'Scatter' has no attribute 'Trend'`.
+Replace `Scatter.Trend` and `ScatterMatrix.Trend` by `Trend` imported from `gemseo.post.dataset.trend`, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -146,7 +212,7 @@ Import `Trend` and give it to the `trend` field of the settings model of the plo
     print([BaseDatasetPlot.PlotEngine.PLOTLY, Trend.QUADRATIC, len(plot.execute(save=False))])
     ```
 
-### `RadarChart` post-processor renamed `ConstraintRadar`
+### The `RadarChart` post-processor was renamed `ConstraintRadar`
 
 GEMSEO 7 renamed the post-processor `RadarChart` to `ConstraintRadar`, its settings class `RadarChart_Settings` to `ConstraintRadar_Settings`, and the module `gemseo.post.radar_chart` to `gemseo.post.constraint_radar`.
 
@@ -156,7 +222,7 @@ Build a `ConstraintRadar_Settings` and pass it to `execute_post` as `settings_mo
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ImportError: The class RadarChart is not available; the available ones are: Animation, BasicHistory, ConstraintRadar, ConstraintsHistory, Correlations, GradientSensitivity, HessianHistory, ObjConstrHist, OptHistoryView,`
+    - **Error with GEMSEO 7**: `ImportError: The class RadarChart is not available; the available ones are: Animation, BasicHistory, ConstraintRadar, ConstraintsHistory, Correlations, GradientSensitivity, HessianHistory, ObjConstrHist, OptHistoryView ...`
     - **See** issue [#1720](https://gitlab.com/gemseo/dev/gemseo/-/issues/1720), merge request [!2325](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2325).
 
 === "GEMSEO 6.3"
@@ -189,7 +255,7 @@ Build a `ConstraintRadar_Settings` and pass it to `execute_post` as `settings_mo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
-### `fig_size_x` and `fig_size_y` replaced by `fig_size`
+### `fig_size_x` and `fig_size_y` were replaced by `fig_size`
 
 GEMSEO 7 removed the attributes `fig_size_x` and `fig_size_y` of `BaseDatasetPlot`, formerly `DatasetPlot`; use the setting `fig_size` instead, the pair of the width and the height, available as `settings.fig_size`.
 
@@ -267,52 +333,9 @@ For a custom plot, declare its fields in a `<Plot>_Settings` class set as the `s
     print([plot.settings.color, plot.settings.n_items, list(plot.settings.x)])
     ```
 
-## Deprecated names
-
-The code still works with GEMSEO 7, with a deprecation warning.
-
-### `execute_post` takes a settings model
-
-In GEMSEO 6.3, `execute_post` took the name of the post-processor as `post_name` and its settings as keyword arguments.
-In GEMSEO 7, a post-processor is configured with a settings model, e.g. `BasicHistory_Settings`, passed here as `settings_model`; the `**settings` arguments of `PostFactory.execute`, including `post_name`, were removed.
-
-bump-gemseo does not convert these loose settings: it leaves `post_name` and the keyword arguments as they are and writes no comment.
-GEMSEO 7 still runs such a call with the same values and without warning, so nothing tells you that this code was not migrated.
-Build the settings model of the post-processor from the keyword arguments and pass it, as in the example below.
-
-!!! info "After bump-gemseo"
-
-    - **Comment**: none.
-    - **With GEMSEO 7**: it works, with a deprecation warning.
-
-=== "GEMSEO 6.3"
-
-    ```python
-    from gemseo import execute_post
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
-    from gemseo.problems.optimization.rosenbrock import Rosenbrock
-    problem = Rosenbrock()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP", max_iter=5)
-    post = execute_post(problem, post_name="BasicHistory", variable_names=["rosen"], save=False, show=False)
-    print(len(post.figures))
-    ```
-
-=== "GEMSEO 7"
-
-    ```python
-    from gemseo import execute_post
-    from gemseo.optimization import SLSQP_Settings
-    from gemseo.optimization.factory import OptimizationLibraryFactory
-    from gemseo.post import BasicHistory_Settings
-    from gemseo.problem.optimization.rosenbrock import Rosenbrock
-    problem = Rosenbrock()
-    OptimizationLibraryFactory().execute(problem, settings=SLSQP_Settings(max_iter=5))
-    post = execute_post(problem, settings_model=BasicHistory_Settings(variable_names=["rosen"], save=False, show=False))
-    print(len(post.figures))
-    ```
-
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.post.dataset.scatter_plot_matrix.ScatterMatrixOption`
+- `gemseo.post.som.LOGGER`

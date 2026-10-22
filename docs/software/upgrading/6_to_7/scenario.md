@@ -51,14 +51,44 @@ Check also the spelling of the names, since an unknown name, ignored by GEMSEO 6
     print([str(settings.file_path), settings.at_each_iteration, settings.at_each_function_call])
     ```
 
+### `clear_history_before_run` was removed
+
+In GEMSEO 6.3, a scenario had an attribute `clear_history_before_run`, set to `False` and read nowhere: setting it to `True` did not clear anything.
+GEMSEO 7 removed it; the attribute that clears the database of the problem before each execution is `clear_database_before_execute`, formerly `clear_history_before_execute`.
+
+bump-gemseo leaves the name unchanged and writes no comment: reading the attribute fails with `AttributeError: 'MDOScenario' object has no attribute 'clear_history_before_run'`, while setting it still does nothing.
+Remove the code that uses it; set `clear_database_before_execute=True` only if you want the database cleared, which GEMSEO 6.3 did not do with this attribute.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `AttributeError: 'MDOScenario' object has no attribute 'clear_history_before_run'`
+    - **See** issue [#1666](https://gitlab.com/gemseo/dev/gemseo/-/issues/1666), merge request [!2171](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2171).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.scenarios.mdo_scenario import MDOScenario
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([AnalyticDiscipline({"y": "2*x"})], "y", space, formulation_name="DisciplinaryOpt")
+    print(scenario.clear_history_before_run)
+    ```
+
+=== "GEMSEO 7"
+
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
+
 ### Sample a random space with an `EvaluationScenario`
 
 In GEMSEO 6.3, a `DOEScenario` could sample a `ParameterSpace`, such as the `IshigamiSpace` of the example.
-GEMSEO 7 removed `DOEScenario`, which bump-gemseo replaces by `MDOScenario`, and replaced `ParameterSpace` by `RandomSpace`; but `MDOScenario` requires a `DesignSpace`.
-Use an `EvaluationScenario` to sample a `RandomSpace`, and a `DesignSpace` for optimization.
+GEMSEO 7 replaced `ParameterSpace` by `RandomSpace`, and a `RandomSpace` is sampled with an `EvaluationScenario`, which evaluates observables instead of an objective.
 
-bump-gemseo writes no comment, and the code it produces fails, here with `AttributeError: 'IODataset' object has no attribute 'DESIGN_GROUP'`.
-Replace the scenario by an `EvaluationScenario`, declare the outputs to evaluate with `add_observable` instead of an objective, and read the sampled inputs from the `input_group` of the dataset, as in the example below.
+bump-gemseo makes this change on its own: it turns the `DOEScenario` over a `ParameterSpace` into an `EvaluationScenario` and the objective into an observable, without comment.
+What it leaves is the name of the group of the sampled inputs in the dataset of the scenario: `DESIGN_GROUP` does not exist for this dataset, and the code fails with `AttributeError: 'IODataset' object has no attribute 'DESIGN_GROUP'`.
+Read the sampled inputs from the `input_group` of the dataset, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -141,7 +171,7 @@ Replace the name and the keyword arguments by the settings model of the post-pro
 ### `MDOScenario.Settings` was removed
 
 In GEMSEO 6.3, the class attribute `Settings` of a scenario, e.g. `MDOScenario.Settings`, built a model gathering `algo_name` and `algo_settings`.
-GEMSEO 7 removed it because it was no longer useful: the single argument of `MDOScenario.execute` is `algorithm_settings`, the settings model of the algorithm.
+GEMSEO 7 removed it: the single argument of `MDOScenario.execute` is `algorithm_settings`, the settings model of the algorithm.
 
 bump-gemseo leaves it unchanged and writes no comment, so the code fails with `AttributeError: type object 'MDOScenario' has no attribute 'Settings'`.
 Remove these uses and pass the settings model of the algorithm to `execute` instead; as the example below shows, there is no attribute to read in its place.
@@ -162,15 +192,13 @@ Remove these uses and pass the settings model of the algorithm to `execute` inst
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ## Changes flagged by bump-gemseo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
-### `MDOObjectiveScenarioAdapter` replaced by `output_optimal_objective=True` { #scenario-adapters }
+### `MDOObjectiveScenarioAdapter` was replaced by `output_optimal_objective=True` { #scenario-adapters }
 
 GEMSEO 7 removed `MDOObjectiveScenarioAdapter`; use `MDOScenarioAdapter` with `output_optimal_objective=True`, which reports the optimal objective value of the scenario instead of the one computed by the disciplines at the optimum.
 The arguments of the scenario adapters also no longer refer to an optimization: e.g. `reset_x0_before_opt` and `keep_opt_history` are renamed `reset_x0_before_exec` and `keep_databases`, and constants such as `LOWER_BND_SUFFIX` become `lower_bnd_suffix`.
@@ -181,7 +209,7 @@ Import `MDOScenarioAdapter` from `gemseo.scenario`, replace the class name and a
 !!! info "After bump-gemseo"
 
     - **Comment**: `gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: use gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_optimal_objective=True instead`
-    - **Error with GEMSEO 7**: `ImportError: The attribute 'MDOObjectiveScenarioAdapter' of the module 'gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter' was removed; use gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_opt`
+    - **Error with GEMSEO 7**: `ImportError: The attribute 'MDOObjectiveScenarioAdapter' of the module 'gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter' was removed; use gemseo.scenario.adapter.mdo.MDOScenarioAdapter with ...`
     - **See** issue [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888), merge request [!2733](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2733).
 
 === "GEMSEO 6.3"
@@ -273,7 +301,7 @@ If the file format was `"ggobi"`, replace `to_hdf` by `to_ggobi`, as in the exam
     print(Path("history.xml").read_text().count("<record>") > 0)
     ```
 
-### `BaseScenario._settings` replaced by `_algorithm_settings`
+### `BaseScenario._settings` was replaced by `_algorithm_settings`
 
 In GEMSEO 6.3, the private attribute `_settings` of a scenario held the `algo_name` and the `algo_settings` passed to `execute`.
 In GEMSEO 7, the single argument of `MDOScenario.execute` is `algorithm_settings`, a settings model, and `_settings` was replaced by `_algorithm_settings`: the settings model of the driver given to `execute`, or `None` before.
@@ -315,57 +343,16 @@ Read the algorithm name from `_algorithm_settings.target_class_name` and each fo
     print([scenario._algorithm_settings.target_class_name, scenario._algorithm_settings.max_iter])
     ```
 
-## Deprecated names
+## Other comments of bump-gemseo
 
-The code still works with GEMSEO 7, with a deprecation warning.
+bump-gemseo also writes these comments, on code this page does not illustrate.
 
-### `add_observable` expects a sequence of names
-
-In GEMSEO 6.3, the argument `output_names` of `add_observable` accepted a single name as a `str`.
-In GEMSEO 7, `output_names` must be a sequence of names: the argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`, and `[output_name]` is the way to give a single output name.
-
-bump-gemseo leaves the call unchanged and writes no comment, and the scenario call of the example still runs with a `str`.
-Do not rely on this: wrap the name in a list, e.g. `scenario.add_observable(["z"])`, as in the example below.
-
-!!! info "After bump-gemseo"
-
-    - **Comment**: none.
-    - **With GEMSEO 7**: it works, with a deprecation warning.
-    - **See** issue [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94), merge request [!2171](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2171).
-
-=== "GEMSEO 6.3"
-
-    ```python
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.disciplines.analytic import AnalyticDiscipline
-    from gemseo.scenarios.doe_scenario import DOEScenario
-    space = DesignSpace()
-    space.add_variable("a", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = DOEScenario([AnalyticDiscipline({"y": "a**2", "z": "3*a"})], "y", space, formulation_name="DisciplinaryOpt")
-    scenario.add_observable("z")
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=3)
-    print(sorted(scenario.formulation.optimization_problem.database.get_function_history("z").ravel().tolist()))
-    ```
-
-=== "GEMSEO 7"
-
-    ```python
-    from gemseo.discipline import AnalyticDiscipline
-    from gemseo.doe import PYDOE_FULLFACT_Settings
-    from gemseo.formulation import DisciplinaryOpt_Settings
-    from gemseo.scenario import MDOScenario
-    from gemseo.space import DesignSpace
-    space = DesignSpace()
-    space.add_variable("a", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = MDOScenario([AnalyticDiscipline({"y": "a**2", "z": "3*a"})], space, formulation_settings=DisciplinaryOpt_Settings())
-    scenario.add_objective("y")
-    scenario.add_observable(["z"])
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=3))
-    print(sorted(scenario.formulation.problem.database.get_function_history("z").ravel().tolist()))
-    ```
+- `DOEScenario.__init__(formulation_settings=...)`: `pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword`
+- `MDOScenario.__init__(formulation_settings=...)`: `pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword`
+- `OptAsMDOScenario.__init__(formulation_settings=...)`: `pass the formulation settings as formulation_settings=<Formulation>_Settings(...), as the scenario takes no loose keyword`
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.scenarios.base_scenario.ScenarioInputDataType`

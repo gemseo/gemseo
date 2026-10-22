@@ -19,7 +19,7 @@ The changes of GEMSEO 7 about disciplines, chains and wrappers that bump-gemseo 
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### `execute` returns the output data only
 
@@ -110,8 +110,10 @@ Pass values of the annotated types, e.g. `3.0` instead of `3` for a `float`, as 
 ### `MDOChain.copy_jacs` and `MDOChain.reverse_chain_rule` were removed
 
 The methods `copy_jacs` and `reverse_chain_rule` of `MDOChain`, renamed `DisciplineChain`, were removed with no public replacement.
+`copy_jacs` returned a deep copy of a Jacobian dictionary; `reverse_chain_rule` added a discipline to the Jacobian of the chain in reverse mode, which the chain does itself when it is linearized.
+
 bump-gemseo renames the class but leaves these methods without a comment, so using them raises `AttributeError: type object 'DisciplineChain' has no attribute 'copy_jacs'`.
-Remove the code calling them.
+Remove the code calling them; to copy a Jacobian, copy each of its arrays.
 
 !!! info "After bump-gemseo"
 
@@ -127,9 +129,7 @@ Remove the code calling them.
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### `convert_array_to_data` takes `name_to_slice`
 
@@ -254,7 +254,7 @@ Replace each old name by the new one in these strings, as in the example below.
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ImportError: The class MDOChain is not available; the available ones are: AdditiveDisciplineChain, Aerodynamics, AnalyticDiscipline, ArrayBasedFunctionDiscipline, AutoPyDiscipline, Concatenater, ConstraintAggregation, Da`
+    - **Error with GEMSEO 7**: `ImportError: The class MDOChain is not available; the available ones are: AdditiveDisciplineChain, Aerodynamics, AnalyticDiscipline, ArrayBasedFunctionDiscipline, AutoPyDiscipline, Concatenater, ConstraintAggregation ...`
     - **See** issue [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268), merge request [!2401](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2401).
 
 === "GEMSEO 6.3"
@@ -323,11 +323,23 @@ Replace `input_size=None` by `input_size=1`, as in the example below.
     print(output["c"])
     ```
 
+### `XLSDiscipline` moved to the `gemseo-excel` plugin
+
+`XLSDiscipline`, the discipline wrapping an Excel workbook, is no longer part of GEMSEO: it moved to the `gemseo-excel` plugin.
+bump-gemseo rewrites the import `from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline` into `from gemseo_excel.xls_discipline import XLSDiscipline`, without a comment.
+Without the plugin, this import raises `ModuleNotFoundError: No module named 'gemseo_excel'`, and `create_discipline("XLSDiscipline", ...)` raises `ImportError: The class XLSDiscipline is not available`.
+
+Install the `gemseo-excel` plugin in the environment of GEMSEO 7; the rest of the code stays as bump-gemseo leaves it.
+
+!!! info "References"
+
+    - **See** issue [#1833](https://gitlab.com/gemseo/dev/gemseo/-/issues/1833).
+
 ## Changes flagged by bump-gemseo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
-### `local_data` and `IO.data` are deprecated read-only copies
+### `local_data` and `IO.data` are deprecated copies of the data
 
 `Discipline.local_data` and `IO.data` are deprecated; use `Discipline.input_data` and `Discipline.output_data`, or `IO.input_data` and `IO.output_data`, instead.
 The deprecated attributes still work, but return a fresh union of the input and output data and emit a `DeprecationWarning`, so setting, updating or removing an item through them has no effect, and an output that `_run` produces through them is missing.
@@ -337,7 +349,7 @@ Write the outputs to `discipline.io.output_data` (in `_run`, return them or use 
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `cannot transform: setting an item of discipline.local_data has no effect, discipline.local_data being a copy of the data; write it to discipline.io.output_data or discipline.io.input_data` / `cannot transform: setting an item of discipline.io.data has no effect, discipline.io.data being a copy of the data; write it to discipline.io.output_data or discipline.io.input_data` / `local_data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or io.update_output_data(data)), write the inputs to input_data, and read input_data, output_data or io.get_merged_data()`
+    - **Comment**: `cannot transform: setting an item of discipline.local_data has no effect, discipline.local_data being a copy of the data; write it to discipline.io.output_data or discipline.io.input_data` / `cannot transform: setting an item of discipline.io.data has no effect, discipline.io.data being a copy of the data; write it to discipline.io.output_data or discipline.io.input_data` / `local_data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or io.update_output_data(data)), write the inputs to input_data, and read input_data, output_data or io.get_merged_data()` / `IO.data is deprecated and returns a copy of the input and output data, so setting, updating or removing an item through it has no effect, and an output that _run produces through it is missing, even when produced by changing an input in place; return the outputs from _run or write them to output_data (or update_output_data(data)), write the inputs to input_data, and read input_data, output_data or get_merged_data()`
     - **With GEMSEO 7**: no error, but other results.
 
 === "GEMSEO 6.3"
@@ -375,7 +387,7 @@ Rewrite each call and each file accordingly, as in the example below.
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `the tuples are now (discipline_name, is_input, variable_name, new_variable_name)` / `the values are now a pair (input_name_to_new_input_name, output_name_to_new_output_name)` / `the file now has an is_input column in second position, True or False`
+    - **Comment**: `the tuples are now (discipline_name, is_input, variable_name, new_variable_name)` / `the values are now a pair (input_name_to_new_input_name, output_name_to_new_output_name)` / `the file now has an is_input column in second position, True or False` / `a translation is now (discipline_name, is_input, variable_name, new_variable_name)` / `split the mapping into input_name_to_new_input_name and output_name_to_new_output_name, two positional arguments` / `the values are now (variable_name, is_input) pairs; the argument is renamed discipline_name_and_io_mapping` / `the translators are now a mapping from the discipline name to a pair (input_name_to_new_input_name, output_name_to_new_output_name)`
     - **Error with GEMSEO 7**: `TypeError: VariableTranslation.__new__() missing 1 required positional argument: 'new_variable_name'`
     - **See** issue [#1659](https://gitlab.com/gemseo/dev/gemseo/-/issues/1659), merge request [!2609](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2609).
 
@@ -439,7 +451,7 @@ Rewrite each call and each file accordingly, as in the example below.
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.disciplines.wrappers.xls_discipline.cwd`
 

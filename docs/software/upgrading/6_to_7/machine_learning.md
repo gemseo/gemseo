@@ -19,13 +19,13 @@ The changes of GEMSEO 7 about regressors, classifiers, clustering and their qual
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### RBF models invert `epsilon` and add a polynomial term
 
 `RBFRegressor` is now based on SciPy's `RBFInterpolator`. The meaning of `epsilon` is inverted: the kernels are functions of `epsilon*r` instead of `r/epsilon`, so use `epsilon_new = 1/epsilon_old`. Moreover, by default the model now includes a polynomial term whose degree is the per-kernel minimum; the new setting `degree` sets it, `-1` meaning no polynomial.
 
-After bump-gemseo, the code runs without error and without comment, but the model and its predictions differ from GEMSEO 6.3. Check every RBF model whose `epsilon` you set: replace its value by its inverse and, to get a model without polynomial term, set `degree=-1`, as in the example below. The changelog notes that predictions may still differ slightly from previous versions.
+After bump-gemseo, the code runs without error and without comment, but the model and its predictions differ from GEMSEO 6.3. Check every RBF model: where you set `epsilon`, replace its value by its inverse; and, since the polynomial term is added by default, set `degree=-1` to get a model without it, as in the example below. The changelog notes that predictions may still differ slightly from previous versions.
 
 !!! info "After bump-gemseo"
 
@@ -123,9 +123,7 @@ bump-gemseo renames the class but leaves no comment on these attributes, so read
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### `MOERegressor` no longer stores the names of its algorithms
 
@@ -165,6 +163,99 @@ bump-gemseo leaves no comment, and reading one of the removed attributes raises 
     dataset.add_output_variable("y", np.abs(x))
     moe = MOERegressor(dataset)
     print([moe.clusterer_settings.target_class_name, moe.classifier_settings.target_class_name, moe.regressor_settings.target_class_name])
+    ```
+
+### `MOERegressor` stores the settings models of its algorithms
+
+The attributes `cluster_params`, `classif_params` and `regress_params` of `MOERegressor` were renamed to `clusterer_settings`, `classifier_settings` and `regressor_settings`. They were dictionaries of the options passed to `set_clusterer`, `set_classifier` and `set_regressor`, empty by default. They are now the settings models given to these methods, of type `BaseClustererSettings`, `BaseClassifierSettings` and `BaseRegressorSettings`, whose initial values are `KMeans_Settings()`, `KNNClassifier_Settings()` and `LinearRegressor_Settings()`.
+
+bump-gemseo rewrites the calls to `set_clusterer` and the other setters with settings models, but leaves no comment on the attributes, and reading one of them raises `AttributeError: 'MOERegressor' object has no attribute 'cluster_params'`. Read the new attribute instead; `model_dump(exclude_unset=True)` gives the options that were set explicitly, i.e. the dictionary of GEMSEO 6.3, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `AttributeError: 'MOERegressor' object has no attribute 'cluster_params'`
+    - **See** issue [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    import numpy as np
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.regression.algos.moe import MOERegressor
+    x = np.linspace(-1.0, 1.0, 20)[:, None]
+    dataset = IODataset()
+    dataset.add_input_variable("x", x)
+    dataset.add_output_variable("y", np.abs(x))
+    moe = MOERegressor(dataset)
+    moe.set_clusterer("KMeans", n_clusters=3)
+    moe.set_classifier("KNNClassifier", n_neighbors=2)
+    print([moe.cluster_params, moe.classif_params, moe.regress_params])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    from gemseo.dataset import IODataset
+    from gemseo.machine_learning import KMeans_Settings
+    from gemseo.machine_learning import KNNClassifier_Settings
+    from gemseo.machine_learning.regression.model.moe import MOERegressor
+    x = np.linspace(-1.0, 1.0, 20)[:, None]
+    dataset = IODataset()
+    dataset.add_input_variable("x", x)
+    dataset.add_output_variable("y", np.abs(x))
+    moe = MOERegressor(dataset)
+    moe.set_clusterer(KMeans_Settings(n_clusters=3))
+    moe.set_classifier(KNNClassifier_Settings(n_neighbors=2))
+    print([moe.clusterer_settings.model_dump(exclude_unset=True), moe.classifier_settings.model_dump(exclude_unset=True), moe.regressor_settings.model_dump(exclude_unset=True)])
+    ```
+
+### `OTGaussianProcessRegressor.algo` is no longer an OpenTURNS `KrigingResult`
+
+`OTGaussianProcessRegressor` now uses the OpenTURNS classes `GaussianProcessFitter` and `GaussianProcessRegression` instead of `KrigingAlgorithm`, deprecated by OpenTURNS. Its attribute `algo` is no longer the OpenTURNS `KrigingResult` but a small GEMSEO object, `GaussianProcessRegressionResult`, with only the methods `getConditionalMean`, `getConditionalCovariance`, `getMetaModel`, `getCovarianceModel` and `getTrendCoefficients`, and the attribute `result`, the OpenTURNS `GaussianProcessRegressionResult`.
+
+bump-gemseo leaves no comment, and calling another method of `KrigingResult` raises an `AttributeError`, e.g. `'GaussianProcessRegressionResult' object has no attribute 'getInputSample'`. Call the methods of the result, such as `getInputSample`, `getBasis` or `getCovarianceCoefficients`, on `model.algo.result`. The conditional variances moved to the OpenTURNS class `GaussianProcessConditionalCovariance`, to build from `model.algo.result`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `AttributeError: 'GaussianProcessRegressionResult' object has no attribute 'getInputSample'`
+    - **See** issue [#1798](https://gitlab.com/gemseo/dev/gemseo/-/issues/1798).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    import numpy as np
+    import openturns as ot
+    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.mlearning.regression.algos.ot_gpr import OTGaussianProcessRegressor
+    x = np.linspace(0.0, 1.0, 5)[:, None]
+    dataset = IODataset()
+    dataset.add_input_variable("x", x)
+    dataset.add_output_variable("y", np.sin(6.0 * x))
+    model = OTGaussianProcessRegressor(dataset)
+    model.learn()
+    print(np.array(model.algo.getInputSample()))
+    print(np.array(model.algo.getConditionalMarginalVariance(ot.Sample([[0.3], [0.6]]))))
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    import openturns as ot
+    from gemseo.dataset import IODataset
+    from gemseo.machine_learning.regression.model import OTGaussianProcessRegressor
+    x = np.linspace(0.0, 1.0, 5)[:, None]
+    dataset = IODataset()
+    dataset.add_input_variable("x", x)
+    dataset.add_output_variable("y", np.sin(6.0 * x))
+    model = OTGaussianProcessRegressor(dataset)
+    model.learn()
+    print(np.array(model.algo.result.getInputSample()))
+    conditional_covariance = ot.GaussianProcessConditionalCovariance(model.algo.result)
+    print(np.array(conditional_covariance.getConditionalMarginalVariance(ot.Sample([[0.3], [0.6]]))))
     ```
 
 ### The quality measures take a `model` argument instead of `algo`
@@ -338,7 +429,7 @@ bump-gemseo marks these fields with comments such as `OTGaussianProcessRegressor
     print([settings.multi_start_algo_settings.__class__.__name__.removesuffix("_Settings"), settings.multi_start_algo_settings.n_samples])
     ```
 
-### The multi-start sample count moved to the DOE settings
+### `multi_start_n_samples` without `multi_start_algo_name`
 
 The `multi_start_n_samples` field of `OTGaussianProcessRegressor_Settings` was removed; use the `n_samples` field of the DOE settings given to `multi_start_algo_settings` instead, or `multi_start_algo_settings=None` for no multi-start.
 
@@ -346,8 +437,8 @@ When `multi_start_n_samples` is passed without `multi_start_algo_name`, bump-gem
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `cannot transform: multi_start_n_samples is passed without multi_start_algo_name, whose default names no Settings class, and multi_start_n_samples has a rule in a Settings class: migrate it by hand` / `use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start` / `OTGaussianProcessRegressor_Settings.multi_start_algo_name was removed; see the GEMSEO 7 changelog.`
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for OTGaussianProcessRegressor_Settings multi_start_n_samples Extra inputs are not permitted [type=extra_forbidden, input_value=6, input_type=int] For further information visit https:/`
+    - **Comment**: `cannot transform: multi_start_n_samples is passed without multi_start_algo_name, whose default names no Settings class, and multi_start_n_samples has a rule in a Settings class: migrate it by hand` / `use the n_samples field of the multi_start_algo_settings instead, or multi_start_algo_settings=None for no multi-start` / `OTGaussianProcessRegressor_Settings.multi_start_algo_name was removed; see the GEMSEO 7 changelog.` / `OTGaussianProcessRegressor_Settings.multi_start_n_samples was removed; see the GEMSEO 7 changelog.`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for OTGaussianProcessRegressor_Settings multi_start_n_samples Extra inputs are not permitted [type=extra_forbidden, input_value=6, input_type=int] For further information visit ...`
 
 === "GEMSEO 6.3"
 
@@ -381,7 +472,7 @@ as in the example below.
 !!! info "After bump-gemseo"
 
     - **Comment**: `PCERegressor_Settings.probability_space was removed; see the GEMSEO 7 changelog.`
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for PCERegressor_Settings probability_space Extra inputs are not permitted [type=extra_forbidden, input_value=Ishigami space: +------+-...-----------------------+, input_type=IshigamiS`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for PCERegressor_Settings probability_space Extra inputs are not permitted [type=extra_forbidden, input_value=Ishigami space: +------+-...-----------------------+ ...`
     - **See** issue [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673), merge request [!2309](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2309); issue [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673), merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
 
 === "GEMSEO 6.3"
@@ -423,7 +514,7 @@ bump-gemseo marks the line with the comment `kernel only accepts a member of the
 !!! info "After bump-gemseo"
 
     - **Comment**: `kernel only accepts a member of the RBF enumeration or its name, e.g. RBF.CUBIC or "cubic"; a Python callable is no longer accepted`
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for RBFRegressor_Settings kernel Input should be 'cubic', 'gaussian', 'inverse_multiquadric', 'inverse_quadratic', 'linear', 'multiquadric', 'quintic' or 'thin_plate_spline' [type=enum`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for RBFRegressor_Settings kernel Input should be 'cubic', 'gaussian', 'inverse_multiquadric', 'inverse_quadratic', 'linear', 'multiquadric', 'quintic' or 'thin_plate_spline' ...`
     - **See** issue [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861), merge request [!2685](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2685).
 
 === "GEMSEO 6.3"
@@ -471,7 +562,7 @@ bump-gemseo marks each access with a comment such as `RBFRegressor.y_average was
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `RBFRegressor.y_average was removed; see the GEMSEO 7 changelog.` / `TPSRegressor.y_average was removed; see the GEMSEO 7 changelog.` / `RBFRegressor.der_function was removed; see the GEMSEO 7 changelog.`
+    - **Comment**: `RBFRegressor.y_average was removed; see the GEMSEO 7 changelog.` / `TPSRegressor.y_average was removed; see the GEMSEO 7 changelog.` / `RBFRegressor.der_function was removed; see the GEMSEO 7 changelog.` / `TPSRegressor.der_function was removed; see the GEMSEO 7 changelog.`
     - **Error with GEMSEO 7**: `AttributeError: 'RBFRegressor' object has no attribute 'y_average'`
     - **See** issue [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861), merge request [!2685](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2685).
 
@@ -495,9 +586,7 @@ bump-gemseo marks each access with a comment such as `RBFRegressor.y_average was
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### Some settings of `RBFRegressor` and `TPSRegressor` were removed
 
@@ -507,9 +596,9 @@ bump-gemseo marks each use of these settings with a comment such as `RBFRegresso
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `RBFRegressor_Settings.norm was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.norm was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.der_function was removed; see the GEMSEO 7 changelog.`
+    - **Comment**: `RBFRegressor_Settings.norm was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.norm was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.der_function was removed; see the GEMSEO 7 changelog.` / `RBFRegressor_Settings.der_function was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.function was removed; see the GEMSEO 7 changelog.` / `TPSRegressor_Settings.epsilon was removed; see the GEMSEO 7 changelog.`
     - **Error with GEMSEO 7**: `AttributeError: 'RBFRegressor_Settings' object has no attribute 'norm'`
-    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the distance, the kernel derivatives and the TPS kernel and shape are no longer settings (changelog 1861).
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the distance, the kernel derivatives and the TPS kernel and shape are no longer settings (issue [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861)).
     - **See** issue [#1861](https://gitlab.com/gemseo/dev/gemseo/-/issues/1861), merge request [!2685](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2685).
 
 === "GEMSEO 6.3"
@@ -534,7 +623,7 @@ bump-gemseo marks each use of these settings with a comment such as `RBFRegresso
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `RBFRegressor.EUCLIDEAN`
 - `RBFRegressor.RBFDerivatives`

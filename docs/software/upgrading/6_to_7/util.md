@@ -19,7 +19,7 @@ The changes of GEMSEO 7 about configuration, logging, testing helpers and other 
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### `epsilon` is a builtin `float` and no longer upcasts `float32` arrays
 
@@ -52,14 +52,94 @@ Check the computations mixing `epsilon` with `float32` arrays; if you need the G
     print([values.dtype.name, type(epsilon).__name__])
     ```
 
+### `get_sub_disciplines` replaces any object with a `disciplines` attribute by its disciplines
+
+In GEMSEO 6.3, `get_sub_disciplines` replaced only scenarios, formulations and `ProcessDiscipline` objects by the disciplines they are made of, and kept any other object as is.
+In GEMSEO 7, it replaces any object with a non-empty `disciplines` attribute, e.g. a discipline of your own that stores other disciplines in such an attribute.
+bump-gemseo only renames the module, `gemseo.utils.discipline` into `gemseo.util.discipline`: the code runs without error, but such an object is replaced by its disciplines.
+
+If such an object must be kept as a whole, store its disciplines in an attribute with another name, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** issue [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.core.discipline import Discipline
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.utils.discipline import get_sub_disciplines
+
+    class Wrapper(Discipline):
+        def __init__(self, disciplines):
+            super().__init__()
+            self.disciplines = disciplines
+
+        def _run(self, input_data):
+            return None
+
+    wrapper = Wrapper([AnalyticDiscipline({"y": "x"}, name="inner")])
+    print([discipline.name for discipline in get_sub_disciplines([wrapper])])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.discipline import AnalyticDiscipline
+    from gemseo.discipline import Discipline
+    from gemseo.util.discipline import get_sub_disciplines
+
+    class Wrapper(Discipline):
+        def __init__(self, disciplines):
+            super().__init__()
+            self.wrapped_disciplines = disciplines
+
+        def _run(self, input_data):
+            return None
+
+    wrapper = Wrapper([AnalyticDiscipline({"y": "x"}, name="inner")])
+    print([discipline.name for discipline in get_sub_disciplines([wrapper])])
+    ```
+
 ## Changes that fail without a comment
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
 
+### `filter_names` no longer accepts `None`
+
+The `names_to_keep` argument of `filter_names` no longer accepts `None` to keep all the names; an empty iterable does it.
+This argument can now also be an iterator, e.g. a generator, which used to keep no name.
+bump-gemseo only renames the module, `gemseo.utils.string_tools` into `gemseo.util.string`, and the call with `None` raises `TypeError: 'NoneType' object is not iterable`.
+
+Pass an empty tuple instead of `None`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `TypeError: 'NoneType' object is not iterable`
+    - **See** merge request [!2795](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2795).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.utils.string_tools import filter_names
+    print(list(filter_names(["a", "b", "c"], None)))
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.util.string import filter_names
+    print(list(filter_names(["a", "b", "c"], ())))
+    ```
+
 ### The `GEMSEO_FAST` environment variable was removed
 
 The `fast` option of the global configuration and the `GEMSEO_FAST` environment variable were removed; use the methods `enable_fast_mode` and `disable_fast_mode` of the global configuration instead, which disable the options costing time at every evaluation and reset them.
-bump-gemseo leaves no comment; passing `fast` to the global configuration, e.g. from `GEMSEO_FAST`, raises an error naming these methods.
+bump-gemseo rewrites the assignments of `configuration.fast` in the code into these methods, but it cannot see the `GEMSEO_FAST` environment variable, set outside the code or in a dotenv file; with GEMSEO 7, GEMSEO fails at import with an error naming these methods.
 Stop setting `GEMSEO_FAST` and call `configuration.enable_fast_mode()` in the code, as in the example below.
 
 !!! info "After bump-gemseo"
@@ -119,6 +199,56 @@ Replace `step=None` by `step=0.0`, as in the example below.
     print([approximator.step, approximator.f_gradient(np.array([3.0]))])
     ```
 
+### Settings models validate the fields assigned after their creation
+
+In GEMSEO 7, the settings models (`BaseSettings` and its subclasses, for the algorithms, formulations, MDAs and post-processors) validate a field when it is assigned after the creation of the model, not only at creation time.
+Assigning a value of a wrong type now raises a `ValidationError`.
+A `model_validator(mode="after")` that assigns a field is also run again by this assignment, which assigns the field again, and so on.
+bump-gemseo changes nothing in such a validator, and creating the settings raises `RecursionError: maximum recursion depth exceeded`.
+
+In a validator, set the value without validation, with `self.__dict__["field"] = value`, as in the example below.
+Outside a validator, assign only values of the type of the field.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `RecursionError: maximum recursion depth exceeded`
+    - **See** merge request [!2511](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2511).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from pydantic import model_validator
+    from gemseo.settings.base_settings import BaseSettings
+
+    class Tolerance_Settings(BaseSettings):
+        tolerance: float = 1e-6
+
+        @model_validator(mode="after")
+        def _clip(self):
+            self.tolerance = max(self.tolerance, 1e-12)
+            return self
+
+    print(Tolerance_Settings(tolerance=0.0).tolerance)
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from pydantic import model_validator
+    from gemseo.util.pydantic import BaseSettings
+
+    class Tolerance_Settings(BaseSettings):
+        tolerance: float = 1e-6
+
+        @model_validator(mode="after")
+        def _clip(self):
+            self.__dict__["tolerance"] = max(self.tolerance, 1e-12)
+            return self
+
+    print(Tolerance_Settings(tolerance=0.0).tolerance)
+    ```
+
 ## Changes flagged by bump-gemseo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
@@ -156,7 +286,7 @@ Replace each name as the comment says, as in the example below.
     print([configuration.logging.date_format, LoggingConfiguration().message_format == configuration.logging.message_format, LOGGER.name.split(".")[0]])
     ```
 
-### GEMSEO enumerations derive from `enum.StrEnum`
+### `DesignSpace.DesignVariableType` was replaced by `gemseo.enum.VariableType`
 
 The `strenum` dependency was removed and the GEMSEO enumerations derive from `enum.StrEnum`, with the same member names and values; `enum.StrEnum` is not a subclass of `strenum.StrEnum`, so code annotated with or testing against `strenum.StrEnum` must use `enum.StrEnum`, which bump-gemseo does.
 In addition, the class attribute `DesignSpace.DesignVariableType` was removed; use `gemseo.enum.VariableType` instead.
@@ -197,7 +327,7 @@ If you import `gemseo.util.testing.pytest_conftest`, also add syrupy to the test
 !!! info "After bump-gemseo"
 
     - **Comment**: `gemseo.utils.testing.helpers.image_comparison: use the snapshot_matplotlib fixture of syrupy-matplotlib instead; add syrupy-matplotlib to the test dependencies, set snapshot_matplotlib_tolerance = 0.01 in .pytest.ini, replace the @image_comparison([...]) decorator by a snapshot_matplotlib argument of the test, then run pytest --snapshot-update without -n (the baseline_images directories are no longer used)` / `gemseo.utils.testing.pytest_conftest.baseline_images: the baseline_images fixture went with image_comparison; use the snapshot_matplotlib fixture of syrupy-matplotlib instead` / `gemseo.utils.testing.pytest_conftest: add syrupy to the test dependencies of the project, as gemseo.util.testing.pytest_conftest imports it`
-    - **Error with GEMSEO 7**: `ImportError: The attribute 'image_comparison' of the module 'gemseo.utils.testing.helpers' was removed; use the snapshot_matplotlib fixture of syrupy-matplotlib instead; add syrupy-matplotlib to the test dependencies, se`
+    - **Error with GEMSEO 7**: `ImportError: The attribute 'image_comparison' of the module 'gemseo.utils.testing.helpers' was removed; use the snapshot_matplotlib fixture of syrupy-matplotlib instead; add syrupy-matplotlib to the test dependencies ...`
     - **See** issue [#1760](https://gitlab.com/gemseo/dev/gemseo/-/issues/1760), merge request [!2479](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2479).
 
 === "GEMSEO 6.3"
@@ -210,13 +340,17 @@ If you import `gemseo.util.testing.pytest_conftest`, also add syrupy to the test
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
+
+## Other comments of bump-gemseo
+
+bump-gemseo also writes these comments, on code this page does not illustrate.
+
+- `GlobalConfiguration.__init__(fast=...)`: `call configuration.enable_fast_mode() after creating it`
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.utils.compatibility.matplotlib`
 - `gemseo.utils.compatibility.openturns.OT_1_23`

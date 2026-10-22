@@ -26,17 +26,18 @@ changes that bump-gemseo cannot make on its own, each with the code before and a
 
 !!! info "How much bump-gemseo does on its own"
 
-    The changes of GEMSEO 7 were turned into 2081 small programs, one or a few per change, each
+    The changes of GEMSEO 7 were turned into 2109 small programs, one or a few per change, each
     written for GEMSEO 6.3 and executed before and after migration. bump-gemseo alone migrates
-    1804 of them correctly (86.7 %). The 277 others are what this guide is about:
-    144 are explained with an example, the rest are names removed without replacement,
+    1807 of them correctly (85.7 %). The 302 others are what this guide is about:
+    169 are explained with an example, the rest are names removed without replacement,
     listed at the end of each domain page.
 
 ## Before you start
 
 1. **Upgrade to GEMSEO 6.3 first.** bump-gemseo migrates code written for GEMSEO 6.3 only. If your
-   code uses an older version, follow the page [From GEMSEO 5 to GEMSEO 6](../5_to_6.md) and those of the previous versions up to 6.3,
-   and make sure it runs with GEMSEO 6.3 without deprecation warnings.
+   code uses an older version, follow the upgrading pages from your version up to
+   [From GEMSEO 5 to GEMSEO 6](../5_to_6.md), then the changelog up to 6.3, and make sure your code runs with
+   GEMSEO 6.3 without deprecation warnings.
 2. **Make sure your tests pass with GEMSEO 6.3, then commit.** bump-gemseo rewrites your files in
    place and has no dry-run mode: a clean working tree lets you review its changes with `git diff`
    and undo them.
@@ -66,8 +67,9 @@ Where bump-gemseo cannot make a change, it leaves a comment above the line,
 
 and lists these comments in its report. Search for the text of a comment in this guide (with the
 search box, or in the sections *Changes flagged by bump-gemseo* of the domain pages): the entry
-explains the change and shows the code to write. A comment saying that a name *was removed* refers to
-the section *Removed names* of the domain page.
+explains the change and shows the code to write. A comment about a removed name that no entry explains
+refers to the section *Removed names* of the domain page; other comments with no example are listed in
+the sections *Other comments of bump-gemseo*.
 
 ## Step 3: switch to GEMSEO 7 and run your code
 
@@ -86,13 +88,23 @@ These changes do not raise any error and bump-gemseo writes no comment about the
 concern your code, and compare your results with those of GEMSEO 6.3:
 
 - [Core](core.md#silent-changes):
+    - An `HDF5Cache` file of GEMSEO 6.3 is rewritten when GEMSEO 7 opens it
+    - Parallel executions with `n_processes=1` run in the calling process
     - `split_namespace` splits on the last separator only
 - [Disciplines](discipline.md#silent-changes):
     - `execute` returns the output data only
 - [Spaces](space.md#silent-changes):
     - `get_current_value` returns copies
     - `project_into_bounds` may return a float array
+    - The bounds of a random variable no longer bound the finite differences
+    - Random variables are of type `VariableType.RANDOM`
     - The design space copies and casts the values it stores
+- [Problems and functions](problem.md#silent-changes):
+    - A `Database` over a `RandomSpace` is written to HDF without its space
+    - A `NaN` output is recorded in the database before the run stops
+- [Optimization](optimization.md#silent-changes):
+    - The augmented Lagrangian leaves `normalize_design_space` to its sub-algorithm
+    - `MultiStart` skips the starting points whose optimization fails
 - [DOE](doe.md#silent-changes):
     - The unit hypercube variable is no longer named `"x"`
 - [Datasets](dataset.md#silent-changes):
@@ -103,6 +115,7 @@ concern your code, and compare your results with those of GEMSEO 6.3:
     - RBF models invert `epsilon` and add a polynomial term
 - [Utilities](util.md#silent-changes):
     - `epsilon` is a builtin `float` and no longer upcasts `float32` arrays
+    - `get_sub_disciplines` replaces any object with a `disciplines` attribute by its disciplines
 
 ## The guide, domain by domain
 
@@ -112,25 +125,25 @@ For each domain, the number of changes that bump-gemseo leaves to you:
 - *Silent*: the code runs after bump-gemseo but gives other results.
 - *Fail without comment*: the code fails with GEMSEO 7 and bump-gemseo wrote no comment.
 - *Flagged*: bump-gemseo wrote a `# TODO(bump-gemseo)` comment.
-- *Deprecated*: the code works, with a deprecation warning.
+- *Deprecated*: the code works, with a deprecation warning: rename what it names.
 - *Removed names*: names removed without replacement.
 
 | Domain | Scope | Silent | Fail without comment | Flagged | Deprecated | Removed names |
 |---|---|---|---|---|---|---|
-| [Core](core.md) | grammars, caches, namespaces, derivatives, execution and monitoring | 1 | 8 | 1 | 1 | 23 |
-| [Disciplines](discipline.md) | disciplines, chains and wrappers | 1 | 7 | 2 | 0 | 3 |
-| [Spaces](space.md) | design spaces and random spaces | 3 | 11 | 8 | 0 | 31 |
-| [Problems and functions](problem.md) | evaluation and optimization problems, functions, databases, benchmark problems | 0 | 8 | 7 | 0 | 6 |
-| [Optimization](optimization.md) | optimization libraries and their settings | 0 | 2 | 10 | 0 | 4 |
-| [DOE](doe.md) | design of experiments libraries and their settings | 1 | 1 | 3 | 1 | 0 |
-| [Formulations](formulation.md) | MDO formulations and custom formulations | 0 | 1 | 6 | 0 | 1 |
-| [MDA](mda.md) | multidisciplinary analyses and coupled derivatives | 0 | 4 | 5 | 0 | 3 |
-| [Scenarios](scenario.md) | scenarios, scenario adapters and their results | 0 | 4 | 3 | 1 | 1 |
+| [Core](core.md) | grammars, caches, namespaces, derivatives, execution and monitoring | 3 | 8 | 2 | 1 | 23 |
+| [Disciplines](discipline.md) | disciplines, chains and wrappers | 1 | 8 | 2 | 0 | 3 |
+| [Spaces](space.md) | design spaces and random spaces | 5 | 13 | 8 | 0 | 31 |
+| [Problems and functions](problem.md) | evaluation and optimization problems, functions, databases, benchmark problems | 2 | 12 | 7 | 0 | 6 |
+| [Optimization](optimization.md) | optimization libraries and their settings | 2 | 2 | 10 | 0 | 4 |
+| [DOE](doe.md) | design of experiments libraries and their settings | 1 | 2 | 3 | 0 | 0 |
+| [Formulations](formulation.md) | MDO formulations and custom formulations | 0 | 4 | 7 | 0 | 1 |
+| [MDA](mda.md) | multidisciplinary analyses and coupled derivatives | 0 | 5 | 7 | 0 | 3 |
+| [Scenarios](scenario.md) | scenarios, scenario adapters and their results | 0 | 5 | 3 | 0 | 1 |
 | [Datasets](dataset.md) | datasets and their metadata | 3 | 0 | 2 | 0 | 0 |
-| [Post-processing](post.md) | post-processors and dataset plots | 0 | 4 | 2 | 1 | 1 |
-| [Machine learning](machine_learning.md) | regressors, classifiers, clustering and their quality | 1 | 6 | 6 | 0 | 7 |
+| [Post-processing](post.md) | post-processors and dataset plots | 0 | 5 | 2 | 0 | 2 |
+| [Machine learning](machine_learning.md) | regressors, classifiers, clustering and their quality | 1 | 8 | 6 | 0 | 7 |
 | [Uncertainty](uncertainty.md) | distributions, statistics and sensitivity analysis | 0 | 7 | 6 | 0 | 32 |
-| [Utilities](util.md) | configuration, logging, testing helpers and other utilities | 1 | 2 | 3 | 0 | 21 |
+| [Utilities](util.md) | configuration, logging, testing helpers and other utilities | 2 | 4 | 3 | 0 | 21 |
 
 ## How to read an entry
 

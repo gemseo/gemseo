@@ -19,7 +19,7 @@ The changes of GEMSEO 7 about design of experiments libraries and their settings
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### The unit hypercube variable is no longer named `"x"`
 
@@ -54,7 +54,7 @@ This code runs without error after bump-gemseo, but gives other samples, since t
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
 
-### The `random_state` option of `PYDOE_LHS` renamed `seed`
+### The `random_state` option of `PYDOE_LHS` was renamed `seed`
 
 In GEMSEO 7, the `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. Besides, the PyDOE algorithms library now relies on the maintained `pydoe` package instead of the unmaintained `pyDOE3`.
 
@@ -63,7 +63,7 @@ bump-gemseo leaves no comment, and the former option is rejected by `PYDOE_LHS_S
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for PYDOE_LHS_Settings random_state Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int] For further information visit https://errors.pydantic.dev/2.14/`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for PYDOE_LHS_Settings random_state Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int] For further information visit ...`
     - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the pyDOE algorithms rely on pydoe instead of pyDOE3, whose samples differ for the same seed.
     - **See** issue [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862), merge request [!2646](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2646).
 
@@ -84,15 +84,38 @@ bump-gemseo leaves no comment, and the former option is rejected by `PYDOE_LHS_S
     print(samples)
     ```
 
+### `SciPyDOE.Optimizer.NONE` was removed
+
+The member `NONE` of the enumeration `SciPyDOE.Optimizer`, whose value was `""`, was removed in GEMSEO 7, as nothing used it: the `optimization` field of the settings of the SciPy DOE algorithms, e.g. `LHS_Settings`, already refused it in GEMSEO 6.3 and takes `None` to apply no optimization scheme.
+
+bump-gemseo leaves the name without a comment, and reading it raises `AttributeError: type object 'Optimizer' has no attribute 'NONE'`. Use `None` instead where your code meant "no optimization scheme", and remove the other references.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `AttributeError: type object 'Optimizer' has no attribute 'NONE'`
+    - **See** issue [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
+    print(SciPyDOE.Optimizer.NONE.value)
+    ```
+
+=== "GEMSEO 7"
+
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
+
 ## Changes flagged by bump-gemseo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
-### `BaseDOELibrary.compute_doe` replaced by `sample_space`
+### `BaseDOELibrary.compute_doe` was replaced by `sample_space`
 
-In GEMSEO 7, the `compute_doe` method of `BaseDOELibrary` was removed and replaced by the `sample_space` and `sample_unit_hypercube` methods. The arguments of `sample_space` are renamed: `variables_space` becomes `space`, `unit_sampling` becomes `use_unit_samples` and `settings_model` becomes `settings`.
+In GEMSEO 7, the `compute_doe` method of `BaseDOELibrary` was removed and replaced by the `sample_space` and `sample_unit_hypercube` methods. The arguments of `sample_space` are renamed: `variables_space` becomes `space`, `unit_sampling` becomes `use_unit_samples` and `settings_model` becomes `settings`. Their order changed too: it was `(variables_space, unit_sampling, settings_model)` and is now `(space, settings, use_unit_samples)`.
 
-When the library is only known as a `BaseAlgorithmLibrary`, e.g. when it is created by `DOELibraryFactory`, bump-gemseo cannot rewrite the call and marks it with the comment "cannot transform: library is only known as BaseAlgorithmLibrary; if it is an instance of BaseDOELibrary, compute_doe became sample_space"; left as is, the call raises an `AttributeError`. Replace `compute_doe` by `sample_space` and rename its arguments, as in the example below.
+When the library is only known as a `BaseAlgorithmLibrary`, e.g. when it is created by `DOELibraryFactory`, bump-gemseo cannot rewrite the call and marks it with the comment "cannot transform: library is only known as BaseAlgorithmLibrary; if it is an instance of BaseDOELibrary, compute_doe became sample_space"; left as is, the call raises an `AttributeError`. Replace `compute_doe` by `sample_space` and pass its arguments by keyword with their new names, as in the example below: `sample_space(space, True)` would pass `True` as `settings`.
 
 !!! info "After bump-gemseo"
 
@@ -162,7 +185,7 @@ When the library is only known as a `BaseAlgorithmLibrary`, bump-gemseo cannot r
     print(library.sample_space(space, settings=PYDOE_FULLFACT_Settings(n_samples=3)))
     ```
 
-### The `doe_algo_name` field of `MorrisDOE_Settings` removed
+### The `doe_algo_name` field of `MorrisDOE_Settings` was removed
 
 In GEMSEO 7, the `doe_algo_name` field of `MorrisDOE_Settings` was removed; use its `doe_algo_settings` field instead, whose type is `BaseDOESettings`. The DOE algorithm is thus given by its settings model, e.g. `PYDOE_FULLFACT_Settings()`, instead of its name.
 
@@ -189,44 +212,4 @@ bump-gemseo marks the use of the field with the comment "MorrisDOE_Settings.doe_
     from gemseo.doe import PYDOE_FULLFACT_Settings
     settings = MorrisDOE_Settings(doe_algo_settings=PYDOE_FULLFACT_Settings(), n_samples=16)
     print([settings.doe_algo_settings.__class__.__name__.removesuffix("_Settings"), settings.n_samples])
-    ```
-
-## Deprecated names
-
-The code still works with GEMSEO 7, with a deprecation warning.
-
-### Pass a settings model to `sample_disciplines`
-
-In GEMSEO 6.3, the DOE algorithm of `sample_disciplines` was given by `algo_name` and its settings by keyword arguments. In GEMSEO 7, it can be given by a settings model, e.g. `PYDOE_FULLFACT_Settings(n_samples=5)`, passed as `algo_settings_model`.
-
-bump-gemseo leaves these loose settings as they are, without comment; GEMSEO 7 still runs them with the same values, without warning, but they are not converted to a settings model. Replace `algo_name` and the keyword arguments by the settings model of the algorithm, as in the example below.
-
-!!! info "After bump-gemseo"
-
-    - **Comment**: none.
-    - **With GEMSEO 7**: it works, with a deprecation warning.
-
-=== "GEMSEO 6.3"
-
-    ```python
-    from gemseo import sample_disciplines
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.disciplines.analytic import AnalyticDiscipline
-    space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    dataset = sample_disciplines([AnalyticDiscipline({"y": "2*x"})], space, "y", algo_name="PYDOE_FULLFACT", n_samples=5)
-    print(sorted(dataset.get_view(variable_names="y").to_numpy().ravel().tolist()))
-    ```
-
-=== "GEMSEO 7"
-
-    ```python
-    from gemseo import sample_disciplines
-    from gemseo.discipline import AnalyticDiscipline
-    from gemseo.doe import PYDOE_FULLFACT_Settings
-    from gemseo.space import DesignSpace
-    space = DesignSpace()
-    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    dataset = sample_disciplines([AnalyticDiscipline({"y": "2*x"})], space, "y", algo_settings_model=PYDOE_FULLFACT_Settings(n_samples=5))
-    print(sorted(dataset.get_view(variable_names="y").to_numpy().ravel().tolist()))
     ```

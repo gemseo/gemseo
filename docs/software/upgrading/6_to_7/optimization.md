@@ -17,6 +17,131 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 The changes of GEMSEO 7 about optimization libraries and their settings that bump-gemseo does not migrate on its own. Run bump-gemseo first (see [Running bump-gemseo](bump_gemseo.md)), then use this page. Each example was executed: the code for GEMSEO 6.3 with GEMSEO 6.3.3, the code for GEMSEO 7 with GEMSEO 7.0.0rc0; both print the same values unless the entry says otherwise. The code for GEMSEO 7 also contains the renames bump-gemseo does on its own.
 
+## Silent changes
+
+The code runs after bump-gemseo, without error or comment, and gives other results.
+
+### The augmented Lagrangian leaves `normalize_design_space` to its sub-algorithm
+
+In GEMSEO 7, the augmented Lagrangian algorithms and `MultiStart` ignore the `normalize_design_space` setting given at the top level: their sub-algorithms normalize the design space according to their own settings, `sub_algorithm_settings` for an augmented Lagrangian and `opt_algo_settings` for `MultiStart`. In GEMSEO 6.3, the top-level setting decided in which coordinates the functions of a sub-problem took their input, while the sub-algorithm iterated in the coordinates set by its own setting, normalized by default; with `normalize_design_space=False` at the top level only, the sub-algorithm therefore searched the unit hypercube with functions expecting unnormalized values, and returned a wrong optimum, as in the example below. Even with the default settings, a run whose derivatives are approximated by finite differences can return a slightly different optimum, as the steps are now taken in the coordinates of the user.
+
+bump-gemseo leaves the top-level setting as it is and the results change silently; passing `normalize_design_space=True` explicitly at the top level only logs a warning. Set `normalize_design_space` in the settings of the sub-algorithm instead, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: GEMSEO 6.3 returned the corner of the unit hypercube searched by the sub-algorithm, a wrong optimum that GEMSEO 7 no longer computes..
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from numpy import array
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import Augmented_Lagrangian_order_0_Settings
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = DesignSpace()
+    space.add_variable("x", 2, lower_bound=-100.0, upper_bound=100.0, value=50.0)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: (x[0] - 1) ** 2 + (x[1] - 2) ** 4, "f")
+    problem.add_constraint(MDOFunction(lambda x: array([x[0] + x[1] - 2.0]), "c"), constraint_type="eq")
+    settings = Augmented_Lagrangian_order_0_Settings(normalize_design_space=False, sub_algorithm_name="NLOPT_COBYLA", sub_algorithm_settings={"max_iter": 50}, max_iter=50)
+    result = OptimizationLibraryFactory().execute(problem, settings_model=settings)
+    print([result.x_opt, result.f_opt])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import array
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.optimization import Augmented_Lagrangian_Order_0_Settings
+    from gemseo.optimization import NLOPT_COBYLA_Settings
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.optimization.factory import OptimizationLibraryFactory
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("x", 2, lower_bound=-100.0, upper_bound=100.0, value=50.0)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(lambda x: (x[0] - 1) ** 2 + (x[1] - 2) ** 4, "f")
+    problem.add_constraint(ArrayFunction(lambda x: array([x[0] + x[1] - 2.0]), "c"), constraint_type="eq")
+    settings = Augmented_Lagrangian_Order_0_Settings(sub_algorithm_settings=NLOPT_COBYLA_Settings(max_iter=50, normalize_design_space=False), max_iter=50)
+    result = OptimizationLibraryFactory().execute(problem, settings=settings)
+    print([result.x_opt, result.f_opt])
+    ```
+
+### `MultiStart` skips the starting points whose optimization fails
+
+In GEMSEO 7, `MultiStart` skips by default a starting point whose sub-optimization raises an error, logs a warning and goes on with the next starting points; it raises a `ValueError` only when all of them fail. In GEMSEO 6.3, the first failure stopped the multi-start optimization with the error of the sub-optimization. The new setting `skip_failed_starting_points`, `True` by default, controls this behaviour.
+
+bump-gemseo leaves the code as it is and the behaviour changes silently: code expecting an error, e.g. a `try`/`except` block or a test, now gets a result computed from the other starting points. Set `skip_failed_starting_points=False` to stop at the first failure as before, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** issue [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.algos.opt.multi_start.settings.multi_start_settings import MultiStart_Settings
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+
+
+    def f(x):
+        if x[0] < 0:
+            raise ValueError("negative x")
+        return (x[0] - 0.5) ** 2
+
+
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.2)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(f, "f")
+    settings = MultiStart_Settings(opt_algo_name="NLOPT_COBYLA", doe_algo_name="PYDOE_FULLFACT", n_start=2, max_iter=20)
+    try:
+        OptimizationLibraryFactory().execute(problem, settings_model=settings)
+        print("solved")
+    except ValueError:
+        print("failed")
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.doe import PYDOE_FULLFACT_Settings
+    from gemseo.optimization import MultiStart_Settings
+    from gemseo.optimization import NLOPT_COBYLA_Settings
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.optimization.factory import OptimizationLibraryFactory
+    from gemseo.space import DesignSpace
+
+
+    def f(x):
+        if x[0] < 0:
+            raise ValueError("negative x")
+        return (x[0] - 0.5) ** 2
+
+
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.2)
+    problem = OptimizationProblem(space)
+    problem.objective = ArrayFunction(f, "f")
+    settings = MultiStart_Settings(opt_algo_settings=NLOPT_COBYLA_Settings(), doe_algo_settings=PYDOE_FULLFACT_Settings(n_samples=2), max_iter=20, skip_failed_starting_points=False)
+    try:
+        OptimizationLibraryFactory().execute(problem, settings=settings)
+        print("solved")
+    except ValueError:
+        print("failed")
+    ```
+
 ## Changes that fail without a comment
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
@@ -59,14 +184,14 @@ bump-gemseo does not rename these strings and leaves no comment, so the old name
 
 ### The `disp` and `iprint` settings of `L_BFGS_B` were removed
 
-The `disp` and `iprint` options of the L-BFGS-B optimizer (`L_BFGS_B_Settings`) are removed in GEMSEO 7, as they are no longer available with SciPy 1.15 or later, which deprecated them for this algorithm; the `disp` setting of the other SciPy local optimizers is removed too.
+The `disp` and `iprint` options of the L-BFGS-B optimizer (`L_BFGS_B_Settings`) are removed in GEMSEO 7, as they are no longer available with SciPy 1.15 or later, which deprecated them for this algorithm; the other SciPy local optimizers keep their `disp` setting.
 
 bump-gemseo leaves no comment, and the settings model rejects them with a `ValidationError` (`Extra inputs are not permitted`). Remove these settings, as in the example below.
 
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ValidationError: 2 validation errors for L_BFGS_B_Settings iprint Extra inputs are not permitted [type=extra_forbidden, input_value=-1, input_type=int] For further information visit https://errors.pydantic.dev/2.14/v/ext`
+    - **Error with GEMSEO 7**: `ValidationError: 2 validation errors for L_BFGS_B_Settings iprint Extra inputs are not permitted [type=extra_forbidden, input_value=-1, input_type=int] For further information visit ...`
     - **See** issue [#1853](https://gitlab.com/gemseo/dev/gemseo/-/issues/1853), merge request [!2635](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2635).
 
 === "GEMSEO 6.3"
@@ -255,9 +380,9 @@ bump-gemseo marks the call with a comment, but the code runs without error and g
     print([c.evaluate(np.array([3.0])) for c in problem.constraints])
     ```
 
-### Renamed fields of the driver settings
+### `eval_obs_jac` and `max_design_space_dimension_to_log` became settings fields
 
-In GEMSEO 7, the driver settings `eval_obs_jac` and `max_design_space_dimension_to_log` are renamed `evaluate_observable_jacobian` and `max_input_space_dimension_to_log`. Besides, the `**settings` arguments of `BaseAlgoFactory.execute`, renamed `BaseAlgorithmFactory`, are removed, and its `settings` argument, formerly `settings_model`, is now mandatory.
+In GEMSEO 6.3, `eval_obs_jac` and `max_design_space_dimension_to_log` were arguments of `BaseDriverLibrary.execute`. GEMSEO 7 removed them and added the settings fields `evaluate_observable_jacobian` and `max_input_space_dimension_to_log` to the settings of the drivers. Besides, the `**settings` arguments of `BaseAlgoFactory.execute`, renamed `BaseAlgorithmFactory`, are removed, and its `settings` argument, formerly `settings_model`, is now mandatory.
 
 bump-gemseo cannot gather the settings into a settings model, as the old names are no fields of `SLSQP_Settings`; it keeps the call and marks it with a comment. Left as is, the call raises `TypeError: BaseAlgorithmFactory.execute() got an unexpected keyword argument 'eval_obs_jac'`. Create the settings model of the algorithm with the new field names, pass it as `settings` and remove `algo_name`, as in the example below.
 
@@ -295,7 +420,7 @@ bump-gemseo keeps `skip_int_check` in the call and marks it, as well as the read
 
     - **Comment**: `cannot transform: skip_int_check is no field of SLSQP_Settings, so the call keeps it; migrate by hand` / `BaseDriverSettings.round_ints was removed; see the GEMSEO 7 changelog.`
     - **Error with GEMSEO 7**: `TypeError: BaseDriverLibrary.execute() got an unexpected keyword argument 'max_iter'`
-    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the driver setting round_ints and the skip_int_check argument are replaced by relax_integer_variables, with another meaning (changelog 1528).
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the driver setting round_ints and the skip_int_check argument are replaced by relax_integer_variables, with another meaning (issue [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)).
 
 === "GEMSEO 6.3"
 
@@ -444,9 +569,15 @@ bump-gemseo marks the line with a comment; left as is, it raises `AttributeError
     print(SLSQP_Settings().target_class_name)
     ```
 
+## Other comments of bump-gemseo
+
+bump-gemseo also writes these comments, on code this page does not illustrate.
+
+- `ScipyMILP.ALGORITHM_INFOS`: `ScipyMILP.__init__ now defaults algo_name to "MILP"; a subclass registering its own algorithm names in ALGORITHM_INFOS must define __init__(self, algo_name="<its algorithm name>") calling super().__init__(algo_name)`
+
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings.copy_field_opt`
 - `gemseo.algos.opt.mnbi.mnbi.MNBIOptionsType`

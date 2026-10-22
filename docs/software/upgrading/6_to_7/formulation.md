@@ -21,7 +21,123 @@ The changes of GEMSEO 7 about MDO formulations and custom formulations that bump
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
 
-### `BiLevel` level constants and formulation `ConstraintType` removed
+### `BiLevel` names the database files of a sub-scenario after its index
+
+In GEMSEO 6.3, with the setting `save_opt_history=True`, the `BiLevel` formulation saved the database of each execution of a sub-scenario to an HDF5 file named after the sub-scenario and the execution number, e.g. `"Sub_1.h5"`.
+GEMSEO 7 inserts the index of the sub-scenario between them, e.g. `"Sub_0_1.h5"` for the first execution of the first sub-scenario, so that two sub-scenarios with the same name no longer overwrite each other's files.
+
+bump-gemseo writes no comment, and the code that reads these files by name fails with a `FileNotFoundError`; the code that searches them with a pattern, e.g. `glob("Sub_*.h5")`, finds the new names without error.
+Insert the index of the sub-scenario, i.e. its position among the sub-scenarios of the formulation, in the file names, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `FileNotFoundError: Sub_1.h5 not found.`
+    - **See** issue [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968), merge request [!2786](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2786).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.database import Database
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.scenarios.mdo_scenario import MDOScenario
+    discipline = AnalyticDiscipline({"f": "(x-1)**2+(y-2)**2"}, name="D")
+    sub_space = DesignSpace()
+    sub_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    sub = MDOScenario([discipline], "f", sub_space, name="Sub", formulation_name="DisciplinaryOpt")
+    sub.set_algorithm(algo_name="SLSQP", max_iter=5)
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    scenario = MDOScenario([sub], "f", space, formulation_name="BiLevel", save_opt_history=True)
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    print(len(Database.from_hdf("Sub_1.h5")))
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.core.problem.database import Database
+    from gemseo.discipline import AnalyticDiscipline
+    from gemseo.formulation import BiLevel_Settings
+    from gemseo.formulation import DisciplinaryOpt_Settings
+    from gemseo.optimization import NLOPT_COBYLA_Settings
+    from gemseo.optimization import SLSQP_Settings
+    from gemseo.scenario import MDOScenario
+    from gemseo.space import DesignSpace
+    discipline = AnalyticDiscipline({"f": "(x-1)**2+(y-2)**2"}, name="D")
+    sub_space = DesignSpace()
+    sub_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    sub = MDOScenario([discipline], sub_space, name="Sub", formulation_settings=DisciplinaryOpt_Settings())
+    sub.add_objective("f")
+    sub.set_algorithm(SLSQP_Settings(max_iter=5))
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    scenario = MDOScenario([sub], space, formulation_settings=BiLevel_Settings(save_opt_history=True))
+    scenario.add_objective("f")
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
+    print(len(Database.from_hdf("Sub_0_1.h5")))
+    ```
+
+### `get_sub_optimization_result` raises an error for a negative index
+
+In GEMSEO 6.3, `BiLevelScenarioResult.get_sub_optimization_result` returned `None` for a negative index, as for a sub-scenario without optimization history.
+GEMSEO 7 raises a `ValueError` instead, as it already did for an index greater than the number of sub-scenarios minus one; a negative index does not count from the end as in a Python list.
+
+bump-gemseo writes no comment, and the code that relied on `None` fails with `ValueError: The index (-1) of a sub-scenario must be between 0 and 0.`
+Check the index before the call, as in the example below, or pass the index from the start, e.g. `n - 1` instead of `-1` for the last of `n` sub-scenarios.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `ValueError: The index (-1) of a sub-scenario must be between 0 and 0.`
+    - **See** issue [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968), merge request [!2786](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2786).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.scenarios.mdo_scenario import MDOScenario
+    discipline = AnalyticDiscipline({"f": "(x-1)**2+(y-2)**2"}, name="D")
+    sub_space = DesignSpace()
+    sub_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    sub = MDOScenario([discipline], "f", sub_space, name="Sub", formulation_name="DisciplinaryOpt")
+    sub.set_algorithm(algo_name="SLSQP", max_iter=5)
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    scenario = MDOScenario([sub], "f", space, formulation_name="BiLevel", keep_opt_history=True)
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    result = scenario.get_result()
+    print([result.get_sub_optimization_result(index) is None for index in (-1, 0)])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.discipline import AnalyticDiscipline
+    from gemseo.formulation import BiLevel_Settings
+    from gemseo.formulation import DisciplinaryOpt_Settings
+    from gemseo.optimization import NLOPT_COBYLA_Settings
+    from gemseo.optimization import SLSQP_Settings
+    from gemseo.scenario import MDOScenario
+    from gemseo.space import DesignSpace
+    discipline = AnalyticDiscipline({"f": "(x-1)**2+(y-2)**2"}, name="D")
+    sub_space = DesignSpace()
+    sub_space.add_variable("y", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    sub = MDOScenario([discipline], sub_space, name="Sub", formulation_settings=DisciplinaryOpt_Settings())
+    sub.add_objective("f")
+    sub.set_algorithm(SLSQP_Settings(max_iter=5))
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=5.0, value=0.0)
+    scenario = MDOScenario([sub], space, formulation_settings=BiLevel_Settings(keep_opt_history=True))
+    scenario.add_objective("f")
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
+    result = scenario.get_result()
+    print([index < 0 or result.get_sub_optimization_result(index) is None for index in (-1, 0)])
+    ```
+
+### `BiLevel` level constants and formulation `ConstraintType` were removed
 
 GEMSEO 7 removed the `BiLevel` attributes `SYSTEM_LEVEL`, `SUBSCENARIOS_LEVEL` and `LEVELS` without replacement: `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level` instead of the argument `levels`, which was a list of these literals, and you can pass them as keyword arguments to `MDOScenario.add_constraint`.
 The enumeration `ConstraintType` of a formulation, e.g. `MDF.ConstraintType`, was removed too; use `MDOScenario.ConstraintType` or `ArrayFunction.ConstraintType`.
@@ -33,7 +149,7 @@ Replace each level constant by the boolean argument it stood for, and take the c
 
     - **Comment**: none.
     - **Error with GEMSEO 7**: `AttributeError: type object 'BiLevel' has no attribute 'SYSTEM_LEVEL'`
-    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the BiLevel level constants were removed without replacement (changelog 94).
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the BiLevel level constants were removed without replacement (issue [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)).
     - **See** issue [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94), merge request [!2171](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2171).
 
 === "GEMSEO 6.3"
@@ -51,6 +167,56 @@ Replace each level constant by the boolean argument it stood for, and take the c
     print(["<removed in GEMSEO 7>", MDOScenario.ConstraintType.INEQ])
     ```
 
+### `IDF` requires finite bounds for the coupling targets to normalize the constraints
+
+The setting `normalize_constraints` of `IDF`, `True` by default, divides each consistency constraint by the bound range of its target coupling variable.
+In GEMSEO 6.3, a target without bounds had an infinite range, so its consistency constraint was always zero and the optimizer ignored it without warning.
+GEMSEO 7 raises a `ValueError` instead, since `IDF` also accepts spaces whose variables have no finite range, e.g. a `RandomSpace` sampled by an `EvaluationScenario`.
+
+bump-gemseo writes no comment, and the code fails with `ValueError: IDF formulation: the variables 'y1' have a non-finite bound range, so the consistency constraints cannot be scaled; use the setting normalize_constraints=False.`
+Either give finite bounds to the coupling targets in the design space, or set `normalize_constraints=False`, as in the example below; in both cases the consistency constraints are no longer zero, so the optimization results change.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `ValueError: IDF formulation: the variables 'y1' have a non-finite bound range, so the consistency constraints cannot be scaled; use the setting normalize_constraints=False.`
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: GEMSEO 6.3 divided the consistency constraints by the infinite bound range of the coupling targets, so that they were always zero..
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.scenarios.mdo_scenario import MDOScenario
+    disciplines = [AnalyticDiscipline({"y1": "x+0.2*y2"}, name="D1"), AnalyticDiscipline({"y2": "0.5*y1+1", "f": "x**2+y2"}, name="D2")]
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    space.add_variable("y1", value=0.0)
+    space.add_variable("y2", value=0.0)
+    scenario = MDOScenario(disciplines, "f", space, formulation_name="IDF")
+    problem = scenario.formulation.optimization_problem
+    print([constraint.evaluate(space.get_current_value()) for constraint in problem.constraints])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.discipline import AnalyticDiscipline
+    from gemseo.formulation import IDF_Settings
+    from gemseo.scenario import MDOScenario
+    from gemseo.space import DesignSpace
+    disciplines = [AnalyticDiscipline({"y1": "x+0.2*y2"}, name="D1"), AnalyticDiscipline({"y2": "0.5*y1+1", "f": "x**2+y2"}, name="D2")]
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    space.add_variable("y1", value=0.0)
+    space.add_variable("y2", value=0.0)
+    scenario = MDOScenario(disciplines, space, formulation_settings=IDF_Settings(normalize_constraints=False))
+    scenario.add_objective("f")
+    problem = scenario.formulation.problem
+    print([constraint.evaluate(space.get_current_value()) for constraint in problem.constraints])
+    ```
+
 ## Changes flagged by bump-gemseo
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
@@ -59,6 +225,7 @@ bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
 In GEMSEO 6.3, a custom formulation could override the hook `_init_before_design_space_and_objective` to run code at construction.
 GEMSEO 7 removed it: implement the abstract method `_create_multidisciplinary_process` instead, otherwise the formulation is abstract and the factory drops it.
+A formulation deriving directly from `BaseFormulation` or `BaseMDOFormulation` must also implement the abstract method `_update_input_space`.
 Since a formulation no longer receives the objective at construction, build what needs the objective in `create_objective`.
 
 bump-gemseo marks the method with a comment, as well as the constructor call (pass the problem first, e.g. `OptimizationProblem(design_space)`, and the loose settings in `settings`) and the overrides of `get_top_level_disciplines`, which now takes an argument `include_sub_formulations`, `False` by default.
@@ -157,6 +324,79 @@ As the comment says, `DesignSpace` must then be imported at run time.
 
 
     print([Custom.__name__, Custom.__mro__[1].__name__])
+    ```
+
+### Custom formulations implement `_update_input_space`
+
+In GEMSEO 6.3, `BaseFormulation._update_design_space` was a method doing nothing, that a formulation could override to filter its design space.
+GEMSEO 7 renamed it `_update_input_space`, since the formulation now works on any space of variables, and made it abstract: a custom formulation that did not override it is abstract, and the factory drops it.
+bump-gemseo renames an override of `_update_design_space`, and GEMSEO 7 still calls an override under the old name with a `DeprecationWarning`; only the formulations without override are affected.
+
+bump-gemseo writes no comment about this method, and the instantiation fails with `TypeError: Can't instantiate abstract class Custom without an implementation for abstract methods '_create_multidisciplinary_process', '_update_input_space'`.
+Implement `_update_input_space`, doing nothing to keep the space of variables as it is, as in the example below; the abstract method `_create_multidisciplinary_process` has its own entry.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: `gemseo.formulations.base_mdo_formulation.BaseMDOFormulation: BaseMDOFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseMDOFormulation[T] must derive from BaseMDOFormulation[T, DesignSpace], DesignSpace being imported at run time` / `get_top_level_disciplines now takes an argument include_sub_formulations, False by default; an override must take it too` / `pass the problem first, e.g. OptimizationProblem(design_space), then set its objective; the loose settings go into settings=<Formulation>_Settings(...)`
+    - **Error with GEMSEO 7**: `TypeError: Can't instantiate abstract class Custom without an implementation for abstract methods '_create_multidisciplinary_process', '_update_input_space'`
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from numpy import array
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+    from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+
+    class Custom(BaseMDOFormulation):
+        """A formulation that leaves the design space as it is."""
+
+        Settings = DisciplinaryOpt_Settings
+
+        def get_top_level_disciplines(self, include_sub_formulations=False):
+            return self.disciplines
+
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    space.add_variable("z", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    formulation = Custom([AnalyticDiscipline({"y": "2*x"}, name="D")], "y", space)
+    problem = formulation.optimization_problem
+    print([problem.design_space.variable_names, problem.objective.evaluate(array([0.5, 0.5]))])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import array
+    from gemseo.discipline import AnalyticDiscipline
+    from gemseo.formulation import DisciplinaryOpt_Settings
+    from gemseo.formulation.core.base_mdo import BaseMDOFormulation
+    from gemseo.optimization import OptimizationProblem
+    from gemseo.space import DesignSpace
+
+    class Custom(BaseMDOFormulation):
+        """A formulation that leaves the design space as it is."""
+
+        settings_class = DisciplinaryOpt_Settings
+
+        def _create_multidisciplinary_process(self):
+            pass
+
+        def _update_input_space(self):
+            pass
+
+        def get_top_level_disciplines(self, include_sub_formulations=False):
+            return self.disciplines
+
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    space.add_variable("z", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    formulation = Custom(problem, [AnalyticDiscipline({"y": "2*x"}, name="D")])
+    problem.objective = formulation.create_objective(["y"])
+    print([list(problem.design_space.variables), problem.objective.evaluate(array([0.5, 0.5]))])
     ```
 
 ### Constraints are attached by the scenario, not the formulation
@@ -301,7 +541,7 @@ In GEMSEO 6.3, the main MDA of the `MDF` formulation could be selected by name w
 GEMSEO 7 removed this field; use `main_mda_settings` instead, which no longer accepts a `dict` but only an instance of a settings class associated with an MDA, e.g. `MDAJacobi_Settings`.
 
 bump-gemseo marks the line with a comment saying that `MDF_Settings.main_mda_name` was removed; left as it is, the code raises `AttributeError: 'MDF_Settings' object has no attribute 'main_mda_name'`.
-Replace the name of the MDA by an instance of its settings class given to `main_mda_settings`, then remove the comment; as the example below shows, the field itself has nothing left to read.
+Replace the name of the MDA by an instance of its settings class given to `main_mda_settings`, then remove the comment; no GEMSEO 7 code is shown below, since the removed field itself has nothing left to read.
 
 !!! info "After bump-gemseo"
 
@@ -317,12 +557,16 @@ Replace the name of the MDA by an instance of its settings class given to `main_
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
+
+## Other comments of bump-gemseo
+
+bump-gemseo also writes these comments, on code this page does not illustrate.
+
+- `gemseo.formulations.base_formulation.BaseFormulation`: `BaseFormulation takes the type of the input space as a second type parameter, so a class deriving from BaseFormulation[T] must derive from BaseFormulation[T, DesignSpace], DesignSpace being imported at run time`
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `gemseo.formulations.bilevel_bcd_settings.copy_field_opt`

@@ -37,6 +37,9 @@ it and what to do with what it leaves.
   `gemseo.configuration`; a discipline using JSON grammar files keeps them
   (`default_grammar_type = Discipline.GrammarType.JSON`); the tests comparing images move to the
   `snapshot_matplotlib` fixture; a distribution of one variable gets its new base class.
+- **High-level functions keep their keyword arguments**: `create_scenario`, `execute_post`,
+  `sample_disciplines` and the `create_*_model` functions still accept the settings as keyword arguments
+  in GEMSEO 7, so bump-gemseo leaves these calls as they are, but for the renamed settings.
 - **Around the code**: the targets of `mock.patch` given as strings, the cross-references of the
   documentation (`[DesignSpace][gemseo.space.DesignSpace]`) and the lists of classes of the ruff
   configuration.
@@ -50,8 +53,8 @@ Install bump-gemseo **in the environment of the code to migrate, where GEMSEO 6.
 pip install bump-gemseo@git+https://gitlab.com/gemseo/dev/bump-gemseo.git@develop
 ```
 
-bump-gemseo imports nothing from your code, but it reads the GEMSEO 6.3 installed next to it to know
-what each name of your code refers to. Do not install it in an isolated environment such as the one
+bump-gemseo reads the GEMSEO 6.3 installed next to it, and the dependencies of your project, to know
+what each name of your code refers to: they must be importable in the same environment. Do not install it in an isolated environment such as the one
 `pipx` creates, and do not run it on code written for an older version of GEMSEO.
 
 ## A first run
@@ -67,6 +70,7 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 first = AnalyticDiscipline({"y_1": "x + 0.2 * y_2"}, name="first")
 second = AnalyticDiscipline({"y_2": "0.5 * y_1 + 1"}, name="second")
 mda = MDAGaussSeidel([first, second], tolerance=1e-10, linear_solver_tolerance=1e-12)
+print(mda.execute()["y_1"])
 
 objective = AnalyticDiscipline({"f": "(x - 1)**2 + y_1"}, name="objective")
 design_space = DesignSpace()
@@ -79,7 +83,7 @@ scenario.execute(algo_name="SLSQP", max_iter=30)
 print(scenario.optimization_result.x_opt, design_space.get_lower_bound("x"))
 ```
 
-With GEMSEO 6.3, it prints `[0.44444444] [-2.]`. Commit it, then run bump-gemseo from the directory
+With GEMSEO 6.3, it prints `[0.22222222]`, the result of the MDA, then `[0.44444444] [-2.]`, the optimum and the lower bound. Commit it, then run bump-gemseo from the directory
 containing `my_study`:
 
 ```shell
@@ -115,6 +119,7 @@ and `git diff` shows what it changed:
 +# TODO(bump-gemseo): cannot transform: linear_solver_tolerance is passed without linear_solver, whose default names no Settings class, and linear_solver_tolerance has a rule in a Settings class: migrate it by hand  # noqa: E501
 +# TODO(bump-gemseo): use the rtol field of the linear_solver_settings instead  # noqa: E501
 +mda = MDAGaussSeidel([first, second], settings=MDAGaussSeidel_Settings(tolerance=1e-10, linear_solver_tolerance=1e-12))
+ print(mda.execute()["y_1"])
  ...
 -scenario.execute(algo_name="SLSQP", max_iter=30)
 -print(scenario.optimization_result.x_opt, design_space.get_lower_bound("x"))
@@ -140,7 +145,7 @@ mda = MDAGaussSeidel(
 )
 ```
 
-Remove the two comments: the study runs with GEMSEO 7 and prints `[0.44444444] [-2.]` again.
+Remove the two comments: the study runs with GEMSEO 7 and prints the same values as with GEMSEO 6.3.
 
 ## Read the report
 
@@ -171,8 +176,8 @@ git grep -n "TODO(bump-gemseo)"
 
 Each comment says what to do. The domain pages of this guide explain the change behind each message,
 in their sections *Changes flagged by bump-gemseo*, and list the names removed without replacement.
-Once a change is made, remove its comment. Running bump-gemseo again does not write a comment already
-present, so you can run it again after a partial migration.
+Once a change is made, remove its comment. Run bump-gemseo once, on the code written for GEMSEO 6.3:
+running it again on migrated code is not supported, as it may change some calls again.
 
 ## Which files it reads
 
@@ -212,10 +217,8 @@ of its reach:
   need your judgment: bump-gemseo marks them with a comment explaining the new design.
 - **Types it cannot infer.** An object whose class is not known from the code, e.g. the result of a
   method called on a class rather than on an instance, `BaseFactory.create(DisciplineFactory(), ...)`,
-  keeps the old names of its attributes. A keyword argument is not renamed in a call to a subclass
-  that does not declare it, e.g. `algo=` in `MSEMeasure(algo=...)`.
-- **Loose settings of a few functions**: `execute_post` and `sample_disciplines` still accept the
-  settings as keyword arguments in GEMSEO 7, and bump-gemseo leaves them as they are.
+  keeps the old names of its attributes. A keyword argument of a base class is not renamed in a call to a subclass
+  that redefines `__init__`, e.g. `algo=` in `MSEMeasure(algo=...)`.
 - **Names in strings** other than the targets of `mock.patch`, and names built at run time.
 
 If bump-gemseo changes something wrongly, report it on its

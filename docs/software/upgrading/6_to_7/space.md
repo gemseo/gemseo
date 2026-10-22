@@ -19,7 +19,7 @@ The changes of GEMSEO 7 about design spaces and random spaces that bump-gemseo d
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### `get_current_value` returns copies
 
@@ -92,6 +92,88 @@ This code runs without error after bump-gemseo, but returns a float array where 
     print([projected.dtype.kind, projected])
     ```
 
+### The bounds of a random variable no longer bound the finite differences
+
+In GEMSEO 6.3, the bounds of a variable of a `ParameterSpace`, the limits of the support of its distribution, were bounds of a design space: an input value outside them was refused, and a finite-difference perturbation near the upper bound went backwards so as to stay inside. In GEMSEO 7, the bounds of a random variable of a `RandomSpace` are descriptive only: the input values of a problem defined over a random space are not checked against them, and they do not bound the finite-difference perturbations.
+
+bump-gemseo leaves no comment, and the approximated derivatives at the points close to the bounds change silently: in the example below, the derivative of `u ** 2` at the upper bound `u = 1` is approximated by 2.1 instead of 1.9. Give the derivatives of your functions or, to keep the GEMSEO 6.3 values, evaluate the problem over a `DesignSpace` with the bounds of the supports, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.algos.evaluation_problem import EvaluationProblem
+    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    space = ParameterSpace()
+    space.add_random_variable("u", "SPUniformDistribution", minimum=0.0, maximum=1.0)
+    problem = EvaluationProblem(space, differentiation_method="finite_differences")
+    problem.differentiation_step = 0.1
+    problem.add_observable(MDOFunction(lambda u: u ** 2, "f"))
+    execute_algo(problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.5], [1.0]]), eval_jac=True)
+    print(problem.database.get_gradient_history("f").ravel())
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import array
+    from gemseo import execute_algo
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.doe import CustomDOE_Settings
+    from gemseo.doe import EvaluationProblem
+    from gemseo.space import DesignSpace
+    space = DesignSpace()
+    space.add_variable("u", lower_bound=0.0, upper_bound=1.0)
+    problem = EvaluationProblem(space, differentiation_method="finite_differences")
+    problem.differentiation_step = 0.1
+    problem.add_observable(ArrayFunction(lambda u: u ** 2, "f"))
+    execute_algo(problem, algo_type="doe", settings_model=CustomDOE_Settings(samples=array([[0.5], [1.0]]), eval_jac=True))
+    print(problem.database.get_gradient_history("f").ravel())
+    ```
+
+### Random variables are of type `VariableType.RANDOM`
+
+In GEMSEO 6.3, the uncertain variables of a `ParameterSpace` were of type `"float"`, like the real deterministic variables. In GEMSEO 7, the `ParameterSpace` becomes a `RandomSpace`, whose variables are of type `VariableType.RANDOM`, a type that a `DesignSpace` does not accept; a random variable is never of real or integer type.
+
+bump-gemseo rewrites `space.get_type(name) == DataType.FLOAT` into `space.variables[name].type == VariableType.REAL`, without comment, and this test is now `False` for a random variable, so the results change silently. Compare the type of a random variable to `VariableType.RANDOM` instead, or use `space.variables.has_variables_of_type(VariableType.RANDOM)`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** issue [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008), merge request [!2836](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2836).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.algos.design_space import DataType
+    from gemseo.algos.parameter_space import ParameterSpace
+    space = ParameterSpace()
+    space.add_random_variable("u", "SPNormalDistribution", mu=0.0, sigma=1.0)
+    real_names = [name for name, type_ in space.variable_types.items() if type_ == DataType.FLOAT]
+    print([space.get_type("u") == DataType.FLOAT, real_names])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.enum import VariableType
+    from gemseo.space import RandomSpace
+    from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
+    space = RandomSpace()
+    space.add_variable("u", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    random_names = [name for name, variable in space.variables.items() if variable.type == VariableType.RANDOM]
+    print([space.variables["u"].type == VariableType.RANDOM, random_names])
+    ```
+
 ### The design space copies and casts the values it stores
 
 In GEMSEO 7, `DesignSpace.set_current_value`, `DesignSpace.set_current_variable` and `DesignSpace.add_variable` store a copy of the value, cast to `float64` for a real variable unless it is complex, and the finite bounds of a variable are stored with the NumPy type of its components. In GEMSEO 6.3, the design space stored the array of the caller and kept its NumPy type, e.g. `int64`, for the value as for the bounds.
@@ -136,7 +218,7 @@ This code runs without error after bump-gemseo, but gives other results: mutatin
 
 bump-gemseo writes no comment; the code fails with GEMSEO 7, with the error quoted.
 
-### The serialization constants of `DesignSpace` removed
+### The serialization constants of `DesignSpace` were removed
 
 The class attributes of `DesignSpace` holding the field names of the HDF5 and CSV serialization were removed in GEMSEO 7 without a public replacement, namely `DESIGN_SPACE_GROUP`, `NAME_GROUP`, `NAMES_GROUP`, `LB_GROUP`, `UB_GROUP`, `VAR_TYPE_GROUP`, `VALUE_GROUP`, `SIZE_GROUP`, `MINIMAL_FIELDS` and `TABLE_NAMES`. They were implementation details of `to_hdf`, `from_hdf`, `to_csv`, `from_csv` and `get_pretty_table`.
 
@@ -157,15 +239,47 @@ bump-gemseo replaces `DesignSpace.DESIGN_SPACE_GROUP` by its value `"design_spac
 
 === "GEMSEO 7"
 
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
+
+### `DesignSpace.to_csv` and `DesignSpace.from_csv` check their fields and rows
+
+In GEMSEO 7, `DesignSpace.to_csv` refuses `fields` without `"name"` or with a repeated field, and `DesignSpace.from_csv` refuses a variable whose rows have different types or with a value in some rows only. GEMSEO 6.3 wrote a file without names, which it could not read back, read a variable with an integer row as a real variable, and silently dropped the current value of a variable with a value in some rows only.
+
+bump-gemseo leaves no comment, and these calls raise a `ValueError`, e.g. `The file space.csv has a variable whose rows have different types: 'x' (real and integer); the rows of a variable must have the same type.` Give the same type to all the rows of a variable, a value to all of them or to none, and the field `"name"` once to `to_csv`, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **Error with GEMSEO 7**: `ValueError: The file space.csv has a variable whose rows have different types: 'x' (real and integer); the rows of a variable must have the same type.`
+    - **See** issue [#2030](https://gitlab.com/gemseo/dev/gemseo/-/issues/2030), merge request [!2861](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2861).
+
+=== "GEMSEO 6.3"
+
     ```python
-    print("<removed in GEMSEO 7>")
+    from pathlib import Path
+    from gemseo.algos.design_space import DesignSpace
+    Path("space.csv").write_text("name lower_bound upper_bound value type\nx 0 1 0.5 float\nx 0 3 2 integer\n")
+    space = DesignSpace.from_csv("space.csv")
+    space.to_csv("bounds.csv", fields=["lower_bound", "upper_bound"])
+    print([space.get_lower_bounds(), space.get_upper_bounds(), space.get_current_value()])
     ```
 
-### The extra options of the `DesignSpace` file methods removed
+=== "GEMSEO 7"
 
-In GEMSEO 7, the `**options` arguments of `DesignSpace.from_file` were removed because they were deprecated and ignored, those of `DesignSpace.to_file` because they were deprecated (the new `append` argument is available instead), and the `header_char` and `**table_options` arguments of `DesignSpace.to_csv` because they were deprecated.
+    ```python
+    from pathlib import Path
+    from gemseo.space import DesignSpace
+    Path("space.csv").write_text("name lower_bound upper_bound value type\nx 0 1 0.5 real\nx 0 3 2 real\n")
+    space = DesignSpace.from_csv("space.csv")
+    space.to_csv("bounds.csv", fields=["name", "lower_bound", "upper_bound"])
+    print([space.variables["x"].lower_bound, space.variables["x"].upper_bound, space.get_current_value()])
+    ```
 
-bump-gemseo leaves no comment on these calls, which raise a `TypeError` for the unexpected keyword argument, e.g. `DesignSpace.to_csv() got an unexpected keyword argument 'sortby'`. Remove these keyword arguments, as in the example below.
+### The extra options of the `DesignSpace` file methods were removed
+
+In GEMSEO 7, the `**options` arguments of `DesignSpace.from_file` and `DesignSpace.to_file` were removed, as were the `header_char` and `**table_options` arguments of `DesignSpace.to_csv`. They were deprecated, and those of `from_file` were ignored. `to_file` has a new `append` argument instead.
+
+bump-gemseo removes `header_char` from the calls to `to_csv`, but leaves the other keyword arguments without a comment, e.g. `sortby` of `to_csv` or `header_char` of `to_file` and `from_file`. These calls raise a `TypeError`, e.g. `DesignSpace.to_csv() got an unexpected keyword argument 'sortby'`. Remove these keyword arguments, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -199,7 +313,7 @@ bump-gemseo leaves no comment on these calls, which raise a `TypeError` for the 
     print([sorted(loaded.variables), loaded.get_current_value(as_dict=True)])
     ```
 
-### Stricter bounds of an integer variable
+### The bounds of an integer variable are checked more strictly
 
 In GEMSEO 6.3, a non-integer scalar bound of an integer variable was truncated, and a finite bound beyond the range of a 64-bit integer was accepted and stored as a floating-point number. In GEMSEO 7, an integer variable rejects a non-integer scalar bound, and an `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer; an infinite bound is still accepted.
 
@@ -208,7 +322,7 @@ bump-gemseo leaves no comment, and `add_variable` raises a `ValidationError`, e.
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for IntegerVariable Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 2.5 (index 0). [type=value_error, input_valu`
+    - **Error with GEMSEO 7**: `ValidationError: 1 validation error for IntegerVariable Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 2.5 (index 0). [type=value_error ...`
     - **See** issue [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845), merge request [!2629](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2629); merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
 
 === "GEMSEO 6.3"
@@ -292,7 +406,7 @@ bump-gemseo leaves no comment, and defining such a subclass raises `TypeError: m
     print([space.tag, space.dimension])
     ```
 
-### The `simplify` argument of `get_pretty_table` removed
+### The `simplify` argument of `get_pretty_table` was removed
 
 The `simplify` argument of `DesignSpace.get_pretty_table` was removed in GEMSEO 7, together with the `ParameterSpace` implementation honoring it, which dropped the bound, value and type columns from the tabular view of a space of uncertain variables only. The tabular view of a `RandomSpace` has a name column and a distribution column, so there is nothing left to simplify.
 
@@ -324,9 +438,9 @@ bump-gemseo leaves no comment, and the call raises `TypeError: DesignSpace.get_p
     print(["x" in str(table), len(table.rows)])
     ```
 
-### Read-only dimension, bounds and normalization masks of a `DesignSpace`
+### The dimension, bounds and normalization masks of a `DesignSpace` are read-only
 
-In GEMSEO 7, `DesignSpace.dimension` is a read-only property, `DesignSpace.normalize` (renamed `DesignSpace.name_to_normalization_mask`, the former name being a deprecated alias) and `names_to_indices` are read-only mappings, the normalization masks are read-only arrays, and `DesignSpace.get_lower_bounds` and `DesignSpace.get_upper_bounds` return read-only arrays. Assigning these attributes or items, or mutating these arrays in place, raises an error.
+In GEMSEO 7, `DesignSpace.dimension` is a read-only property. `DesignSpace.name_to_normalization_mask` and `space.variables.name_to_indices` are read-only mappings; bump-gemseo renames `normalize` and `names_to_indices` to them. The normalization masks are read-only arrays, and `DesignSpace.get_lower_bounds` and `DesignSpace.get_upper_bounds` return read-only arrays. Assigning these attributes or items, or changing these arrays in place, raises an error.
 
 bump-gemseo leaves no comment on such code, which raises e.g. `TypeError: 'NormalizationMasks' object does not support item assignment`. Do not assign `dimension`; copy the bounds before changing them, e.g. `space.get_lower_bounds().copy()`; and, since the masks of the space can no longer be changed, work on copies of the masks of `name_to_normalization_mask`, as in the example below, which applies the modified masks itself.
 
@@ -411,7 +525,7 @@ bump-gemseo leaves no comment, and code catching `ValidationError` lets the erro
     print([message, len(space.variables)])
     ```
 
-### The `x_vect` argument of the `DesignSpace` methods
+### The vector argument of the `DesignSpace` methods is named `x_vect`
 
 In GEMSEO 7, the concatenated design-vector argument is uniformly named `x_vect`. It was named `x_vec` in `DesignSpace.get_active_bounds`, `x_c` in `DesignSpace.project_into_bounds`, `vector` in `DesignSpace.transform_vect` and `DesignSpace.untransform_vect`, and `x_array` in `DesignSpace.convert_array_to_dict`.
 
@@ -481,6 +595,16 @@ bump-gemseo leaves no comment, and creating `"IshigamiSpace"` with the design sp
     print([space.dimension, "IshigamiSpace" in random_space_factory.class_names])
     ```
 
+### A pickled `ParameterSpace` cannot be loaded
+
+In GEMSEO 7, the removed name `ParameterSpace` resolves to `RandomSpace`, which stores its probability distributions differently, so unpickling a `ParameterSpace` saved with GEMSEO 6.3, or an object holding one, raises a `TypeError` saying that the space cannot be restored. This concerns the files of `pickle` and of the `to_pickle` functions, and the scenarios, problems, sensitivity analyses and surrogate models holding such a space.
+
+bump-gemseo cannot migrate a file. Rebuild the random space with GEMSEO 7 from the settings of the marginal probability distributions of its random variables, e.g. `RandomSpace().add_variable("u", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))`, and rebuild or recompute the objects holding it.
+
+!!! info "References"
+
+    - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
+
 ### `compute_samples(as_dict=True)` returns a dictionary of arrays
 
 In GEMSEO 6.3, `ParameterSpace.compute_samples` with `as_dict=True` returned a list of dictionaries, one per sample. In GEMSEO 7, `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`.
@@ -510,11 +634,11 @@ bump-gemseo leaves no comment, and indexing the result by sample raises `KeyErro
     print([len(as_list), sorted(as_list[0]), [len(sample["x1"]) for sample in as_list]])
     ```
 
-### The table options of `write_design_space` removed
+### The table options of `write_design_space` were removed
 
 The `header_char` and `**table_options` arguments of `write_design_space` were removed in GEMSEO 7 because they were deprecated; the new argument `append` is available instead.
 
-bump-gemseo leaves no comment on such a call, which raises a `TypeError` for the unexpected keyword argument, e.g. `sortby`. Remove these keyword arguments, as in the example below.
+bump-gemseo removes `header_char` from the call, but leaves the other keyword arguments, e.g. `sortby`, without a comment; the call then raises a `TypeError` for the unexpected keyword argument. Remove these keyword arguments, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -552,7 +676,7 @@ bump-gemseo leaves no comment on such a call, which raises a `TypeError` for the
 
 bump-gemseo leaves a `# TODO(bump-gemseo)` comment: search for its text below.
 
-### `DesignSpace.DesignVariableType` replaced by `VariableType`
+### `DesignSpace.DesignVariableType` was replaced by `VariableType`
 
 The class attribute `DesignSpace.DesignVariableType` is removed in GEMSEO 7; the enumeration of the variable types is now available as `gemseo.enum.VariableType`. Its member `FLOAT` is deprecated in favour of `VariableType.REAL`, and the type of a real variable is named `"real"` instead of `"float"`, so comparing a variable type to `"float"` is now `False`.
 
@@ -562,7 +686,7 @@ bump-gemseo rewrites `DataType.FLOAT` and `get_type(name)` automatically, but ma
 
     - **Comment**: `use gemseo.enum.VariableType instead`
     - **Error with GEMSEO 7**: `AttributeError: type object 'DesignSpace' has no attribute 'DesignVariableType'`
-    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the type of a real variable is named "real" instead of "float" (changelog 1931).
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the type of a real variable is named "real" instead of "float" (issue [#1931](https://gitlab.com/gemseo/dev/gemseo/-/issues/1931)).
 
 === "GEMSEO 6.3"
 
@@ -585,9 +709,9 @@ bump-gemseo rewrites `DataType.FLOAT` and `get_type(name)` automatically, but ma
 
 ### An unknown variable name raises a `KeyError`
 
-In GEMSEO 6.3, `get_size`, `get_type`, `set_lower_bound` and other methods of `DesignSpace` raised a `ValueError` for an unknown variable name. In GEMSEO 7, any unknown variable name raises a `KeyError` with the message `No variable named '<name>'.`, and the shortcuts `get_size(name)` and `get_type(name)` were removed in favour of `space.variables[name].size` and `.type`.
+In GEMSEO 6.3, `get_size`, `get_type`, `set_lower_bound` and other methods of `DesignSpace` raised a `ValueError` for an unknown variable name. In GEMSEO 7, any unknown variable name raises a `KeyError` with the message `No variable named '<name>'.`.
 
-bump-gemseo cannot rewrite a method used without its call, e.g. `space.get_size` iterated over, and marks the line with a comment such as "cannot transform: DesignSpace.get_size became {receiver}.variables[{name}].size, which needs the arguments of a call."; left as is, the code raises an `AttributeError`. Access the variable with `space.variables[name]` and catch `KeyError` instead of `ValueError`, as in the example below.
+bump-gemseo rewrites the calls `get_size(name)` and `get_type(name)` into `space.variables[name].size` and `space.variables[name].type`, and leaves the other methods as they are, all without a comment. An `except ValueError` around these calls then no longer catches the error: replace it by `except KeyError`. bump-gemseo adds a comment only where a method is used without being called, e.g. `space.get_size` iterated over in the example below: "cannot transform: DesignSpace.get_size became {receiver}.variables[{name}].size, which needs the arguments of a call.". Left as is, this code raises an `AttributeError`: access the variable with `space.variables[name]` instead.
 
 !!! info "After bump-gemseo"
 
@@ -629,7 +753,7 @@ bump-gemseo cannot rewrite a method used without its call, e.g. `space.get_size`
 
 The class `ParameterSpace`, which mixed deterministic and uncertain variables, was removed in GEMSEO 7: a space is now either a `DesignSpace`, defined by bounds, or a `RandomSpace`, defined by probability distributions. A current value being a notion of the deterministic spaces, `has_current_value`, `get_current_value`, `set_current_value` and the like belong to `DesignSpace` only.
 
-bump-gemseo marks these lines with the comments "a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead" and "a current value is a DesignSpace notion; ..."; left as is, `add_variable` raises e.g. `TypeError: RandomSpace.add_variable() got an unexpected keyword argument 'lower_bound'`. Split the space into a `DesignSpace` for the deterministic variables and their current value, and a `RandomSpace` for the random ones, whose reference point, the mean of the distributions, is given by `reference_value`, as in the example below.
+bump-gemseo marks these lines with the comments "a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead" and "a current value is a DesignSpace notion; ..."; this second comment tells you to use `nominal_value`, which does not exist in GEMSEO 7: the property is `reference_value`; left as is, `add_variable` raises e.g. `TypeError: RandomSpace.add_variable() got an unexpected keyword argument 'lower_bound'`. Split the space into a `DesignSpace` for the deterministic variables and their current value, and a `RandomSpace` for the random ones, whose reference point, the mean of the distributions, is given by `reference_value`, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -672,11 +796,11 @@ bump-gemseo marks these lines with the comments "a RandomSpace holds only random
     print([missing, design_space.has_current_value, {"w": design_space.get_current_value(as_dict=True)["w"].real, "u": random_space.reference_value["u"]}])
     ```
 
-### `ParameterSpace.normalize` removed
+### `ParameterSpace.normalize` was removed
 
 `ParameterSpace` is replaced by `RandomSpace` in GEMSEO 7, and a `RandomSpace` has no normalization: its only vector mapping is the iso-probabilistic `transform_vect`/`untransform_vect` to and from the unit hypercube. A space can no longer mix deterministic and random variables either, so `ParameterSpace.normalize` has no counterpart.
 
-bump-gemseo marks the line with the comment "ParameterSpace.normalize was removed; see the GEMSEO 7 changelog.", and marks the deterministic variables added to the space with the comment "a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead". Remove the use of `normalize`; if you need the normalization masks of deterministic variables, declare them in a `DesignSpace` and read its `name_to_normalization_mask`.
+bump-gemseo marks the line with the comment "ParameterSpace.normalize was removed; see the GEMSEO 7 changelog.", and marks the deterministic variables added to the space with the comment "a RandomSpace holds only random variables; add a deterministic variable to a DesignSpace instead". The changelog has no item on this method: its items on the removal of `ParameterSpace` and on spaces that no longer mix both kinds of variables give the reason. Remove the use of `normalize`; if you need the normalization masks of deterministic variables, declare them in a `DesignSpace` and read its `name_to_normalization_mask`.
 
 !!! info "After bump-gemseo"
 
@@ -695,9 +819,7 @@ bump-gemseo marks the line with the comment "ParameterSpace.normalize was remove
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### Random variables are added with settings models
 
@@ -711,7 +833,7 @@ bump-gemseo renames the methods and converts a distribution name with its parame
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `repeat the settings model size times, i.e. add_variable(name, *[settings] * size)` / `pass the distribution settings models, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), by position, one per component; a distribution name with its parameters must be written as settings models` / `pass one distribution settings model per component, i.e. add_variable(name, *settings)`
+    - **Comment**: `repeat the settings model size times, i.e. add_variable(name, *[settings] * size)` / `pass the distribution settings models, e.g. SPNormalDistribution_Settings(mu=0.0, sigma=1.0), by position, one per component; a distribution name with its parameters must be written as settings models` / `pass one distribution settings model per component, i.e. add_variable(name, *settings)` / `set interfaced_distribution in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable` / `set parameters in an SPDistribution_Settings or an OTDistribution_Settings and pass it to add_variable`
     - **Error with GEMSEO 7**: `TypeError: RandomSpace.add_variable() got an unexpected keyword argument 'size'`
     - **See** merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
 
@@ -742,7 +864,7 @@ bump-gemseo renames the methods and converts a distribution name with its parame
     print([space.dimension, space.variables.distribution.mean])
     ```
 
-### Distributions and statistics of a `RandomSpace`
+### The distributions and statistics of a `RandomSpace` are read through `variables`
 
 In GEMSEO 7, the probabilistic data of a `RandomSpace` is read through `variables`: `variables.distribution` is the joint distribution of the space and `variables[name].distribution` that of a variable. `ParameterSpace.build_joint_distribution` was replaced by `add_copula`, the joint distribution being built on demand. `ParameterSpace.evaluate_cdf` was removed because it did not implement the CDF but the Rosenblatt transformation, and `ParameterSpace.get_tabular_view` was replaced by `get_pretty_table`, whose table has a name column and a distribution column only.
 
@@ -750,7 +872,7 @@ bump-gemseo marks each of these lines with a comment, e.g. "use space.variables[
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `use space.variables[name].distribution instead` / `use add_copula, and read the joint distribution from space.variables` / `use transform_vect and untransform_vect instead`
+    - **Comment**: `use space.variables[name].distribution instead` / `use add_copula, and read the joint distribution from space.variables` / `use transform_vect and untransform_vect instead` / `use get_pretty_table instead`
     - **Error with GEMSEO 7**: `AttributeError: 'IshigamiSpace' object has no attribute 'distributions'`
     - **See** issue [#1717](https://gitlab.com/gemseo/dev/gemseo/-/issues/1717), merge request [!2678](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2678).
 
@@ -814,7 +936,7 @@ bump-gemseo marks these calls with the comment "add the random variables to a se
     print([len(space.variables), random_space.variables.distribution.mean])
     ```
 
-### The `normalize_ds` argument of `get_value_and_bounds` removed
+### The `normalize_ds` argument of `get_value_and_bounds` was removed
 
 In GEMSEO 7, `get_value_and_bounds()` moved from `gemseo.algos.design_space_utils` to `gemseo.space.util`, its `normalize_ds` argument was removed and its `as_dict` argument is keyword-only. It returns the value and the bounds of the space it is passed as they are.
 
@@ -849,7 +971,7 @@ bump-gemseo marks the call with a comment. In user code, call `get_value_and_bou
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 The methods of `ParameterSpace` below were removed with it: GEMSEO 7 has `RandomSpace`, which holds random variables only; the deterministic variables, their bounds and their normalization belong to a `DesignSpace`.
 

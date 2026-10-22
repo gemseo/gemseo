@@ -42,9 +42,7 @@ bump-gemseo leaves no comment, and `BaseSensitivityAnalysis.Method` raises `Attr
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### `DistributionFactory` creates distributions from settings
 
@@ -84,9 +82,9 @@ bump-gemseo leaves no comment, and the old methods raise `AttributeError: 'Distr
 
 ### `IshigamiProblem` is no longer an optimization problem
 
-`IshigamiProblem` derives from `EvaluationProblem` instead of `OptimizationProblem`. It is still defined over the `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but the Ishigami function is now an observable of the problem instead of its objective, so `problem.objective` no longer exists.
+`IshigamiProblem` derives from `EvaluationProblem` instead of `OptimizationProblem`. It is still defined over the `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but the Ishigami function is now an observable of the problem instead of its objective.
 
-bump-gemseo leaves no comment, and reading an attribute specific to optimization problems raises an error, e.g. `AttributeError: 'IshigamiProblem' object has no attribute 'minimize_objective'`. GEMSEO 7 has no equivalent for these attributes on this problem: remove the code that uses them.
+bump-gemseo replaces `problem.objective` by `problem.observables[0]`, but leaves the other attributes specific to optimization problems without comment, and reading them raises an error, e.g. `AttributeError: 'IshigamiProblem' object has no attribute 'minimize_objective'`. GEMSEO 7 has no equivalent for these attributes on this problem: remove the code that uses them.
 
 !!! info "After bump-gemseo"
 
@@ -104,9 +102,7 @@ bump-gemseo leaves no comment, and reading an attribute specific to optimization
 
 === "GEMSEO 7"
 
-    ```python
-    print("<removed in GEMSEO 7>")
-    ```
+    No GEMSEO 7 code is shown for this example: follow the explanation above.
 
 ### The Morris step must be smaller than 0.5
 
@@ -306,7 +302,7 @@ bump-gemseo leaves no comment, and a short name raises `ImportError: The class N
 !!! info "After bump-gemseo"
 
     - **Comment**: none.
-    - **Error with GEMSEO 7**: `ImportError: The class Normal is not available; the available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, NormalToleranceInterval, UniformToleranceInterval, WeibullMinToleranceInterval and Weibull`
+    - **Error with GEMSEO 7**: `ImportError: The class Normal is not available; the available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, NormalToleranceInterval, UniformToleranceInterval, WeibullMinToleranceInterval and ...`
     - **See** issue [#1412](https://gitlab.com/gemseo/dev/gemseo/-/issues/1412), merge request [!2403](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2403).
 
 === "GEMSEO 6.3"
@@ -371,7 +367,7 @@ bump-gemseo marks the use of the attribute with the comment `BaseDistributionFit
 
     - **Comment**: `BaseDistributionFitter.variable was removed; see the GEMSEO 7 changelog.`
     - **Error with GEMSEO 7**: `AttributeError: 'OTDistributionFitter' object has no attribute 'variable'`
-    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the variable name is no longer stored by the fitter (changelog 1673).
+    - **GEMSEO 7 cannot give the GEMSEO 6.3 value here**: the variable name is no longer stored by the fitter (issue [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)).
     - **See** issue [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673), merge request [!2355](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2355).
 
 === "GEMSEO 6.3"
@@ -404,7 +400,7 @@ bump-gemseo marks each use with a comment giving the type to write instead: `tup
 
 !!! info "After bump-gemseo"
 
-    - **Comment**: `gemseo.uncertainty.distributions.base_distribution.ParametersType: use tuple[str, int, float] | Mapping[str, str | int | float] instead` / `gemseo.uncertainty.distributions.base_distribution.StandardParametersType: use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings` / `gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: use tuple[str, int, float] | Mapping[str, str | int | float] instead`
+    - **Comment**: `gemseo.uncertainty.distributions.base_distribution.ParametersType: use tuple[str, int, float] | Mapping[str, str | int | float] instead` / `gemseo.uncertainty.distributions.base_distribution.StandardParametersType: use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings` / `gemseo.uncertainty.distributions.scalar_distribution_mixin.ParametersType: use tuple[str, int, float] | Mapping[str, str | int | float] instead` / `gemseo.uncertainty.distributions.scalar_distribution_mixin.StandardParametersType: use Mapping[str, str | int | float] instead, the type of the field standard_parameters of BaseDistributionSettings`
     - **Error with GEMSEO 7**: `ImportError: The attribute 'ParametersType' of the module 'gemseo.uncertainty.distributions.base_distribution' was removed; use tuple[str, int, float] | Mapping[str, str | int | float] instead.`
 
 === "GEMSEO 6.3"
@@ -519,7 +515,7 @@ bump-gemseo does not rewrite these calls. In the example, it marks `compute_samp
 
 `SobolAnalysis.compute_samples` stores the random space it was given in `dataset.misc["random_space"]` instead of `dataset.misc["parameter_space"]`.
 
-bump-gemseo cannot infer the type of `dataset.misc["parameter_space"]` and marks the line with a comment starting with `cannot transform: the type of dataset.misc["parameter_space"] could not be inferred`; left as is, the line raises `KeyError: 'parameter_space'`. Read `dataset.misc["random_space"]` instead and, as the comment suggests, get the variable names from its `variables` attribute rather than `variable_names`, as in the example below.
+bump-gemseo cannot infer the type of `dataset.misc["parameter_space"]` and marks the line with a comment starting with `cannot transform: the type of dataset.misc["parameter_space"] could not be inferred`; left as is, the line raises `KeyError: 'parameter_space'`. Read `dataset.misc["random_space"]` instead and get the variable names from its `variables` attribute rather than `variable_names`: in the comment, `variable_names became list({receiver}.variables)` means `list(dataset.misc["random_space"].variables)` here, as in the example below.
 
 !!! info "After bump-gemseo"
 
@@ -551,7 +547,7 @@ bump-gemseo cannot infer the type of `dataset.misc["parameter_space"]` and marks
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 ??? note "Private names (32), used by some plugins"
 

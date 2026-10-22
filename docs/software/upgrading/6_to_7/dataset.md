@@ -19,7 +19,7 @@ The changes of GEMSEO 7 about datasets and their metadata that bump-gemseo does 
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
 
 ### Dataset variable and group names keep insertion order
 

@@ -19,7 +19,74 @@ The changes of GEMSEO 7 about grammars, caches, namespaces, derivatives, executi
 
 ## Silent changes
 
-The code runs after bump-gemseo, without error nor comment, and gives other results.
+The code runs after bump-gemseo, without error or comment, and gives other results.
+
+### An `HDF5Cache` file of GEMSEO 6.3 is rewritten when GEMSEO 7 opens it
+
+GEMSEO 7 computes the hashes of the input data in another way, so the hashes stored in an `HDF5Cache` file written by GEMSEO 6.3 would never be found again.
+When GEMSEO 7 opens such a file, it computes these hashes again and rewrites the file in place, with the file format version 3.
+The code runs without error nor comment, but the file changes: GEMSEO 6.3 can no longer open it, as its file format version is too recent.
+This rewrite is not safe when several processes open the same file at the same time, e.g. the processes of a parallel execution.
+A file that cannot be written, e.g. a read-only file, is left unchanged, and the hashes of all its entries are computed each time it is opened.
+
+Keep a copy of the file if GEMSEO 6.3 must still read it.
+Open the file once with GEMSEO 7 from a single process, e.g. by creating the `HDF5Cache` in a short script, before using it in a parallel execution.
+
+!!! info "References"
+
+    - **See** issue [#2017](https://gitlab.com/gemseo/dev/gemseo/-/issues/2017).
+
+### Parallel executions with `n_processes=1` run in the calling process
+
+In GEMSEO 6.3, `CallableParallelExecution`, `DiscParallelExecution` and `DiscParallelLinearization` with `n_processes=1` and `use_threading=False` ran the tasks in a child process.
+The worker was a copy, and what it changed in its own state was lost for the calling process.
+In GEMSEO 7, they run the tasks one after another in the calling process, without building an executor; `wait_time_between_fork` is ignored, as nothing is forked.
+bump-gemseo changes nothing: the code runs without error, but the worker of the calling process is now changed by the tasks, e.g. a counter of calls, or the data, Jacobian and statistics of a discipline.
+
+If the tasks must not change the worker of the calling process, give a copy of it, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: none.
+    - **With GEMSEO 7**: no error, but other results.
+    - **See** issue [#1951](https://gitlab.com/gemseo/dev/gemseo/-/issues/1951), merge request [!2773](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2773).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallableParallelExecution
+
+    class Doubler:
+        def __init__(self):
+            self.n_calls = 0
+
+        def __call__(self, x):
+            self.n_calls += 1
+            return 2 * x
+
+    doubler = Doubler()
+    outputs = CallableParallelExecution([doubler], n_processes=1).execute([1, 2, 3])
+    print([outputs, doubler.n_calls])
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from copy import deepcopy
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallableParallelExecution
+
+    class Doubler:
+        def __init__(self):
+            self.n_calls = 0
+
+        def __call__(self, x):
+            self.n_calls += 1
+            return 2 * x
+
+    doubler = Doubler()
+    outputs = CallableParallelExecution([deepcopy(doubler)], n_processes=1).execute([1, 2, 3])
+    print([outputs, doubler.n_calls])
+    ```
 
 ### `split_namespace` splits on the last separator only
 
@@ -247,7 +314,9 @@ Check that this merge is intended; if it is, pass `allow_namespace_nesting=True`
 
 `Discipline.LinearizationMode` no longer exposes the `DerivationMode` members `DIRECT`, `ADJOINT` and `REVERSE`: a discipline either computes its analytical Jacobian (`AUTO`) or approximates it, so the enumeration now holds only `AUTO`, the approximation modes and the hybrid ones.
 bump-gemseo leaves these members without a comment and they raise `AttributeError: type object 'LinearizationMode' has no attribute 'ADJOINT'`.
-Use the members of `DerivationMode`, imported from `gemseo.enum`, as in the example below.
+
+For the linearization mode of a discipline, use `LinearizationMode.AUTO`: in GEMSEO 6.3, `DIRECT`, `ADJOINT` and `REVERSE` also computed the analytical Jacobian of a discipline.
+Where the mode of an MDA or a chain is expected, use the members of `DerivationMode`, imported from `gemseo.enum`, as in the example below: `DIRECT` and `ADJOINT` apply to an MDA, `FORWARD` and `REVERSE` to a chain.
 
 !!! info "After bump-gemseo"
 
@@ -395,14 +464,58 @@ To keep the GEMSEO 6.3 behaviour, pass the same mapping twice, `NameMapping(mapp
     print([local, global_data, dict(processor.input_mapping), {value: key for key, value in processor.output_mapping.items()}])
     ```
 
+### `exec_callback` of `DiscParallelLinearization.execute` is now `exec_callbacks`, an iterable
+
+The `exec_callback` argument of the `execute` method of `CallableParallelExecution`, `DiscParallelExecution` and `DiscParallelLinearization` was renamed to `exec_callbacks`.
+It accepted a callable or an iterable of callables; it now accepts an iterable of callables only.
+bump-gemseo renames the argument and marks the call with the comment "exec_callbacks takes an iterable of callables only; wrap a single callable in a list".
+Left with a single callable, the call raises `TypeError: 'function' object is not iterable`.
+
+Wrap the callable in a list, as in the example below.
+
+!!! info "After bump-gemseo"
+
+    - **Comment**: `exec_callbacks takes an iterable of callables only; wrap a single callable in a list, e.g. exec_callbacks=[callback]`
+    - **Error with GEMSEO 7**: `TypeError: 'function' object is not iterable`
+    - **See** merge request [!2355](https://gitlab.com/gemseo/dev/gemseo/-/merge_requests/2355).
+
+=== "GEMSEO 6.3"
+
+    ```python
+    import numpy as np
+    from gemseo.core.parallel_execution.disc_parallel_linearization import DiscParallelLinearization
+    from gemseo.disciplines.analytic import AnalyticDiscipline
+
+    discipline = AnalyticDiscipline({"y": "x**2"})
+    indices = []
+    linearization = DiscParallelLinearization([discipline], n_processes=1, use_threading=True)
+    linearization.execute([{"x": np.array([3.0])}], exec_callback=lambda index, output: indices.append(index))
+    print(indices)
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    import numpy as np
+    from gemseo.core.parallel_execution.discipline_linearization import DiscParallelLinearization
+    from gemseo.discipline import AnalyticDiscipline
+
+    discipline = AnalyticDiscipline({"y": "x**2"})
+    indices = []
+    linearization = DiscParallelLinearization([discipline], n_processes=1, use_threading=True)
+    linearization.execute([{"x": np.array([3.0])}], exec_callbacks=[lambda index, output: indices.append(index)])
+    print(indices)
+    ```
+
 ## Deprecated names
 
 The code still works with GEMSEO 7, with a deprecation warning.
 
-### Renamed attributes of objects created by `BaseFactory.create`
+### Some attributes of objects created by `BaseFactory.create` were renamed
 
 GEMSEO 7 renames several attributes, e.g. `output_names_to_symbols` of `AnalyticDiscipline` is now `output_name_to_symbols`, `BaseCache.last_entry` is now `BaseCache.last_item`, `Dataset.DEFAULT_GROUP` is now `Dataset.default_group` and the member `DatasetClassName.Dataset` is now `DATASET`.
-bump-gemseo renames these attributes on the objects returned by `create_cache`, `create_dataset`, `create_discipline` and `DisciplineFactory.create`, but not on an object created by calling `BaseFactory.create` on its class, as in `BaseFactory.create(DisciplineFactory(), ...)`, where `output_names_to_symbols` is left unchanged.
+bump-gemseo renames these attributes on the objects returned by `create_cache`, `create_dataset`, `create_discipline` and `factory.create(...)`, e.g. `DisciplineFactory().create(...)`.
+It does not rename them on an object returned by a call of `BaseFactory.create` on the class, with the factory as first argument, e.g. `BaseFactory.create(DisciplineFactory(), "AnalyticDiscipline", ...)`: there, `output_names_to_symbols` is left unchanged.
 
 The code still runs, but uses a deprecated name, as most renames of GEMSEO 7 keep working with a `DeprecationWarning` for one deprecation cycle.
 Rename the remaining attributes by hand, as in the example below.
@@ -458,7 +571,7 @@ Rename the remaining attributes by hand, as in the example below.
 
 ## Removed names
 
-bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. Unless an entry above gives an equivalent, they have no replacement: remove the code that uses them.
+bump-gemseo marks each use with a `# TODO(bump-gemseo)` comment. These names have no direct replacement: unless an entry above or the changelog gives one, remove the code that uses them.
 
 - `DisciplineJacApprox.generator_class`
 - `MDOLinearFunction.normalize`
