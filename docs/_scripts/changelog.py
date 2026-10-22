@@ -25,8 +25,9 @@ directory [_output_dir][]:
 - `older.md`: all the versions before [_first_individual_minor][],
 - `SUMMARY.md`: the navigation, read by the plugin literate-nav.
 
-The sections of the versions are copied verbatim, in the order of
-`CHANGELOG.md`, which must be the newest first.
+The sections of the versions are copied in the order of `CHANGELOG.md`,
+which must be the newest first, the only change being that the label starting
+a top-level list item, e.g. `- **Added** ...`, is converted into a badge.
 The script raises an error when `CHANGELOG.md` does not have the expected
 structure instead of silently skipping what it does not understand.
 """
@@ -77,6 +78,31 @@ _older_title: Final[str] = "Older versions"
 
 _slugify_separator: Final[str] = "-"
 """The separator of the slugs of the headings, that of the extension `toc`."""
+
+_labels: Final[tuple[str, ...]] = (
+    "Breaking change",
+    "Removed",
+    "Deprecated",
+    "Added",
+    "Changed",
+    "Fixed",
+    "Security",
+)
+"""The labels starting the items of the release notes, e.g. `- **Added** ...`."""
+
+_label_pattern: Final[re.Pattern[str]] = re.compile(
+    r"^(?P<marker>[-*]) \*\*(?P<label>[^*\n]+)\*\* ", re.MULTILINE
+)
+"""The pattern of the beginning of a top-level list item starting with a bold text."""
+
+_removed_are_breaking_sentence: Final[str] = (
+    'The items labelled <span class="changelog-label changelog-label--removed">'
+    "Removed</span> are breaking changes, "
+    "as are those labelled "
+    '<span class="changelog-label changelog-label--breaking-change">'
+    "Breaking change</span>."
+)
+"""The sentence of the landing page stating that the removals are breaking changes."""
 
 
 @dataclass(frozen=True)
@@ -218,6 +244,41 @@ def _group_versions(versions: list[_Version]) -> list[_Page]:
     return pages
 
 
+def _convert_labels(text: str) -> str:
+    """Convert the labels starting the top-level list items into badges.
+
+    The bold text elsewhere is left untouched.
+
+    Args:
+        text: The text of a section of the changelog.
+
+    Returns:
+        The text where the leading `**Label** ` of a top-level list item
+        is replaced by a `<span>` styled by the CSS class
+        `changelog-label changelog-label--<slug>`.
+
+    Raises:
+        ValueError: When a top-level list item starts with an unknown label.
+    """
+
+    def convert(match: re.Match[str]) -> str:
+        label = match["label"]
+        if label not in _labels:
+            msg = (
+                f"The label '{label}' of an item of {_changelog_path} is unknown; "
+                f"the labels are {', '.join(_labels)}."
+            )
+            raise ValueError(msg)
+
+        slug = _slugify(label)
+        return (
+            f'{match["marker"]} <span class="changelog-label changelog-label--{slug}">'
+            f"{label}</span> "
+        )
+
+    return _label_pattern.sub(convert, text)
+
+
 def _render_page(page: _Page) -> str:
     """Render the Markdown source of a page.
 
@@ -225,12 +286,14 @@ def _render_page(page: _Page) -> str:
         page: The page.
 
     Returns:
-        The Markdown source of the page: its title followed by its versions.
+        The Markdown source of the page: its title followed by its versions,
+        the labels of their items being converted into badges.
     """
     return (
         f"# {page.title}\n\n"
         + "".join(
-            version.text.rstrip("\n") + "\n\n" for version in page.versions
+            _convert_labels(version.text.rstrip("\n")) + "\n\n"
+            for version in page.versions
         ).rstrip("\n")
         + "\n"
     )
@@ -282,6 +345,8 @@ def _render_index(intro: str, pages: list[_Page]) -> str:
         "# Changelog",
         "",
         intro,
+        "",
+        _removed_are_breaking_sentence,
         "",
         *items,
     ])

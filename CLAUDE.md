@@ -190,9 +190,16 @@ releases.
 Fragments go in `changelog/fragments/` as `<issue>.<type>.md`, e.g. `1269.fixed.md`;
 types are `added`, `breaking`, `changed`, `deprecated`, `fixed`, `removed`. A
 `breaking` fragment is a change of an existing feature requiring a change of the code
-of the users; the template renders it first in the Changed section, under a
-"Breaking changes" heading. A removal is a `removed` fragment, not a `breaking` one:
-the Removed section states that all its items are breaking changes. Preview with
+of the users. A removal is a `removed` fragment, not a `breaking` one: the changelog
+page states that all the items labelled Removed are breaking changes.
+
+A release has no section per type: `changelog/template.md` renders it as one flat list
+of items, each starting with the label of its type in bold (`- **Added** ...`),
+the label being the `name` of the type in `towncrier.toml` (`Breaking change`,
+`Removed`, `Deprecated`, `Added`, `Changed`, `Fixed`). The items are sorted by label in
+that order, breaking changes first. A fragment written as a list gets the label on
+each of its top-level items, so do not write the label in the fragment. The docs
+(`docs/_scripts/changelog.py`) turn these labels into coloured badges. Preview with
 `towncrier build --draft`.
 
 A fragment named only for its type (`added.md`, `fixed.md`, ...) is **silently dropped**:

@@ -220,3 +220,63 @@ does not exist and pulls the eye away from the links inside. Opt out with
   border-color: var(--md-default-fg-color--lightest);
   box-shadow: none;
 }
+
+/*
+Labels starting the items of the changelog (docs/_scripts/changelog.py), as pills.
+The colours are tokens redefined for the slate scheme, where a light background
+with a dark text is easier to read than a saturated one with a white text.
+Removed and Breaking change share their colour, as all the removals are breaking.
+*/
+:root,
+[data-md-color-scheme="default"] {
+  --changelog-label-fg: #fff;
+  --changelog-label-breaking-change-bg: #c62828;
+  --changelog-label-removed-bg: var(--changelog-label-breaking-change-bg);
+  --changelog-label-deprecated-bg: #b34700;
+  --changelog-label-added-bg: #2e7d32;
+  --changelog-label-changed-bg: #1565c0;
+  --changelog-label-fixed-bg: #6a1b9a;
+  --changelog-label-security-bg: #7f1d1d;
+}
+[data-md-color-scheme="slate"] {
+  --changelog-label-fg: #121212;
+  --changelog-label-breaking-change-bg: #ef9a9a;
+  --changelog-label-removed-bg: var(--changelog-label-breaking-change-bg);
+  --changelog-label-deprecated-bg: #ffb74d;
+  --changelog-label-added-bg: #81c784;
+  --changelog-label-changed-bg: #90caf9;
+  --changelog-label-fixed-bg: #ce93d8;
+  --changelog-label-security-bg: #e57373;
+}
+.md-typeset .changelog-label {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 1em;
+  color: var(--changelog-label-fg);
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.md-typeset .changelog-label--breaking-change {
+  background-color: var(--changelog-label-breaking-change-bg);
+}
+.md-typeset .changelog-label--removed {
+  background-color: var(--changelog-label-removed-bg);
+}
+.md-typeset .changelog-label--deprecated {
+  background-color: var(--changelog-label-deprecated-bg);
+}
+.md-typeset .changelog-label--added {
+  background-color: var(--changelog-label-added-bg);
+}
+.md-typeset .changelog-label--changed {
+  background-color: var(--changelog-label-changed-bg);
+}
+.md-typeset .changelog-label--fixed {
+  background-color: var(--changelog-label-fixed-bg);
+}
+.md-typeset .changelog-label--security {
+  background-color: var(--changelog-label-security-bg);
+}
