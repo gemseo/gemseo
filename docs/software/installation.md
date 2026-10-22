@@ -1,7 +1,6 @@
 ---
-status: draft
-description: ""
-tags: [ ]
+description: "Install GEMSEO with pip, uv or conda, and check the installation."
+tags: ['how_to']
 search:
   boost: 1
 ---
@@ -17,29 +16,32 @@ search:
 
 # Installation
 
-You may install the core or the full features set of GEMSEO. There are different ways to install GEMSEO, they are
-described below.
+GEMSEO can be installed with its core features only or with its full feature set.
+This page describes the different ways to install it and to check the installation.
 
 ## Requirements
 
-We try to support the Python interpreter versions following the official
-[Python release cycle](https://devguide.python.org/versions/#python-release-cycle).
-We may not support newer version of Python if a dependency of GEMSEO does not support it.
-The currently supported versions of Python are 3.11, 3.12, 3.13 and 3.14.
+GEMSEO supports the Python versions maintained according to the official
+[Python release cycle](https://devguide.python.org/versions/#python-release-cycle),
+as long as its dependencies support them.
+It currently supports Python 3.11, 3.12, 3.13 and 3.14.
 
-To install GEMSEO, you should use a Python environment.
-You can create environments with [uv](https://docs.astral.sh/uv),
-or with the Python built-in [venv](https://docs.python.org/3/library/venv.html) module
-or with [Anaconda](https://docs.anaconda.com/anaconda/install).
+Install GEMSEO in a Python environment,
+created for example with [uv](https://docs.astral.sh/uv),
+the built-in [venv](https://docs.python.org/3/library/venv.html) module
+or [Anaconda](https://docs.anaconda.com/anaconda/install).
 
-For using the full features set, if you are not using [Anaconda](https://docs.anaconda.com/anaconda/install), make sure
-that [graphviz](https://graphviz.org/download) is installed (for rendering graphs).
+For the full feature set without Anaconda,
+also install [Graphviz](https://graphviz.org/download) to render graphs.
+Its `dot` executable must be on the `PATH`;
+under Windows, select the option adding Graphviz to the `PATH` when installing it.
 
 ## Dependencies
 
-GEMSEO depends on external packages, some of them are optional. You may use more recent versions of these packages, but
-we cannot guarantee the backward compatibility. However, we have a large set of tests with a high code coverage so that
-you can fully check your configuration.
+GEMSEO depends on external packages, some of which are optional.
+More recent versions of these packages may work,
+but their backward compatibility is not guaranteed;
+the large test suite of GEMSEO lets you check your configuration.
 
 !!! info "See Also"
 
@@ -47,72 +49,101 @@ you can fully check your configuration.
 
 ### Core features
 
-The required dependencies provide the core features of GEMSEO, these are defined the `dependencies` entry
-of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/pyproject.toml).
-
-The minimal dependencies will allow to execute [MDO processes][concept-mdo-formulations] but not all post processing tools will be available.
+The required dependencies, listed in the `dependencies` entry
+of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/pyproject.toml),
+provide the core features of GEMSEO.
+They let you execute [MDO processes][concept-mdo-formulations],
+but some post-processing tools are not available.
 
 ### Full features
 
-Some packages are not required to execute basic scenarios, but provide additional features. The dependencies are
-independent, and can be installed one by one to activate the dependent features of listed in the same table. Installing
-all those dependencies will provide the full features set of GEMSEO. All these tools are open source with non-viral
-licenses (see [Credits](../credits.md)), they are defined in the `all` entry of the `[project.optional-dependencies]`
-section of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/pyproject.toml).
+The optional dependencies, listed in the `all` entry of the `[project.optional-dependencies]` section
+of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/pyproject.toml),
+provide additional features.
+They are independent of each other:
+install one of them to activate the features depending on it,
+or all of them to get the full feature set.
+They are all open source with non-viral licenses (see [Credits](../credits.md)).
 
 ## Install from
 
-=== "Pypi"
+=== "PyPI"
 
-    Install the core features of the latest version with
+    === "pip"
 
-    ``` console
-    pip install gemseo
-    ```
+        Install the core features of the latest version with
 
-    or the full features with:
+        ``` console
+        pip install gemseo
+        ```
 
-    ``` console
-    pip install gemseo[all]
-    ```
+        or the full feature set with
 
-    See [pip](https://pip.pypa.io/en/stable/getting-started/) for more information.
+        ``` console
+        pip install "gemseo[all]"
+        ```
+
+        See [pip](https://pip.pypa.io/en/stable/getting-started/) for more information.
+
+    === "uv"
+
+        Add the core features of the latest version to the dependencies of a uv project with
+
+        ``` console
+        uv add gemseo
+        ```
+
+        or the full feature set with
+
+        ``` console
+        uv add "gemseo[all]"
+        ```
+
+        To install GEMSEO in an existing environment instead,
+        use `uv pip install gemseo` or `uv pip install "gemseo[all]"`.
+
+        See [uv](https://docs.astral.sh/uv/) for more information.
 
 === "Anaconda"
 
-    Install the full features in an anaconda environment named *gemseo* for Python 3.11 with
+    Create a conda environment named *gemseo* with Python 3.11 and the full feature set of GEMSEO with
 
     ``` console
     conda create -c conda-forge -n gemseo python=3.11 gemseo
     ```
 
-    You can change the Python version to 3.12, 3.13 or 3.14.
-
-=== "without internet access"
-
-    If for some reasons you do not have access to internet from the target machine, such as behind a corporate firewall, you can use a [self-contained installer](https://mdo-ext.pf.irt-saintexupery.com/gemseo-installers).
+    Replace 3.11 by any other [supported version][requirements] of Python.
 
 ## Test the installation
 
 ### Basic test
 
-To check that the installation is successful, try to import the module:
+To check that the installation succeeded, import GEMSEO:
 
 ``` console
 python -c "import gemseo"
 ```
 
+or, in a uv project:
+
+``` console
+uv run python -c "import gemseo"
+```
+
 !!! warning
-    If you obtain the error:
+
+    If you obtain the error
 
     ``` console
-    “Traceback (most recent call last): File “<string>”, line 1, in <module> ImportError: No module named gemseo“
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+    ModuleNotFoundError: No module named 'gemseo'
     ```
 
-then the installation failed.
+    then GEMSEO is not installed in the active Python environment.
 
-You can use the function [print_configuration()][gemseo.print_configuration] to print the successfully loaded modules
-and the failed imports with the reason.
+To list the modules that were loaded and the imports that failed with their reasons,
+use the function [print_configuration()][gemseo.print_configuration]:
 
 ``` python
 from gemseo import print_configuration
@@ -120,52 +151,69 @@ from gemseo import print_configuration
 print_configuration()
 ```
 
-This function is useful when only some of the GEMSEO features appear to be missing. Usually this is related to external
-libraries that were not installed because the user did not request full features. See [Dependencies][dependencies] for
-more information.
+This is useful when only some features of GEMSEO are missing,
+usually because the optional dependencies providing them are not installed;
+see [Dependencies][dependencies].
 
 ### Test with examples
 
-The tutorials and how-tos contain many examples
-to illustrate the main features of GEMSEO.
-For each example, you can download a Python script or a Jupyter Notebook,
-execute it and experiment to test the installation.
+The [basic tutorials](../generated/examples/tutorials/basic/index.md),
+the [advanced tutorials](../generated/examples/tutorials/advanced/index.md)
+and the [how-to guides][disciplines-examples] illustrate the main features of GEMSEO.
+Each example can be downloaded as a Python script or a Jupyter notebook,
+which you can run and modify to test the installation.
 
 ## Advanced
 
 ### Install the development version
 
-Install the core features of the development version with
+=== "pip"
 
-``` console
-pip install gemseo@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
-```
+    Install the core features of the development version with
 
-or the full features with:
+    ``` console
+    pip install "gemseo @ git+https://gitlab.com/gemseo/dev/gemseo.git@develop"
+    ```
 
-``` console
-pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
-```
+    or the full feature set with
 
-To develop in GEMSEO, see
-instead [Developer information](https://gemseo.gitlab.io/dev/gemseo-org/develop/software/developing).
+    ``` console
+    pip install "gemseo[all] @ git+https://gitlab.com/gemseo/dev/gemseo.git@develop"
+    ```
+
+=== "uv"
+
+    Add the core features of the development version to the dependencies of a uv project with
+
+    ``` console
+    uv add "gemseo @ git+https://gitlab.com/gemseo/dev/gemseo.git@develop"
+    ```
+
+    or the full feature set with
+
+    ``` console
+    uv add "gemseo[all] @ git+https://gitlab.com/gemseo/dev/gemseo.git@develop"
+    ```
+
+    To install it in an existing environment instead, replace `uv add` by `uv pip install`.
+
+To contribute to GEMSEO, see the [developer guide](https://gemseo.gitlab.io/dev/gemseo-org/contribute/developer_guide/) instead.
 
 ### Test with unit tests
 
-Get the sources corresponding to the installed version of GEMSEO
-from [gitlab](https://gitlab.com/gemseo/dev/gemseo).
-Then, from the directory of this archive that contains the `tests` directory, run the tests with
+Get the sources of the installed version of GEMSEO from [GitLab](https://gitlab.com/gemseo/dev/gemseo).
+Then, from their root directory, which contains the `tests` directory, run the tests with
 
 ``` console
 uv run --extra all pytest
 ```
 
-See [uv](https://docs.astral.sh/uv/) for more information. With pip 25.1 or newer, use instead
+(see [uv](https://docs.astral.sh/uv/) for more information) or, with pip 25.1 or newer, with
 
 ``` console
 pip install --group test ".[all]"
 pytest
 ```
 
-Look at the [contributing](https://gemseo.gitlab.io/dev/gemseo-org/develop/developing) section for more information on
-testing.
+See the [contributing guide](https://gemseo.gitlab.io/dev/gemseo-org/contribute/contributing/)
+for more information on testing.
