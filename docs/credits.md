@@ -20,10 +20,19 @@ search:
 <!-- markdownlint-disable-next-line MD041 -->
 ### Internal dependencies
 
-GEMSEO source code includes software with compatible licenses that are listed below.
+GEMSEO source code and documentation include software with compatible licenses that are listed below.
 
-| Project | License |
-| ------- | ------- |
-| colormap | CC0 1.0 |
-| [Reorder.js](https://github.com/jdfekete/reorder.js) | BSD 3-Clause |
-| [WhatsOpt-CLI](https://github.com/OneraHub/WhatsOpt-CLI) | Apache v2.0 |
+| Project | Location | License |
+| ------- | -------- | ------- |
+| [canvas-toBlob.js](https://github.com/eligrey/canvas-toBlob.js) | `gemseo/util/n2d3/js/canvas_toBlob.js` | MIT |
+| colormap | `gemseo/post/_engine/colormap.py` | CC0 1.0 |
+| [D3](https://github.com/d3/d3) 3.5.5 | `gemseo/util/n2d3/js/d3.v3.js` | BSD 3-Clause |
+| [FileSaver.js](https://github.com/eligrey/FileSaver.js) | `gemseo/util/n2d3/js/FileSave.js` | MIT |
+| [Font Awesome Free](https://fontawesome.com/) 5.14.0 | `docs/_static/webfonts/` | SIL OFL 1.1 |
+| [Materialize](https://materializecss.com/) 1.0.0 | `gemseo/util/n2d3/css/materialize*.css`, `gemseo/util/n2d3/js/materialize*.js` | MIT |
+| [Parallel Coordinates](https://github.com/syntagmatic/parallel-coordinates) | `gemseo/util/n2d3/js/d3.parcoords.js` | BSD 3-Clause |
+| [Reorder.js](https://github.com/jdfekete/reorder.js) | `gemseo/util/n2d3/js/reorder.v1.js` | BSD 3-Clause |
+| [science.js](https://github.com/jasondavies/science.js) | `gemseo/util/n2d3/js/science.v1.js` | BSD 3-Clause |
+| [tiny-queue](https://github.com/nolanlawson/tiny-queue) | `gemseo/util/n2d3/js/tiny-queue.js` | Apache v2.0 |
+| [Werkzeug](https://github.com/pallets/werkzeug) | `gemseo/util/_filename_sanitizer.py` | BSD 3-Clause |
+| [WhatsOpt-CLI](https://github.com/OneraHub/WhatsOpt-CLI) | `gemseo/util/xdsm/html.py` | Apache v2.0 |
