@@ -1,6 +1,5 @@
 ---
-status: draft
-description: ""
+description: "The third-party projects used to build, run and document GEMSEO, with their licenses."
 tags: []
 search:
   boost: 1
