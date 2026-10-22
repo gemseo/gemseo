@@ -101,6 +101,7 @@ nav:
           - Tutorial - Solving an ODE with GEMSEO: generated/examples/tutorials/advanced/ode/plot_tutorial_harmonic_oscillator.md
           - Tutorial - Solving a system of coupled ODEs: generated/examples/tutorials/advanced/ode/plot_tutorial_springs_discipline.md
           - Tutorial - Solving an ODE with ODEProblem: generated/examples/tutorials/advanced/ode/plot_tutorial_van_der_pol.md
+      - What's new in GEMSEO 7: software/whats_new_7.md
       - Changelog: changelog.md
       - Licenses: software/licenses.md
       - Credits: credits.md
