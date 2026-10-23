@@ -14,7 +14,7 @@ http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
 Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# From GEMSEO 6 to GEMSEO 7 { #upgrading-gemseo }
+# From 6 to 7 { #upgrading-gemseo }
 
 GEMSEO 7 changes the API in depth: the packages are reorganized by domain, objects are configured
 with Pydantic settings models instead of keyword arguments, and random variables have their own
@@ -119,7 +119,7 @@ GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even wi
 
 1. **Upgrade to GEMSEO 6.3 first.** bump-gemseo migrates code written for GEMSEO 6.3 only. If your
    code uses an older version, follow the [upgrading guides](../index.md) from your version up to
-   [From GEMSEO 5 to GEMSEO 6](../5_to_6.md), then the changelog up to 6.3, and make sure your code runs with
+   [From 5 to 6](../5_to_6.md), then the changelog up to 6.3, and make sure your code runs with
    GEMSEO 6.3 without deprecation warnings.
 2. **Make sure your tests pass with GEMSEO 6.3, then commit.** bump-gemseo rewrites your files in
    place and has no dry-run mode: a clean working tree lets you review its changes with `git diff`
@@ -324,5 +324,5 @@ so that you can run it as it is.
 
 - [What's new in GEMSEO 7](../../whats_new_7.md): the new features.
 - [Changelog](../../../changelog/index.md): every change of the release.
-- [From GEMSEO 5 to GEMSEO 6](../5_to_6.md): the breaking changes of the previous major version; the
+- [From 5 to 6](../5_to_6.md): the breaking changes of the previous major version; the
   [upgrading overview](../index.md) lists the guides of the older versions.

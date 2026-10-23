@@ -8,6 +8,6 @@
 -->
 
 - [Overview](index.md)
-- [From GEMSEO 6 to GEMSEO 7](6_to_7/)
-- [From GEMSEO 5 to GEMSEO 6](5_to_6.md)
-- [Older versions](older/)
+- [From 6 to 7](6_to_7/)
+- [From 5 to 6](5_to_6.md)
+- [Older versions](older.md)

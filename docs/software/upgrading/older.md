@@ -1,5 +1,5 @@
 ---
-description: ""
+description: "The guides to migrate your code from one major version of GEMSEO to the next, up to GEMSEO 5."
 tags: ['how_to']
 search:
   boost: 1
@@ -14,9 +14,14 @@ search:
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# From GEMSEO 4 to GEMSEO 5
+# Older versions
 
-## End user API
+The guides to migrate your code from one major version to the next, up to GEMSEO 5. To migrate
+across several major versions, follow them in order, from your version up.
+
+## From 4 to 5
+
+### End user API
 
 - The high-level functions defined in `gemseo.api` have been moved to `gemseo`.
 - Features have been extracted from GEMSEO and are now available in the form of `plugins`:
@@ -25,7 +30,7 @@ search:
     - `gemseo.wrappers.matlab` has been moved to [gemseo-matlab](https://gitlab.com/gemseo/dev/gemseo-matlab), a GEMSEO plugin for MATLAB,
     - `gemseo.wrappers.template_grammar_editor` has been moved to [gemseo-template-editor-gui](https://gitlab.com/gemseo/dev/gemseo-template-editor-gui), a GUI to create input and output file templates for `DiscFromExe`.
 
-## Surrogate models information
+### Surrogate models information
 
 - The high-level functions defined in `gemseo.mlearning.api` have been moved to `gemseo.mlearning`.
 - `stieltjes` and `strategy` are no longer arguments of `PCERegressor`.
@@ -49,7 +54,7 @@ search:
     - `RBFRegressor.THIN_PLATE`
     - `RBFRegressor.AVAILABLE_FUNCTIONS`
 
-## Post processing
+### Post processing
 
 - The visualization `Lines` uses a specific tuple (color, style, marker, name) per line by default. [#677](https://gitlab.com/gemseo/dev/gemseo/-/issues/677)
 - `YvsX` no longer has the arguments `x_comp` and `y_comp`; the components have to be passed as `x=("variable_name", variable_component)`.
@@ -63,7 +68,7 @@ search:
 - `PostFactory.create` uses `class_name`, then `opt_problem` and `**options` as arguments. [#752](https://gitlab.com/gemseo/dev/gemseo/-/issues/752)
 - `Dataset.plot` no longer refers to specific dataset plots, as ScatterMatrix, lines, curves\... `Dataset.plot` now refers to the standard [pandas plot method](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html). To retrieve ready-to-use plots, please check in `gemseo.post.dataset`. [#257](https://gitlab.com/gemseo/dev/gemseo/-/issues/257)
 
-## MDO processes
+### MDO processes
 
 - Renamed `InvalidDataException` to `InvalidDataError`. [#23](https://gitlab.com/gemseo/dev/gemseo/-/issues/23)
 
@@ -308,7 +313,7 @@ search:
 
 - The module `gemseo.problems.mdo.scalable.parametric.study` has been removed. [#717](https://gitlab.com/gemseo/dev/gemseo/-/issues/717)
 
-## Optimisation & DOE
+### Optimisation & DOE
 
 - Moved the library of optimization algorithms `PSevenOpt` to the plugin [gemseo-pseven](https://gitlab.com/gemseo/dev/gemseo-pseven).
 - Moved the `PDFO` wrapper to the plugin [gemseo-pdfo](https://gitlab.com/gemseo/dev/gemseo-pdfo).
@@ -446,7 +451,7 @@ search:
 - Remove `MDOFunction.restrict`; please use `FunctionRestriction`.
 - Remove `DOELibrary.compute_phip_criteria`; please use `compute_phip_criterion`.
 
-## UQ
+### UQ
 
 - The high-level functions defined in `gemseo.uncertainty.api` have been moved to `gemseo.uncertainty`.
 - Rename `BaseSensitivityAnalysis.export_to_dataset` to `BaseSensitivityAnalysis.to_dataset`.
@@ -505,7 +510,7 @@ search:
 - Remove `ComposedDistribution.INDEPENDENT_COPULA`; please use `ComposedDistribution.INDEPENDENT_COPULA`.
 - Remove `SobolAnalysis.AVAILABLE_ALGOS`; please use `SobolAnalysis.Algorithm`.
 
-## Technical improvements
+### Technical improvements
 
 - Moved `gemseo.utils.testing.compare_dict_of_arrays` to `gemseo.utils.comparisons.compare_dict_of_arrays`.
 - Moved `gemseo.utils.testing.image_comparison` to `gemseo.utils.testing.helpers.image_comparison`.
@@ -569,8 +574,159 @@ search:
 - The option `fig_size` of the `gemseo-study` has been replaced by the options `height` and `width`.
 - The CLI `gemseo-study` can be used for MDO studies with `gemseo-study xls_file_path` and coupling studies with `gemseo-study xls_file_path -t coupling`.
 
-## Removed
+### Removed
 
 - Removed the `gemseo.core.jacobian_assembly` module that is now in `gemseo.core.derivatives.jacobian_assembly`.
 - Removed the obsolete `snopt` wrapper.
 - Removed Python 3.7 support.
+
+## From 3 to 4
+
+### API changes that impact user scripts code
+
+- In post-processing, `fig_size` is the unique name to identify the size of a figure and the occurrences of `figsize`, `figsize_x` and `figsize_y` have been replaced by `fig_size`, `fig_size_x` and `fig_size_y`.
+- The argument `parallel_exec` in `IDF` has been renamed to `n_processes`.
+- The argument `quantile` of `VariableInfluence` has been renamed to `level`.
+- `BasicHistory`: `data_list` has been renamed to `variable_names`.
+- `MDAChain.sub_mda_list` has been renamed to `MDAChain`.
+- `gemseo.post.radar_chart.RadarChart`: `constraints_list` has been renamed to `constraint_names`.
+- `ScatterPlotMatrix`: `variables_list` has been renamed to `variable_names`.
+- All MDA algos now count their iterations starting from `0`.
+- The `MDA.residual_history` is now a list of normed residuals.
+- The argument `figsize` in `MDA.plot_residual_history` was renamed to `fig_size` to be consistent with `OptPostProcessor` algos.
+- `ConstraintsHistory`: `constraints_list` has been renamed to `constraint_names`.
+- The `MDAChain` now takes `inner_mda_name` as argument instead of `sub_mda_class`.
+- The `MDF` formulation now takes `main_mda_name` as argument instead of `main_mda_class` and `inner_mda_name` instead of - `sub_mda_class`.
+- The `BiLevel` formulation now takes `main_mda_name` as argument instead of `mda_name`. It is now possible to explicitly define an `inner_mda_name` as well.
+- In `DesignSpace`:
+    - `get_current_x` has been renamed to `get_current_value`.
+    - `has_current_x` has been renamed to `has_current_value`.
+    - `set_current_x` has been renamed to `set_current_value`.
+    - Remove `get_current_x_normalized` and `get_current_x_dict`.
+- The short names of some machine learning algorithms have been replaced by conventional acronyms.
+- `MatlabDiscipline.__init__`: `input_data_list` and `output_data_list` has been renamed to `input_names` and `output_names`.
+- `save_matlab_file`: `dict_to_save` has been renamed to `data`.
+- The classes of the regression algorithms are renamed as `{Prefix}Regressor`.
+- The class `ConcatenationDiscipline` has been renamed to `Concatenater`.
+- In Caches:
+    - `input_names` has been renamed to `AbstractCache.input_names`.
+    - `get_all_data()` has been replaced by `[cache_entry for cache_entry in cache]`.
+    - `get_data` has been removed.
+    - `get_length()` has been replaced by `len(cache)`.
+    - `get_outputs(input_data)` has been replaced by `cache[input_data].outputs`.
+    - `{INPUTS,JACOBIAN,OUTPUTS,SAMPLE}_GROUP` have been removed.
+    - `get_last_cached_inputs()` has been replaced by `cache.last_entry.inputs`.
+    - `get_last_cached_outputs()` has been replaced by `cache.last_entry.outputs`.
+    - `max_length` has been removed.
+    - `merge` has been renamed to `AbstractFullCache.update`.
+    - `output_names` has been renamed to `AbstractCache.output_names`.
+    - `varsizes` has been renamed to `AbstractCache.names_to_sizes`.
+    - `samples_indices` has been removed.
+
+### API changes that impact discipline wrappers
+
+- In Grammar:
+    - `update_from` has been renamed to `BaseGrammar.update`.
+    - `remove_item(name)` has been replaced by `del grammar[name]`.
+    - `get_data_names` has been renamed to `BaseGrammar.keys`.
+    - `initialize_from_data_names` has been renamed to `BaseGrammar.update`.
+    - `initialize_from_base_dict` has been renamed to `BaseGrammar.update_from_data`.
+    - `update_from_if_not_in` has been renamed to now use `BaseGrammar.update` with `exclude_names`.
+    - `set_item_value` has been removed.
+    - `remove_required(name)` has been replaced by `required_names.remove(name)`.
+    - `data_names` has been renamed to `BaseGrammar.keys`.
+    - `data_types` has been renamed to `BaseGrammar.values`.
+    - `update_elements` has been renamed to `BaseGrammar.update`.
+    - `update_required_elements` has been removed.
+    - `init_from_schema_file` has been renamed to `BaseGrammar.update_from_file`.
+
+### API changes that affect plugin or features developers
+
+- `AlgoLib.lib_dict` has been renamed to `.AlgoLib.descriptions`.
+- `gemseo.utils.data_conversion.FLAT_JAC_SEP` has been renamed to `.STRING_SEPARATOR`.
+- In `gemseo.utils.data_conversion`:
+    - `DataConversion.dict_to_array` has been renamed to `concatenate_dict_of_arrays_to_array`.
+    - `DataConversion.list_of_dict_to_array` removed.
+    - `DataConversion.array_to_dict` has been renamed to `split_array_to_dict_of_arrays`.
+    - `DataConversion.jac_2dmat_to_dict` has been renamed to `split_array_to_dict_of_arrays`.
+    - `DataConversion.jac_3dmat_to_dict` has been renamed to `split_array_to_dict_of_arrays`.
+    - `DataConversion.dict_jac_to_2dmat` removed.
+    - `DataConversion.dict_jac_to_dict` has been renamed to `flatten_nested_dict`.
+    - `DataConversion.flat_jac_name` removed.
+    - `DataConversion.dict_to_jac_dict` has been renamed to `nest_flat_bilevel_dict`.
+    - `DataConversion.update_dict_from_array` has been renamed to `update_dict_of_arrays_from_array`.
+    - `DataConversion.deepcopy_datadict` has been renamed to `deepcopy_dict_of_arrays`.
+    - `DataConversion.get_all_inputs` has been renamed to `get_all_inputs`.
+    - `DataConversion.get_all_outputs` has been renamed to `get_all_outputs`.
+- `DesignSpace.get_current_value` can now return a dictionary of NumPy arrays or normalized design values.
+- The method `MDOFormulation.check_disciplines` has been removed.
+- The class variable `MLAlgo.ABBR` has been renamed to `MLAlgo.SHORT_ALGO_NAME`.
+- For `OptResult` and `MDOFunction`: `get_data_dict_repr` has been renamed to `to_dict`.
+- Remove plugin detection for packages with `gemseo_` prefix.
+- `MDODisciplineAdapterGenerator.get_function`: `input_names_list` and `output_names_list` has been renamed to `output_names` and `output_names`.
+- `MDOScenarioAdapter.__init__`: `inputs_list` and `outputs_list` has been renamed to `input_names` and `output_names`.
+- `OptPostProcessor.out_data_dict` has been renamed to `OptPostProcessor.materials_for_plotting`.
+- In `ParallelExecution`:
+    - `input_data_list` has been renamed to `~.ParallelExecution.input_values`.
+    - `worker_list` has been renamed to `ParallelExecution.workers`.
+- In Grammar, `is_type_array` has been renamed to `BaseGrammar.is_array`.
+
+### Internal changes that rarely or not affect users
+
+- In Grammar:
+    - `load_data` has been renamed to `BaseGrammar.validate`.
+    - `is_data_name_existing(name)` has been renamed to `name in grammar`.
+    - `is_all_data_names_existing(names)` has been replaced by `set(names) <= set(keys())`.
+    - `to_simple_grammar` has been renamed to `BaseGrammar.convert_to_simple_grammar`.
+    - `is_required(name)` has been renamed to `name in required_names`.
+    - `write_schema` has been renamed to `BaseGrammar.write`.
+    - `schema_dict` has been renamed to `BaseGrammar.schema`.
+    - `JSONGrammar` class attributes removed has been renamed to `PROPERTIES_FIELD`, `REQUIRED_FIELD`, `TYPE_FIELD`, `OBJECT_FIELD`, `TYPES_MAP`.
+    - `AbstractGrammar` has been renamed to `BaseGrammar`.
+- `AnalyticDiscipline.expr_symbols_dict` has been renamed to `AnalyticDiscipline.output_names_to_symbols`.
+- `AtomicExecSequence.get_state_dict` has been renamed to `AtomicExecSequence.get_statuses`.
+- In `CompositeExecSequence`:
+    - `CompositeExecSequence.get_state_dict` has been renamed to `CompositeExecSequence.get_statuses`.
+    - `CompositeExecSequence.sequence_list` has been renamed to `CompositeExecSequence.sequences`.
+- Remove `gemseo.utils.multi_processing`.
+
+## From 2 to 3
+
+As *GEMS* has been renamed to GEMSEO, upgrading from version 2 to version 3 requires to change all the import statements of your code from
+
+``` python
+import gems
+from gems.x.y import z
+```
+
+to
+
+``` python
+import gemseo
+from gemseo.x.y import z
+```
+
+## From 1 to 2
+
+The API of *GEMS* 2 has been slightly modified with respect to *GEMS* 1. In particular, for all the supported Python versions, the strings shall to be encoded in unicode while they were previously encoded in ASCII.
+
+That kind of error:
+
+``` console
+ERROR - 17:11:09 : Invalid data in : MDOScenario_input
+', error : data.algo must be string
+Traceback (most recent call last):
+  File "plot_mdo_scenario.py", line 85, in <module>
+    scenario.execute(L_BFGS_B_Settings(max_iter=100))
+  File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 586, in execute
+    self.check_input_data(input_data)
+  File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 1243, in check_input_data
+    raise InvalidDataException("Invalid input data for: " + self.name)
+gemseo.core.grammar.InvalidDataException: Invalid input data for: MDOScenario
+```
+
+is most likely due to the fact that you have not migrated your code to be compliant with GEMSEO 2. To migrate your code, add the following import at the beginning of all your modules defining literal strings:
+
+``` python
+from __future__ import unicode_literals
+```

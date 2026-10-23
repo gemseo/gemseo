@@ -17,12 +17,12 @@ There is one guide per major version, telling how to migrate your code from the 
 version. To migrate across several major versions, follow the guides in order, from your version
 up. The [changelog](../../changelog/index.md) lists every change of each release.
 
-- [From GEMSEO 6 to GEMSEO 7](6_to_7/index.md)
-- [From GEMSEO 5 to GEMSEO 6](5_to_6.md)
+- [From 6 to 7](6_to_7/index.md)
+- [From 5 to 6](5_to_6.md)
 
 ??? note "Older versions"
 
-    - [From GEMSEO 4 to GEMSEO 5](older/4_to_5.md)
-    - [From GEMSEO 3 to GEMSEO 4](older/3_to_4.md)
-    - [From GEMS 2 to GEMSEO 3](older/2_to_3.md)
-    - [From GEMS 1 to GEMS 2](older/1_to_2.md)
+    - [From 4 to 5](older.md#from-4-to-5)
+    - [From 3 to 4](older.md#from-3-to-4)
+    - [From 2 to 3](older.md#from-2-to-3)
+    - [From 1 to 2](older.md#from-1-to-2)
