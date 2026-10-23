@@ -172,6 +172,41 @@ without querying the optimization problem.
     scenario.post_process(OptHistoryView_Settings(save=False, show=False))
     ```
 
+Multi-objective problems use the same method.
+Each call to `add_objective` adds an objective, to minimize or to maximize,
+and the objectives may be computed by different disciplines.
+The scenario concatenates them into a vector objective
+solved by a multi-objective algorithm such as MNBI,
+and `execute` returns a result including the Pareto front:
+
+```python
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.optimization import MNBI_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post import ParetoFront_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
+
+cost_model = AnalyticDiscipline({"cost": "4*x**2+4*y**2"})
+performance_model = AnalyticDiscipline({"performance": "50-(x-5)**2-(y-5)**2"})
+design_space = DesignSpace()
+design_space.add_real_variable("x", lower_bound=0.0, upper_bound=5.0, value=1.0)
+design_space.add_real_variable("y", lower_bound=0.0, upper_bound=3.0, value=1.0)
+
+scenario = MDOScenario([cost_model, performance_model], design_space)
+scenario.add_objective("cost")
+scenario.add_objective("performance", minimize=False)
+result = scenario.execute(
+    MNBI_Settings(
+        max_iter=1000,
+        n_sub_optim=20,
+        sub_optim_algo_settings=SLSQP_Settings(max_iter=100),
+    )
+)
+pareto_front = result.pareto_front
+scenario.post_process(ParetoFront_Settings(save=False, show=True))
+```
+
 `MDOScenario` now covers both optimization and design of experiments:
 it runs the algorithm corresponding to the settings passed to `execute`.
 Replacing a DOE by an optimizer only changes this argument:
