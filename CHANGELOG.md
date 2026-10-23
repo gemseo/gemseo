@@ -1784,8 +1784,8 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 - **Breaking change** ML model quality
     - `BaseMLAlgoQuality` was renamed to `BaseMLModelQuality`.
     - `MLAlgoQualityFactory` was renamed to `MLModelQualityFactory`.
-    - The argument `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
-    - The attribute `algo` of `BaseMLModelQuality` (formerly `BaseMLAlgoQuality`) was renamed to `model`.
+    - The argument `algo` of `BaseMLModelQuality` was renamed to `model`.
+    - The attribute `algo` of `BaseMLModelQuality` was renamed to `model`.
     - The argument `algo` of `BaseClustererQuality` was renamed to `model`.
     - The argument `algo` of `BaseRegressorQuality` was renamed to `model`.
     - The argument `algo` of `BasePredictiveClustererQuality` was renamed to `model`.
@@ -1839,34 +1839,34 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** ML model calibration
     - `MLAlgoAssessor` was renamed to `MLModelAssessor`.
-    - The attribute `algos` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was renamed to `models`.
-    - The attribute `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The attribute `parameters` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The attribute `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The attribute `measure` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The attribute `measure_options` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The attribute `dataset` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed.
-    - The argument `algo` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use `settings` instead.
-    - The argument `transformer` of `MLModelAssessor` (formerly `MLAlgoAssessor`) was removed; use the `transformer` field of the `settings` argument instead.
-    - The arguments `**algo_settings` of `MLModelAssessor` (formerly `MLAlgoAssessor`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type.
+    - The attribute `algos` of `MLModelAssessor` was renamed to `models`.
+    - The attribute `algo` of `MLModelAssessor` was removed.
+    - The attribute `parameters` of `MLModelAssessor` was removed.
+    - The attribute `transformer` of `MLModelAssessor` was removed.
+    - The attribute `measure` of `MLModelAssessor` was removed.
+    - The attribute `measure_options` of `MLModelAssessor` was removed.
+    - The attribute `dataset` of `MLModelAssessor` was removed.
+    - The argument `algo` of `MLModelAssessor` was removed; use `settings` instead.
+    - The argument `transformer` of `MLModelAssessor` was removed; use the `transformer` field of the `settings` argument instead.
+    - The arguments `**algo_settings` of `MLModelAssessor` were removed and replaced by the `settings` argument with `BaseMLModelSettings` type.
     - `MLAlgoCalibration` was renamed to `MLModelCalibration`.
-    - The argument `algo` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use `settings` instead.
-    - The argument `parameters` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed, as it duplicated the names of the variables of the `calibration_space` argument, i.e. `list(calibration_space.variables)`.
-    - The argument `transformer` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was removed; use the `transformer` field of the `settings` argument instead.
-    - The arguments `**algo_settings` of `MLModelCalibration` (formerly `MLAlgoCalibration`) were removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
+    - The argument `algo` of `MLModelCalibration` was removed; use `settings` instead.
+    - The argument `parameters` of `MLModelCalibration` was removed, as it duplicated the names of the variables of the `calibration_space` argument, i.e. `list(calibration_space.variables)`.
+    - The argument `transformer` of `MLModelCalibration` was removed; use the `transformer` field of the `settings` argument instead.
+    - The arguments `**algo_settings` of `MLModelCalibration` were removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
       e.g. `MLModelCalibration(PolynomialRegressor_Settings(fit_intercept=False), dataset, calibration_space)` instead of `MLAlgoCalibration("PolynomialRegressor", dataset, ["degree"], calibration_space, fit_intercept=False)`.
-    - The arguments `algo_name` and `**algo_settings` of `MLModelCalibration.execute` (formerly `MLAlgoCalibration.execute`) were removed and replaced by the argument `settings` with `BaseDriverSettings` type;
+    - The arguments `algo_name` and `**algo_settings` of `MLModelCalibration.execute` were removed and replaced by the argument `settings` with `BaseDriverSettings` type;
       e.g. `calibration.execute(NLOPT_COBYLA_Settings(max_iter=100))` instead of `calibration.execute("NLOPT_COBYLA", max_iter=100)`.
-    - The attribute `algo_assessor` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `model_assessor`.
-    - The attribute `optimal_algorithm` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `optimal_model`.
-    - The attribute `algos` of `MLModelCalibration` (formerly `MLAlgoCalibration`) was renamed to `models`.
+    - The attribute `algo_assessor` of `MLModelCalibration` was renamed to `model_assessor`.
+    - The attribute `optimal_algorithm` of `MLModelCalibration` was renamed to `optimal_model`.
+    - The attribute `algos` of `MLModelCalibration` was renamed to `models`.
 
 - **Breaking change** ML model selection
     - `MLAlgoSelection` was renamed to `MLModelSelection`.
-    - The argument `name` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
+    - The argument `name` of `MLModelSelection.add_candidate` was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
       e.g. `selection.add_candidate(LinearRegressor_Settings(fit_intercept=False))` instead of `selection.add_candidate("LinearRegressor", fit_intercept=False)`.
-    - The argument `calib_space` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was renamed to `calibration_space`.
-    - The argument `calib_algo` of `MLModelSelection.add_candidate` (formerly `MLAlgoSelection.add_candidate`) was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type.
+    - The argument `calib_space` of `MLModelSelection.add_candidate` was renamed to `calibration_space`.
+    - The argument `calib_algo` of `MLModelSelection.add_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type.
 
     [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
 
