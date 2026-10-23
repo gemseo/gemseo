@@ -90,7 +90,7 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
 
         algo = self._algo_class(opt, ot_event)
         self._set_algo_options(algo, settings)
-        algo.run()
+        self._run_ot_algo(algo, event_name)
 
         result = algo.getResult()
         if self._use_multiform_result:
@@ -108,6 +108,15 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
             )
 
         return self.__create_form_result(event_name, problem, result, settings)
+
+    def _run_ot_algo(self, algo: Analytical, event_name: str) -> None:
+        """Run the OpenTURNS algorithm.
+
+        Args:
+            algo: The OpenTURNS algorithm.
+            event_name: The name of the event.
+        """
+        algo.run()
 
     def __create_form_result(
         self,
