@@ -461,10 +461,12 @@ The machine learning models follow the same settings-based pattern as the rest o
 
 A release of this size changes many names, and we made sure you do not pay for it.
 Almost every renamed module, class, function and attribute keeps working under its old name
-for a full deprecation cycle, with a `DeprecationWarning` telling you its replacement:
-your GEMSEO 6 scripts keep running while you migrate.
+for a full deprecation cycle, with a `DeprecationWarning` that gives its replacement,
+so a name that escapes the migration does not break your code.
 [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) rewrites most of your code automatically,
-and the guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) covers the rest, case by case.
+including the calls whose arguments changed, which old names alone cannot keep working.
+The guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) covers the rest, case by case,
+and explains [what the old names cover](upgrading/6_to_7/index.md#compatibility-layer).
 
 GEMSEO 7 requires Python 3.11 or later
 and raises the minimum versions of several dependencies,

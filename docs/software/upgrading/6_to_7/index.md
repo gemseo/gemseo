@@ -32,6 +32,76 @@ changes that bump-gemseo cannot make on its own, each with the code before and a
     169 are explained with an example, the rest are names removed without replacement,
     listed at the end of each domain page.
 
+## The compatibility layer of GEMSEO 7 { #compatibility-layer }
+
+GEMSEO 7 keeps most of the GEMSEO 6.3 *names* working for one deprecation cycle. When you import
+`gemseo`, it installs a compatibility layer. The layer maps an old name to its new one and emits a
+`DeprecationWarning` that gives the replacement:
+
+```python
+from gemseo.algos.design_space import DesignSpace
+# DeprecationWarning: The module 'gemseo.algos.design_space' is deprecated; use 'gemseo.space.design' instead.
+# DeprecationWarning: The attribute 'DesignSpace' of the module 'gemseo.algos.design_space' is deprecated; use 'gemseo.space.DesignSpace' instead.
+```
+
+The layer reads the same rename rules as bump-gemseo. It is a safety net, not a replacement for
+bump-gemseo: it resolves names, not calls.
+
+### What it does
+
+- **Moved and renamed modules**: importing a GEMSEO 6.3 module path imports its GEMSEO 7 module,
+  e.g. `gemseo.algos.design_space` gives `gemseo.space.design`.
+- **Renamed classes, functions and constants** still resolve under their old names in their old
+  modules, e.g. `SciPyMILP_Settings` of `gemseo.algos.opt.scipy_milp` gives
+  `gemseo.optimization.MILP_Settings`.
+- **Renamed class attributes, methods and enumeration members**: `Class.OLD` and `instance.OLD`
+  both read the new attribute, e.g. `cache.last_entry` gives `cache.last_item` and
+  `DatasetClassName.Dataset` gives `DatasetClassName.DATASET`. If one of your subclasses still
+  defines or overrides an old name, its definition is moved to the new name.
+- **The dissolved package `gemseo.settings`**: importing it warns and lists the packages that now
+  hold its settings.
+- **Names moved to a plugin**, e.g. `gemseo.disciplines.wrappers.xls_discipline`, now
+  `gemseo_excel.xls_discipline`: when the plugin is not installed, the error names it.
+- **Removed names**: importing a name removed without replacement raises an error that says so.
+  For the few names that cannot be migrated automatically, the error says how to migrate, e.g.
+  `use logging.getLogger("gemseo.space.random") instead` for `gemseo.algos.parameter_space.LOGGER`.
+
+### What it does not do
+
+GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even with the layer:
+
+- **renamed or removed arguments**, e.g. `MDAGaussSeidel(disciplines, tolerance=1e-10)` raises
+  `TypeError: MDAGaussSeidel.__init__() got an unexpected keyword argument 'tolerance'`;
+- **keyword arguments that became a settings model**, e.g.
+  `scenario.execute(algo_name="SLSQP", max_iter=30)`;
+- **methods removed in favour of another API**, e.g. `design_space.get_lower_bound("x")`;
+- **names given as strings**, e.g. the algorithm name `"Scipy_MILP"`, now `"MILP"`;
+- **changes of behaviour**: a name that GEMSEO 7 keeps but whose behaviour changed is not aliased
+  (see [Step 4](#step-4-check-the-silent-changes)).
+
+### Who does what
+
+- **The compatibility layer** keeps the old names working until you rename them.
+- **bump-gemseo** renames them in your code, which removes the warnings. It also rewrites the calls
+  that the layer cannot keep working: arguments, settings models, removed methods with a
+  replacement ([Step 1](#step-1-run-bump-gemseo)).
+- **You** handle the rest:
+    - the `# TODO(bump-gemseo)` comments ([Step 2](#step-2-resolve-the-todo-comments));
+    - the errors that come with no comment ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code));
+    - the silent changes ([Step 4](#step-4-check-the-silent-changes));
+    - the old names that bump-gemseo did not see. They still work with a warning; rename them before
+      the layer drops them ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code)).
+
+### Limits
+
+- **Patching an old path does not reach GEMSEO.** An old module path gives a stand-in that owns its
+  own namespace. `mock.patch("gemseo.utils.string_tools.MultiLineString")` replaces the name on the
+  stand-in, but GEMSEO code that imports the new path does not see the replacement: patch the new
+  path. bump-gemseo migrates the `mock.patch` targets written as strings.
+- **Assigning an old class attribute after the class is defined** shadows the alias instead of going
+  through it, e.g. `Class.OLD = value` or `monkeypatch.setattr(Class, "OLD", ...)`. Assign the new
+  name.
+
 ## Before you start
 
 1. **Upgrade to GEMSEO 6.3 first.** bump-gemseo migrates code written for GEMSEO 6.3 only. If your
@@ -77,10 +147,10 @@ Install GEMSEO 7 (see [Installation](../../installation.md)) and run your tests 
 that no comment announced is in a section *Changes that fail without a comment*, which quotes the
 error message: search for it.
 
-GEMSEO 7 still accepts most GEMSEO 6.3 names for one deprecation cycle, with a `DeprecationWarning`.
-bump-gemseo renames them, but a name it did not see (in a string, or built at run time) still works
-for now and will fail in a later version. Run your tests once with `python -W error::DeprecationWarning`
-to find them.
+Old names that bump-gemseo did not rename, such as names on an object whose type it could not infer,
+or names built at run time, still work through the [compatibility layer](#compatibility-layer), with a
+`DeprecationWarning`, and will fail once the layer drops them. Run your tests once with
+`python -W error::DeprecationWarning` to find them, then rename them.
 
 ## Step 4: check the silent changes
 
