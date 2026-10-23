@@ -55,41 +55,51 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
   were renamed to follow the `key_to_value` convention
   where the key and value parts are plural only when each entry maps to a collection.
   Sorted by class and method:
-    - `AnalyticDiscipline`: attribute `output_names_to_symbols` → `output_name_to_symbols`.
-    - `ArrayBasedFunctionDiscipline.__init__`: arguments `input_names_to_sizes` → `input_name_to_size`,
-      `output_names_to_sizes` → `output_name_to_size`; same for the corresponding attributes.
-    - `BaseAlgoFactory` (now `BaseAlgorithmFactory`): property `algo_names_to_libraries` → `algo_name_to_library`.
-    - `BaseCache`: property `names_to_sizes` → `name_to_size`.
-    - `BaseDataConverter`: methods `compute_names_to_slices` → `compute_name_to_slice`,
-      `compute_names_to_sizes` → `compute_name_to_size`;
-      argument `names_to_sizes` of `compute_name_to_slice` → `name_to_size`.
-    - `BaseGrammar.update_from_types`: argument `names_to_types` → `name_to_type`.
-    - `BaseMDASolver.set_bounds`,
-      `MDAChain.set_bounds`,
-      `MDASequential.set_bounds`: argument `variable_names_to_bounds` → `variable_name_to_bounds`.
-    - `BaseMLAlgo` (now `BaseMLModel`): attribute `variable_names_to_n_components` → `variable_name_to_n_components`.
-    - `BaseMLSupervisedAlgo` (now `BaseMLSupervisedModel`): attribute `names_to_sizes` → `name_to_size`.
-    - `BiLevelScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
-      `design_variable_names_to_values` → `design_variable_name_to_value`.
-    - `Database.to_dataset`: argument `groups_to_variables` → `group_to_variables`.
-    - `Dataset`: properties `variable_names_to_n_components` → `variable_name_to_n_components`,
-      `group_names_to_n_components` → `group_name_to_n_components`;
-      argument `variable_names_to_n_components` of `from_array`, `from_csv` and `from_txt`
-      → `variable_name_to_n_components`;
-      argument `variable_names_to_group_names` of `from_array`, `from_csv` and `from_txt` → `variable_name_to_group_name`.
-    - `DisciplineAdapter.__init__`: argument `names_to_sizes` → `name_to_size`.
-    - `DisciplineAdapterGenerator.__init__`: argument `names_to_sizes` → `name_to_size`.
-    - `OptimizationMetadata`: attribute `output_names_to_constraint_names` → `output_name_to_constraint_names`.
-    - `OptimizationProblem.to_dataset`: argument `output_names_to_constraint_names` → `output_name_to_constraint_names`.
-    - `ScalableDesignSpace.__init__`: argument `names_to_default_values` → `name_to_default_value`;
-      same for the corresponding attribute.
-    - `ScenarioResult`: attributes `optimization_problems_to_results` → `optimization_problem_to_result`,
-      `design_variable_names_to_values` → `design_variable_name_to_value`.
-    - `SimpleGrammar.__init__`: argument `names_to_types` → `name_to_type`.
-    - `Splitter.__init__`: argument `output_names_to_input_indices` → `output_name_to_input_indices`.
-    - `gemseo.util.discipline.update_default_input_values` (formerly in `gemseo.utils.discipline`): argument `input_names_to_default_values`
-      → `input_name_to_default_value`.
-    - `gemseo.util.string.get_variables_with_components` (formerly in `gemseo.utils.string_tools`): argument `names_to_sizes` → `name_to_size`.
+    - `AnalyticDiscipline`: `output_names_to_symbols` → `output_name_to_symbols`
+    - `ArrayBasedFunctionDiscipline`:
+        - `input_names_to_sizes` → `input_name_to_size`
+        - `output_names_to_sizes` → `output_name_to_size`
+        - `__init__()`:
+            - `input_names_to_sizes` → `input_name_to_size`
+            - `output_names_to_sizes` → `output_name_to_size`
+    - `BaseAlgoFactory` (now `BaseAlgorithmFactory`): `algo_names_to_libraries` → `algo_name_to_library`
+    - `BaseCache`: `names_to_sizes` → `name_to_size`
+    - `BaseDataConverter`:
+        - `compute_names_to_slices()` → `compute_name_to_slice()`
+        - `compute_names_to_sizes()` → `compute_name_to_size()`
+        - `compute_name_to_slice()`: `names_to_sizes` → `name_to_size`
+    - `BaseGrammar.update_from_types()`: `names_to_types` → `name_to_type`
+    - `BaseMDASolver.set_bounds()`,
+      `MDAChain.set_bounds()` and
+      `MDASequential.set_bounds()`: `variable_names_to_bounds` → `variable_name_to_bounds`
+    - `BaseMLAlgo` (now `BaseMLModel`): `variable_names_to_n_components` → `variable_name_to_n_components`
+    - `BaseMLSupervisedAlgo` (now `BaseMLSupervisedModel`): `names_to_sizes` → `name_to_size`
+    - `BiLevelScenarioResult`:
+        - `optimization_problems_to_results` → `optimization_problem_to_result`
+        - `design_variable_names_to_values` → `design_variable_name_to_value`
+    - `Database.to_dataset()`: `groups_to_variables` → `group_to_variables`
+    - `Dataset`:
+        - `variable_names_to_n_components` → `variable_name_to_n_components`
+        - `group_names_to_n_components` → `group_name_to_n_components`
+        - `from_array()`, `from_csv()` and `from_txt()`:
+            - `variable_names_to_n_components` → `variable_name_to_n_components`
+            - `variable_names_to_group_names` → `variable_name_to_group_name`
+    - `DisciplineAdapter.__init__()`: `names_to_sizes` → `name_to_size`
+    - `DisciplineAdapterGenerator.__init__()`: `names_to_sizes` → `name_to_size`
+    - `OptimizationMetadata`: `output_names_to_constraint_names` → `output_name_to_constraint_names`
+    - `OptimizationProblem.to_dataset()`: `output_names_to_constraint_names` → `output_name_to_constraint_names`
+    - `ScalableDesignSpace`:
+        - `names_to_default_values` → `name_to_default_value`
+        - `__init__()`: `names_to_default_values` → `name_to_default_value`
+    - `ScenarioResult`:
+        - `optimization_problems_to_results` → `optimization_problem_to_result`
+        - `design_variable_names_to_values` → `design_variable_name_to_value`
+    - `SimpleGrammar.__init__()`: `names_to_types` → `name_to_type`
+    - `Splitter.__init__()`: `output_names_to_input_indices` → `output_name_to_input_indices`
+    - `gemseo.util.discipline.update_default_input_values()` (formerly in `gemseo.utils.discipline`):
+      `input_names_to_default_values` → `input_name_to_default_value`
+    - `gemseo.util.string.get_variables_with_components()` (formerly in `gemseo.utils.string_tools`):
+      `names_to_sizes` → `name_to_size`
 
     [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
 
@@ -406,11 +416,11 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 - **Breaking change** The default grammar type of the `AutoPyDiscipline` is `SimpleGrammar`. [#1496](https://gitlab.com/gemseo/dev/gemseo/-/issues/1496)
 
 - **Breaking change** The methods from the `VariableRenamer` class now differentiate inputs and outputs:
-    - The `from_translations` method now needs an additional entry as the tuple's second position, to differentiate inputs and outputs.
-    - The `from_dictionary` method must now take the new format that separates inputs and outputs.
-    - The input files to use the `from_spreadsheet` and `from_csv` methods now need an additional entry as the second column, to differentiate inputs and outputs.
-    - The method `add_translations_by_discipline` now differentiates inputs and outputs through two separate arguments, `input_name_to_new_input_name` and `output_name_to_new_output_name`, which replace `variable_names_to_new_variable_names`.
-    - The method `add_translations_by_variable` now differentiates inputs and outputs through its argument `discipline_name_and_io_mapping`, which replaces `discipline_names_to_variable_names` and binds a `(variable_name, is_input)` pair to a discipline name instead of a variable name.
+    - `from_translations()` now needs an additional entry as the tuple's second position, to differentiate inputs and outputs.
+    - `from_dictionary()` must now take the new format that separates inputs and outputs.
+    - The input files of `from_spreadsheet()` and `from_csv()` now need an additional entry as the second column, to differentiate inputs and outputs.
+    - `add_translations_by_discipline()`: `variable_names_to_new_variable_names` → `input_name_to_new_input_name` and `output_name_to_new_output_name`, to differentiate inputs and outputs.
+    - `add_translations_by_variable()`: `discipline_names_to_variable_names` → `discipline_name_and_io_mapping`, which differentiates inputs and outputs by binding a `(variable_name, is_input)` pair to a discipline name instead of a variable name.
 
 - **Breaking change** The `VariableTranslation` class now differentiates inputs and outputs through the `is_input` key, which is added to the translation pattern.
 
@@ -420,11 +430,13 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The `input_size` argument of `LinearCombination` can no longer be `None`; use `1` instead.
 
-- **Breaking change** The `directory_naming_method` argument of `DiscFromExe` was renamed to `naming`.
+- **Breaking change** `DiscFromExe.__init__()`: `directory_naming_method` → `naming`.
 
-- **Breaking change** The `keep_in` argument of `FilteringDiscipline` was renamed to `use_input_names`.
+- **Breaking change** `FilteringDiscipline.__init__()`:
+    - `keep_in` → `use_input_names`
+    - `keep_out` → `use_output_names`
 
-- **Breaking change** The `keep_out` argument of `FilteringDiscipline` was renamed to `use_output_names`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
+    [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
 - **Breaking change** `JobSchedulerDisciplineWrapper` and its module were renamed:
     - `JobSchedulerDisciplineWrapper` → `JobSchedulerDiscipline`
@@ -570,7 +582,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
 
-- **Breaking change** `BaseCache.last_entry` was renamed to `BaseCache.last_item`; it returns a `CacheItem` instead of a `CacheEntry`.
+- **Breaking change** `BaseCache`: `last_entry` → `last_item`, which returns a `CacheItem` instead of a `CacheEntry`.
 
 - **Removed** The `CacheEntry.inputs` field was removed; caches are dictionaries whose keys are the inputs and values are the cache entries.
 
@@ -681,11 +693,11 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** In a relaxed run, `OptimizationResult.x_opt` is relaxed, the design space receives the projection of the optimum onto the declared domain, also given by `OptimizationResult.x_opt_projected`, and `Database.to_dataset()` exports a relaxed variable as a float column. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
-- **Breaking change** The `restriction_indices` argument was renamed to `frozen_indexes`.
+- **Breaking change** `RestrictedFunction.__init__()`:
+    - `restriction_indices` → `frozen_indexes`
+    - `restriction_values` → `frozen_values`
 
-- **Breaking change** The `restriction_values` argument was renamed to `frozen_values`.
-
-- **Breaking change** A `name` argument was added; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
+- **Breaking change** A `name` argument was added to `RestrictedFunction.__init__()`; if empty, it defaults to `"{function.name}_restriction"`. [#1671](https://gitlab.com/gemseo/dev/gemseo/-/issues/1671)
 
 - **Breaking change** The `gemseo.core.mdo_functions` package was renamed to `gemseo.core.function`.
 
@@ -701,7 +713,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The `MDOQuadraticFunction` class was renamed to `QuadraticFunction`.
 
-- **Breaking change** The `mdo_function` argument of `Offset`, `ConvexLinearApprox` and `SetPtFromDatabase` was renamed to `function`. [#1699](https://gitlab.com/gemseo/dev/gemseo/-/issues/1699)
+- **Breaking change** `Offset.__init__()`, `ConvexLinearApprox.__init__()` and `SetPtFromDatabase.__init__()`: `mdo_function` → `function`. [#1699](https://gitlab.com/gemseo/dev/gemseo/-/issues/1699)
 
 - **Breaking change** The `EvaluationProblem.DifferentiationMethod.USER_GRAD` member was renamed to `USER`; its value is unchanged. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 
@@ -712,15 +724,18 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 - **Breaking change** `TerminationCriterion` and its subclasses now carry their stop message (`TerminationCriterion.message`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** The space of an `EvaluationProblem` is named `input_space`, as in `Database`, since it is not a design space in general:
-    - `problem.design_space` → `problem.input_space`
-    - `EvaluationProblem`: first argument `design_space` → `input_space`
-    - `EvaluationProblem.reset`: argument `design_space` → `input_space`
+    - `design_space` → `input_space`
+    - `__init__()`: `design_space` → `input_space`
+    - `reset()`: `design_space` → `input_space`
 
 - **Breaking change** `EvaluationProblem.input_space` is read-only: the space is set at instantiation and can no longer be replaced afterwards, as the functions of the problem are defined over it.
 
 - **Breaking change** `OptimizationProblem.design_space` is a read-only property typed `DesignSpace`, like `MDOScenario.design_space`, since their input space is a design space; the `design_space` argument of their constructors is unchanged.
 
-- **Breaking change** `EvaluationProblem.evaluate_functions` renames its arguments `design_vector`, `design_vector_is_normalized` and `preprocess_design_vector` to `input_value`, `input_value_is_normalized` and `preprocess_input_value`.
+- **Breaking change** `EvaluationProblem.evaluate_functions()`:
+    - `design_vector` → `input_value`
+    - `design_vector_is_normalized` → `input_value_is_normalized`
+    - `preprocess_design_vector` → `preprocess_input_value`
 
 - **Breaking change** The enumeration of the functions aggregating constraints is named `ConstraintAggregation.AggregationFunction`, as the argument taking it already was, and is exported as `gemseo.enum.AggregationFunction`; it was named `ConstraintAggregation.EvaluationFunction`, which named neither what it holds nor what it is passed to. `OptimizationProblem.AggregationFunction` and `Constraints.AggregationFunction` are unchanged.
 
@@ -860,10 +875,10 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
   adapted.
 
 - **Breaking change** The concatenated design-vector argument is uniformly named `x_vect`:
-    - `DesignSpace.get_active_bounds`: `x_vec` → `x_vect`
-    - `DesignSpace.project_into_bounds`: `x_c` → `x_vect`
-    - `DesignSpace.transform_vect` and `DesignSpace.untransform_vect`, and their `RandomSpace` counterparts (`ParameterSpace` being replaced by `RandomSpace`): `vector` → `x_vect`
-    - `DesignSpace.convert_array_to_dict`: `x_array` → `x_vect`
+    - `DesignSpace.get_active_bounds()`: `x_vec` → `x_vect`
+    - `DesignSpace.project_into_bounds()`: `x_c` → `x_vect`
+    - `DesignSpace.transform_vect()` and `DesignSpace.untransform_vect()`, and their `RandomSpace` counterparts (`ParameterSpace` being replaced by `RandomSpace`): `vector` → `x_vect`
+    - `DesignSpace.convert_array_to_dict()`: `x_array` → `x_vect`
 
     Calls passing these arguments by keyword must be updated.
 
@@ -906,11 +921,11 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`, where `ParameterSpace.compute_samples` returned a list of dictionaries, one per sample.
 
-- **Breaking change** Two arguments of `DesignSpace` methods were renamed:
-    - `DesignSpace.get_variables_indexes`: argument `use_design_space_order` → `use_space_order`
-    - `DesignSpace.convert_dict_to_array`: argument `design_values` → `variable_values`
+- **Breaking change** Two arguments of `DesignSpace` were renamed:
+    - `get_variables_indexes()`: `use_design_space_order` → `use_space_order`
+    - `convert_dict_to_array()`: `design_values` → `variable_values`
 
-    Both methods are now defined by `BaseVariableSpace`.
+    Both are now defined by `BaseVariableSpace`.
 
 - **Breaking change** An `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer, e.g. `DesignSpace.add_variable("n", type_="integer", upper_bound=1e30)` raises a `ValidationError` reading `The following upper bound component is outside the range of a 64-bit integer while the variable is of type integer: 1e+30 (index 0).`, where such a bound used to be accepted and stored as a floating-point number; an infinite bound is still accepted.
 
@@ -1090,13 +1105,10 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Changed** `DesignSpace.normalize_grad` and `DesignSpace.denormalize_grad` keep the data type of the gradient, and `DesignSpace.denormalize_vect` keeps a complex value complex. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
-- **Changed** The `DesignSpace.normalize` attribute, mapping a variable name to the mask of the components to
-  be normalized, was renamed to `DesignSpace.name_to_normalization_mask`;
-  `DesignSpace.normalize` is kept as a deprecated alias.
-
-- **Changed** Two `DesignSpace` methods were renamed:
-    - `DesignSpace.unnormalize_vect` → `DesignSpace.denormalize_vect`
-    - `DesignSpace.unnormalize_grad` → `DesignSpace.denormalize_grad`
+- **Changed** `DesignSpace`:
+    - `normalize` → `name_to_normalization_mask`, mapping a variable name to the mask of the components to be normalized
+    - `unnormalize_vect()` → `denormalize_vect()`
+    - `unnormalize_grad()` → `denormalize_grad()`
 
     The former names are kept as deprecated aliases emitting a `DeprecationWarning`.
 
@@ -1191,10 +1203,10 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
     [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
-- **Breaking change** The `settings_model` argument of the `execute` methods was renamed to `settings`:
-    - `BaseAlgorithmFactory.execute` (formerly `BaseAlgoFactory.execute`): the `**settings` arguments were removed and `settings` is now mandatory
-    - `BaseAlgorithmLibrary.execute`: the `**settings` arguments were removed and `settings` is still optional
-    - `BaseDriverLibrary.execute`: `settings` is still optional
+- **Breaking change** `execute()` of the algorithm factories and libraries: `settings_model` → `settings`:
+    - `BaseAlgorithmFactory.execute()` (formerly `BaseAlgoFactory.execute()`): the `**settings` arguments were removed and `settings` is now mandatory
+    - `BaseAlgorithmLibrary.execute()`: the `**settings` arguments were removed and `settings` is still optional
+    - `BaseDriverLibrary.execute()`: `settings` is still optional
 
 - **Breaking change** The `eval_obs_jac` argument of `BaseDriverLibrary.execute` was removed
   and replaced by the `evaluate_observable_jacobian` field of `BaseDriverSettings`.
@@ -1315,16 +1327,16 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 ### MDA
 
-- **Breaking change** The `MDAChain.mdo_chain` attribute was renamed to `MDAChain.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
+- **Breaking change** `MDAChain`: `mdo_chain` → `discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 
-- **Breaking change** The methods of `BaseMDASolver` managing the iteration callbacks, and one of their arguments, were renamed:
-    - method `add_iteration_callback` → `add_iteration_listener`
-    - method `clear_iteration_callbacks` → `clear_iteration_listeners`
-    - argument `iteration_callback` of `add_iteration_callback` → `iteration_listener`
+- **Breaking change** `BaseMDASolver`:
+    - `add_iteration_callback()` → `add_iteration_listener()`
+    - `clear_iteration_callbacks()` → `clear_iteration_listeners()`
+    - `add_iteration_listener()`: `iteration_callback` → `iteration_listener`
 
     A callable registered on an object and removable is now called a *listener* everywhere, whereas a *callback* is a callable passed as an argument for a single execution, e.g. the `callbacks` setting of the DOE algorithms. [#1597](https://gitlab.com/gemseo/dev/gemseo/-/issues/1597)
 
-- **Breaking change** The `normed_residual` attribute of `BaseMDA` was renamed to `normalized_residual_norm`.
+- **Breaking change** `BaseMDA`: `normed_residual` → `normalized_residual_norm`.
 
 - **Breaking change** The `gemseo.mda.base_mda` module was renamed to `gemseo.mda.core.base`.
 
@@ -1352,7 +1364,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The `BaseParallelMDASolver` class was renamed to `BaseMDAParallelSolver`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Breaking change** The `settings_model` argument of the MDA classes was renamed to `settings`, of type `<settings class> | None = None`, and their `**settings` arguments were removed; if `None`, the class uses its default settings, i.e. `<settings class>()` for a concrete class:
+- **Breaking change** `__init__()` of the MDA classes: `settings_model` → `settings`, of type `<settings class> | None = None`, and their `**settings` arguments were removed; if `None`, the class uses its default settings, i.e. `<settings class>()` for a concrete class:
     - `BaseMDA`: `BaseMDASettings`
     - `BaseMDAParallelSolver` (formerly `BaseParallelMDASolver`): `BaseMDAParallelSolverSettings`
     - `BaseMDASolver`: `BaseMDASolverSettings`
@@ -1376,7 +1388,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The `gauss_seidel_settings` field of `MDAGSNewton_Settings`, renamed `MDAGaussSeidelNewtonRaphson_Settings`, can no longer be a `dict`; you must use an instance of `MDAGaussSeidel_Settings`.
 
-- **Breaking change** The `newton_settings` field of `MDAGSNewton_Settings` was renamed to `newton_raphson_settings` and can no longer be a `dict`; you must use an instance of `MDANewtonRaphson_Settings`.
+- **Breaking change** `MDAGSNewton_Settings` (now `MDAGaussSeidelNewtonRaphson_Settings`): `newton_settings` → `newton_raphson_settings`, which can no longer be a `dict`; you must use an instance of `MDANewtonRaphson_Settings`.
 
 - **Breaking change** The `newton_linear_solver_name` field of `MDANewtonRaphson_Settings` was removed; use `newton_linear_solver_settings` instead.
 
@@ -1423,8 +1435,9 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
     - `minimize_objective`
     - `**settings`
 
-- **Breaking change** The attribute `optimization_problem` of `BaseFormulation` was renamed `problem`
-  since it can be either an `EvaluationProblem` or an `OptimizationProblem`.
+- **Breaking change** `BaseFormulation`:
+    - `optimization_problem` → `problem`, since it can be either an `EvaluationProblem` or an `OptimizationProblem`
+    - `design_space` → `input_space`, typed `BaseVariableSpace`
 
 - **Breaking change** The argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`; use `[output_name]` in the case of a single output name.
 
@@ -1443,11 +1456,13 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** `gemseo.formulations.base_mdo_formulation` was renamed to `gemseo.formulation.core.base_mdo`. [#94](https://gitlab.com/gemseo/dev/gemseo/-/issues/94)
 
-- **Breaking change** The `apply_cstr_tosub_scenarios` field of `BiLevel_Settings` was renamed to `apply_constraints_to_sub_scenarios`.
+- **Breaking change** `BiLevel_Settings`:
+    - `apply_cstr_tosub_scenarios` → `apply_constraints_to_sub_scenarios`
+    - `apply_cstr_to_system` → `apply_constraints_to_system`
 
-- **Breaking change** The `apply_cstr_to_system` field of `BiLevel_Settings` was renamed to `apply_constraints_to_system`. [#1598](https://gitlab.com/gemseo/dev/gemseo/-/issues/1598)
+    [#1598](https://gitlab.com/gemseo/dev/gemseo/-/issues/1598)
 
-- **Breaking change** The `**settings` arguments of `BaseFormulation` were removed and the `settings_model` argument renamed to `settings` is still optional.
+- **Breaking change** `BaseFormulation.__init__()`: `settings_model` → `settings`, still optional; the `**settings` arguments were removed.
 
 - **Breaking change** The `main_mda_name` field of `MDF_Settings` was removed; use `main_mda_settings` instead.
 
@@ -1456,8 +1471,6 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 - **Breaking change** The HDF5 files written by the `BiLevel` formulation with the `save_opt_history` setting are named after the sub-scenario and its index, e.g. `"FooScenario_0_1.h5"` instead of `"FooScenario_1.h5"`, so that two sub-scenarios with the same name no longer overwrite each other's files.
 
 - **Breaking change** `BiLevelScenarioResult.get_sub_optimization_result` raises a `ValueError` for a negative index instead of returning `None`. [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968)
-
-- **Breaking change** `BaseFormulation.design_space` was renamed `BaseFormulation.input_space` and is typed `BaseVariableSpace`.
 
 - **Breaking change** `BaseMDOFormulation` takes the space of variables as a second type parameter, e.g. `BaseMDOFormulation[MyFormulation_Settings, DesignSpace]`, instead of pinning `DesignSpace`; a custom formulation must supply it, either a type variable bound to `BaseVariableSpace` when it uses the base API only, or `DesignSpace` when it reads bounds or a current value.
 
@@ -1506,7 +1519,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
     - `normalize_constraints=True` scales the consistency constraints by the bound range of the target coupling variables, which must be finite, e.g. a random variable following a normal distribution has no finite range;
     - `start_at_equilibrium=True` stores the equilibrium as the current value of the space, so the input space must be a `DesignSpace`.
 
-- **Changed** The method `BaseFormulation._update_design_space` was renamed `_update_input_space` and is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
+- **Changed** `BaseFormulation`: `_update_design_space()` → `_update_input_space()`, which is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
 
 - **Changed** The error raised by `IDF` when a coupling variable is missing reads `"must be added to the input space"` instead of `"must be added to the design space"`, since `IDF` no longer requires a design space.
 
@@ -1535,11 +1548,10 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 ### Scenarios
 
-- **Breaking change** `MDOScenario.save_optimization_history` was renamed to `MDOScenario.to_hdf` and `MDOScenario.to_ggobi`.
-
-- **Breaking change** `MDOScenario.set_optimization_history_backup` was renamed to `MDOScenario.set_backup_settings`.
-
-- **Breaking change** `MDOScenario.clear_history_before_execute` was renamed to `MDOScenario.clear_database_before_execute`.
+- **Breaking change** `MDOScenario`:
+    - `save_optimization_history()` → `to_hdf()` and `to_ggobi()`
+    - `set_optimization_history_backup()` → `set_backup_settings()`
+    - `clear_history_before_execute` → `clear_database_before_execute`
 
 - **Breaking change** `MDOScenario.to_dataset` exports all the samples in the case of a DOE algorithm, including replicates.
 
@@ -1563,15 +1575,18 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
 
-- **Breaking change** The arguments of the scenario adapters no longer refer to an optimization:
-    - `reset_x0_before_opt` → `reset_x0_before_exec`
-    - `set_x0_before_opt` → `set_x0_before_exec`
-    - `set_bounds_before_opt` → `set_bounds_before_exec`
+- **Breaking change** The scenario adapters no longer refer to an optimization:
     - `keep_opt_history` → `keep_databases`
     - `save_opt_history` → `save_databases`
-    - `opt_history_file_prefix` → `database_file_prefix`
+    - `__init__()`:
+        - `reset_x0_before_opt` → `reset_x0_before_exec`
+        - `set_x0_before_opt` → `set_x0_before_exec`
+        - `set_bounds_before_opt` → `set_bounds_before_exec`
+        - `keep_opt_history` → `keep_databases`
+        - `save_opt_history` → `save_databases`
+        - `opt_history_file_prefix` → `database_file_prefix`
 
-    The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
+    The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
 
 - **Breaking change** `MDOScenario` and `OptimizationProblem` require a `DesignSpace`, as their signatures state; use an `EvaluationScenario` or an `EvaluationProblem` to sample a `RandomSpace`, and define a `DesignSpace` for optimization.
 
@@ -1620,10 +1635,10 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 ### Post-processing
 
-- **Breaking change** The `**settings` arguments of the methods running a post-processing were removed and their `settings_model` argument, renamed to `settings`, is now mandatory:
-    - `BasePost.execute`
-    - `PostFactory.execute`, whose `**settings` included the post-processor name (`post_name`); `settings` is of type `BasePostSettings`
-    - `BaseScenario.post_process`, now only available as `MDOScenario.post_process` [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- **Breaking change** `settings_model` → `settings`, now mandatory, and the `**settings` arguments were removed, when running a post-processing:
+    - `BasePost.execute()`
+    - `PostFactory.execute()`, whose `**settings` included the post-processor name (`post_name`); `settings` is of type `BasePostSettings`
+    - `BaseScenario.post_process()`, now only available as `MDOScenario.post_process()` [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
 
 - **Breaking change** The `gemseo.post.dataset.dataset_plot` module was renamed to `gemseo.post.dataset.base`.
 
@@ -1824,45 +1839,50 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** `gemseo.mlearning.regression.algos` was renamed to `gemseo.machine_learning.regression.model`.
 
-- **Breaking change** The attribute `SHORT_ALGO_NAME` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `short_name`.
-
-- **Breaking change** The argument `settings_model` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `settings` and its `**settings` arguments were removed; use `settings` instead,
-  e.g. `regressor = LinearRegressor(data, settings=LinearRegressor_Settings(fit_intercept=False))`
-  instead of `regressor = LinearRegressor(data, fit_intercept=False)`.
+- **Breaking change** `BaseMLModel` (formerly `BaseMLAlgo`):
+    - `SHORT_ALGO_NAME` → `short_name`
+    - `__init__()`: `settings_model` → `settings`, and the `**settings` arguments were removed; use `settings` instead,
+      e.g. `regressor = LinearRegressor(data, settings=LinearRegressor_Settings(fit_intercept=False))`
+      instead of `regressor = LinearRegressor(data, fit_intercept=False)`
 
 - **Breaking change** Surrogate model
-    - The attribute `regression_model` of `SurrogateDiscipline` was renamed to `regressor`.
+    - `SurrogateDiscipline`: `regression_model` → `regressor`
 
 - **Breaking change** ML model quality
     - `BaseMLAlgoQuality` was renamed to `BaseMLModelQuality`.
     - `MLAlgoQualityFactory` was renamed to `MLModelQualityFactory`.
-    - The argument `algo` of `BaseMLModelQuality` was renamed to `model`.
-    - The attribute `algo` of `BaseMLModelQuality` was renamed to `model`.
-    - The argument `algo` of `BaseClustererQuality` was renamed to `model`.
-    - The argument `algo` of `BaseRegressorQuality` was renamed to `model`.
-    - The argument `algo` of `BasePredictiveClustererQuality` was renamed to `model`.
-    - The argument `algo` of `F1Measure` was renamed to `model`.
-    - The argument `algo` of `SilhouetteMeasure` was renamed to `model`.
-    - The argument `algo` of `MAEMeasure` was renamed to `model`.
-    - The argument `algo` of `MEMeasure` was renamed to `model`.
-    - The argument `algo` of `MSEMeasure` was renamed to `model`.
-    - The argument `algo` of `RMSEMeasure` was renamed to `model`.
-    - The argument `algo` of `R2Measure` was renamed to `model`.
+    - `BaseMLModelQuality`:
+        - `algo` → `model`
+        - `__init__()`: `algo` → `model`
+    - `BaseClustererQuality.__init__()`: `algo` → `model`
+    - `BaseRegressorQuality.__init__()`: `algo` → `model`
+    - `BasePredictiveClustererQuality.__init__()`: `algo` → `model`
+    - `F1Measure.__init__()`: `algo` → `model`
+    - `SilhouetteMeasure.__init__()`: `algo` → `model`
+    - `MAEMeasure.__init__()`: `algo` → `model`
+    - `MEMeasure.__init__()`: `algo` → `model`
+    - `MSEMeasure.__init__()`: `algo` → `model`
+    - `RMSEMeasure.__init__()`: `algo` → `model`
+    - `R2Measure.__init__()`: `algo` → `model`
 
 - **Breaking change** Regression
     - The attribute `cluster_algo` of `MOERegressor` was removed; use the class name of the `clusterer` attribute instead.
     - The attribute `classif_algo` of `MOERegressor` was removed; use the class name of the `classifier` attribute instead.
     - The attribute `regress_algo` of `MOERegressor` was removed; use the class name of the elements of the `regressors` attribute instead.
-    - The attribute `cluster_params` of `MOERegressor` was renamed to `clusterer_settings`, its type is `BaseClustererSettings` and its initial value is `KMeans_Settings()`.
-    - The attribute `classif_params` of `MOERegressor` was renamed to `classifier_settings`, its type is `BaseClassifierSettings` and its initial value is `KNNClassifier_Settings()`.
-    - The attribute `regress_params` of `MOERegressor` was renamed to `regressor_settings`, its type is `BaseRegressorSettings` and its initial value is `LinearRegressor_Settings()`.
-    - The attribute `cluster_measure` of `MOERegressor` was renamed to `clustering_quality`.
-    - The attribute `classif_measure` of `MOERegressor` was renamed to `classification_quality`.
-    - The attribute `regress_measure` of `MOERegressor` was renamed to `regression_quality`.
-    - The attribute `cluster_cands` of `MOERegressor` was renamed to `clustering_candidates`.
-    - The attribute `classif_cands` of `MOERegressor` was renamed to `classification_candidates`.
-    - The attribute `regress_cands` of `MOERegressor` was renamed to `regression_candidates`.
-    - The attribute `regress_models` of `MOERegressor` was renamed to `regressors`.
+    - `MOERegressor`:
+        - `cluster_params` → `clusterer_settings`, of type `BaseClustererSettings`, defaulting to `KMeans_Settings()`
+        - `classif_params` → `classifier_settings`, of type `BaseClassifierSettings`, defaulting to `KNNClassifier_Settings()`
+        - `regress_params` → `regressor_settings`, of type `BaseRegressorSettings`, defaulting to `LinearRegressor_Settings()`
+        - `cluster_measure` → `clustering_quality`
+        - `classif_measure` → `classification_quality`
+        - `regress_measure` → `regression_quality`
+        - `cluster_cands` → `clustering_candidates`
+        - `classif_cands` → `classification_candidates`
+        - `regress_cands` → `regression_candidates`
+        - `regress_models` → `regressors`
+        - `add_clusterer_candidate()`: `calib_space` → `calibration_space`
+        - `add_classifier_candidate()`: `calib_space` → `calibration_space`
+        - `add_regressor_candidate()`: `calib_space` → `calibration_space`
     - The arguments `cluster_algo` and `**cluster_params` of `MOERegressor.set_clusterer` were removed and replaced by the argument `settings` with `BaseClustererSettings` type,
       e.g. `moe.set_clusterer(KMeans_Settings(n_clusters=3))` instead of `moe.set_clusterer("KMeans", n_clusters=3)`.
     - The arguments `classif_algo` and `**classif_params` of `MOERegressor.set_classifier` were removed and replaced by the argument `settings` with `BaseClassifierSettings` type,
@@ -1870,28 +1890,22 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
     - The arguments `regress_algo` and `**regress_params` of `MOERegressor.set_regressor` were removed and replaced by the argument `settings` with `BaseRegressorSettings` type,
       e.g. `moe.set_regressor(LinearRegressor_Settings(fit_intercept=False))` instead of `moe.set_regressor("LinearRegressor", fit_intercept=False)`.
     - The argument `name` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the `settings` argument with `BaseClustererSettings` type.
-    - The argument `calib_space` of `MOERegressor.add_clusterer_candidate` was renamed to `calibration_space`.
     - The argument `calib_algo` of `MOERegressor.add_clusterer_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
       e.g. `moe.add_clusterer_candidate(KMeans_Settings(n_clusters=3), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_clusterer_candidate("KMeans", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_clusters=3)`.
     - The argument `name` of `MOERegressor.add_classifier_candidate` was removed and replaced by the `settings` argument with `BaseClassifierSettings` type.
-    - The argument `calib_space` of `MOERegressor.add_classifier_candidate` was renamed to `calibration_space`.
     - The argument `calib_algo` of `MOERegressor.add_classifier_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
       e.g. `moe.add_classifier_candidate(KNNClassifier_Settings(n_neighbors=10), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_classifier_candidate("KNNClassifier", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, n_neighbors=10)`.
     - The argument `name` of `MOERegressor.add_regressor_candidate` was removed and replaced by the `settings` argument with `BaseRegressorSettings` type.
-    - The argument `calib_space` of `MOERegressor.add_regressor_candidate` was renamed to `calibration_space`.
     - The argument `calib_algo` of `MOERegressor.add_regressor_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
       e.g. `moe.add_regressor_candidate(LinearRegressor_Settings(fit_intercept=False), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_regressor_candidate("LinearRegressor", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, fit_intercept=False)`.
-    - The method `add_algo` of `RegressorChain` was renamed to `add_regressor`.
-    - The argument `settings_model` was renamed to `settings` and the arguments `**settings` were removed (use `settings` instead) for:
-        - `BaseFCERegressor`
-        - `FCERegressor`
-        - `PCERegressor`
+    - `RegressorChain`: `add_algo()` → `add_regressor()`
+    - `__init__()` of `BaseFCERegressor`, `FCERegressor` and `PCERegressor`: `settings_model` → `settings`, and the `**settings` arguments were removed (use `settings` instead)
     - The arguments `name`, `transformer` and `**parameters` of `RegressorChain.add_regressor` were removed and replaced by the `settings` argument of type `BaseRegressorSettings`;
       e.g. `regressor_chain.add_regressor(LinearRegressor_Settings(fit_intercept=False, transformer={"inputs": "MinMaxScaler"}))` instead of `regressor_chain.add_regressor("LinearRegressor", transformer={"inputs": "MinMaxScaler"}, fit_intercept=False)`.
 
 - **Breaking change** ML model calibration
     - `MLAlgoAssessor` was renamed to `MLModelAssessor`.
-    - The attribute `algos` of `MLModelAssessor` was renamed to `models`.
+    - `MLModelAssessor`: `algos` → `models`
     - The attribute `algo` of `MLModelAssessor` was removed.
     - The attribute `parameters` of `MLModelAssessor` was removed.
     - The attribute `transformer` of `MLModelAssessor` was removed.
@@ -1909,30 +1923,31 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
       e.g. `MLModelCalibration(PolynomialRegressor_Settings(fit_intercept=False), dataset, calibration_space)` instead of `MLAlgoCalibration("PolynomialRegressor", dataset, ["degree"], calibration_space, fit_intercept=False)`.
     - The arguments `algo_name` and `**algo_settings` of `MLModelCalibration.execute` were removed and replaced by the argument `settings` with `BaseDriverSettings` type;
       e.g. `calibration.execute(NLOPT_COBYLA_Settings(max_iter=100))` instead of `calibration.execute("NLOPT_COBYLA", max_iter=100)`.
-    - The attribute `algo_assessor` of `MLModelCalibration` was renamed to `model_assessor`.
-    - The attribute `optimal_algorithm` of `MLModelCalibration` was renamed to `optimal_model`.
-    - The attribute `algos` of `MLModelCalibration` was renamed to `models`.
+    - `MLModelCalibration`:
+        - `algo_assessor` → `model_assessor`
+        - `optimal_algorithm` → `optimal_model`
+        - `algos` → `models`
 
 - **Breaking change** ML model selection
     - `MLAlgoSelection` was renamed to `MLModelSelection`.
     - The argument `name` of `MLModelSelection.add_candidate` was removed and replaced by the `settings` argument with `BaseMLModelSettings` type;
       e.g. `selection.add_candidate(LinearRegressor_Settings(fit_intercept=False))` instead of `selection.add_candidate("LinearRegressor", fit_intercept=False)`.
-    - The argument `calib_space` of `MLModelSelection.add_candidate` was renamed to `calibration_space`.
+    - `MLModelSelection.add_candidate()`: `calib_space` → `calibration_space`
     - The argument `calib_algo` of `MLModelSelection.add_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type.
 
     [#1696](https://gitlab.com/gemseo/dev/gemseo/-/issues/1696)
 
-- **Breaking change** The argument `disc_name` of `SurrogateDiscipline` was renamed to `name`.
+- **Breaking change** `SurrogateDiscipline.__init__()`:
+    - `disc_name` → `name`
+    - `surrogate` → `regressor`
 
-- **Breaking change** The argument `disc_name` of `create_surrogate` was renamed to `name`.
+- **Breaking change** `create_surrogate()`:
+    - `disc_name` → `name`
+    - `surrogate` → `regressor`
 
 - **Breaking change** The regressor settings can no longer be passed to `SurrogateDiscipline` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
 
 - **Breaking change** The regressor settings can no longer be passed to `create_surrogate` as `**settings`; use `SurrogateDiscipline.from_settings` instead.
-
-- **Breaking change** The argument `surrogate` of `SurrogateDiscipline` was renamed to `regressor`.
-
-- **Breaking change** The argument `surrogate` of `create_surrogate` was renamed to `regressor`.
 
 - **Breaking change** The argument `data` of `SurrogateDiscipline` was removed; use `SurrogateDiscipline.from_settings` instead.
 
@@ -1964,13 +1979,13 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 - **Breaking change** `RBFRegressor` and `TPSRegressor` are now based on
   [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
   instead of the deprecated `Rbf` SciPy class:
-    - The `function` setting of `RBFRegressor_Settings` was renamed to `kernel`
-      and no longer accepts a callable;
-      the kernels `linear`, `thin_plate_spline` (formerly `thin_plate`), `cubic`,
-      `quintic`, `multiquadric`, `inverse_multiquadric` and `gaussian` are available,
-      as well as the new `inverse_quadratic`.
+    - `RBFRegressor_Settings`:
+        - `function` → `kernel`, which no longer accepts a callable;
+          the kernels `linear`, `thin_plate_spline` (formerly `thin_plate`), `cubic`,
+          `quintic`, `multiquadric`, `inverse_multiquadric` and `gaussian` are available,
+          as well as the new `inverse_quadratic`
+        - `smooth` → `smoothing`
     - The enum member `RBF.THIN_PLATE` was renamed to `RBF.THIN_PLATE_SPLINE`.
-    - The `smooth` setting was renamed to `smoothing`.
     - `TPSRegressor_Settings` no longer exposes the `function` (now `kernel`) and `epsilon` settings:
       the kernel is fixed to `thin_plate_spline` and the shape parameter to `1`.
     - The `der_function` and `norm` settings were removed
@@ -2111,7 +2126,7 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 - **Breaking change** The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` were removed.
 
-- **Breaking change** The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) was renamed to `random_space` and takes a `RandomSpace`.
+- **Breaking change** `compute_samples()` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`): `parameter_space` → `random_space`, which takes a `RandomSpace`.
 
 - **Removed** The `variable` argument of `BaseDistributionFitter`, `OTDistributionFitter` and `SPDistributionFitter` was removed. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
@@ -2341,21 +2356,21 @@ Most renames keep working with a `DeprecationWarning` until GEMSEO 8 and can be 
 
 ### Utilities
 
-- **Breaking change** The `composed_metric` argument of `DatasetMetric` was renamed to `metric`, for consistency with the parent class.
+- **Breaking change** `DatasetMetric.__init__()`: `composed_metric` → `metric`, for consistency with the parent class.
 
-- **Breaking change** The `naming_method` argument of `BaseNameGenerator` was renamed to `naming`.
+- **Breaking change** `BaseNameGenerator.__init__()`: `naming_method` → `naming`.
 
-- **Breaking change** The `directory_naming_method` argument of `DirectoryCreator` was renamed to `naming` and has be swapped with `root_directory`.
+- **Breaking change** `DirectoryCreator.__init__()`: `directory_naming_method` → `naming`, which was swapped with `root_directory`.
 
 - **Breaking change** The `DirectoryNamingMethod` constant of `gemseo.utils.directory_creator` was renamed to `Naming` and the module to `gemseo.util.directory_creator`.
 
-- **Breaking change** The `exec_callback` argument of `CallableParallelExecution.execute` was renamed to `exec_callbacks`.
+- **Breaking change** `CallableParallelExecution.execute()`: `exec_callback` → `exec_callbacks`.
 
-- **Breaking change** The `exec_callback` argument of `DiscParallelLinearization.execute` was renamed to `exec_callbacks`.
+- **Breaking change** `DiscParallelLinearization.execute()`: `exec_callback` → `exec_callbacks`.
 
 - **Breaking change** The `get_sub_disciplines` function of `gemseo.utils.discipline` now flattens any object with a non-empty `disciplines` attribute whereas it used to flatten scenarios, formulations and `ProcessDiscipline` objects only. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Breaking change** The `discipline` argument of `generate_xdsm` and `XDSMizer` was renamed to `process`. [#1683](https://gitlab.com/gemseo/dev/gemseo/-/issues/1683)
+- **Breaking change** `generate_xdsm()` and `XDSMizer.__init__()`: `discipline` → `process`. [#1683](https://gitlab.com/gemseo/dev/gemseo/-/issues/1683)
 
 - **Breaking change** Two modules of `gemseo.utils` were renamed:
     - `gemseo.utils.string_tools` → `gemseo.util.string`
