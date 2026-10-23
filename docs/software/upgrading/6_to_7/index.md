@@ -1,5 +1,5 @@
 ---
-description: "Migrate your code from GEMSEO 6 to GEMSEO 7: run bump-gemseo, resolve what it leaves, check the silent changes."
+description: "Migrate your code from GEMSEO 6 to GEMSEO 7: run bump-gemseo, migrate what it leaves, check the silent changes."
 search:
   boost: 2
 ---
@@ -36,9 +36,10 @@ can do most of the work that bump-gemseo leaves to you, see
 
 ## The compatibility layer of GEMSEO 7 { #compatibility-layer }
 
-GEMSEO 7 keeps most of the GEMSEO 6.3 *names* working for one deprecation cycle. When you import
-`gemseo`, it installs a compatibility layer. The layer maps an old name to its new one and emits a
-`DeprecationWarning` that gives the replacement:
+With GEMSEO 7, your code can still use most of the GEMSEO 6.3 names: the old import paths of the
+modules, and the old names of the classes, functions, attributes and enumeration members. When your
+code runs, GEMSEO 7 migrates each old name to its new one and emits a `DeprecationWarning` giving the
+new name to write in your code:
 
 ```python
 from gemseo.algos.design_space import DesignSpace
@@ -46,24 +47,29 @@ from gemseo.algos.design_space import DesignSpace
 # DeprecationWarning: The attribute 'DesignSpace' of the module 'gemseo.algos.design_space' is deprecated; use 'gemseo.space.DesignSpace' instead.
 ```
 
-The layer reads the same rename rules as bump-gemseo. It is a safety net, not a replacement for
-bump-gemseo: it resolves names, not calls.
+The old names work until GEMSEO 8, which will remove them: this period is the *deprecation cycle*.
+During it, an old name that you have not migrated yet does not break your code, it only emits a
+warning.
+
+The compatibility layer migrates names only, not the way your code calls GEMSEO: a renamed or removed
+argument still raises an error. So it does not replace bump-gemseo, which migrates both in your code.
 
 ### What it does
 
-- **Moved and renamed modules**: importing a GEMSEO 6.3 module path imports its GEMSEO 7 module,
-  e.g. `gemseo.algos.design_space` gives `gemseo.space.design`.
-- **Renamed classes, functions and constants** still resolve under their old names in their old
-  modules, e.g. `SciPyMILP_Settings` of `gemseo.algos.opt.scipy_milp` gives
+- **Moved and renamed modules**: a GEMSEO 6.3 import path imports the GEMSEO 7 module, e.g.
+  `gemseo.algos.design_space` imports `gemseo.space.design`.
+- **Renamed classes, functions and constants** can still be imported under their old names from
+  their GEMSEO 6.3 import paths, e.g. `SciPyMILP_Settings` from `gemseo.algos.opt.scipy_milp` gives
   `gemseo.optimization.MILP_Settings`.
 - **Renamed class attributes, methods and enumeration members**: `Class.OLD` and `instance.OLD`
-  both read the new attribute, e.g. `cache.last_entry` gives `cache.last_item` and
+  are migrated to the new attribute, e.g. `cache.last_entry` gives `cache.last_item` and
   `DatasetClassName.Dataset` gives `DatasetClassName.DATASET`. If one of your subclasses still
   defines or overrides an old name, its definition is moved to the new name.
-- **The dissolved package `gemseo.settings`**: importing it warns and lists the packages that now
-  hold its settings.
-- **Names moved to a plugin**, e.g. `gemseo.disciplines.wrappers.xls_discipline`, now
-  `gemseo_excel.xls_discipline`: when the plugin is not installed, the error names it.
+- **The package `gemseo.settings`, split into several packages**: importing it warns and lists the
+  packages that now hold its settings.
+- **Names moved to a plugin**, e.g. the import path `gemseo.disciplines.wrappers.xls_discipline`,
+  now `gemseo_excel.xls_discipline`: when the plugin is not installed, the error names the plugin to
+  install.
 - **Removed names**: importing a name removed without replacement raises an error that says so.
   For the few names that cannot be migrated automatically, the error says how to migrate, e.g.
   `use logging.getLogger("gemseo.space.random") instead` for `gemseo.algos.parameter_space.LOGGER`.
@@ -78,33 +84,35 @@ GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even wi
   `scenario.execute(algo_name="SLSQP", max_iter=30)`;
 - **methods removed in favour of another API**, e.g. `design_space.get_lower_bound("x")`;
 - **names given as strings**, e.g. the algorithm name `"Scipy_MILP"`, now `"MILP"`;
-- **changes of behaviour**: a name that GEMSEO 7 keeps but whose behaviour changed is not aliased
-  (see [Step 4](#step-4-check-the-silent-changes)).
+- **changes of behaviour**: when GEMSEO 7 keeps a name but changes what it does, the compatibility
+  layer does not restore the GEMSEO 6.3 behaviour (see [Step 4](#step-4-check-the-silent-changes)).
 
 ### Who does what
 
-- **The compatibility layer** keeps the old names working until you rename them.
+- **The compatibility layer** keeps the old names working until GEMSEO 8.
 - **bump-gemseo** renames them in your code, which removes the warnings. It also rewrites the calls
   that the layer cannot keep working: arguments, settings models, removed methods with a
   replacement ([Step 1](#step-1-run-bump-gemseo)).
 - **You** handle the rest:
-    - the `# TODO(bump-gemseo)` comments ([Step 2](#step-2-resolve-the-todo-comments));
+    - the `# TODO(bump-gemseo)` comments
+      ([Step 2](#step-2-migrate-the-code-flagged-by-the-todo-comments));
     - the errors that come with no comment ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code));
     - the silent changes ([Step 4](#step-4-check-the-silent-changes));
-    - the old names that bump-gemseo did not see. They still work with a warning; rename them before
-      the layer drops them ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code)).
+    - the old names that bump-gemseo did not see. They still work with a warning; migrate them before
+      GEMSEO 8 ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code)).
 - **A coding agent** can do most of your part, see
   [Let a coding agent do the manual work](#coding-agent).
 
 ### Limits
 
-- **Patching an old path does not reach GEMSEO.** An old module path gives a stand-in that owns its
-  own namespace. `mock.patch("gemseo.utils.string_tools.MultiLineString")` replaces the name on the
-  stand-in, but GEMSEO code that imports the new path does not see the replacement: patch the new
-  path. bump-gemseo migrates the `mock.patch` targets written as strings.
-- **Assigning an old class attribute after the class is defined** shadows the alias instead of going
-  through it, e.g. `Class.OLD = value` or `monkeypatch.setattr(Class, "OLD", ...)`. Assign the new
-  name.
+- **Patching an old import path does not reach GEMSEO.**
+  `mock.patch("gemseo.utils.string_tools.MultiLineString")` replaces the name under its old import
+  path only: GEMSEO imports it from its new import path, `gemseo.util.string`, and keeps using the
+  original. Patch the new import path. bump-gemseo migrates the `mock.patch` targets written as
+  strings.
+- **Assigning an old class attribute after the class is defined** does not change the new attribute,
+  e.g. `Class.OLD = value` or `monkeypatch.setattr(Class, "OLD", ...)`: GEMSEO keeps reading the new
+  attribute, unchanged. Assign the new name.
 
 ## Before you start
 
@@ -131,7 +139,7 @@ bump-gemseo src tests docs
 [Running bump-gemseo](bump_gemseo.md) shows how to install it, what it changes, how to read its report
 and what it cannot do, on a complete example.
 
-## Step 2: resolve the TODO comments
+## Step 2: migrate the code flagged by the TODO comments
 
 Where bump-gemseo cannot make a change, it leaves a comment above the line,
 
@@ -153,8 +161,8 @@ error message: search for it.
 
 Old names that bump-gemseo did not rename, such as names on an object whose type it could not infer,
 or names built at run time, still work through the [compatibility layer](#compatibility-layer), with a
-`DeprecationWarning`, and will fail once the layer drops them. Run your tests once with
-`python -W error::DeprecationWarning` to find them, then rename them.
+`DeprecationWarning`, and will fail with GEMSEO 8. Run your tests once with
+`python -W error::DeprecationWarning` to find them, then migrate them.
 
 ## Step 4: check the silent changes
 
@@ -209,8 +217,8 @@ a GEMSEO 6.3 environment to run the original programs. To migrate your code with
 2. Give the agent GEMSEO 7, the GEMSEO 6.3 environment where your tests pass (see
    [Before you start](#before-you-start)) and your tests: it can then run the original code and the
    migrated code, and compare their results.
-3. Point it to this guide and to the [changelog](../../../changelog/index.md). Ask it to resolve the
-   `# TODO(bump-gemseo)` comments, make your tests pass with GEMSEO 7, and leave no
+3. Point it to this guide and to the [changelog](../../../changelog/index.md). Ask it to migrate the code
+   flagged by the `# TODO(bump-gemseo)` comments, make your tests pass with GEMSEO 7, and leave no
    `DeprecationWarning` (see [the compatibility layer](#compatibility-layer)).
 4. Review its changes with `git diff`, as you would review those of a colleague.
 
@@ -221,30 +229,33 @@ methods that a custom formulation overrides. Check these yourself.
 ## The guide, domain by domain
 
 The domains are those of the [GEMSEO issue tracker](https://gitlab.com/gemseo/dev/gemseo/-/issues).
-For each domain, the number of changes that bump-gemseo leaves to you:
+Each domain page groups the changes that bump-gemseo leaves to you in these sections:
 
-- *Silent*: the code runs after bump-gemseo but gives other results.
-- *Fail without comment*: the code fails with GEMSEO 7 and bump-gemseo wrote no comment.
-- *Flagged*: bump-gemseo wrote a `# TODO(bump-gemseo)` comment.
-- *Deprecated*: the code works, with a deprecation warning: rename what it names.
+- *Silent changes*: the code runs after bump-gemseo but gives other results.
+- *Changes that fail without a comment*: the code fails with GEMSEO 7 and bump-gemseo wrote no
+  comment.
+- *Changes flagged by bump-gemseo*: bump-gemseo wrote a `# TODO(bump-gemseo)` comment.
+- *Other comments of bump-gemseo*: the comments with no example.
+- *Deprecated names*: the code works, with a deprecation warning: migrate what it names.
 - *Removed names*: names removed without replacement.
 
-| Domain | Scope | Silent | Fail without comment | Flagged | Deprecated | Removed names |
-|---|---|---|---|---|---|---|
-| [Core](core.md) | grammars, caches, namespaces, derivatives, execution and monitoring | 3 | 8 | 2 | 1 | 23 |
-| [Disciplines](discipline.md) | disciplines, chains and wrappers | 1 | 8 | 2 | 0 | 3 |
-| [Spaces](space.md) | design spaces and random spaces | 5 | 13 | 8 | 0 | 31 |
-| [Problems and functions](problem.md) | evaluation and optimization problems, functions, databases, benchmark problems | 2 | 12 | 7 | 0 | 6 |
-| [Optimization](optimization.md) | optimization libraries and their settings | 2 | 2 | 10 | 0 | 4 |
-| [DOE](doe.md) | design of experiments libraries and their settings | 1 | 2 | 3 | 0 | 0 |
-| [Formulations](formulation.md) | MDO formulations and custom formulations | 0 | 4 | 7 | 0 | 1 |
-| [MDA](mda.md) | multidisciplinary analyses and coupled derivatives | 0 | 5 | 7 | 0 | 3 |
-| [Scenarios](scenario.md) | scenarios, scenario adapters and their results | 0 | 5 | 3 | 0 | 1 |
-| [Datasets](dataset.md) | datasets and their metadata | 3 | 0 | 2 | 0 | 0 |
-| [Post-processing](post.md) | post-processors and dataset plots | 0 | 5 | 2 | 0 | 2 |
-| [Machine learning](machine_learning.md) | regressors, classifiers, clustering and their quality | 1 | 8 | 6 | 0 | 7 |
-| [Uncertainty](uncertainty.md) | distributions, statistics and sensitivity analysis | 0 | 7 | 6 | 0 | 32 |
-| [Utilities](util.md) | configuration, logging, testing helpers and other utilities | 2 | 4 | 3 | 0 | 21 |
+The domains:
+
+- [Core](core.md): grammars, caches, namespaces, derivatives, execution and monitoring.
+- [Disciplines](discipline.md): disciplines, chains and wrappers.
+- [Spaces](space.md): design spaces and random spaces.
+- [Problems and functions](problem.md): evaluation and optimization problems, functions, databases,
+  benchmark problems.
+- [Optimization](optimization.md): optimization libraries and their settings.
+- [DOE](doe.md): design of experiments libraries and their settings.
+- [Formulations](formulation.md): MDO formulations and custom formulations.
+- [MDA](mda.md): multidisciplinary analyses and coupled derivatives.
+- [Scenarios](scenario.md): scenarios, scenario adapters and their results.
+- [Datasets](dataset.md): datasets and their metadata.
+- [Post-processing](post.md): post-processors and dataset plots.
+- [Machine learning](machine_learning.md): regressors, classifiers, clustering and their quality.
+- [Uncertainty](uncertainty.md): distributions, statistics and sensitivity analysis.
+- [Utilities](util.md): configuration, logging, testing helpers and other utilities.
 
 ## How to read an entry
 

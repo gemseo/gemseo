@@ -597,7 +597,7 @@ bump-gemseo leaves no comment, and creating `"IshigamiSpace"` with the design sp
 
 ### A pickled `ParameterSpace` cannot be loaded
 
-In GEMSEO 7, the removed name `ParameterSpace` resolves to `RandomSpace`, which stores its probability distributions differently, so unpickling a `ParameterSpace` saved with GEMSEO 6.3, or an object holding one, raises a `TypeError` saying that the space cannot be restored. This concerns the files of `pickle` and of the `to_pickle` functions, and the scenarios, problems, sensitivity analyses and surrogate models holding such a space.
+In GEMSEO 7, the compatibility layer migrates the old name `ParameterSpace` to `RandomSpace`, which stores its probability distributions differently, so unpickling a `ParameterSpace` saved with GEMSEO 6.3, or an object holding one, raises a `TypeError` saying that the space cannot be restored. This concerns the files of `pickle` and of the `to_pickle` functions, and the scenarios, problems, sensitivity analyses and surrogate models holding such a space.
 
 bump-gemseo cannot migrate a file. Rebuild the random space with GEMSEO 7 from the settings of the marginal probability distributions of its random variables, e.g. `RandomSpace().add_variable("u", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))`, and rebuild or recompute the objects holding it.
 

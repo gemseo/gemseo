@@ -517,7 +517,7 @@ GEMSEO 7 renames several attributes, e.g. `output_names_to_symbols` of `Analytic
 bump-gemseo renames these attributes on the objects returned by `create_cache`, `create_dataset`, `create_discipline` and `factory.create(...)`, e.g. `DisciplineFactory().create(...)`.
 It does not rename them on an object returned by a call of `BaseFactory.create` on the class, with the factory as first argument, e.g. `BaseFactory.create(DisciplineFactory(), "AnalyticDiscipline", ...)`: there, `output_names_to_symbols` is left unchanged.
 
-The code still runs, but uses a deprecated name, as most renames of GEMSEO 7 keep working with a `DeprecationWarning` for one deprecation cycle.
+The code still runs, but uses a deprecated name, as most renames of GEMSEO 7 keep working with a `DeprecationWarning` until GEMSEO 8.
 Rename the remaining attributes by hand, as in the example below.
 
 !!! info "After bump-gemseo"

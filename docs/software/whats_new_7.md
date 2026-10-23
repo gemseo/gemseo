@@ -765,7 +765,7 @@ The Morris sensitivity indices use all the replicates and the right estimators.
 
 Three mechanisms support the migration.
 Almost every renamed module, class, function and attribute remains available under its old name
-for a full deprecation cycle, with a `DeprecationWarning` giving its replacement,
+until GEMSEO 8, with a `DeprecationWarning` giving its replacement,
 so a name missed by the migration does not break the code.
 [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) rewrites most of the code automatically,
 including the calls whose arguments changed, which old names alone cannot keep working.

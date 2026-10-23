@@ -18,7 +18,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) is a command-line tool, written by the
 GEMSEO developers, that rewrites your Python code from GEMSEO 6.3 to GEMSEO 7. It applies the
 migration rules of GEMSEO, a list of every module, class, function, attribute and argument that
-GEMSEO 7 renamed, moved, converted or removed, and it resolves the names and the types of your code to
+GEMSEO 7 renamed, moved, converted or removed, and it analyses the names and the types of your code to
 apply them only where they belong. It does about nine tenths of the work. This page shows how to run
 it and what to do with what it leaves.
 
@@ -201,12 +201,12 @@ patch by name. Run it from the root of the project: `bump-gemseo src tests docs`
 1. Review the changes with `git diff`.
 2. Format the code: bump-gemseo adds the new imports after the existing ones and writes long lines,
    so run your formatter, e.g. `ruff check --fix` and `ruff format`.
-3. Resolve the TODO comments (step 2 of the [overview](index.md)).
+3. Migrate the code flagged by the TODO comments (step 2 of the [overview](index.md)).
 4. Install GEMSEO 7, run your tests, and check the silent changes (steps 3 and 4).
 
 ## What it cannot do
 
-bump-gemseo works on the text of your code and resolves the types it can infer. Some changes are out
+bump-gemseo works on the text of your code and on the types it can infer. Some changes are out
 of its reach:
 
 - **Silent changes of behaviour.** When GEMSEO 7 keeps a name but changes what it does, there is
