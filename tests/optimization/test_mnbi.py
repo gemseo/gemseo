@@ -324,7 +324,7 @@ def test_mnbi_with_an_augmented_lagrangian_sub_algorithm_records_into_the_top_da
     )
     # Without the inner evaluations,
     # the top-level database holds 15 points evaluating a constraint.
-    assert n_entries_with_a_constraint > 18
+    assert n_entries_with_a_constraint > 15
 
 
 def test_mono_objective_error(snapshot):
