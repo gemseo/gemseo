@@ -31,12 +31,33 @@ pip install --upgrade gemseo[all]
 
 <div class="grid cards" markdown>
 
+-   :material-package-variant:{ .lg .middle } **Package structure**
+
+    ---
+
+    Packages organized by domain,
+    exposing their public classes, settings and factories.
+
 -   :material-shield-check:{ .lg .middle } **Validated settings**
 
     ---
 
     Algorithms, MDAs, formulations and post-processors are configured
     with typed settings objects, validated at instantiation and at assignment.
+
+-   :material-sitemap:{ .lg .middle } **Scenarios**
+
+    ---
+
+    One scenario class for optimization and DOE,
+    multi-objective problems and scenarios used as disciplines.
+
+-   :material-shape:{ .lg .middle } **Mixed-variable design**
+
+    ---
+
+    Discrete, categorical and catalog variables
+    in addition to real and integer ones.
 
 -   :material-dice-multiple:{ .lg .middle } **Uncertainty quantification**
 
@@ -45,12 +66,26 @@ pip install --upgrade gemseo[all]
     A dedicated random space, dependent variables through copulas,
     reliability analysis and new sensitivity analyses.
 
--   :material-shape:{ .lg .middle } **Mixed-variable design**
+-   :material-function-variant:{ .lg .middle } **Derivatives**
 
     ---
 
-    Discrete, categorical and catalog variables
-    in addition to real and integer ones.
+    Jacobian verification in one call,
+    forward and reverse modes in discipline chains.
+
+-   :material-chart-scatter-plot:{ .lg .middle } **Visualization**
+
+    ---
+
+    New pair plot options, a plotly heat map
+    and figures following the matplotlib style.
+
+-   :material-folder-search:{ .lg .middle } **Debugging and traceability**
+
+    ---
+
+    The files of each execution in a directory tree
+    mirroring the process.
 
 -   :material-rocket-launch:{ .lg .middle } **Performance**
 
@@ -60,6 +95,37 @@ pip install --upgrade gemseo[all]
     Database access time independent of the history length.
 
 </div>
+
+## Package structure
+
+GEMSEO 7 organizes its packages by domain:
+[`gemseo.optimization`][gemseo.optimization], [`gemseo.doe`][gemseo.doe], [`gemseo.mda`][gemseo.mda],
+[`gemseo.formulation`][gemseo.formulation], [`gemseo.scenario`][gemseo.scenario],
+[`gemseo.space`][gemseo.space], etc.
+Each package exposes its public classes, settings and factories at its top level,
+so importing a class no longer requires knowing the module that defines it:
+
+=== "GEMSEO 6"
+
+    ```python
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.scenarios.mdo_scenario import MDOScenario
+    from gemseo.settings.formulations import MDF_Settings
+    from gemseo.settings.opt import SLSQP_Settings
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from gemseo.formulation import MDF_Settings
+    from gemseo.optimization import SLSQP_Settings
+    from gemseo.scenario import MDOScenario
+    from gemseo.space import DesignSpace
+    ```
+
+Naming follows uniform rules across the library:
+`MDOFunction` becomes [ArrayFunction][gemseo.core.function.array_function.ArrayFunction], the chains of disciplines become [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
+enumeration members are in upper case and mappings are named `key_to_value`.
 
 ## Settings validated before execution
 
@@ -113,6 +179,35 @@ formulation_settings = MDF_Settings(
     )
 )
 ```
+
+The machine learning models use settings objects, like the rest of the library:
+
+=== "GEMSEO 6"
+
+    ```python
+    from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+
+    regressor = LinearRegressor(dataset, fit_intercept=False)
+    ```
+
+=== "GEMSEO 7"
+
+    ```python
+    from numpy import linspace
+
+    from gemseo.dataset import IODataset
+    from gemseo.machine_learning import LinearRegressor_Settings
+    from gemseo.machine_learning.regression.model import LinearRegressor
+
+    x = linspace(0.0, 1.0, 10)[:, None]
+    dataset = IODataset()
+    dataset.add_input_variable("x", x)
+    dataset.add_output_variable("y", 2.0 * x + 1.0)
+    regressor = LinearRegressor(
+        dataset, settings=LinearRegressor_Settings(fit_intercept=False)
+    )
+    regressor.learn()
+    ```
 
 ## Scenarios
 
@@ -301,16 +396,34 @@ and plain disciplines as sub-scenarios.
 The history of a sub-scenario over all its executions
 can be retrieved as a single dataset.
 
-## Traceable working directories
+## Mixed-variable design spaces
 
-Disciplines wrapping executables write files at each execution,
-and locating those of a given iteration among thousands of directories was tedious.
-[The directory manager][the-directory-manager] organizes them
-into a tree that mirrors the process:
-one directory per scenario, per iteration or sample, per MDA iteration and per discipline execution,
-each with a trace of the executions it contains.
-Once enabled with `configuration.directory_manager.enable = True`,
-the files of a failed evaluation are located from its position in the process.
+Engineering design variables are not all continuous:
+a diameter is selected from a list of standard sizes,
+a material among steel, aluminium and titanium,
+a motor from a supplier's catalog.
+GEMSEO 7 supports these variables natively.
+[Discrete variables][concept-discrete-variables] take their values in a finite set of numbers,
+categorical variables take a label, passed as such to the disciplines,
+and [catalog variables][concept-catalog-variables] select a row in a table of alternatives.
+Each type of variable has its own method, whose arguments are validated at call time:
+
+```python
+from gemseo.space import DesignSpace
+
+space = DesignSpace()
+space.add_real_variable("thickness", lower_bound=0.1, upper_bound=1.0)
+space.add_integer_variable("n_blades", lower_bound=2, upper_bound=8)
+space.add_discrete_variable("diameter", (1.0, 4.0, 6.0, 9.0))
+space.add_categorical_variable("material", ("steel", "aluminium", "titanium"))
+```
+
+The variable types are checked against the capabilities of the algorithm.
+An optimizer restricted to real variables no longer rounds integer variables implicitly:
+it raises an error, unless the user chooses to
+[relax them into real variables][concept-integer-relaxation].
+The result then also reports the optimum projected onto the declared domain,
+with its objective value and its feasibility.
 
 ## Uncertainty quantification
 
@@ -424,34 +537,13 @@ New sensitivity analyses complete this set.
 [from independent and identically distributed samples][concept-sobol-estimators],
 and [plot_second_order()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot_second_order] displays the second-order indices as a heat map.
 
-## Mixed-variable design spaces
+## Derivatives
 
-Engineering design variables are not all continuous:
-a diameter is selected from a list of standard sizes,
-a material among steel, aluminium and titanium,
-a motor from a supplier's catalog.
-GEMSEO 7 supports these variables natively.
-[Discrete variables][concept-discrete-variables] take their values in a finite set of numbers,
-categorical variables take a label, passed as such to the disciplines,
-and [catalog variables][concept-catalog-variables] select a row in a table of alternatives.
-Each type of variable has its own method, whose arguments are validated at call time:
-
-```python
-from gemseo.space import DesignSpace
-
-space = DesignSpace()
-space.add_real_variable("thickness", lower_bound=0.1, upper_bound=1.0)
-space.add_integer_variable("n_blades", lower_bound=2, upper_bound=8)
-space.add_discrete_variable("diameter", (1.0, 4.0, 6.0, 9.0))
-space.add_categorical_variable("material", ("steel", "aluminium", "titanium"))
-```
-
-The variable types are checked against the capabilities of the algorithm.
-An optimizer restricted to real variables no longer rounds integer variables implicitly:
-it raises an error, unless the user chooses to
-[relax them into real variables][concept-integer-relaxation].
-The result then also reports the optimum projected onto the declared domain,
-with its objective value and its feasibility.
+For derivative verification,
+[gemseo.check_jacobian()][gemseo.check_jacobian] compares the derivatives of a discipline
+with a numerical approximation in one call.
+Discipline chains can now propagate derivatives in forward or reverse mode,
+and select the less expensive one automatically.
 
 ## Visualization
 
@@ -495,6 +587,19 @@ take the colors of their reference lines and grids from the matplotlib settings
 (`axes.edgecolor` and `grid.color`) instead of fixed black and grey,
 and the marks of `OptHistoryView` are readable on light and dark backgrounds.
 
+## Debugging and traceability
+
+### Traceable working directories
+
+Disciplines wrapping executables write files at each execution,
+and locating those of a given iteration among thousands of directories was tedious.
+[The directory manager][the-directory-manager] organizes them
+into a tree that mirrors the process:
+one directory per scenario, per iteration or sample, per MDA iteration and per discipline execution,
+each with a trace of the executions it contains.
+Once enabled with `configuration.directory_manager.enable = True`,
+the files of a failed evaluation are located from its position in the process.
+
 ## Performance
 
 The following workflows run faster:
@@ -522,71 +627,6 @@ and when the input sizes differ from the default ones.
 A constraint evaluated to NaN is no longer counted as satisfied,
 and an infinite constraint value can no longer make the optimizer stop at an infeasible point.
 The Morris sensitivity indices use all the replicates and the right estimators.
-
-For derivative verification,
-[gemseo.check_jacobian()][gemseo.check_jacobian] compares the derivatives of a discipline
-with a numerical approximation in one call.
-Discipline chains can now propagate derivatives in forward or reverse mode,
-and select the less expensive one automatically.
-
-## Package structure
-
-GEMSEO 7 organizes its packages by domain:
-[`gemseo.optimization`][gemseo.optimization], [`gemseo.doe`][gemseo.doe], [`gemseo.mda`][gemseo.mda],
-[`gemseo.formulation`][gemseo.formulation], [`gemseo.scenario`][gemseo.scenario],
-[`gemseo.space`][gemseo.space], etc.
-Each package exposes its public classes, settings and factories at its top level,
-so importing a class no longer requires knowing the module that defines it:
-
-=== "GEMSEO 6"
-
-    ```python
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.scenarios.mdo_scenario import MDOScenario
-    from gemseo.settings.formulations import MDF_Settings
-    from gemseo.settings.opt import SLSQP_Settings
-    ```
-
-=== "GEMSEO 7"
-
-    ```python
-    from gemseo.formulation import MDF_Settings
-    from gemseo.optimization import SLSQP_Settings
-    from gemseo.scenario import MDOScenario
-    from gemseo.space import DesignSpace
-    ```
-
-Naming follows uniform rules across the library:
-`MDOFunction` becomes [ArrayFunction][gemseo.core.function.array_function.ArrayFunction], the chains of disciplines become [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
-enumeration members are in upper case and mappings are named `key_to_value`.
-The machine learning models use settings objects, like the rest of the library:
-
-=== "GEMSEO 6"
-
-    ```python
-    from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-
-    regressor = LinearRegressor(dataset, fit_intercept=False)
-    ```
-
-=== "GEMSEO 7"
-
-    ```python
-    from numpy import linspace
-
-    from gemseo.dataset import IODataset
-    from gemseo.machine_learning import LinearRegressor_Settings
-    from gemseo.machine_learning.regression.model import LinearRegressor
-
-    x = linspace(0.0, 1.0, 10)[:, None]
-    dataset = IODataset()
-    dataset.add_input_variable("x", x)
-    dataset.add_output_variable("y", 2.0 * x + 1.0)
-    regressor = LinearRegressor(
-        dataset, settings=LinearRegressor_Settings(fit_intercept=False)
-    )
-    regressor.learn()
-    ```
 
 ## Upgrading
 
