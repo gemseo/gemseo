@@ -105,7 +105,7 @@ GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even wi
 ## Before you start
 
 1. **Upgrade to GEMSEO 6.3 first.** bump-gemseo migrates code written for GEMSEO 6.3 only. If your
-   code uses an older version, follow the upgrading pages from your version up to
+   code uses an older version, follow the [upgrading guides](../index.md) from your version up to
    [From GEMSEO 5 to GEMSEO 6](../5_to_6.md), then the changelog up to 6.3, and make sure your code runs with
    GEMSEO 6.3 without deprecation warnings.
 2. **Make sure your tests pass with GEMSEO 6.3, then commit.** bump-gemseo rewrites your files in
@@ -229,5 +229,5 @@ so that you can run it as it is.
 
 - [What's new in GEMSEO 7](../../whats_new_7.md): the new features.
 - [Changelog](../../../changelog/index.md): every change of the release.
-- [From GEMSEO 5 to GEMSEO 6](../5_to_6.md): the breaking changes of the previous major version; the pages of the
-  older versions follow it.
+- [From GEMSEO 5 to GEMSEO 6](../5_to_6.md): the breaking changes of the previous major version; the
+  [upgrading overview](../index.md) lists the guides of the older versions.
