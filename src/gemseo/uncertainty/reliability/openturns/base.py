@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
     from openturns import PersistentObject
 
+    from gemseo.core.function.array_function import ArrayFunction
     from gemseo.core.function.array_function import OutputType
     from gemseo.uncertainty.reliability.elementary_event import ElementaryEvent
     from gemseo.uncertainty.reliability.problem import ReliabilityProblem
@@ -61,6 +62,12 @@ _comparator_to_ot_comparator: Final[
     ThresholdComparator.GREATER_EQUAL: GreaterOrEqual,
 })
 """The map from a comparator to its OpenTURNS comparator."""
+
+_upper_comparators: Final[frozenset[ThresholdComparator]] = frozenset({
+    ThresholdComparator.GREATER,
+    ThresholdComparator.GREATER_EQUAL,
+})
+"""The comparators of the events whose failure domain is above the threshold."""
 
 
 def _create_intersection_event(
@@ -145,8 +152,42 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
             (elementary_event,) = next(iter(event))
             return create_threshold_event(elementary_event)
 
+        # The OpenTURNS threshold events are shared by the elementary events
+        # with the same limit state,
+        # i.e. the same function, the same threshold and the same side of the threshold
+        # (above or below),
+        # whatever their names and whether the comparator is strict or not,
+        # because FORM does not distinguish `>` from `>=`.
+        # The two sides of one limit state cannot share a threshold event,
+        # as an OpenTURNS `ThresholdEvent` fixes its comparator
+        # and OpenTURNS has no complement event.
+        # Sharing them makes `ot.SystemFORM`,
+        # which runs one FORM analysis per distinct threshold event,
+        # analyze a repeated limit state once,
+        # instead of failing on the singular correlation matrix of its copies.
+        ot_events: dict[tuple[ArrayFunction, float, bool], ThresholdEvent] = {}
+
+        def get_threshold_event(elementary_event: ElementaryEvent) -> ThresholdEvent:
+            """Get the OpenTURNS threshold event of the limit state of an event.
+
+            Args:
+                elementary_event: The elementary event.
+
+            Returns:
+                The OpenTURNS threshold event,
+                created at the first request of its limit state.
+            """
+            key = (
+                elementary_event.function,
+                elementary_event.threshold,
+                elementary_event.comparator in _upper_comparators,
+            )
+            if key not in ot_events:
+                ot_events[key] = create_threshold_event(elementary_event)
+            return ot_events[key]
+
         return event._fold(
-            create_threshold_event, _create_intersection_event, _create_union_event
+            get_threshold_event, _create_intersection_event, _create_union_event
         )
 
     @staticmethod

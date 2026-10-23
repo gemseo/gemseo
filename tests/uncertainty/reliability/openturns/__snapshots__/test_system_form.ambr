@@ -1,4 +1,13 @@
 # serializer version: 1
-# name: test_type_errors
+# name: test_execute_translates_singular_correlation_error[other_error]
+  'Another error.'
+# ---
+# name: test_execute_translates_singular_correlation_error[outside_run]
+  'stub: delta=rho12^2+rho13^2+rho23^2-2*rho12*rho13*rho23'
+# ---
+# name: test_execute_translates_singular_correlation_error[singular_correlation]
+  "The probability of the event 'a' cannot be computed with OT_SystemFORM because the normals of the linearized limit states of three of its elementary events are linearly dependent, so their correlation matrix is singular."
+# ---
+# name: test_execute_without_event
   'OT_SystemFORM requires a reliability analysis problem with at least one event.'
 # ---
