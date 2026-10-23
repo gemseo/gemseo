@@ -27,7 +27,19 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 ### Packaging and imports
 
-- **Breaking change** The `gemseo.settings` aggregator package was removed; the settings classes are now re-exported by their domain packages, e.g. `from gemseo.optimization import SLSQP_Settings`. Mapping: `gemseo.settings.opt` → `gemseo.optimization`, `gemseo.settings.doe` → `gemseo.doe`, `gemseo.settings.mda` → `gemseo.mda`, `gemseo.settings.post` → `gemseo.post`, `gemseo.settings.formulations` → `gemseo.formulation`, `gemseo.settings.linear_solvers` → `gemseo.linear`, `gemseo.settings.ode` → `gemseo.ode`, `gemseo.settings.mlearning` → `gemseo.machine_learning`, `gemseo.settings.probability_distributions` → `gemseo.uncertainty.distribution` and `gemseo.settings.base_settings` → `gemseo.util.pydantic`. [#1719](https://gitlab.com/gemseo/dev/gemseo/-/issues/1719)
+- **Breaking change** The `gemseo.settings` aggregator package was removed; the settings classes are now re-exported by their domain packages, e.g. `from gemseo.optimization import SLSQP_Settings`. Mapping:
+    - `gemseo.settings.opt` → `gemseo.optimization`
+    - `gemseo.settings.doe` → `gemseo.doe`
+    - `gemseo.settings.mda` → `gemseo.mda`
+    - `gemseo.settings.post` → `gemseo.post`
+    - `gemseo.settings.formulations` → `gemseo.formulation`
+    - `gemseo.settings.linear_solvers` → `gemseo.linear`
+    - `gemseo.settings.ode` → `gemseo.ode`
+    - `gemseo.settings.mlearning` → `gemseo.machine_learning`
+    - `gemseo.settings.probability_distributions` → `gemseo.uncertainty.distribution`
+    - `gemseo.settings.base_settings` → `gemseo.util.pydantic`
+
+    [#1719](https://gitlab.com/gemseo/dev/gemseo/-/issues/1719)
 
 - **Breaking change** The public attributes and method arguments following the `plural_to_plural` naming convention
   (e.g. `names_to_sizes`)
@@ -72,21 +84,60 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
     [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
 
-- **Breaking change** All GEMSEO packages and modules now use singular names, e.g. `gemseo.utils` is now `gemseo.util`, `gemseo.datasets` is now `gemseo.dataset`, `gemseo.disciplines` is now `gemseo.discipline`, `gemseo.formulations` is now `gemseo.formulation`, `gemseo.problems` is now `gemseo.problem`, `gemseo.scenarios` is now `gemseo.scenario`, `gemseo.uncertainty.distributions` is now `gemseo.uncertainty.distribution`, `gemseo.uncertainty.statistics` is now `gemseo.uncertainty.statistic`, `gemseo.core.grammars` is now `gemseo.core.grammar`, `gemseo.core.derivatives` is now `gemseo.core.derivative`, `gemseo.core.data_converters` is now `gemseo.core.data_converter`, `gemseo.mlearning.regression.algos` is now `gemseo.machine_learning.regression.model`, `gemseo.utils.derivatives.error_estimators` is now `gemseo.util.derivative.error_estimator` and `gemseo.post.dataset.bars` is now `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class). Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
+- **Breaking change** All GEMSEO packages and modules now use singular names, e.g.:
+    - `gemseo.utils` → `gemseo.util`
+    - `gemseo.datasets` → `gemseo.dataset`
+    - `gemseo.disciplines` → `gemseo.discipline`
+    - `gemseo.formulations` → `gemseo.formulation`
+    - `gemseo.problems` → `gemseo.problem`
+    - `gemseo.scenarios` → `gemseo.scenario`
+    - `gemseo.uncertainty.distributions` → `gemseo.uncertainty.distribution`
+    - `gemseo.uncertainty.statistics` → `gemseo.uncertainty.statistic`
+    - `gemseo.core.grammars` → `gemseo.core.grammar`
+    - `gemseo.core.derivatives` → `gemseo.core.derivative`
+    - `gemseo.core.data_converters` → `gemseo.core.data_converter`
+    - `gemseo.mlearning.regression.algos` → `gemseo.machine_learning.regression.model`
+    - `gemseo.utils.derivatives.error_estimators` → `gemseo.util.derivative.error_estimator`
+    - `gemseo.post.dataset.bars` → `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class)
+
+    Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
 
 - **Breaking change** The `gemseo.algos` package was split by domain:
-    - `gemseo.algos.opt` is now the top-level package `gemseo.optimization`, which also hosts the optimization problem definition: `gemseo.algos.optimization_problem` is now `gemseo.optimization.problem`, `gemseo.algos.optimization_result` is now `gemseo.optimization.result`, `gemseo.algos.optimization_history` is now `gemseo.optimization.history`, `gemseo.algos.multiobjective_optimization_result` is now `gemseo.optimization.multiobjective_result`, and `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
-    - `gemseo.algos.doe` is now the top-level package `gemseo.doe`.
-    - `gemseo.algos.linear_solvers` is now the top-level package `gemseo.linear`; `gemseo.algos.linear_solvers.linear_problem` is now `gemseo.linear.problem`.
-    - `gemseo.algos.ode` is now the top-level package `gemseo.ode`; `gemseo.algos.ode.ode_problem` is now `gemseo.ode.problem` and `gemseo.algos.ode.ode_result` is now `gemseo.ode.result`.
-    - `DesignSpace` and its related modules moved to the new top-level package `gemseo.space`: `gemseo.algos.design_space` is now `gemseo.space.design`, `gemseo.algos.design_space_utils` is now `gemseo.space.util`, and the design space factory is now in `gemseo.space.factory`.
+    - `gemseo.algos.opt` → `gemseo.optimization`, a top-level package which also hosts the optimization problem definition:
+        - `gemseo.algos.optimization_problem` → `gemseo.optimization.problem`
+        - `gemseo.algos.optimization_result` → `gemseo.optimization.result`
+        - `gemseo.algos.optimization_history` → `gemseo.optimization.history`
+        - `gemseo.algos.multiobjective_optimization_result` → `gemseo.optimization.multiobjective_result`
+        - `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
+    - `gemseo.algos.doe` → `gemseo.doe`, a top-level package.
+    - `gemseo.algos.linear_solvers` → `gemseo.linear`, a top-level package:
+        - `gemseo.algos.linear_solvers.linear_problem` → `gemseo.linear.problem`
+    - `gemseo.algos.ode` → `gemseo.ode`, a top-level package:
+        - `gemseo.algos.ode.ode_problem` → `gemseo.ode.problem`
+        - `gemseo.algos.ode.ode_result` → `gemseo.ode.result`
+    - `DesignSpace` and its related modules moved to the new top-level package `gemseo.space`:
+        - `gemseo.algos.design_space` → `gemseo.space.design`
+        - `gemseo.algos.design_space_utils` → `gemseo.space.util`
+        - the design space factory is now in `gemseo.space.factory`.
     - The shared driver and algorithm infrastructure (`BaseAlgorithmLibrary`, `BaseDriverLibrary`, `BaseAlgoFactory`, the progress bar machinery) moved to `gemseo.core.algorithm`.
-    - The generic problem infrastructure moved to the new `gemseo.core.problem` package: `gemseo.algos.base_problem` is now `gemseo.core.problem.base`, `gemseo.algos.database` is now `gemseo.core.problem.database`, `gemseo.algos.evaluation_problem` is now `gemseo.core.problem.evaluation` and `gemseo.algos.evaluation_counter` is now `gemseo.core.problem.counter`. The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
-    - `gemseo.algos.hashable_ndarray` is now `gemseo.util.hashable_ndarray` and `gemseo.algos.sequence_transformer` is now `gemseo.mda.sequence_transformer`.
+    - The generic problem infrastructure moved to the new `gemseo.core.problem` package:
+        - `gemseo.algos.base_problem` → `gemseo.core.problem.base`
+        - `gemseo.algos.database` → `gemseo.core.problem.database`
+        - `gemseo.algos.evaluation_problem` → `gemseo.core.problem.evaluation`
+        - `gemseo.algos.evaluation_counter` → `gemseo.core.problem.counter`
+    - The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
+    - `gemseo.algos.hashable_ndarray` → `gemseo.util.hashable_ndarray`
+    - `gemseo.algos.sequence_transformer` → `gemseo.mda.sequence_transformer`
 
 - **Breaking change** The base classes and settings extenders of each algorithm family were gathered into a domain `core` package: `gemseo.doe.core`, `gemseo.linear.core`, `gemseo.ode.core`, `gemseo.optimization.core`, `gemseo.mda.core`, `gemseo.formulation.core`, `gemseo.post.core`, `gemseo.uncertainty.distribution.core`, `gemseo.uncertainty.sensitivity.core`, `gemseo.uncertainty.statistic.core`, and, in `gemseo.machine_learning`, the `core`, `regression.core`, `classification.core`, `clustering.core`, `linear_model_fitting.core`, `transformer.core` and `resampling.core` packages. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
-- **Breaking change** The protected (`_`-prefixed) ALL_CAPS class attributes are now named in lower snake case too, e.g. `_ATTR_NOT_TO_SERIALIZE` is now `_attr_not_to_serialize`, `_PACKAGE_NAMES` is now `_package_names`, `_CLASS` is now `_class` and `_RESULT_CLASS` is now `_result_class`; subclasses overriding these attributes should be updated to use the new names.
+- **Breaking change** The protected (`_`-prefixed) ALL_CAPS class attributes are now named in lower snake case too, e.g.:
+    - `_ATTR_NOT_TO_SERIALIZE` → `_attr_not_to_serialize`
+    - `_PACKAGE_NAMES` → `_package_names`
+    - `_CLASS` → `_class`
+    - `_RESULT_CLASS` → `_result_class`
+
+    Subclasses overriding these attributes should be updated to use the new names.
 
 - **Breaking change** The old ALL_CAPS names keep working with a `DeprecationWarning`, except when assigned on the class itself, e.g. `SomeClass.OLD_NAME = value`, which silently has no effect; assign the new name instead, in particular for `OTGaussianProcessRegressor.max_size_for_lapack`, `hmatrix_assembly_epsilon` and `hmatrix_recompression_epsilon`, `BaseGrammar.data_converter_class`, `Correlations.maximum_correlation_coefficient`, `BaseDatasetPlot.default_plot_engine`, `SobieskiProblem.use_original_design_variables_order`, `BaseDiscipline.grammar_directory` and `CallableParallelExecution.multi_processing_start_method`.
 
@@ -134,7 +185,16 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Changed** The members of all the enumerations are named in upper case, their values being unchanged, e.g. `ColormapName.cool` is now `ColormapName.COOL`, still equal to `"cool"`; the old names still resolve, with a `DeprecationWarning`, except the attribute `Criterion.center`, now the method `str.center`: use `Criterion.CENTER` instead. [#1838](https://gitlab.com/gemseo/dev/gemseo/-/issues/1838)
 
-- **Changed** The public ALL_CAPS class attributes and module-level constants are named in lower snake case, e.g. `gemseo.LOGGER` is now `gemseo.logger` and `Dataset.DEFAULT_GROUP` is now `Dataset.default_group`; a few renames are not a pure case change: `MOERegressor.LABELS` is now `labels_output_name`, `BaseMDA.NORMALIZED_RESIDUAL_NORM` is now `normalized_residual_norm_name`, `XLSStudyParser.DISCIPLINES` is now `disciplines_key` and `JobSchedulerDiscipline.TEMPLATES_DIR_PATH` is now `job_templates_dir_path`.
+- **Changed** The public ALL_CAPS class attributes and module-level constants are named in lower snake case, e.g.:
+    - `gemseo.LOGGER` → `gemseo.logger`
+    - `Dataset.DEFAULT_GROUP` → `Dataset.default_group`
+
+    A few renames are not a pure case change:
+
+    - `MOERegressor.LABELS` → `labels_output_name`
+    - `BaseMDA.NORMALIZED_RESIDUAL_NORM` → `normalized_residual_norm_name`
+    - `XLSStudyParser.DISCIPLINES` → `disciplines_key`
+    - `JobSchedulerDiscipline.TEMPLATES_DIR_PATH` → `job_templates_dir_path`
 
 - **Changed** The minimum versions of several dependencies were raised: `fastjsonschema` 2.16.2, `h5py` 3.8.0, `jinja2` 3.1.2, `matplotlib` 3.10.1, `minisom` 2.3.6, `networkx` 3.0, `nlopt` 2.7.1, `numpy` 1.24, `openpyxl` 3.1, `openturns` 1.27, `packaging` 23.2, `pandas` 2.2, `plotly` 6.0.0, `prettytable` 3.5.0, `pydantic` 2.12, `pydantic-settings` 2.9.0, `requests` 2.28.2, `scikit-learn` 1.5, `scipy` 1.15, `sympy` 1.12, `tqdm` 4.64.1 and `xxhash` 3.2.0.
   `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
@@ -206,7 +266,9 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Added** `BaseSettings` has a `target_class_name` property defining the name of the class for which these settings are provided. [#1743](https://gitlab.com/gemseo/dev/gemseo/-/issues/1743)
 
-- **Changed** The factory singletons are now named in lower snake case, e.g. the module-level `MDO_FORMULATION_FACTORY` of `gemseo.formulations.factory` is now the `mdo_formulation_factory` of `gemseo.formulation.factory` and the `PROGRESS_BAR_DATA_FACTORY` of `gemseo.algos.progress_bar_data.factory` is now the `progress_bar_data_factory` of `gemseo.core.algorithm.progress_bar_data.factory`.
+- **Changed** The factory singletons are now named in lower snake case, e.g.:
+    - `gemseo.formulations.factory.MDO_FORMULATION_FACTORY` → `gemseo.formulation.factory.mdo_formulation_factory`
+    - `gemseo.algos.progress_bar_data.factory.PROGRESS_BAR_DATA_FACTORY` → `gemseo.core.algorithm.progress_bar_data.factory.progress_bar_data_factory`
 
 - **Fixed** `BaseFactory.update` now rediscovers the available classes from scratch: classes whose source is no longer reachable (e.g. a directory removed from the `GEMSEO_PATH` environment variable) no longer linger in the factory.
 
@@ -247,13 +309,21 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `keep_out` argument of `FilteringDiscipline` was renamed to `use_output_names`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Breaking change** `JobSchedulerDisciplineWrapper` and its module `gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper` were renamed to `JobSchedulerDiscipline` and `gemseo.discipline.wrapper.job_scheduler.discipline` respectively.
+- **Breaking change** `JobSchedulerDisciplineWrapper` and its module were renamed:
+    - `JobSchedulerDisciplineWrapper` → `JobSchedulerDiscipline`
+    - `gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper` → `gemseo.discipline.wrapper.job_scheduler.discipline`
 
 - **Breaking change** `JobSchedulerDisciplineWrapperFactory` was renamed to `JobSchedulerDisciplineFactory`. [#1687](https://gitlab.com/gemseo/dev/gemseo/-/issues/1687)
 
 - **Breaking change** The `gemseo.core.chains` package is now `gemseo.discipline.chain`, next to the other public discipline building blocks.
 
-- **Breaking change** `ExecutionStatus`, `ExecutionStatistics`, the namespace helpers and `ProcessDiscipline` moved into the `gemseo.core.discipline` package: `gemseo.core.execution_status` is now `gemseo.core.discipline.execution_status`, `gemseo.core.execution_statistics` is now `gemseo.core.discipline.execution_statistics`, `gemseo.core.namespaces` is now `gemseo.core.discipline.namespace` and `gemseo.core.process_discipline` is now `gemseo.core.discipline.process_discipline`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** `ExecutionStatus`, `ExecutionStatistics`, the namespace helpers and `ProcessDiscipline` moved into the `gemseo.core.discipline` package:
+    - `gemseo.core.execution_status` → `gemseo.core.discipline.execution_status`
+    - `gemseo.core.execution_statistics` → `gemseo.core.discipline.execution_statistics`
+    - `gemseo.core.namespaces` → `gemseo.core.discipline.namespace`
+    - `gemseo.core.process_discipline` → `gemseo.core.discipline.process_discipline`
+
+    [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** The `ode_solver_name` and `**ode_solver_settings` arguments of `ODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
 
@@ -370,7 +440,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 ### Caches
 
-- **Breaking change** The `gemseo.caches` package is now `gemseo.core.cache` and the redundant `_cache` suffix was removed from its module names, e.g. `gemseo.caches.hdf5_cache` is now `gemseo.core.cache.hdf5`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** The `gemseo.caches` package was renamed:
+    - `gemseo.caches` → `gemseo.core.cache`
+    - its modules lose the redundant `_cache` suffix, e.g. `gemseo.caches.hdf5_cache` → `gemseo.core.cache.hdf5`
+
+    [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
 
@@ -504,7 +578,10 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** `TerminationCriterion` and its subclasses now carry their stop message (`TerminationCriterion.message`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
-- **Breaking change** The space of an `EvaluationProblem` is named `input_space`, as in `Database`, since it is not a design space in general: `problem.design_space` becomes `problem.input_space`, the first argument of `EvaluationProblem` is renamed `input_space` and the `design_space` argument of `EvaluationProblem.reset` is renamed `input_space`.
+- **Breaking change** The space of an `EvaluationProblem` is named `input_space`, as in `Database`, since it is not a design space in general:
+    - `problem.design_space` → `problem.input_space`
+    - `EvaluationProblem`: first argument `design_space` → `input_space`
+    - `EvaluationProblem.reset`: argument `design_space` → `input_space`
 
 - **Breaking change** `EvaluationProblem.input_space` is read-only: the space is set at instantiation and can no longer be replaced afterwards, as the functions of the problem are defined over it.
 
@@ -677,7 +754,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** `RandomSpace.compute_samples` with `as_dict=True` returns a dictionary mapping the name of a random variable to an array shaped as `(n_samples, size)`, where `ParameterSpace.compute_samples` returned a list of dictionaries, one per sample.
 
-- **Breaking change** The argument `use_design_space_order` of `DesignSpace.get_variables_indexes` is renamed `use_space_order` and the argument `design_values` of `DesignSpace.convert_dict_to_array` is renamed `variable_values`; both methods are now defined by `BaseVariableSpace`.
+- **Breaking change** Two arguments of `DesignSpace` methods were renamed:
+    - `DesignSpace.get_variables_indexes`: argument `use_design_space_order` → `use_space_order`
+    - `DesignSpace.convert_dict_to_array`: argument `design_values` → `variable_values`
+
+    Both methods are now defined by `BaseVariableSpace`.
 
 - **Breaking change** An `IntegerVariable` rejects a finite bound outside the range of a 64-bit integer, e.g. `DesignSpace.add_variable("n", type_="integer", upper_bound=1e30)` raises a `ValidationError` reading `The following upper bound component is outside the range of a 64-bit integer while the variable is of type integer: 1e+30 (index 0).`, where such a bound used to be accepted and stored as a floating-point number; an infinite bound is still accepted.
 
@@ -830,9 +911,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
   be normalized, was renamed to `DesignSpace.name_to_normalization_mask`;
   `DesignSpace.normalize` is kept as a deprecated alias.
 
-- **Changed** The `DesignSpace.unnormalize_vect` and `DesignSpace.unnormalize_grad` methods were renamed to
-  `DesignSpace.denormalize_vect` and `DesignSpace.denormalize_grad`; the former names are kept as
-  deprecated aliases emitting a `DeprecationWarning`.
+- **Changed** Two `DesignSpace` methods were renamed:
+    - `DesignSpace.unnormalize_vect` → `DesignSpace.denormalize_vect`
+    - `DesignSpace.unnormalize_grad` → `DesignSpace.denormalize_grad`
+
+    The former names are kept as deprecated aliases emitting a `DeprecationWarning`.
 
 - **Changed** `DesignSpace.set_current_value` accepts any `Mapping`, and not only a `dict`, mapping a variable
   name either to a value or to `None` to mark the variable as having no value; a mapping of another
@@ -971,7 +1054,12 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The unused member `SciPyDOE.Optimizer.NONE` was removed. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 
-- **Breaking change** `BaseAlgoFactory` is renamed to `BaseAlgorithmFactory` and its module `gemseo.algos.base_algo_factory` is now `gemseo.core.algorithm.base_algorithm_factory`; the `DriverLibraryFactory` module is now `gemseo.core.algorithm.factory`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** `BaseAlgoFactory` and its module were renamed and the `DriverLibraryFactory` module was moved:
+    - `BaseAlgoFactory` → `BaseAlgorithmFactory`
+    - `gemseo.algos.base_algo_factory` → `gemseo.core.algorithm.base_algorithm_factory`
+    - module of `DriverLibraryFactory` → `gemseo.core.algorithm.factory`
+
+    [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** The `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
 
@@ -1039,7 +1127,12 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `MDAChain.mdo_chain` attribute was renamed to `MDAChain.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 
-- **Breaking change** The `add_iteration_callback` and `clear_iteration_callbacks` methods of `BaseMDASolver` were renamed to `add_iteration_listener` and `clear_iteration_listeners`, and the `iteration_callback` argument of `add_iteration_callback` was renamed to `iteration_listener`. A callable registered on an object and removable is now called a *listener* everywhere, whereas a *callback* is a callable passed as an argument for a single execution, e.g. the `callbacks` setting of the DOE algorithms. [#1597](https://gitlab.com/gemseo/dev/gemseo/-/issues/1597)
+- **Breaking change** The iteration callbacks of `BaseMDASolver` were renamed:
+    - method `add_iteration_callback` → `add_iteration_listener`
+    - method `clear_iteration_callbacks` → `clear_iteration_listeners`
+    - argument `iteration_callback` of `add_iteration_callback` → `iteration_listener`
+
+    A callable registered on an object and removable is now called a *listener* everywhere, whereas a *callback* is a callable passed as an argument for a single execution, e.g. the `callbacks` setting of the DOE algorithms. [#1597](https://gitlab.com/gemseo/dev/gemseo/-/issues/1597)
 
 - **Breaking change** The `normed_residual` attribute of `BaseMDA` was renamed to `normalized_residual_norm`.
 
@@ -1282,7 +1375,15 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
 
-- **Breaking change** The arguments of the scenario adapters no longer refer to an optimization: `reset_x0_before_opt`, `set_x0_before_opt` and `set_bounds_before_opt` were renamed to `reset_x0_before_exec`, `set_x0_before_exec` and `set_bounds_before_exec`, while `keep_opt_history`, `save_opt_history` and `opt_history_file_prefix` were renamed to `keep_databases`, `save_databases` and `database_file_prefix`. The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
+- **Breaking change** The arguments of the scenario adapters no longer refer to an optimization:
+    - `reset_x0_before_opt` → `reset_x0_before_exec`
+    - `set_x0_before_opt` → `set_x0_before_exec`
+    - `set_bounds_before_opt` → `set_bounds_before_exec`
+    - `keep_opt_history` → `keep_databases`
+    - `save_opt_history` → `save_databases`
+    - `opt_history_file_prefix` → `database_file_prefix`
+
+    The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
 
 - **Breaking change** `MDOScenario` and `OptimizationProblem` require a `DesignSpace`, as their signatures state; use an `EvaluationScenario` or an `EvaluationProblem` to sample a `RandomSpace`, and define a `DesignSpace` for optimization.
 
@@ -1365,7 +1466,9 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `ScatterMatrix` class was renamed to `PairPlot`. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
 
-- **Breaking change** `gemseo.post.dataset.plots` is now `gemseo.post.dataset.plot` and `gemseo.post.dataset.dataset_plot` is now `gemseo.post.dataset.base`.
+- **Breaking change** Two modules of `gemseo.post.dataset` were renamed:
+    - `gemseo.post.dataset.plots` → `gemseo.post.dataset.plot`
+    - `gemseo.post.dataset.dataset_plot` → `gemseo.post.dataset.base`
 
 - **Breaking change** `gemseo.post.core.gantt_chart` is now `gemseo.post.gantt_chart`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
@@ -1623,7 +1726,18 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** `OTGaussianProcessRegressor` uses the OpenTURNS `GaussianProcessFitter` and `GaussianProcessRegression` API instead of the deprecated `KrigingAlgorithm`; its `algo` attribute is a `GaussianProcessRegressionResult`. [#1798](https://gitlab.com/gemseo/dev/gemseo/-/issues/1798)
 
-- **Breaking change** The machine learning modules were renamed to match their class names: `ml_algo` is now `base_ml_model`, `ml_algo_settings` is now `base_ml_model_settings`, `supervised`/`supervised_settings` are now `base_supervised`/`base_supervised_settings`, `unsupervised`/`unsupervised_settings` are now `base_unsupervised`/`base_unsupervised_settings` and `base_ml_algo_quality` is now `base_ml_model_quality`; `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`); `thin_plate_spline`/`thin_plate_spline_settings` are now `tps`/`tps_settings` (matching the `TPSRegressor` class). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** The machine learning modules were renamed to match their class names:
+    - `ml_algo` → `base_ml_model`
+    - `ml_algo_settings` → `base_ml_model_settings`
+    - `supervised` → `base_supervised`
+    - `supervised_settings` → `base_supervised_settings`
+    - `unsupervised` → `base_unsupervised`
+    - `unsupervised_settings` → `base_unsupervised_settings`
+    - `base_ml_algo_quality` → `base_ml_model_quality`
+    - `thin_plate_spline` → `tps` (matching the `TPSRegressor` class)
+    - `thin_plate_spline_settings` → `tps_settings`
+
+    `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** `RBFRegressor` and `TPSRegressor` are now based on
   [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
@@ -1743,17 +1857,23 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `gemseo.uncertainty.distributions.base_settings` package was renamed to `gemseo.uncertainty.distribution.core.base_univariate_settings`.
 
-- **Breaking change** The modules `base_distribution`, `base_distribution_settings` and `base_distribution_fitter` of `gemseo.uncertainty.distributions` were renamed to `gemseo.uncertainty.distribution.core.base`, `gemseo.uncertainty.distribution.core.base_settings` and `gemseo.uncertainty.distribution.core.base_fitter` respectively. [#1783](https://gitlab.com/gemseo/dev/gemseo/-/issues/1783)
+- **Breaking change** The base modules of `gemseo.uncertainty.distributions` were renamed:
+    - `gemseo.uncertainty.distributions.base_distribution` → `gemseo.uncertainty.distribution.core.base`
+    - `gemseo.uncertainty.distributions.base_distribution_settings` → `gemseo.uncertainty.distribution.core.base_settings`
+    - `gemseo.uncertainty.distributions.base_distribution_fitter` → `gemseo.uncertainty.distribution.core.base_fitter`
+
+    [#1783](https://gitlab.com/gemseo/dev/gemseo/-/issues/1783)
 
 - **Breaking change** The `Method` enumeration of each sensitivity analysis moved out of its class and
   became a module-level class, e.g. `from gemseo.enum import SobolAnalysisMethod`:
-  `CorrelationAnalysis.Method` is now `CorrelationAnalysisMethod`,
-  `HSICAnalysis.Method` is now `HSICAnalysisMethod`,
-  `MorrisAnalysis.Method` is now `MorrisAnalysisMethod`
-  and `SobolAnalysis.Method` is now `SobolAnalysisMethod`.
-  The old names still give the new enumerations, with a `DeprecationWarning`.
-  A subclass that defines its own `Method` keeps it, but the analysis no longer
-  reads it, and a `DeprecationWarning` says so. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
+    - `CorrelationAnalysis.Method` → `CorrelationAnalysisMethod`
+    - `HSICAnalysis.Method` → `HSICAnalysisMethod`
+    - `MorrisAnalysis.Method` → `MorrisAnalysisMethod`
+    - `SobolAnalysis.Method` → `SobolAnalysisMethod`
+
+    The old names still give the new enumerations, with a `DeprecationWarning`.
+    A subclass that defines its own `Method` keeps it, but the analysis no longer
+    reads it, and a `DeprecationWarning` says so. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 
 - **Breaking change** `HSICAnalysis.compute_indices` no longer estimates the p-values through permutations by default; set its new `use_permutations` argument to `True` to do so. This estimation costs `n_permutations` HSIC estimations and used to dominate the computation time.
 
@@ -1879,13 +1999,25 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Changed** The default `MorrisAnalysis.plot()` title format is `<output_name> - R=<n_replicates> - delta_r=<round(100 * step)>% - <doe_algo_name> - <elementary effects | finite differences>`. [#1850](https://gitlab.com/gemseo/dev/gemseo/-/issues/1850)
 
-- **Changed** The modules `base_sensitivity_analysis`, `correlation_analysis`, `hsic_analysis`, `morris_analysis` and `sobol_analysis` of the `gemseo.uncertainty.sensitivity` package were renamed to `core.base`, `correlation`, `hsic`, `morris` and `sobol` respectively.
+- **Changed** The modules of the `gemseo.uncertainty.sensitivity` package were renamed:
+    - `base_sensitivity_analysis` → `core.base`
+    - `correlation_analysis` → `correlation`
+    - `hsic_analysis` → `hsic`
+    - `morris_analysis` → `morris`
+    - `sobol_analysis` → `sobol`
 
-- **Changed** The modules `base_statistics`, `base_parametric_statistics`, `empirical_statistics`, `ot_parametric_statistics` and `sp_parametric_statistics` of the `gemseo.uncertainty.statistics` package (now `gemseo.uncertainty.statistic`) were renamed to `core.base`, `core.base_parametric`, `empirical`, `ot_parametric` and `sp_parametric` respectively.
+- **Changed** The modules of the `gemseo.uncertainty.statistics` package (now `gemseo.uncertainty.statistic`) were renamed:
+    - `base_statistics` → `core.base`
+    - `base_parametric_statistics` → `core.base_parametric`
+    - `empirical_statistics` → `empirical`
+    - `ot_parametric_statistics` → `ot_parametric`
+    - `sp_parametric_statistics` → `sp_parametric`
 
 - **Changed** The module `gemseo.uncertainty.statistics.tolerance_interval.distribution` was renamed to `gemseo.uncertainty.statistic.tolerance_interval.base`.
 
-- **Changed** The package `gemseo.uncertainty.distributions.base_settings` was renamed to `gemseo.uncertainty.distribution.core.base_univariate_settings` and the `_settings` suffix was removed from its module names, e.g. `beta_settings` is now `beta`.
+- **Changed** The package `gemseo.uncertainty.distributions.base_settings` was renamed:
+    - `gemseo.uncertainty.distributions.base_settings` → `gemseo.uncertainty.distribution.core.base_univariate_settings`
+    - its modules lose the `_settings` suffix, e.g. `beta_settings` → `beta`
 
 - **Changed** `SobolAnalysis.compute_samples` stores the random space it was given in `dataset.misc["random_space"]` instead of `dataset.misc["parameter_space"]`; the legacy key is still read so that user code populating the miscellaneous data of a dataset against the previous name still works.
 
@@ -1934,7 +2066,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `gemseo.problems.mdo.sobieski.process.mdo_chain` module was renamed to `gemseo.problem.mdo.sobieski.process.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 
-- **Breaking change** `gemseo.problems.mdo.sobieski.core` is now `gemseo.problem.mdo.sobieski.standalone` and `gemseo.problems.mdo.scalable.parametric.core` is now `gemseo.problem.mdo.scalable.parametric.standalone`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** Two `core` modules of the benchmark problems were renamed `standalone`:
+    - `gemseo.problems.mdo.sobieski.core` → `gemseo.problem.mdo.sobieski.standalone`
+    - `gemseo.problems.mdo.scalable.parametric.core` → `gemseo.problem.mdo.scalable.parametric.standalone`
+
+    [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** The `**ode_solver_options` arguments of `SpringODEDiscipline` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
 
@@ -1952,7 +2088,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `**kwargs` arguments of `SpringsDynamicsDiscipline` have been replaced by `name: str = ""`.
 
-- **Breaking change** In `gemseo.problem.mdo.scalable.linear.disciplines_generator`, `LETTERS` is now `letters` and is a `tuple` instead of a NumPy `ndarray`, and the `DESC_*` constants are now `desc_*` and are tuples of tuples instead of lists of lists. `NUMERICS` of `gemseo.discipline.wrapper.disc_from_exe` is now `numerics` and is a `tuple` instead of a `list`.
+- **Breaking change** Some module-level constants were renamed and changed type:
+    - `gemseo.problem.mdo.scalable.linear.disciplines_generator`:
+        - `LETTERS` → `letters`, a `tuple` instead of a NumPy `ndarray`
+        - `DESC_*` → `desc_*`, tuples of tuples instead of lists of lists
+    - `gemseo.discipline.wrapper.disc_from_exe`: `NUMERICS` → `numerics`, a `tuple` instead of a `list`
 
 - **Breaking change** The design bounds of the Sobieski problem, `SobieskiBase.design_bounds` and `SobieskiProblem.design_bounds`, are read-only arrays; copy them to get mutable arrays.
 
@@ -1988,9 +2128,13 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `discipline` argument of `generate_xdsm` and `XDSMizer` was renamed to `process`. [#1683](https://gitlab.com/gemseo/dev/gemseo/-/issues/1683)
 
-- **Breaking change** `gemseo.utils.string_tools` is now `gemseo.util.string` and `gemseo.utils.show_utils` is now `gemseo.util.xdsm.html`.
+- **Breaking change** Two modules of `gemseo.utils` were renamed:
+    - `gemseo.utils.string_tools` → `gemseo.util.string`
+    - `gemseo.utils.show_utils` → `gemseo.util.xdsm.html`
 
-- **Breaking change** The redundant `_metric` suffix was removed from the module names of the `gemseo.utils.metrics` package (now `gemseo.util.metric`), e.g. `gemseo.utils.metrics.base_metric` is now `gemseo.util.metric.base` and `gemseo.utils.metrics.metric_factory` is now `gemseo.util.metric.factory`.
+- **Breaking change** The redundant `_metric` suffix was removed from the module names of the `gemseo.utils.metrics` package (now `gemseo.util.metric`), e.g.:
+    - `gemseo.utils.metrics.base_metric` → `gemseo.util.metric.base`
+    - `gemseo.utils.metrics.metric_factory` → `gemseo.util.metric.factory`
 
 - **Breaking change** `gemseo.typing` is now `gemseo.util.typing`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
