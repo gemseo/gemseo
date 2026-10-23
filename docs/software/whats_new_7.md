@@ -95,6 +95,24 @@ Instead of an MDA name passed as a string and options passed as a dictionary,
 the formulation receives the settings of its MDA,
 which contain the settings of its linear solver, and so on.
 The configuration of a process is thus defined, and validated, as a single object.
+For example, an MDF formulation whose MDA chain solves each strongly coupled group
+with a Newton-Raphson method using GMRES:
+
+```python
+from gemseo.formulation import MDF_Settings
+from gemseo.linear import GMRES_Settings
+from gemseo.mda import MDAChain_Settings
+from gemseo.mda import MDANewtonRaphson_Settings
+
+formulation_settings = MDF_Settings(
+    main_mda_settings=MDAChain_Settings(
+        inner_mda_settings=MDANewtonRaphson_Settings(
+            tolerance=1e-8,
+            newton_linear_solver_settings=GMRES_Settings(rtol=1e-10),
+        )
+    )
+)
+```
 
 ## A more explicit scenario API
 
