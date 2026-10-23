@@ -12,4 +12,6 @@
 
 Run variance-based (Sobol), screening (Morris), and correlation-based (Pearson, Spearman, HSIC)
 sensitivity analyses to rank the influence of uncertain inputs on discipline outputs,
+run reliability-oriented (FORM, ROSobol) ones to rank their influence on events,
+e.g. an output exceeding a threshold,
 compare methods, and save or reload results.

@@ -438,6 +438,8 @@ and inputs can be sorted by decreasing influence via [sort_input_variables()][ge
     - [Change the main sensitivity method][change-the-main-sensitivity-method]
     - [Compare sensitivity analyses][compare-sensitivity-analyses]
     - [Save and reuse sensitivity analysis samples][save-and-reuse-sensitivity-analysis-samples]
+    - [Compute FORM sensitivity indices][compute-form-sensitivity-indices]
+    - [Compute the Sobol' indices of a rare event][compute-the-sobol-indices-of-a-rare-event]
 
 ## Going further
 

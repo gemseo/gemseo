@@ -55,11 +55,13 @@ from gemseo.uncertainty.sensitivity.form import FORMAnalysis
 # %%
 # ### Prerequisites
 #
-# This how-to needs one or more disciplines and a design space.
+# This how-to needs one or more disciplines
+# and a random space whose distributions come from OpenTURNS.
 #
 # The wing weight problem estimates the wing weight $W_w$ (lb) of a light aircraft
 # from 10 structural and aerodynamic parameters,
-# all modelled as independent uniform random variables:
+# all modelled as independent uniform random variables,
+# here with OpenTURNS distributions:
 discipline = WingWeightDiscipline()
 random_space = WingWeightRandomSpace(
     WingWeightRandomSpace.UniformDistribution.OPENTURNS
