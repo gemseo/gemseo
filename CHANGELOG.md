@@ -195,7 +195,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `BaseDiscipline.grammar_directory`
     - `CallableParallelExecution.multi_processing_start_method`
 
-- **Removed** Snippets have been removed from docstrings. Use the examples in the documentation instead. [#1700](https://gitlab.com/gemseo/dev/gemseo/-/issues/1700)
+- **Removed** Snippets were removed from docstrings. Use the examples in the documentation instead. [#1700](https://gitlab.com/gemseo/dev/gemseo/-/issues/1700)
 
 - **Removed** The support of Python 3.10 was removed; the minimum supported version is Python 3.11.
 
@@ -449,7 +449,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Removed** The `mapping` and `reverse_mapping` of `NameMapping` were removed. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Removed** The `XLSDiscipline` has been removed from GEMSEO core and moved to the new `gemseo-excel` plugin. [#1833](https://gitlab.com/gemseo/dev/gemseo/-/issues/1833)
+- **Removed** The `XLSDiscipline` was removed from GEMSEO core and moved to the new `gemseo-excel` plugin. [#1833](https://gitlab.com/gemseo/dev/gemseo/-/issues/1833)
 
 - **Removed** The `LinearDiscipline.input_names` attribute was removed; use `LinearDiscipline.input_grammar.names` instead.
 
@@ -747,7 +747,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Removed** The `**parallel_differentiation_options` arguments of `OptimizationProblem` were removed; use the `parallel_differentiation_options` attribute instead.
 
-- **Removed** The `is_linear` argument of `OptimizationProblem` has been removed because it was useless. The `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
+- **Removed** The `is_linear` argument of `OptimizationProblem` was removed because it was useless. The `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
 
 - **Removed** The `**kwargs` arguments of `EvaluationProblem.get_functions` were removed.
 
@@ -956,7 +956,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
     They were implementation details of `to_hdf`, `from_hdf`, `to_csv`, `from_csv` and `get_pretty_table`. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
 
-- **Removed** The class attribute `DesignSpace.DesignVariableType` is removed; use `gemseo.enum.VariableType` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
+- **Removed** The class attribute `DesignSpace.DesignVariableType` was removed; use `gemseo.enum.VariableType` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
 
 - **Removed** The class `ParameterSpace`, which mixed deterministic and uncertain variables, was removed, as was the factory `ParameterSpaceFactory`; use `RandomSpace` for a space of uncertain variables and `random_space_factory` for its factory.
 
@@ -1250,7 +1250,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
     [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
-- **Breaking change** The `random_state` option of `PYDOE_LHS` has been renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
+- **Breaking change** The `random_state` option of `PYDOE_LHS` was renamed `seed` and now accepts a NumPy generator too. [#1862](https://gitlab.com/gemseo/dev/gemseo/-/issues/1862)
 
 - **Breaking change** When sampling a unit hypercube by dimension with `BaseDOELibrary.sample_unit_hypercube` or `gemseo.compute_doe`, the single variable spanning the hypercube is no longer named `"x"`; a DOE setting referring to variable names, such as the `reverse` setting of `DiagonalDOE`, has no effect there and component indices must be used instead.
 
@@ -1385,15 +1385,15 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** `JacobianAssembly` (ex `gemseo.core.derivatives.jacobian_assembly`) moved to `gemseo.mda.jacobian_assembly`. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
-- **Breaking change** The `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.compute_newton_step` have been removed and replaced by `linear_solver_settings` of `BaseLinearSolverSettings` type.
+- **Breaking change** The `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.compute_newton_step` were removed and replaced by `linear_solver_settings` of `BaseLinearSolverSettings` type.
 
-- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.total_derivatives` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `JacobianAssembly.total_derivatives` were removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
 
-- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` of `CoupledSystem.direct_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` of `CoupledSystem.direct_mode` were removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
 
-- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `CoupledSystem.adjoint_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
+- **Breaking change** The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `CoupledSystem.adjoint_mode` were removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
 
-- **Breaking change** The `use_lu_fact` option of MDA settings has been removed; set the `linear_solver_settings` option to `None` instead.
+- **Breaking change** The `use_lu_fact` option of MDA settings was removed; set the `linear_solver_settings` option to `None` instead.
 
 - **Removed** The `norm0` attribute of `BaseMDA` was removed because it was deprecated. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
@@ -1422,7 +1422,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `minimize_objective`
     - `**settings`
 
-- **Breaking change** The attribute `optimization_problem` of `BaseFormulation` has been renamed `problem`
+- **Breaking change** The attribute `optimization_problem` of `BaseFormulation` was renamed `problem`
   since it can be either an `EvaluationProblem` or an `OptimizationProblem`.
 
 - **Breaking change** The argument `output_names` of `BaseFormulation.add_observable` no longer supports `str`; use `[output_name]` in the case of a single output name.
@@ -1456,7 +1456,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** `BiLevelScenarioResult.get_sub_optimization_result` raises a `ValueError` for a negative index instead of returning `None`. [#1968](https://gitlab.com/gemseo/dev/gemseo/-/issues/1968)
 
-- **Breaking change** `BaseFormulation.design_space` is renamed `BaseFormulation.input_space` and is typed `BaseVariableSpace`.
+- **Breaking change** `BaseFormulation.design_space` was renamed `BaseFormulation.input_space` and is typed `BaseVariableSpace`.
 
 - **Breaking change** `BaseMDOFormulation` takes the space of variables as a second type parameter, e.g. `BaseMDOFormulation[MyFormulation_Settings, DesignSpace]`, instead of pinning `DesignSpace`; a custom formulation must supply it, either a type variable bound to `BaseVariableSpace` when it uses the base API only, or `DesignSpace` when it reads bounds or a current value.
 
@@ -1505,7 +1505,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `normalize_constraints=True` scales the consistency constraints by the bound range of the target coupling variables, which must be finite, e.g. a random variable following a normal distribution has no finite range;
     - `start_at_equilibrium=True` stores the equilibrium as the current value of the space, so the input space must be a `DesignSpace`.
 
-- **Changed** The method `BaseFormulation._update_design_space` is renamed `_update_input_space` and is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
+- **Changed** The method `BaseFormulation._update_design_space` was renamed `_update_input_space` and is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
 
 - **Changed** The error raised by `IDF` when a coupling variable is missing reads `"must be added to the input space"` instead of `"must be added to the design space"`, since `IDF` no longer requires a design space.
 
@@ -1544,9 +1544,9 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The signature of `MDOScenario` is now `disciplines: Sequence[BaseDiscipline], design_space: DesignSpace, name: str = "", formulation_settings: BaseFormulationSettings | None = None, default_input_data: StrKeyMapping = ...`.
 
-- **Breaking change** The arguments `objective_name` and `maximize_objective` of `MDOScenario` have been removed; use the new method `add_objective` instead.
+- **Breaking change** The arguments `objective_name` and `maximize_objective` of `MDOScenario` were removed; use the new method `add_objective` instead.
 
-- **Breaking change** The arguments `objective_name` and `maximize_objective` of `OptAsMDOScenario` have been removed; use the new method `add_objective` instead.
+- **Breaking change** The arguments `objective_name` and `maximize_objective` of `OptAsMDOScenario` were removed; use the new method `add_objective` instead.
 
 - **Breaking change** `gemseo.scenarios.mdo_scenario` was renamed to `gemseo.scenario.mdo`.
 
@@ -1657,7 +1657,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `grid`
     - `labels`
 
-- **Breaking change** The `fig_size_x` and `fig_size_y` attributes of `BaseDatasetPlot` have been removed; use `BaseDatasetPlotSettings.fig_size` instead.
+- **Breaking change** The `fig_size_x` and `fig_size_y` attributes of `BaseDatasetPlot` were removed; use `BaseDatasetPlotSettings.fig_size` instead.
 
 - **Breaking change** The `ClassName` class, defined as a subclass of `BaseDatasetPlot`, has a settings class named `ClassName_Settings` deriving from `BaseDatasetPlotSettings` and including the options of the dataset plots (formerly passed at instantiation or using the removed attributes).
 
@@ -2110,7 +2110,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `**settings` arguments of `BaseSensitivityAnalysis.plot_comparison` were removed.
 
-- **Breaking change** The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) has been renamed to `random_space` and takes a `RandomSpace`.
+- **Breaking change** The argument `parameter_space` of the method `compute_samples` of the sensitivity analyses (`CorrelationAnalysis`, `HSICAnalysis`, `MorrisAnalysis` and `SobolAnalysis`) was renamed to `random_space` and takes a `RandomSpace`.
 
 - **Removed** The `variable` argument of `BaseDistributionFitter`, `OTDistributionFitter` and `SPDistributionFitter` was removed. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
@@ -2304,15 +2304,15 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `**ode_solver_options` arguments of `CoupledSpringsGenerator.create_coupled_ode_disciplines` have been replaced by `ode_solver_settings: BaseODESolverSettings | None = None`.
 
-- **Breaking change** The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for parametric scalable problems) have been replaced by `formulation_settings: BaseFormulationSettings | None = None`; the `use_optimizer` argument has been removed.
+- **Breaking change** The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for parametric scalable problems) have been replaced by `formulation_settings: BaseFormulationSettings | None = None`; the `use_optimizer` argument was removed.
 
-- **Breaking change** The `algo_name` and `max_iter` arguments of `ScalabilityStudy.add_optimization_strategy` have been removed and replaced by `algo_settings` of `BaseOptimizerSettings` type.
+- **Breaking change** The `algo_name` and `max_iter` arguments of `ScalabilityStudy.add_optimization_strategy` were removed and replaced by `algo_settings` of `BaseOptimizerSettings` type.
 
-- **Breaking change** The `formulation_name` argument of `ScalabilityStudy.add_optimization_strategy` has been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type.
+- **Breaking change** The `formulation_name` argument of `ScalabilityStudy.add_optimization_strategy` was removed and replaced by `formulation_settings` of `BaseFormulationSettings` type.
 
-- **Breaking change** The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for data-driver scalable problems) have been removed and replaced by `formulation_settings` of `BaseFormulationSettings` type and `sub_optimizer_settings` of `BaseOptimizerSettings` type.
+- **Breaking change** The `formulation_name` and `**formulation_settings` arguments of `ScalableProblem.create_scenario` (for data-driver scalable problems) were removed and replaced by `formulation_settings` of `BaseFormulationSettings` type and `sub_optimizer_settings` of `BaseOptimizerSettings` type.
 
-- **Breaking change** The `scenario_type` argument of `ScalableProblem.create_scenario` (for data-driver scalable problems) has been removed.
+- **Breaking change** The `scenario_type` argument of `ScalableProblem.create_scenario` (for data-driver scalable problems) was removed.
 
 - **Breaking change** The `**kwargs` arguments of `SpringsDynamicsDiscipline` have been replaced by `name: str = ""`.
 
@@ -2326,7 +2326,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The initial state arrays `initial_time`, `initial_position` and `initial_velocity` of `gemseo.problem.ode.spring.springs_dynamics_discipline`, and so the default input data of `SpringsDynamicsDiscipline`, are read-only; copy them to get mutable arrays.
 
-- **Breaking change** `IshigamiSpace` and `WingWeightUncertainSpace` derive from `RandomSpace`; the latter has been renamed to `WingWeightRandomSpace`; they are found by the new `random_space_factory` instead of `design_space_factory`.
+- **Breaking change** `IshigamiSpace` and `WingWeightUncertainSpace` derive from `RandomSpace`; the latter was renamed to `WingWeightRandomSpace`; they are found by the new `random_space_factory` instead of `design_space_factory`.
 
 - **Breaking change** `IshigamiProblem` derives from `EvaluationProblem` instead of `OptimizationProblem`; it is still defined over the `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but the Ishigami function is now an observable of the problem instead of its objective, so `problem.objective` no longer exists.
 
