@@ -222,6 +222,20 @@ does not exist and pulls the eye away from the links inside. Opt out with
 }
 
 /*
+Cards used as a table of contents keep the lift, made true by `grid cards clickable`:
+the link of the card stretches over the whole card, so clicking anywhere follows it.
+A card of this grid holds a single link.
+*/
+.md-typeset .grid.cards.clickable > ul > li {
+  position: relative;
+}
+.md-typeset .grid.cards.clickable > ul > li a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/*
 Labels starting the items of the changelog (docs/_scripts/changelog.py), as pills.
 The colours are tokens redefined for the slate scheme, where a light background
 with a dark text is easier to read than a saturated one with a white text.

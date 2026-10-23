@@ -25,49 +25,53 @@ model uncertainties with the same tools as design variables,
 extend the design variables to discrete, categorical and catalog ones,
 and reduce the overhead of the library,
 by a factor of up to 20 on cache-intensive workflows.
+The [changelog](../changelog/index.md) lists every change of the release
+and the guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) details the migration.
+
+![A Pareto front, the pair plot of two dependent random variables and the pair plot of a dataset by category, drawn with GEMSEO 7](../assets/images/whats_new_7/banner.png)
 
 ```shell
 pip install --upgrade gemseo[all]
 ```
 
-<div class="grid cards" markdown>
+<div class="grid cards clickable" markdown>
 
--   :material-package-variant:{ .lg .middle } **Package structure**
+-   :material-package-variant:{ .lg .middle } [**Package structure**](#package-structure)
 
     ---
 
     Packages organized by domain,
     exposing their public classes, settings and factories.
 
--   :material-shield-check:{ .lg .middle } **Validated settings**
+-   :material-shield-check:{ .lg .middle } [**Validated settings**](#settings-validated-before-execution)
 
     ---
 
     Algorithms, MDAs, formulations and post-processors are configured
     with typed settings objects, validated at instantiation and at assignment.
 
--   :material-sitemap:{ .lg .middle } **Scenarios**
+-   :material-sitemap:{ .lg .middle } [**Scenarios**](#scenarios)
 
     ---
 
     One scenario class for optimization and DOE,
     multi-objective problems and scenarios used as disciplines.
 
--   :material-cube-outline:{ .lg .middle } **Disciplines**
+-   :material-cube-outline:{ .lg .middle } [**Disciplines**](#disciplines)
 
     ---
 
     Grammars deduced from a Pydantic model,
     namespaces propagated over a group of disciplines.
 
--   :material-shape:{ .lg .middle } **Mixed-variable design**
+-   :material-shape:{ .lg .middle } [**Mixed-variable design**](#mixed-variable-design-spaces)
 
     ---
 
     Discrete, categorical and catalog variables
     in addition to real and integer ones.
 
--   :material-dice-multiple:{ .lg .middle } **Uncertainty quantification**
+-   :material-dice-multiple:{ .lg .middle } [**Uncertainty quantification**](#uncertainty-quantification)
 
     ---
 
@@ -75,21 +79,21 @@ pip install --upgrade gemseo[all]
     discrete and joint distributions,
     reliability analysis and new sensitivity analyses.
 
--   :material-function-variant:{ .lg .middle } **Derivatives**
+-   :material-function-variant:{ .lg .middle } [**Derivatives**](#derivatives)
 
     ---
 
     Jacobian checkers for functions, disciplines and MDAs,
     forward, reverse and automatic modes in discipline chains.
 
--   :material-chart-scatter-plot:{ .lg .middle } **Visualization**
+-   :material-chart-scatter-plot:{ .lg .middle } [**Visualization**](#visualization)
 
     ---
 
     New pair plot options, a plotly heat map
     and figures following the matplotlib style.
 
--   :material-folder-search:{ .lg .middle } **Debugging and traceability**
+-   :material-folder-search:{ .lg .middle } [**Debugging and traceability**](#debugging-and-traceability)
 
     ---
 
@@ -97,7 +101,7 @@ pip install --upgrade gemseo[all]
     a detailed assessment of the constraints
     and the evaluations in the coordinates of the algorithm.
 
--   :material-rocket-launch:{ .lg .middle } **Performance**
+-   :material-rocket-launch:{ .lg .middle } [**Performance**](#performance)
 
     ---
 
@@ -313,8 +317,14 @@ result = scenario.execute(
     )
 )
 pareto_front = result.pareto_front
-scenario.post_process(ParetoFront_Settings(save=False, show=True))
+scenario.post_process(
+    ParetoFront_Settings(
+        objectives_labels=("cost", "-performance"), save=False, show=True
+    )
+)
 ```
+
+![Pareto front of the cost and the performance, the latter being maximized](../assets/images/whats_new_7/pareto_front.png){ width="400" }
 
 [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView] also supports these problems:
 its objective plot draws one curve per objective, named in a legend.
@@ -479,13 +489,21 @@ and [catalog variables][concept-catalog-variables] select a row in a table of al
 Each type of variable has its own method, whose arguments are validated at call time:
 
 ```python
+from pandas import DataFrame
+
 from gemseo.space import DesignSpace
+
+motors = DataFrame(
+    {"power": [1.5, 3.0, 5.5], "mass": [12.0, 20.0, 31.0]},
+    index=["M1", "M2", "M3"],
+)
 
 space = DesignSpace()
 space.add_real_variable("thickness", lower_bound=0.1, upper_bound=1.0)
 space.add_integer_variable("n_blades", lower_bound=2, upper_bound=8)
 space.add_discrete_variable("diameter", (1.0, 4.0, 6.0, 9.0))
 space.add_categorical_variable("material", ("steel", "aluminium", "titanium"))
+space.add_catalog_variable("motor", motors)
 ```
 
 The variable types are checked against the capabilities of the algorithm.
@@ -592,6 +610,8 @@ PairPlot(dataset, PairPlot_Settings(variable_names=("x", "y"), use_ranks=True)).
 )
 ```
 
+![Pair plot of two dependent normal random variables, with their ranks in the upper part](../assets/images/whats_new_7/pair_plot_copula.png){ width="400" }
+
 ### Probability distributions
 
 Discrete random variables have dedicated distributions:
@@ -610,6 +630,17 @@ and [map_from_uniform()][gemseo.uncertainty.distribution.openturns.joint.OTJoint
 apply the Rosenblatt transformation,
 which maps the random vector to the unit hypercube and back
 taking into account the dependencies between its components.
+With the random space of the previous section:
+
+```python
+from numpy import array
+
+distribution = space.variables.distribution
+samples = distribution.compute_samples(500)
+uniform_samples = array([distribution.map_to_uniform(sample) for sample in samples])
+```
+
+![Samples of two dependent normal random variables and their images by the Rosenblatt transformation, uniformly distributed in the unit square](../assets/images/whats_new_7/rosenblatt_transformation.png)
 
 ### Reliability analysis
 
@@ -680,6 +711,8 @@ settings = PairPlot_Settings(
 PairPlot(dataset, settings).execute(save=False, show=True)
 ```
 
+![Pair plot of the iris dataset with density contours and densities by species](../assets/images/whats_new_7/pair_plot_classifier.png)
+
 [Heatmap][gemseo.post.dataset.heatmap.Heatmap], formerly `ColorEvolution`,
 represents the variables of a dataset with a color scale.
 In addition to matplotlib,
@@ -709,7 +742,26 @@ and locating those of a given iteration among thousands of directories was tedio
 [The directory manager][the-directory-manager] organizes them
 into a tree that mirrors the process:
 one directory per scenario, per iteration or sample, per MDA iteration and per discipline execution,
-each with a trace of the executions it contains.
+each with a trace of the executions it contains:
+
+```txt
+├── MDOScenario
+│   ├── Optimizer_iteration_1
+│   │   ├── MDAJacobi
+│   │   │   ├── MDAJacobi_iteration_0
+│   │   │   │   ├── Sellar1_execution
+│   │   │   │   └── Sellar2_execution
+│   │   │   │       └── y_1.txt
+│   │   │   ├── MDAJacobi_iteration_1
+│   │   │   │   ├── Sellar1_execution
+│   │   │   │   └── Sellar2_execution
+│   │   │   │       └── y_1.txt
+│   │   │   └── ...
+│   │   └── SellarSystem_execution
+│   ├── Optimizer_iteration_2
+│   └── ...
+```
+
 Once enabled with `configuration.directory_manager.enable = True`,
 the files of a failed evaluation are located from its position in the process.
 
