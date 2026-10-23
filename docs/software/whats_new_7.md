@@ -123,9 +123,9 @@ the disciplines, the design space and the formulation at construction;
 the objective, the constraints and the observables through dedicated methods;
 the algorithm settings at execution.
 The objective is no longer a constructor argument:
-`add_objective` declares it like the constraints and observables,
+[add_objective()][gemseo.scenario.mdo.MDOScenario.add_objective] declares it like the constraints and observables,
 and supports maximization and groups of objectives.
-`execute` returns the result of the algorithm,
+[execute()][gemseo.scenario.mdo.MDOScenario.execute] returns the result of the algorithm,
 which gives direct access to the optimum
 without querying the optimization problem.
 
@@ -177,11 +177,11 @@ without querying the optimization problem.
 ### Multi-objective optimization
 
 Multi-objective problems are declared with the same method.
-Each call to `add_objective` adds an objective, to minimize or to maximize,
+Each call to [add_objective()][gemseo.scenario.mdo.MDOScenario.add_objective] adds an objective, to minimize or to maximize,
 and the objectives may be computed by different disciplines.
 The scenario concatenates them into a vector objective
-solved by a multi-objective algorithm such as MNBI,
-and `execute` returns a result including the Pareto front:
+solved by a multi-objective algorithm such as [MNBI][gemseo.optimization.mnbi.mnbi.MNBI],
+and [execute()][gemseo.scenario.mdo.MDOScenario.execute] returns a result including the Pareto front:
 
 ```python
 from gemseo.discipline import AnalyticDiscipline
@@ -213,8 +213,8 @@ scenario.post_process(ParetoFront_Settings(save=False, show=True))
 
 ### One scenario class for optimization and DOE
 
-`MDOScenario` now covers both optimization and design of experiments:
-it runs the algorithm corresponding to the settings passed to `execute`.
+[MDOScenario][gemseo.scenario.mdo.MDOScenario] now covers both optimization and design of experiments:
+it runs the algorithm corresponding to the settings passed to [execute()][gemseo.scenario.mdo.MDOScenario.execute].
 Replacing a DOE by an optimizer only changes this argument:
 
 === "GEMSEO 6"
@@ -256,8 +256,8 @@ Replacing a DOE by an optimizer only changes this argument:
 ### Evaluation scenarios
 
 For exploration studies,
-the new `EvaluationScenario` samples the disciplines without requiring an objective;
-`observe_all_outputs` records all their outputs:
+the new [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario] samples the disciplines without requiring an objective;
+[observe_all_outputs()][gemseo.scenario.evaluation.EvaluationScenario.observe_all_outputs] records all their outputs:
 
 ```python
 from gemseo.discipline import AnalyticDiscipline
@@ -279,16 +279,16 @@ dataset = scenario.to_dataset()
 ### Scenarios as disciplines
 
 Any scenario can be used as a discipline of another process.
-`EvaluationScenarioAdapter` wraps an `EvaluationScenario`:
+[EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter] wraps an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]:
 its inputs overload the default inputs of the disciplines of the scenario,
 and its outputs are those of the last point evaluated by the scenario.
-`MDOScenarioAdapter` derives from it and adds the features requiring an optimum:
+[MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter] derives from it and adds the features requiring an optimum:
 the optimal objective value, the Lagrange multipliers and the post-optimal derivatives;
 see [how to transform a scenario into a discipline](../generated/examples/howtos/scenario/plot_howto_scenario_adapter.md).
-`wrap_scenario_in_job_scheduler` relies on this mechanism
+[wrap_scenario_in_job_scheduler()][gemseo.scenario.job_scheduler.wrap_scenario_in_job_scheduler] relies on this mechanism
 to submit a whole scenario to an HPC cluster in one call:
 it adapts the scenario into a discipline,
-then wraps this discipline in a `JobSchedulerDiscipline`.
+then wraps this discipline in a [JobSchedulerDiscipline][gemseo.discipline.wrapper.job_scheduler.discipline.JobSchedulerDiscipline].
 
 ### Bi-level formulations
 
@@ -405,11 +405,11 @@ Monte Carlo and quasi Monte Carlo sampling;
 subset, importance and directional sampling, which target rare events.
 
 New sensitivity analyses complete this set.
-`ROSobolAnalysis` identifies the inputs driving a [rare event][concept-rosobol-analysis],
-`FORMAnalysis` derives sensitivity indices from the importance factors of FORM,
-`SobolAnalysis` can estimate its first-order indices
+[ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis] identifies the inputs driving a [rare event][concept-rosobol-analysis],
+[FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] derives sensitivity indices from the importance factors of FORM,
+[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis] can estimate its first-order indices
 [from independent and identically distributed samples][concept-sobol-estimators],
-and `plot_second_order` displays the second-order indices as a heat map.
+and [plot_second_order()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot_second_order] displays the second-order indices as a heat map.
 
 ## Mixed-variable design spaces
 
@@ -447,14 +447,14 @@ The following workflows run faster:
 - **Caches.** The cost of storing an evaluation in a full cache used to grow with the number of entries.
   An entry is now retrieved directly from its hash:
   on a DOE of 20 samples of the SSBJ problem,
-  4 s instead of 78 s with an `HDF5Cache`, and 13 s instead of 25 s with a `MemoryFullCache`.
+  4 s instead of 78 s with an [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache], and 13 s instead of 25 s with a [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache].
 - **Databases.** Exporting the history of an optimization to a dataset,
   or reading its last iterations, no longer depends on the length of the history.
-- **Sensitivity analysis.** `HSICAnalysis` skips its permutation tests by default;
+- **Sensitivity analysis.** [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis] skips its permutation tests by default;
   they dominated its computation time.
 - **Start-up.** Importing a package no longer imports all its modules:
   each module is loaded at its first use.
-- **Fast mode.** `configuration.enable_fast_mode()`
+- **Fast mode.** [configuration.enable_fast_mode()][gemseo.util.global_configuration.GlobalConfiguration.enable_fast_mode]
   disables the checks and statistics computed at every evaluation;
   see [fast mode][global-configuration-fast].
 
@@ -469,7 +469,7 @@ and an infinite constraint value can no longer make the optimizer stop at an inf
 The Morris sensitivity indices use all the replicates and the right estimators.
 
 For derivative verification,
-`gemseo.check_jacobian()` compares the derivatives of a discipline
+[gemseo.check_jacobian()][gemseo.check_jacobian] compares the derivatives of a discipline
 with a numerical approximation in one call.
 Discipline chains can now propagate derivatives in forward or reverse mode,
 and select the less expensive one automatically.
@@ -477,8 +477,9 @@ and select the less expensive one automatically.
 ## Package structure
 
 GEMSEO 7 organizes its packages by domain:
-`gemseo.optimization`, `gemseo.doe`, `gemseo.mda`, `gemseo.formulation`, `gemseo.scenario`,
-`gemseo.space`, etc.
+[`gemseo.optimization`][gemseo.optimization], [`gemseo.doe`][gemseo.doe], [`gemseo.mda`][gemseo.mda],
+[`gemseo.formulation`][gemseo.formulation], [`gemseo.scenario`][gemseo.scenario],
+[`gemseo.space`][gemseo.space], etc.
 Each package exposes its public classes, settings and factories at its top level,
 so importing a class no longer requires knowing the module that defines it:
 
@@ -501,7 +502,7 @@ so importing a class no longer requires knowing the module that defines it:
     ```
 
 Naming follows uniform rules across the library:
-`MDOFunction` becomes `ArrayFunction`, the chains of disciplines become `DisciplineChain`,
+`MDOFunction` becomes [ArrayFunction][gemseo.core.function.array_function.ArrayFunction], the chains of disciplines become [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
 enumeration members are in upper case and mappings are named `key_to_value`.
 The machine learning models use settings objects, like the rest of the library:
 
