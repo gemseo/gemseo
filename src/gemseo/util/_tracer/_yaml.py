@@ -225,16 +225,22 @@ which PyYAML represents, so converting the items one by one would return them
 unchanged, at the cost of one call per item.
 
 The floating-point kind is admitted separately, since it is only partly
-unwrapped, see `_max_unwrapped_float_itemsize`.
+unwrapped, see `_unwrapped_float_types`.
 """
 
-_max_unwrapped_float_itemsize: Final[int] = 8
-"""The largest floating-point dtype item size `numpy.ndarray.tolist` unwraps.
+_unwrapped_float_types: Final[tuple[type[numpy.floating[Any]], ...]] = (
+    numpy.float16,
+    numpy.float32,
+    numpy.float64,
+)
+"""The floating-point dtype types whose arrays `numpy.ndarray.tolist` unwraps.
 
 A `float16`, `float32` or `float64` array is unwrapped into `float` objects,
-but a `longdouble` one (16 bytes on Linux/x86-64) keeps `numpy.longdouble`
-items, which PyYAML cannot represent; its items therefore go through the
-per-item conversion, which falls back to `str`.
+but a `longdouble` one keeps `numpy.longdouble` items, which PyYAML cannot
+represent; its items therefore go through the per-item conversion, which falls
+back to `str`. The test is on the type, not on the item size: a `longdouble`
+is 16 bytes on Linux/x86-64 but 8 bytes on Windows, the size of a `float64`,
+and keeps `numpy.longdouble` items all the same.
 """
 
 _stringifiable_dtype_kind: Final[str] = "c"
@@ -463,7 +469,7 @@ def _convert_to_yaml_data(
         ):
             return array_store.add_array(value)
         if kind in _representable_dtype_kinds or (
-            kind == "f" and dtype.itemsize <= _max_unwrapped_float_itemsize
+            kind == "f" and dtype.type in _unwrapped_float_types
         ):
             return value.tolist()
         if kind == _stringifiable_dtype_kind:
