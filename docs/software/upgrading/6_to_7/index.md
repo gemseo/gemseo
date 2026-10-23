@@ -32,7 +32,7 @@ can do most of the work that bump-gemseo leaves to you, see
     written for GEMSEO 6.3 and executed before and after migration. bump-gemseo alone migrates
     1807 of them correctly (85.7 %). The 302 others are what this guide is about:
     169 are explained with an example, the rest are names removed without replacement,
-    listed at the end of each domain page.
+    listed in the sections [*Removed names*](#sections-removed-names) of the domain pages.
 
 ## The compatibility layer of GEMSEO 7 { #compatibility-layer }
 
@@ -129,12 +129,14 @@ GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even wi
 
 ## Step 1: run bump-gemseo
 
-Install bump-gemseo in the environment where GEMSEO 6.3 is installed, then run it on your package,
-its tests and its documentation at once:
+Install bump-gemseo in the environment where GEMSEO 6.3 is installed, then run it on the directories
+of your project at once:
 
 ```shell
-bump-gemseo src tests docs
+bump-gemseo <path/to/directory> ...
 ```
+
+e.g. `bump-gemseo src tests docs` for a package in `src`, its tests and its documentation.
 
 [Running bump-gemseo](bump_gemseo.md) shows how to install it, what it changes, how to read its report
 and what it cannot do, on a complete example.
@@ -148,16 +150,18 @@ Where bump-gemseo cannot make a change, it leaves a comment above the line,
 ```
 
 and lists these comments in its report. Search for the text of a comment in this guide (with the
-search box, or in the sections *Changes flagged by bump-gemseo* of the domain pages): the entry
-explains the change and shows the code to write. A comment about a removed name that no entry explains
-refers to the section *Removed names* of the domain page; other comments with no example are listed in
-the sections *Other comments of bump-gemseo*.
+search box, or in the sections [*Changes flagged by bump-gemseo*](#sections-flagged) of the domain
+pages): the entry explains the change and shows the code to write. A comment about a removed name that
+no entry explains refers to the section [*Removed names*](#sections-removed-names) of the domain page;
+other comments with no example are listed in the sections
+[*Other comments of bump-gemseo*](#sections-other-comments).
 
 ## Step 3: switch to GEMSEO 7 and run your code
 
 Install GEMSEO 7 (see [Installation](../../installation.md)) and run your tests and scripts. An error
-that no comment announced is in a section *Changes that fail without a comment*, which quotes the
-error message: search for it.
+that no comment announced is in a section
+[*Changes that fail without a comment*](#sections-fail-without-comment), which quotes the error
+message: search for it.
 
 Old names that bump-gemseo did not rename, such as names on an object whose type it could not infer,
 or names built at run time, still work through the [compatibility layer](#compatibility-layer), with a
@@ -201,7 +205,9 @@ concern your code, and compare your results with those of GEMSEO 6.3:
 
 ## Let a coding agent do the manual work { #coding-agent }
 
-The changes that bump-gemseo leaves to you, steps 2 and 3, are a good job for a coding agent. The
+The changes that bump-gemseo leaves to you, steps
+[2](#step-2-migrate-the-code-flagged-by-the-todo-comments) and
+[3](#step-3-switch-to-gemseo-7-and-run-your-code), are a good job for a coding agent. The
 GEMSEO developers tested coding agents on programs written for GEMSEO 6.3 that cover the breaking
 changes of GEMSEO 7, and compared the values that the migrated programs compute with those of
 GEMSEO 6.3. Claude Opus 5.5, Claude Sonnet 5.5 and the open-weight models GLM 5.3 and Qwen 3.8 27B
@@ -231,13 +237,59 @@ methods that a custom formulation overrides. Check these yourself.
 The domains are those of the [GEMSEO issue tracker](https://gitlab.com/gemseo/dev/gemseo/-/issues).
 Each domain page groups the changes that bump-gemseo leaves to you in these sections:
 
-- *Silent changes*: the code runs after bump-gemseo but gives other results.
-- *Changes that fail without a comment*: the code fails with GEMSEO 7 and bump-gemseo wrote no
-  comment.
-- *Changes flagged by bump-gemseo*: bump-gemseo wrote a `# TODO(bump-gemseo)` comment.
-- *Other comments of bump-gemseo*: the comments with no example.
-- *Deprecated names*: the code works, with a deprecation warning: migrate what it names.
-- *Removed names*: names removed without replacement.
+- *Silent changes*{ #sections-silent-changes }: the code runs after bump-gemseo but gives other
+  results. [Step 4](#step-4-check-the-silent-changes) lists them, page by page.
+- *Changes that fail without a comment*{ #sections-fail-without-comment }: the code fails with
+  GEMSEO 7 and bump-gemseo wrote no comment. In
+  [Core](core.md#changes-that-fail-without-a-comment),
+  [Disciplines](discipline.md#changes-that-fail-without-a-comment),
+  [Spaces](space.md#changes-that-fail-without-a-comment),
+  [Problems and functions](problem.md#changes-that-fail-without-a-comment),
+  [Optimization](optimization.md#changes-that-fail-without-a-comment),
+  [DOE](doe.md#changes-that-fail-without-a-comment),
+  [Formulations](formulation.md#changes-that-fail-without-a-comment),
+  [MDA](mda.md#changes-that-fail-without-a-comment),
+  [Scenarios](scenario.md#changes-that-fail-without-a-comment),
+  [Post-processing](post.md#changes-that-fail-without-a-comment),
+  [Machine learning](machine_learning.md#changes-that-fail-without-a-comment),
+  [Uncertainty](uncertainty.md#changes-that-fail-without-a-comment) and
+  [Utilities](util.md#changes-that-fail-without-a-comment).
+- *Changes flagged by bump-gemseo*{ #sections-flagged }: bump-gemseo wrote a `# TODO(bump-gemseo)`
+  comment. In
+  [Core](core.md#changes-flagged-by-bump-gemseo),
+  [Disciplines](discipline.md#changes-flagged-by-bump-gemseo),
+  [Spaces](space.md#changes-flagged-by-bump-gemseo),
+  [Problems and functions](problem.md#changes-flagged-by-bump-gemseo),
+  [Optimization](optimization.md#changes-flagged-by-bump-gemseo),
+  [DOE](doe.md#changes-flagged-by-bump-gemseo),
+  [Formulations](formulation.md#changes-flagged-by-bump-gemseo),
+  [MDA](mda.md#changes-flagged-by-bump-gemseo),
+  [Scenarios](scenario.md#changes-flagged-by-bump-gemseo),
+  [Datasets](dataset.md#changes-flagged-by-bump-gemseo),
+  [Post-processing](post.md#changes-flagged-by-bump-gemseo),
+  [Machine learning](machine_learning.md#changes-flagged-by-bump-gemseo),
+  [Uncertainty](uncertainty.md#changes-flagged-by-bump-gemseo) and
+  [Utilities](util.md#changes-flagged-by-bump-gemseo).
+- *Other comments of bump-gemseo*{ #sections-other-comments }: the comments with no example. In
+  [Optimization](optimization.md#other-comments-of-bump-gemseo),
+  [Formulations](formulation.md#other-comments-of-bump-gemseo),
+  [Scenarios](scenario.md#other-comments-of-bump-gemseo) and
+  [Utilities](util.md#other-comments-of-bump-gemseo).
+- *Deprecated names*{ #sections-deprecated-names }: the code works, with a deprecation warning:
+  migrate what it names. In [Core](core.md#deprecated-names).
+- *Removed names*{ #sections-removed-names }: names removed without replacement. In
+  [Core](core.md#removed-names),
+  [Disciplines](discipline.md#removed-names),
+  [Spaces](space.md#removed-names),
+  [Problems and functions](problem.md#removed-names),
+  [Optimization](optimization.md#removed-names),
+  [Formulations](formulation.md#removed-names),
+  [MDA](mda.md#removed-names),
+  [Scenarios](scenario.md#removed-names),
+  [Post-processing](post.md#removed-names),
+  [Machine learning](machine_learning.md#removed-names),
+  [Uncertainty](uncertainty.md#removed-names) and
+  [Utilities](util.md#removed-names).
 
 The domains:
 

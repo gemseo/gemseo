@@ -43,7 +43,7 @@ it and what to do with what it leaves.
 - **Around the code**: the targets of `mock.patch` given as strings, the cross-references of the
   documentation (`[DesignSpace][gemseo.space.DesignSpace]`) and the lists of classes of the ruff
   configuration.
-- **What it cannot change** is marked with a `# TODO(bump-gemseo)` comment, see below.
+- **What it cannot change** is marked with a `# TODO(bump-gemseo)` comment, see [The TODO comments](#the-todo-comments).
 
 ## Install it
 
@@ -131,7 +131,7 @@ Every import, the settings of the MDA and of the optimizer and the lower bound a
 change is left to you: GEMSEO 7 has no `linear_solver_tolerance` setting any more, the tolerance of the
 linear solver being a field of its own settings model. Run with GEMSEO 7 as it is, the MDA line raises
 `ValidationError: ... linear_solver_tolerance Extra inputs are not permitted`. The entry of the
-[MDA page](mda.md) about this comment explains the change; here, the default linear solver of GEMSEO 6.3
+[MDA page](mda.md#passing-linear_solver_tolerance-or-use_lu_fact-to-mda-settings) about this comment explains the change; here, the default linear solver of GEMSEO 6.3
 was LGMRES, so the line becomes:
 
 ```python
@@ -175,7 +175,8 @@ git grep -n "TODO(bump-gemseo)"
 ```
 
 Each comment says what to do. The domain pages of this guide explain the change behind each message,
-in their sections *Changes flagged by bump-gemseo*, and list the names removed without replacement.
+in their sections [*Changes flagged by bump-gemseo*](index.md#sections-flagged), and list the names
+removed without replacement in their sections [*Removed names*](index.md#sections-removed-names).
 Once a change is made, remove its comment. Run bump-gemseo once, on the code written for GEMSEO 6.3:
 running it again on migrated code is not supported, as it may change some calls again.
 
@@ -194,15 +195,19 @@ such as `.venv` or `.git`, are skipped. It runs one worker process per CPU; set 
 
 Migrate a package together with its tests and its documentation, in one run: bump-gemseo then knows
 the classes of your package, e.g. the settings classes of a plugin, and the modules that the tests
-patch by name. Run it from the root of the project: `bump-gemseo src tests docs`.
+patch by name. Run it from the root of the project, on the directories of the package, its tests and
+its documentation, e.g. `bump-gemseo src tests docs`.
 
 ## After the run
 
 1. Review the changes with `git diff`.
 2. Format the code: bump-gemseo adds the new imports after the existing ones and writes long lines,
    so run your formatter, e.g. `ruff check --fix` and `ruff format`.
-3. Migrate the code flagged by the TODO comments (step 2 of the [overview](index.md)).
-4. Install GEMSEO 7, run your tests, and check the silent changes (steps 3 and 4).
+3. Migrate the code flagged by the TODO comments
+   ([step 2](index.md#step-2-migrate-the-code-flagged-by-the-todo-comments) of the overview).
+4. Install GEMSEO 7, run your tests, and check the silent changes (steps
+   [3](index.md#step-3-switch-to-gemseo-7-and-run-your-code) and
+   [4](index.md#step-4-check-the-silent-changes)).
 
 ## What it cannot do
 
@@ -210,8 +215,9 @@ bump-gemseo works on the text of your code and on the types it can infer. Some c
 of its reach:
 
 - **Silent changes of behaviour.** When GEMSEO 7 keeps a name but changes what it does, there is
-  nothing to rename and bump-gemseo writes no comment: the domain pages list these changes, in their
-  sections *Silent changes*.
+  nothing to rename and bump-gemseo writes no comment: the domain pages list these changes in their
+  sections *Silent changes*, gathered in [step 4](index.md#step-4-check-the-silent-changes) of the
+  overview.
 - **Removed features** have no replacement: bump-gemseo marks each use, and you decide what to do.
 - **Design changes**, such as the methods a custom formulation or a custom driver library overrides,
   need your judgment: bump-gemseo marks them with a comment explaining the new design.
