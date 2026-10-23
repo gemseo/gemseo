@@ -602,7 +602,7 @@ and details [the scope of the old names](upgrading/6_to_7/index.md#compatibility
 GEMSEO 7 requires Python 3.11 or later
 and raises the minimum versions of several dependencies,
 including OpenTURNS 1.27, Pydantic 2.12, SciPy 1.15 and pandas 2.2.
-The [changelog](../changelog.md) lists every change of the release.
+The [changelog](../changelog/index.md) lists every change of the release.
 
 To upgrade, install GEMSEO 7
 and run your scripts with the deprecation warnings enabled:
