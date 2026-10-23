@@ -114,7 +114,9 @@ formulation_settings = MDF_Settings(
 )
 ```
 
-## A more explicit scenario API
+## Scenarios
+
+### A more explicit API
 
 A scenario is now built in three steps:
 the disciplines, the design space and the formulation at construction;
@@ -172,7 +174,9 @@ without querying the optimization problem.
     scenario.post_process(OptHistoryView_Settings(save=False, show=False))
     ```
 
-Multi-objective problems use the same method.
+### Multi-objective optimization
+
+Multi-objective problems are declared with the same method.
 Each call to `add_objective` adds an objective, to minimize or to maximize,
 and the objectives may be computed by different disciplines.
 The scenario concatenates them into a vector objective
@@ -206,6 +210,8 @@ result = scenario.execute(
 pareto_front = result.pareto_front
 scenario.post_process(ParetoFront_Settings(save=False, show=True))
 ```
+
+### One scenario class for optimization and DOE
 
 `MDOScenario` now covers both optimization and design of experiments:
 it runs the algorithm corresponding to the settings passed to `execute`.
@@ -247,6 +253,8 @@ Replacing a DOE by an optimizer only changes this argument:
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
     ```
 
+### Evaluation scenarios
+
 For exploration studies,
 the new `EvaluationScenario` samples the disciplines without requiring an objective;
 `observe_all_outputs` records all their outputs:
@@ -268,6 +276,8 @@ scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
 dataset = scenario.to_dataset()
 ```
 
+### Scenarios as disciplines
+
 Any scenario can be used as a discipline of another process.
 `EvaluationScenarioAdapter` wraps an `EvaluationScenario`:
 its inputs overload the default inputs of the disciplines of the scenario,
@@ -275,9 +285,18 @@ and its outputs are those of the last point evaluated by the scenario.
 `MDOScenarioAdapter` derives from it and adds the features requiring an optimum:
 the optimal objective value, the Lagrange multipliers and the post-optimal derivatives;
 see [how to transform a scenario into a discipline](../generated/examples/howtos/scenario/plot_howto_scenario_adapter.md).
-On this basis, `wrap_scenario_in_job_scheduler` submits a whole scenario to an HPC cluster in one call.
-The bi-level formulations accept user-defined MDAs and plain disciplines as sub-scenarios,
-and the history of a sub-scenario over all its executions can be retrieved as a single dataset.
+`wrap_scenario_in_job_scheduler` relies on this mechanism
+to submit a whole scenario to an HPC cluster in one call:
+it adapts the scenario into a discipline,
+then wraps this discipline in a `JobSchedulerDiscipline`.
+
+### Bi-level formulations
+
+The bi-level formulations accept user-defined MDAs,
+and plain disciplines as sub-scenarios.
+
+The history of a sub-scenario over all its executions
+can be retrieved as a single dataset.
 
 ## Traceable working directories
 
