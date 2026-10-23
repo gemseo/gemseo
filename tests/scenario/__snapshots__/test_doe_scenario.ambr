@@ -1,0 +1,9 @@
+# serializer version: 1
+# name: test_validation_exception
+  '''
+  1 validation error for CustomDOE_Settings
+  unknown_setting
+    Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---

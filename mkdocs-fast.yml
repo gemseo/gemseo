@@ -1,0 +1,301 @@
+site_name: GEMSEO
+site_description: GEMSEO is an open-source Python software to automate multidisciplinary processes.
+site_url: https://gemseo.gitlab.io/dev/gemseo/
+
+theme:
+  custom_dir: docs/overrides
+  favicon: assets/images/gemseo/small_monogram.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.instant
+    - navigation.path
+  logo: assets/images/gemseo/gemseo_logo_transparent.svg
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      # Only for the first paint: base.html renders the body tag from the first palette
+      # entry and defaults a missing primary to indigo, while bundle.js, which copies the
+      # colors of the matching light or dark entry onto this one, runs at the end of the
+      # body. Without this the header flashes indigo before turning white or black.
+      primary: white
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+plugins:
+  autorefs: { }
+  bibtex:
+    bib_file: "docs/references.bib"
+    enable_inline_citations: false
+  gallery:
+    conf_script: docs/gallery_conf.py
+    default_thumb_file: docs/assets/images/gemseo/monogram.png
+  gen-files:
+    scripts:
+      - docs/gen_ref_nav.py
+      - docs/_scripts/credits.py
+      - docs/_scripts/changelog.py
+      - docs/_scripts/learning_paths.py
+      - docs/_scripts/global_configuration.py
+  include-markdown: { }
+  literate-nav:
+    nav_file: SUMMARY.md
+  macros: { }
+  mike:
+    canonical_version: latest
+    # Gitlab pages expects the docs in this directory.
+    deploy_prefix: public
+  search: { }
+  section-index: { }
+
+hooks:
+  - docs/_scripts/cwd_guard.py
+  - docs/hooks/complexity.py
+  - docs/hooks/reading_time.py
+  - docs/hooks/load_footer.py
+  # Must come after complexity.py and reading_time.py: it consumes the assets
+  # they write when the build ends.
+  - docs/hooks/home_data.py
+
+not_in_nav: |
+  index.md
+  **/mg_execution_times.md
+
+nav:
+  - Getting started:
+      - Installation: software/installation.md
+      - Documentation structure: documentation_structure.md
+      - Tutorials:
+          - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
+          - Tutorial - Your first discipline: generated/examples/tutorials/basic/plot_tutorial_first_discipline.md
+          - Tutorial - Wrap an executable: generated/examples/tutorials/basic/plot_tutorial_discipline_executable.md
+          - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
+          - Tutorial - The Multidisciplinary Design Analysis: generated/examples/tutorials/basic/plot_tutorial_create_mda.md
+          - Tutorial - Prototyping a multidisciplinary study: generated/examples/tutorials/basic/plot_tutorial_study_analysis.md
+          - Tutorial - Execute your first Design of Experiment (DoE): generated/examples/tutorials/basic/plot_tutorial_evaluations.md
+          - Tutorial - Execute your first Multi-Disciplinary Optimization: generated/examples/tutorials/basic/plot_tutorial_mdo.md
+          - Tutorial - Manipulating a dataset: generated/examples/tutorials/basic/plot_tutorial_dataset.md
+          - Define an MDO problem: interface/study_analysis.md
+          - Optimization and DOE framework: mdo/optimization.md
+      - Tutorials (advanced):
+          - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
+          - Tutorial - Choose among alternatives with catalog variables: generated/examples/tutorials/advanced/plot_tutorial_catalog_variables.md
+          - Tutorial - Use namespaces to run the same discipline in multiple contexts, operating conditions, and perform multipoint optimization: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
+          - Tutorial - Solve a bi-level MDO problem: generated/examples/tutorials/advanced/plot_tutorial_mdo_advanced.md
+          - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
+          - Tutorial - From a monodisciplinary problem to an MDO problem: generated/examples/tutorials/advanced/plot_tutorial_make_monodisciplinary_optimization_problem_multidisciplinary.md
+          - Tutorial - Assessing the quality of an ML model: generated/examples/tutorials/advanced/mlearning/plot_tutorial_quality.md
+          - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
+          - Tutorial - Solving an ODE with GEMSEO: generated/examples/tutorials/advanced/ode/plot_tutorial_harmonic_oscillator.md
+          - Tutorial - Solving a system of coupled ODEs: generated/examples/tutorials/advanced/ode/plot_tutorial_springs_discipline.md
+          - Tutorial - Solving an ODE with ODEProblem: generated/examples/tutorials/advanced/ode/plot_tutorial_van_der_pol.md
+      - What's new in GEMSEO 7: software/whats_new_7.md
+      - Changelog: changelog/
+      - Upgrading: software/upgrading/
+      - Licenses: software/licenses.md
+      - Credits: credits.md
+
+  - Explanations:
+      - Needs:
+          - Interoperability of simulation models: user_guide/needs/interoperability_simulation_models.md
+          - Automatic creation of multidisciplinary simulation processes: user_guide/needs/automatic_process_creation.md
+          - Interoperability of algorithms: user_guide/needs/interoperability_algorithms.md
+          - Data validation and persistence: user_guide/needs/data_validation_persistence.md
+          - Remote process execution: user_guide/needs/remote_process_execution.md
+          - Surrogate modelling: user_guide/needs/surrogate_modelling.md
+      - Use cases:
+          - Chaining simulation models (discipline): user_guide/use_cases/chaining_simulation_models.md
+          - Coupling simulation models (MDA): user_guide/use_cases/coupling_simulation_models.md
+          - Design exploration (DOE): user_guide/use_cases/exploring_design_space.md
+          - Optimizing a design: user_guide/use_cases/optimizing_a_design.md
+          - MDO (formulations): user_guide/use_cases/mdo_formulations.md
+          - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
+      - Concepts:
+          - Disciplines: user_guide/concepts/discipline/discipline.md
+          - Coupled systems:
+              - Introduction: user_guide/concepts/coupling/introduction.md
+              - Visualization: user_guide/concepts/coupling/visualization.md
+              - Namespaces: user_guide/concepts/coupling/namespaces.md
+              - Solving (MDA): user_guide/concepts/coupling/solving_mda.md
+              - Gradient computation: user_guide/concepts/coupling/gradient_computation.md
+          - Design space: user_guide/concepts/design_space.md
+          - Scenarios:
+              - Introduction: user_guide/concepts/scenarios/introduction.md
+              - Types: user_guide/concepts/scenarios/types.md
+              - Monitoring: user_guide/concepts/scenarios/monitoring.md
+              - The directory manager: user_guide/concepts/scenarios/directory_manager.md
+          - Post-processors: user_guide/concepts/post_processor.md
+          - Algorithms:
+              - Introduction: user_guide/concepts/algorithms/introduction.md
+              - Optimizers: user_guide/concepts/algorithms/optimizers.md
+              - Samplers (DOE): user_guide/concepts/algorithms/samplers.md
+              - Linear solvers: user_guide/concepts/algorithms/linear_solvers.md
+              - ODE solvers: user_guide/concepts/algorithms/ode_solvers.md
+          - ODE:
+              - Overview: user_guide/concepts/ode/index.md
+              - Discipline: user_guide/concepts/ode/discipline.md
+              - Coupling: user_guide/concepts/ode/coupling.md
+          - Formulations:
+              - Introduction: user_guide/concepts/formulations/introduction.md
+              - MDF: user_guide/concepts/formulations/mdf.md
+              - IDF: user_guide/concepts/formulations/idf.md
+              - Bi-Level: user_guide/concepts/formulations/bilevel.md
+              - Bi-Level BCD: user_guide/concepts/formulations/bilevel_bcd.md
+          - Uncertainty:
+              - Introduction: user_guide/concepts/uncertainty/introduction.md
+              - Uncertainty characterization: user_guide/concepts/uncertainty/uncertainty_characterization.md
+              - Uncertainty propagation: user_guide/concepts/uncertainty/uncertainty_propagation.md
+              - Sensitivity analysis: user_guide/concepts/uncertainty/sensitivity_analysis.md
+          - Machine learning: user_guide/concepts/machine_learning.md
+          - Data persistence:
+              - Overview: user_guide/concepts/data_persistence/index.md
+              - Cache: user_guide/concepts/data_persistence/cache.md
+              - Database: user_guide/concepts/data_persistence/database.md
+              - Dataset: user_guide/concepts/data_persistence/dataset.md
+          - Problems:
+              - Introduction: user_guide/concepts/problems/introduction.md
+              - Evaluation problem: user_guide/concepts/problems/evaluation.md
+              - Optimization problem: user_guide/concepts/problems/optimization.md
+              - Linear problem: user_guide/concepts/problems/linear.md
+              - ODE problem: user_guide/concepts/problems/ode.md
+              - Functions: user_guide/concepts/problems/functions.md
+          - Benchmarking:
+              - Introduction: user_guide/concepts/benchmarking/introduction.md
+              - MDO problems: user_guide/concepts/benchmarking/mdo.md
+              - Scalable MDO problems: user_guide/concepts/benchmarking/scalable_mdo.md
+              - Optimization problems: user_guide/concepts/benchmarking/optimization_problems.md
+              - Multi-objective optimization problems: user_guide/concepts/benchmarking/multiobjective_optimization_problems.md
+              - Topology optimization: user_guide/concepts/benchmarking/topology_optimization.md
+              - Uncertainty problems: user_guide/concepts/benchmarking/uncertainty_problems.md
+              - ODE problems: user_guide/concepts/benchmarking/ode_problems.md
+              - Datasets: user_guide/concepts/benchmarking/datasets.md
+      - User experience:
+          - Introduction: user_guide/user_experience/introduction.md
+          - High-level functions: user_guide/user_experience/high_level_functions.md
+          - Global configuration: user_guide/user_experience/global_configuration.md
+          - Settings: user_guide/user_experience/settings.md
+          - Extensibility: user_guide/user_experience/extensibility.md
+          - Package structure: user_guide/user_experience/package_structure.md
+  - How-to:
+      - Disciplines: generated/examples/howtos/disciplines
+      - Design Space: generated/examples/howtos/design_space
+      - Scenario:
+          - Coupling: generated/examples/howtos/coupling
+          - Scenario examples: generated/examples/howtos/scenario
+          - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
+          - Optimization problem: generated/examples/howtos/optimizers/plot_howto_optimization_problem.md
+          - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
+          - Assess the constraints: generated/examples/howtos/optimizers/plot_howto_assess_constraints.md
+      - Formulations: generated/examples/howtos/formulations
+      - Design of experiments (DOE): generated/examples/howtos/doe
+      - Post-processing: generated/examples/howtos/post_process
+      - Data persistence:
+          - Cache: generated/examples/howtos/cache
+          - Database: generated/examples/howtos/database
+          - Dataset: generated/examples/howtos/dataset
+      - Machine learning: generated/examples/howtos/machine_learning
+      - Constraint aggregation: generated/examples/howtos/constraint_aggregation
+      - Exterior penalty: generated/examples/howtos/exterior_penalty
+      - Scalable model: generated/examples/bulk/scalable
+      - Multi-objective: generated/examples/howtos/multi_objective
+      - Uncertainty: generated/examples/howtos/uncertainty
+      - Ordinary differential equations: generated/examples/howtos/ode
+      - Global configuration: generated/examples/howtos/configuration
+
+  - API: reference/gemseo/
+
+  - References:
+      - Architecture & Design:
+          - The GEMSEO concepts: optimization/concepts.md
+          - Machine learning: machine_learning/machine_learning_overview.md
+          - Architecture principles: software/system_architecture.md
+          - Architecture of MDO formulations: mdo/mdo_formulation_architecture.md
+          - MDA classes organization: mdo/mda_architecture.md
+          - Scalable models: scalable_models/class_diagram.md
+          - Workflow observers: reference/workflow_observers/workflow_observers.md
+          - Workflow observer patterns: reference/workflow_observers/architecture_patterns.md
+          - Directory manager: reference/directory_manager/directory_manager.md
+          - Tracer: reference/tracer/tracer.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+extra_css:
+  - assets/css/style.css
+  - assets/css/header.css
+  - assets/css/fontello.css
+  - assets/css/xdsmjs.css
+  - assets/css/home.css
+  - assets/css/reading-time.css
+  - assets/css/complexity.css
+  - assets/css/gallery.css
+  - assets/css/footer.css
+
+extra_javascript:
+  # The home page panel is rendered by home.js, so it comes first: behind
+  # xdsmjs.js it waited for 110 kB of a library the home page never uses.
+  - assets/js/home.js
+  - assets/js/legacy-versions.js
+  - assets/js/version-selector.js
+  # MathJax itself is not listed here; mathjax.js fetches it on the pages that
+  # do have formulas.
+  - assets/js/mathjax.js
+  # Only a few example pages draw an XDSM; they bootstrap it from an inline
+  # `DOMContentLoaded` listener, which deferring this library still precedes.
+  - path: assets/js/xdsmjs.js
+    defer: true
+
+watch:
+  - src/gemseo
+  - README.md
+  - CHANGELOG.md
+  - docs/footer.yml
+
+extra:
+  # Text shown next to the logo in the header. Set explicitly because the fallback in
+  # overrides/partials/header.html leaves it empty for the core site name, matching the
+  # suffix-less logo bar of gemseo.org.
+  logo_suffix: gemseo
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.com/gemseo/dev/gemseo
+      name: GEMSEO on GitLab
+    - icon: simple/pypi
+      link: https://pypi.org/project/gemseo/
+      name: GEMSEO on PyPI
+    - icon: fontawesome/brands/discourse
+      link: https://gemseo.discourse.group/
+      name: GEMSEO on Discourse

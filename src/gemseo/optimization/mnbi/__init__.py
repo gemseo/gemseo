@@ -1,0 +1,28 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial documentation
+#        :author: Vincent DROUET
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Modified Normal Boundary Intersection (mNBI) algorithm.
+
+!!! quote "References"
+
+    Pradyumn Kumar Shukla.
+    On the normal boundary intersection method for generation of efficient front.
+    In Computational Science--ICCS 2007: 7th International Conference,
+    Beijing, China, May 27-30, 2007, Proceedings, Part I 7, 310-317. Springer, 2007.
+"""

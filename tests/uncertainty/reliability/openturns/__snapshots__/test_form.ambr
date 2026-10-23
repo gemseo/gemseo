@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_empty_random_space
+  'The random space is empty.'
+# ---
+# name: test_type_errors
+  'OT_FORM requires a reliability analysis problem with at least one event.'
+# ---
+# name: test_type_errors.1
+  'OT_FORM does not support combinations of elementary events.'
+# ---

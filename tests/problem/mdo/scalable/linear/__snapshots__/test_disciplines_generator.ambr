@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_fail_no_output
+  'output_names must not be empty.'
+# ---
+# name: test_fail_no_output.1
+  'input_names must not be empty.'
+# ---
+# name: test_sizes_errors[1-3-outputs]
+  'The number of disciplines outputs must be lower or equal than the total number of disciplines io'
+# ---
+# name: test_sizes_errors[3-1-inputs]
+  'The number of disciplines inputs must be lower or equal than the total number of disciplines io'
+# ---

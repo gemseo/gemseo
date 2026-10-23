@@ -1,0 +1,27 @@
+# serializer version: 1
+# name: test_classifier_error
+  "wrong_name cannot be used as a classifier because it is not a variable name; available ones are: ['c', 'x', 'y', 'z']."
+# ---
+# name: test_fig_ax_error[False-True]
+  "The arguments 'fig' and 'ax' are not supported by PairPlot."
+# ---
+# name: test_fig_ax_error[True-False]
+  "The arguments 'fig' and 'ax' are not supported by PairPlot."
+# ---
+# name: test_fig_ax_error[True-True]
+  "The arguments 'fig' and 'ax' are not supported by PairPlot."
+# ---
+# name: test_plot_lower_upper_error
+  '''
+  1 validation error for PairPlot_Settings
+    Value error, At least one of the arguments 'plot_lower' and 'plot_upper' must be True. [type=value_error, input_value={'plot_lower': False, 'plot_upper': False}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_trend_surface
+  '''
+  1 validation error for PairPlot_Settings
+    Value error, The argument 'trend' must be 'none' when the argument 'use_scatter' is False. [type=value_error, input_value={'use_scatter': False, 'trend': 'linear'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

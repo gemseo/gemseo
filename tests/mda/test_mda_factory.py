@@ -19,20 +19,22 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import mda_factory
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 
 def test_create(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the factory create."""
-    mda = MDAFactory().create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
+    mda = mda_factory.create(
+        "MDAJacobi", sellar_disciplines, settings=MDAJacobi_Settings(max_mda_iter=2)
+    )
     assert isinstance(mda, MDAJacobi)
 
 
 def test_is_available() -> None:
-    factory = MDAFactory()
-    avail = factory.class_names
+    avail = mda_factory.class_names
     assert len(avail) > 2
 
     for mda in avail:
-        assert factory.is_available(mda)
+        assert mda_factory.is_available(mda)

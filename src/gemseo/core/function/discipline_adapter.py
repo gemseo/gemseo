@@ -1,0 +1,565 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                        documentation
+#        :author: Francois Gallard, Charlie Vanaret
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A function computing some outputs of a discipline from some of its inputs."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from numpy import array
+from numpy import empty
+from numpy import ndarray
+from numpy import rint
+from numpy import zeros
+from scipy.sparse import block_array
+from scipy.sparse import block_diag
+from scipy.sparse import csr_array
+from scipy.sparse import dok_array
+
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.util._compatibility.scipy import get_row
+from gemseo.util._compatibility.scipy import sparse_classes
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.string import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import MutableMapping
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline import Discipline
+    from gemseo.space.variable import CategoricalVariable
+    from gemseo.util.typing import JacobianData
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import StrKeyMapping
+
+
+class DisciplineAdapter(ArrayFunction):
+    """A function executing a discipline for some inputs and outputs."""
+
+    __is_linear: bool
+    """Whether the function is linear."""
+
+    __input_dimension: int | None
+    """The input variable dimension, needed for linear candidates."""
+
+    __given_input_names: frozenset[str]
+    """The names of the inputs whose sizes were in the mapping at instantiation.
+
+    These sizes prevail over the ones measured from the discipline of this adapter.
+
+    The guarantee is about construction time only: the mapping may be shared with other
+    adapters, and the set of these names is snapshotted when this adapter is built,
+    while the mapping itself is kept and receives the sizes measured by this adapter. An
+    adapter built after a sibling has been evaluated therefore inherits the sizes
+    measured and stored by this sibling, as if they had been given.
+    """
+
+    __name_to_categorical_variable: Mapping[str, CategoricalVariable]
+    """The map from the name of a categorical input to its variable."""
+
+    differentiated_input_names_substitute: Sequence[str]
+    """The names of the inputs with respect to which to differentiate the functions.
+
+    If empty, consider the variables of their input space,
+    except the categorical ones,
+    whose positions have no order and hence no derivative.
+    """
+
+    def __init__(
+        self,
+        input_names: Sequence[str],
+        output_names: Sequence[str],
+        default_input_data: StrKeyMapping,
+        discipline: Discipline,
+        name_to_size: MutableMapping[str, int] = read_only_empty_dict,
+        differentiated_input_names_substitute: Sequence[str] = (),
+        name_to_categorical_variable: Mapping[
+            str, CategoricalVariable
+        ] = read_only_empty_dict,
+    ) -> None:
+        """
+        Args:
+            input_names: The names of the inputs.
+            output_names: The names of the outputs.
+            default_input_data: The default input values
+                to overload the ones of the discipline
+                at each evaluation of the outputs with `_fun()`
+                or their derivatives with `_jac()`.
+                If empty, do not overload them.
+            discipline: The discipline to be adapted.
+            name_to_size: The sizes of the input variables.
+                If empty, determine them from the default inputs and local data
+                of the discipline.
+            differentiated_input_names_substitute: The names of the inputs
+                with respect to which to differentiate the functions.
+                If empty, consider the variables of their input space,
+                except the categorical ones,
+                whose positions have no order and hence no derivative;
+                when all of them are categorical, no input is differentiated.
+            name_to_categorical_variable: The map
+                from the name of a categorical input to its variable;
+                the discipline receives the label of the category
+                instead of its position in the input vector.
+                If empty, no input is categorical.
+        """  # noqa: D205, D212, D415
+        super().__init__(
+            self._func_to_wrap,
+            jac=self._jac_to_wrap,
+            name="_".join(output_names),
+            input_names=input_names,
+            output_names=output_names,
+        )
+        self.differentiated_input_names_substitute = (
+            differentiated_input_names_substitute
+            or [
+                name for name in input_names if name not in name_to_categorical_variable
+            ]
+        )
+        self.__default_inputs = default_input_data
+        self.__input_size = 0
+        self.__differentiated_input_size = 0
+        self.__jacobian = array(())
+        self.__discipline = discipline
+        self.__input_name_to_slice = {}
+        self.__input_name_to_size = name_to_size or {}
+        self.__name_to_categorical_variable = {
+            name: variable
+            for name, variable in name_to_categorical_variable.items()
+            if name in input_names
+        }
+        self.__given_input_names = frozenset(name_to_size)
+        self.__differentiated_input_name_to_slice = {}
+        input_names = set(self.input_names)
+        self.__is_linear = self.__discipline.io.have_linear_relationships(
+            input_names, output_names
+        )
+        self.__input_dimension = self.__compute_input_dimension(default_input_data)
+        self.__convert_array_to_data = (
+            discipline.io.input_grammar.data_converter.convert_array_to_data
+        )
+
+    @property
+    def is_linear(self) -> bool:  # noqa: D102
+        return self.__is_linear
+
+    @property
+    def input_dimension(self) -> int | None:  # noqa: D102
+        return self.__input_dimension
+
+    def __compute_input_dimension(
+        self,
+        default_input_data: StrKeyMapping,
+    ) -> int | None:
+        """Compute the input dimension.
+
+        Args:
+            default_input_data: The default input values
+                to overload the ones of the discipline
+                at each evaluation of the outputs with `_fun()`
+                or their derivatives with `_jac()`.
+                If `None`, do not overload them.
+
+        Returns:
+            The input dimension.
+        """
+        get_value_size = (
+            self.__discipline.io.input_grammar.data_converter.get_value_size
+        )
+
+        if default_input_data and all(
+            name in default_input_data for name in self.input_names
+        ):
+            return sum(
+                get_value_size(input_name, default_input_data[input_name])
+                for input_name in self.input_names
+            )
+
+        if len(self.__input_name_to_size) > 0:
+            return sum(self.__input_name_to_size.values())
+
+        default_input_data = self.__discipline.io.input_grammar.defaults
+
+        if all(name in default_input_data for name in self.input_names):
+            return sum(
+                get_value_size(input_name, default_input_data[input_name])
+                for input_name in self.input_names
+            )
+
+        # TODO: document what None means. We could use 0 instead.
+        return None
+
+    def _func_to_wrap(self, x_vect: NumberArray) -> complex | NumberArray:
+        """Compute an output vector from an input one.
+
+        Args:
+            x_vect: The input vector.
+
+        Returns:
+            The output vector or a scalar if the vector has only one component.
+        """
+        self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
+        input_data = self._create_discipline_input_data(x_vect)
+        n_samples = len(x_vect) if x_vect.ndim == 2 else 1
+        data = self.__discipline.execute(input_data)
+        return self._convert_output_data_to_array(
+            {k: v for k, v in data.items() if k in self.output_names},
+            n_samples=n_samples,
+        )
+
+    def _convert_output_data_to_array(
+        self, output_data: StrKeyMapping, n_samples: int = 1
+    ) -> complex | NumberArray:
+        """Convert the discipline's output data to array/scalar.
+
+        Args:
+            output_data: The discipline's output data.
+            n_samples: The number of samples.
+
+        Returns:
+            The vector or scalar of output data.
+        """
+        if n_samples > 1:
+            output_data = {
+                k: v.reshape((n_samples, -1)) if isinstance(v, ndarray) else v
+                for k, v in output_data.items()
+            }
+        output_vector = (
+            self.__discipline.io.output_grammar.data_converter.convert_data_to_array(
+                self.output_names, output_data
+            )
+        ).ravel()
+
+        if output_vector.size == 1:  # The function is scalar.
+            return output_vector[0]
+
+        return output_vector
+
+    def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
+        """Compute the Jacobian value from an input vector.
+
+        Args:
+            x_vect: The input vector.
+
+        Returns:
+            The Jacobian value.
+        """
+        n_samples = len(x_vect) if x_vect.ndim == 2 else 1
+        if not self.differentiated_input_names_substitute:
+            return self.__compute_null_jacobian(x_vect, n_samples)
+
+        input_data = self._create_discipline_input_data(x_vect)
+        jacobian_data = self.__discipline.linearize(input_data)
+        return self._convert_jacobian_to_array(jacobian_data, n_samples=n_samples)
+
+    def __compute_null_jacobian(
+        self, x_vect: NumberArray, n_samples: int
+    ) -> NumberArray:
+        """Compute the Jacobian when no input is differentiated.
+
+        Like in the other cases,
+        the Jacobian has no column for the inputs that are not differentiated,
+        i.e. no column at all here.
+
+        Args:
+            x_vect: The input vector.
+            n_samples: The number of samples.
+
+        Returns:
+            The null Jacobian.
+        """
+        n_columns = 0
+        n_rows = array(self._func_to_wrap(x_vect)).size // n_samples
+        if n_samples > 1:
+            return csr_array((n_samples * n_rows, n_samples * n_columns))
+
+        return zeros(n_columns if n_rows == 1 else (n_rows, n_columns))
+
+    def _convert_jacobian_to_array(
+        self, jacobian_data: JacobianData, n_samples: int = 1
+    ) -> NumberArray:
+        """Convert the discipline's Jacobians to array.
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
+
+        Returns:
+            The aggregated Jacobian as a NumPy array.
+        """
+        if n_samples > 1 or len(self.__jacobian) == 0:
+            self.__initialize_jacobian(jacobian_data, n_samples)
+
+        # Case 1 = "1 sample and output_dimension = 1".
+        if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
+            self.__convert_jacobian_to_array_case_1(jacobian_data)
+            return self.__jacobian
+
+        # Case 2 = "1 sample and output_dimension > 1".
+        if n_samples == 1:
+            self.__convert_jacobian_to_array_case_2(jacobian_data)
+            return self.__jacobian
+
+        # Case 3 = "n samples".
+        self.__convert_jacobian_to_array_case_3(jacobian_data, n_samples)
+        return self.__jacobian
+
+    def __convert_jacobian_to_array_case_1(self, jacobian_data: JacobianData) -> None:
+        """Convert the Jacobian data in the case "1 sample and output_dimension = 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+        """
+        jacobian_ = self.__jacobian
+        jacobian_data_ = jacobian_data[self.output_names[0]]
+        for input_name in self.differentiated_input_names_substitute:
+            input_slice = self.__differentiated_input_name_to_slice[input_name]
+            # jacobian_data__ is a (n*pi, n*dj) array
+            jacobian_data__ = jacobian_data_[input_name]
+            # TODO: This precaution is meant to disappear when sparse 1-D array will
+            # be available. This is also mandatory since self.__jacobian is
+            # initialized as a dense array.
+            if isinstance(jacobian_data__, sparse_classes):
+                first_row = get_row(jacobian_data__, 0).todense().flatten()
+            else:
+                first_row = jacobian_data__[0, :]
+
+            jacobian_[input_slice] = first_row
+
+    def __convert_jacobian_to_array_case_2(self, jacobian_data: JacobianData) -> None:
+        """Convert the Jacobian data in the case "output_dimension > 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+        """
+        jacobian_ = self.__jacobian
+        output_position = 0
+        for output_name in self.output_names:
+            jacobian_data_ = jacobian_data[output_name]
+            input_position = 0
+            output_dimension = 0
+            for input_name in self.differentiated_input_names_substitute:
+                jacobian_data__ = jacobian_data_[input_name]
+                # TODO: This is mandatory since self.__jacobian is initialized as a
+                # dense array. Performance improvement could be obtained if one is
+                # able to infer the type of jac.
+                if isinstance(jacobian_data__, sparse_classes):
+                    jacobian_data__ = jacobian_data__.toarray()
+
+                output_dimension, input_dimension = jacobian_data__.shape
+                jacobian_[
+                    output_position : output_position + output_dimension,
+                    input_position : input_position + input_dimension,
+                ] = jacobian_data__
+
+                input_position += input_dimension
+
+            output_position += output_dimension
+
+    def __convert_jacobian_to_array_case_3(
+        self, jacobian_data: JacobianData, n_samples: int
+    ) -> None:
+        """Convert the Jacobian data in the case "n samples or output_dimension > 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
+        """
+        n_inputs = len(self.differentiated_input_names_substitute)
+        n_outputs = len(self.output_names)
+        output_name_to_size = {
+            k: next(iter(v.values())).shape[0] // n_samples
+            for k, v in jacobian_data.items()
+        }
+        diagonal_arrays = []
+        for i in range(n_samples):
+            arrays = [[None] * n_inputs] * n_outputs
+            for output_index, output_name in enumerate(self.output_names):
+                jacobian_data_ = jacobian_data[output_name]
+                output_size = output_name_to_size[output_name]
+                arrays_ = arrays[output_index]
+                for input_index, input_name in enumerate(
+                    self.differentiated_input_names_substitute
+                ):
+                    jacobian_data__ = jacobian_data_[input_name]
+                    input_size = self.__input_name_to_size[input_name]
+                    arrays_[input_index] = jacobian_data__[
+                        i * output_size : (i + 1) * output_size,
+                        i * input_size : (i + 1) * input_size,
+                    ]
+
+            if all(
+                isinstance(array_, ndarray) for arrays_ in arrays for array_ in arrays_
+            ):
+                arrays[0][0] = csr_array(arrays[0][0])
+            diagonal_arrays.append(block_array(arrays))
+
+        self.__jacobian = block_diag(diagonal_arrays, format="csr")
+
+    def __initialize_jacobian(
+        self, jacobian_data: JacobianData, n_samples: int
+    ) -> None:
+        """Initialize the attribute `__jacobian`.
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
+        """
+        input_name = self.differentiated_input_names_substitute[0]
+        n_columns = self.__differentiated_input_size * n_samples
+        n_rows = sum(
+            jacobian_data[output_name][input_name].shape[-2]
+            for output_name in self.output_names
+        )
+        shape = n_columns if n_rows == 1 else (n_rows, n_columns)
+        create_array = dok_array if n_samples > 1 else empty
+        self.__jacobian = create_array(shape)
+
+    def __create_input_name_to_slice(self) -> None:
+        """Create the map from discipline input names to input vector slices.
+
+        Raises:
+            ValueError: When an input or a differentiated input of the discipline
+                has neither a given size, nor a default value,
+                nor a value in the local data.
+        """
+        # The local data of the discipline is more recent than its default inputs,
+        # while the default inputs of this adapter, already pushed into the defaults
+        # of the discipline, prevail over both.
+        input_data = dict(self.__discipline.io.input_grammar.defaults)
+        input_data.update(self.__discipline.io.input_data)
+        input_data.update(self.__default_inputs)
+        # Only the inputs that are actually sliced below need a size: measuring the
+        # other ones would fail for the inputs whose values are not numeric.
+        # The sizes given at instantiation are not measured either as they prevail.
+        required_names = {
+            *self.input_names,
+            *self.differentiated_input_names_substitute,
+        }.intersection(input_data).difference(self.__given_input_names)
+        # `__input_name_to_size` may be a mapping shared with the formulation, which
+        # seeds it with the design variable sizes and reads back the sizes measured
+        # here for the differentiated inputs that are not design variables.
+        # Hence the sizes measured by another adapter must not prevail over the ones
+        # measured here, as the same name can have different sizes in two disciplines;
+        # only the sizes given at instantiation of this adapter do.
+        self.__input_name_to_size.update(
+            self.__discipline.io.input_grammar.data_converter.compute_name_to_size(
+                required_names, input_data
+            )
+        )
+
+        missing_names = (
+            set(self.input_names)
+            .union(self.differentiated_input_names_substitute)
+            .difference(self.__input_name_to_size.keys())
+        )
+
+        if missing_names:
+            plural = len(missing_names) > 1
+            msg = (
+                f"The size{'s' if plural else ''} of the "
+                f"input{'s' if plural else ''} {pretty_str(missing_names)} "
+                f"cannot be guessed "
+                f"from the discipline {self.__discipline.name}, "
+                f"nor from its default inputs or from its local data."
+            )
+            raise ValueError(msg)
+
+        (
+            self.__input_name_to_slice,
+            self.__input_size,
+        ) = self.__discipline.io.input_grammar.data_converter.compute_name_to_slice(
+            self.input_names, input_data, self.__input_name_to_size
+        )
+        (
+            self.__differentiated_input_name_to_slice,
+            self.__differentiated_input_size,
+        ) = self.__discipline.io.input_grammar.data_converter.compute_name_to_slice(
+            self.differentiated_input_names_substitute,
+            input_data,
+            self.__input_name_to_size,
+        )
+
+    def _create_discipline_input_data(
+        self,
+        x_vect: ndarray,
+    ) -> dict[str, ndarray]:
+        """Create the discipline input data from the function input vector.
+
+        The variables in the input data are cast according to the types defined in the
+        design space.
+
+        The categorical variables are given as labels.
+
+        Args:
+            x_vect: The input vector of the function.
+
+        Returns:
+            The input data of the discipline.
+        """
+        if self.__default_inputs:
+            self.__discipline.io.input_grammar.defaults.update(self.__default_inputs)
+
+        if not self.__input_name_to_slice:
+            self.__create_input_name_to_slice()
+
+        input_data = (
+            self.__discipline.io.input_grammar.data_converter.convert_array_to_data(
+                x_vect, self.__input_name_to_slice
+            )
+        )
+        variable_types = x_vect.dtype.metadata
+        if variable_types is not None:
+            # Restore the proper data types as declared in the design space.
+            for name, type_ in variable_types.items():
+                if name not in self.__name_to_categorical_variable:
+                    input_data[name] = input_data[name].astype(type_, copy=False)
+
+        self.__decode_categories(input_data, x_vect)
+
+        if x_vect.ndim == 2:
+            return {k: v.ravel() for k, v in input_data.items()}
+
+        return input_data
+
+    def __decode_categories(
+        self, input_data: MutableMapping[str, ndarray], x_vect: ndarray
+    ) -> None:
+        """Set the categorical inputs to the labels of their categories.
+
+        Args:
+            input_data: The input data of the discipline.
+            x_vect: The input vector of the function,
+                whose categorical components are positions among the categories.
+        """
+        data_converter = self.__discipline.io.input_grammar.data_converter
+        for name, variable in self.__name_to_categorical_variable.items():
+            # A finite-difference or complex-step perturbation of the design vector
+            # may leave the integer positions: round the real part to the nearest one.
+            labels = variable.decode(
+                rint(x_vect[..., self.__input_name_to_slice[name]].real)
+            )
+            # The labels of several samples are given as such to the discipline.
+            input_data[name] = (
+                labels
+                if x_vect.ndim == 2
+                else data_converter.convert_array_to_value(name, labels)
+            )

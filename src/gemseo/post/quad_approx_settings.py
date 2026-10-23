@@ -16,15 +16,18 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeInt
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
-class QuadApprox_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "QuadApprox"
+class QuadApprox_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (9.0, 6.0)}
     function: str = Field(
         ...,
         description="The function name to build the quadratic approximation.",
@@ -32,9 +35,6 @@ class QuadApprox_Settings(BasePostSettings):  # noqa: D101, N801
     func_index: NonNegativeInt | None = Field(
         default=None,
         description="The index of the output of interest to be defined if the "
-        "function has a multidimensional output. If ``None`` and if the "
+        "function has a multidimensional output. If `None` and if the "
         "output is multidimensional, an error is raised.",
     )
-
-
-update_field(QuadApprox_Settings, "fig_size", default=(9.0, 6.0))

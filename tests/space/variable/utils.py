@@ -1,0 +1,46 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Helpers shared by the tests of the variable hierarchy."""
+
+from __future__ import annotations
+
+from gemseo.space.variable import CatalogVariable
+from gemseo.space.variable import CategoricalVariable
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
+
+kinds = (RealVariable, IntegerVariable)
+"""The kinds of variable whose domain is an interval."""
+
+numeric_kinds = (*kinds, DiscreteVariable, CatalogVariable)
+"""The kinds of variable whose components are numbers, hence bounded."""
+
+all_kinds = (*kinds, DiscreteVariable, CatalogVariable, CategoricalVariable)
+"""All the kinds of variable."""
+
+kind_to_kwargs = {
+    RealVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
+    IntegerVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
+    # A discrete variable derives its bounds from its choices.
+    DiscreteVariable: {"choices": [0, 1]},
+    # A catalog variable derives its bounds from the size of its catalog.
+    CatalogVariable: {"catalog": {"property": [0, 1]}},
+    # A categorical variable has no bounds.
+    CategoricalVariable: {"categories": ["a", "b"]},
+}
+"""The arguments building a variable of size 1, per kind.
+
+A variable with bounds has the bounds [0, 1]."""

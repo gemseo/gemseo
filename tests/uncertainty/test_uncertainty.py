@@ -25,24 +25,23 @@ import pytest
 from numpy import pi
 from numpy.random import default_rng
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.dataset.dataset import Dataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
-from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-from gemseo.uncertainty.statistics.ot_parametric_statistics import (
-    OTParametricStatistics,
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.statistics.sp_parametric_statistics import (
-    SPParametricStatistics,
-)
+from gemseo.uncertainty.statistic.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistic.ot_parametric import OTParametricStatistics
+from gemseo.uncertainty.statistic.sp_parametric import SPParametricStatistics
 
 if TYPE_CHECKING:
-    from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+    from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 
 
 @pytest.fixture(scope="module")
@@ -52,10 +51,10 @@ def analysis() -> MorrisAnalysis:
         {"y": "sin(x1)+7*sin(x2)**2+0.1*a3**4*sin(x1)"}, name="Ishigami"
     )
 
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in ["x1", "x2", "a3"]:
-        space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+        space.add_variable(
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 
     analysis = create_sensitivity_analysis("MorrisAnalysis")

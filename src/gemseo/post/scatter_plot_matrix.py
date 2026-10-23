@@ -28,7 +28,7 @@ from numpy import any as np_any
 from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings
 
 
@@ -38,7 +38,9 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
     The list of variable names has to be passed as arguments of the plot method.
     """
 
-    Settings: ClassVar[type[ScatterPlotMatrix_Settings]] = ScatterPlotMatrix_Settings
+    settings_class: ClassVar[type[ScatterPlotMatrix_Settings]] = (
+        ScatterPlotMatrix_Settings
+    )
 
     def _plot(self, settings: ScatterPlotMatrix_Settings) -> None:
         """
@@ -58,7 +60,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        all_design_names = self._dataset.misc["input_space"].variable_names
+        all_design_names = list(self._dataset.misc["input_space"].variables)
 
         if (
             not optimization_metadata.minimize_objective
@@ -87,7 +89,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     variable_name not in all_function_names
                     and variable_name not in all_design_names
                     and variable_name
-                    not in optimization_metadata.output_names_to_constraint_names
+                    not in optimization_metadata.output_name_to_constraint_names
                 ):
                     msg = (
                         "Cannot build scatter plot matrix: "
@@ -102,10 +104,10 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     design_names.append(variable_name)
                 elif (
                     variable_name
-                    in optimization_metadata.output_names_to_constraint_names
+                    in optimization_metadata.output_name_to_constraint_names
                 ):
                     function_names.extend(
-                        optimization_metadata.output_names_to_constraint_names[
+                        optimization_metadata.output_name_to_constraint_names[
                             variable_name
                         ]
                     )
@@ -142,7 +144,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
         if (
             optimization_metadata.standardized_objective_name in variable_labels
             and not optimization_metadata.minimize_objective
-            and not optimization_metadata.use_standardized_objective
+            and not settings.use_standardized_objective
         ):
             index = variable_labels.index(
                 optimization_metadata.standardized_objective_name

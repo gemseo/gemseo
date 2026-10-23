@@ -1,0 +1,41 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Fixtures shared by the tests of the variable hierarchy."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+
+from tests.space.variable.utils import all_kinds
+from tests.space.variable.utils import kind_to_kwargs
+from tests.space.variable.utils import numeric_kinds
+
+if TYPE_CHECKING:
+    from gemseo.space.variable.base import BaseVariable
+    from gemseo.space.variable.numeric import BaseNumericVariable
+
+
+@pytest.fixture(params=all_kinds)
+def variable(request) -> BaseVariable:
+    """A variable of each kind, of size 1 and with the bounds [0, 1] if it has any."""
+    return request.param(**kind_to_kwargs[request.param])
+
+
+@pytest.fixture(params=numeric_kinds)
+def numeric_variable(request) -> BaseNumericVariable:
+    """A bounded variable of each kind, of size 1 and with the bounds [0, 1]."""
+    return request.param(**kind_to_kwargs[request.param])

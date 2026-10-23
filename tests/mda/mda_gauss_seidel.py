@@ -1,0 +1,41 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""A Gauss-Seidel MDA for the Sobieski's SSBJ use case."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problem.mdo.sobieski.discipline import create_disciplines
+from gemseo.problem.mdo.sobieski.standalone.util import SobieskiBase
+
+if TYPE_CHECKING:
+    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+
+
+class SobieskiMDAGaussSeidel(MDAGaussSeidel):
+    """A Gauss-Seidel MDA for the Sobieski's SSBJ use case."""
+
+    def __init__(
+        self,
+        dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
+        settings: MDAGaussSeidel_Settings | None = None,
+    ) -> None:
+        """
+        Args:
+            dtype: The NumPy type for data arrays, either "float64" or "complex128".
+        """  # noqa: D205 D212
+        super().__init__(create_disciplines(dtype), settings=settings)

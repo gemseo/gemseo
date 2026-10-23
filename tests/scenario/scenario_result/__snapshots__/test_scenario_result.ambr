@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_scenario_result_before_execution
+  'A ScenarioResult requires a scenario that has been executed.'
+# ---

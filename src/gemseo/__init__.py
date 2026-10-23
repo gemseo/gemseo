@@ -12,68 +12,80 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""|g| main package.
+"""GEMSEO main package.
 
-This module contains the high-level functions to easily use |g|
+This module contains the high-level functions to easily use GEMSEO
 without requiring a deep knowledge of this software.
 
 Besides,
 these functions shall change much less often than the internal classes,
 which is key for backward compatibility,
 which means ensuring that
-your current scripts using |g| will be usable with the future versions of |g|.
+your current scripts using GEMSEO will be usable with the future versions of GEMSEO.
 
-The high-level functions also facilitate the interfacing of |g|
+The high-level functions also facilitate the interfacing of GEMSEO
 with a platform or other software.
 
-To interface a simulation software with |g|,
-please refer to: :ref:`software_connection`.
+To interface a simulation software with GEMSEO,
+please refer to: [The discipline, a key concept][concept-discipline].
 
-See also :ref:`extending-gemseo`.
+See Also:
+    [Extend GEMSEO features][extensibility].
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import warnings
 from collections.abc import Collection
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import overload
 
 from numpy import ndarray
 
-from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
-from gemseo.datasets import DatasetClassName
-from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
-from gemseo.mda.base_parallel_mda_settings import (
-    BaseParallelMDASettings as BaseParallelMDASettings,
+from gemseo._deprecation import install as _install_deprecated_import_finder
+from gemseo.core.derivative.derivation_mode import DerivationMode
+from gemseo.core.discipline.execution_statistics import (
+    ExecutionStatistics as _ExecutionStatistics,
 )
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.problems.dataset import DatasetType
-from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
-from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
-from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
-from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
-from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
-from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATUS
-from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
-from gemseo.utils.constants import _ENABLE_PARALLEL_EXECUTION
-from gemseo.utils.constants import _ENABLE_PROGRESS_BAR
-from gemseo.utils.constants import _LOGGING_DATE_FORMAT
-from gemseo.utils.constants import _LOGGING_FILE_MODE
-from gemseo.utils.constants import _LOGGING_FILE_PATH
-from gemseo.utils.constants import _LOGGING_LEVEL
-from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
-from gemseo.utils.constants import _VALIDATE_INPUT_DATA
-from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.global_configuration import _configuration as configuration
-from gemseo.utils.logging import _configure_logger
-from gemseo.utils.pickle import from_pickle  # noqa: F401
-from gemseo.utils.pickle import to_pickle  # noqa: F401
+from gemseo.dataset import DatasetClassName
+from gemseo.dataset.optimization_dataset import OptimizationDataset
+from gemseo.doe.factory import DOELibraryFactory
+from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.model.factory import regressor_factory
+from gemseo.problem.dataset import DatasetType
+from gemseo.scenario.job_scheduler import wrap_scenario_in_job_scheduler  # noqa: F401
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.util.constant import _check_desvars_bounds
+from gemseo.util.constant import _enable_discipline_cache
+from gemseo.util.constant import _enable_discipline_statistics
+from gemseo.util.constant import _enable_discipline_status
+from gemseo.util.constant import _enable_function_statistics
+from gemseo.util.constant import _enable_parallel_execution
+from gemseo.util.constant import _enable_progress_bar
+from gemseo.util.constant import _logging_date_format
+from gemseo.util.constant import _logging_file_mode
+from gemseo.util.constant import _logging_file_path
+from gemseo.util.constant import _logging_level
+from gemseo.util.constant import _logging_message_format
+from gemseo.util.constant import _validate_input_data
+from gemseo.util.constant import _validate_output_data
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.global_configuration import _configuration as configuration
+from gemseo.util.logging import _configure_logger
+from gemseo.util.logging import _is_gemseo_logger as _is_gemseo_logger
+from gemseo.util.pickle import from_pickle  # noqa: F401
+from gemseo.util.pickle import to_pickle  # noqa: F401
+from gemseo.util.pydantic import create_model
+
+# Redirect imports of modules and classes renamed since the last release to their new
+# location, with a DeprecationWarning. See gemseo._deprecation.
+_install_deprecated_import_finder()
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -84,59 +96,64 @@ if TYPE_CHECKING:
 
     from pydantic import BaseModel
 
-    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
-    from gemseo.algos.base_driver_library import DriverSettingType
-    from gemseo.algos.database import Database
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.caches.base_cache import BaseCache
+    from gemseo.core.algorithm.base_driver_library import DriverSettingType
+    from gemseo.core.cache.base import BaseCache
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline import Discipline
-    from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.disciplines.surrogate import SurrogateDiscipline
-    from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
-        JobSchedulerDisciplineWrapper,
+    from gemseo.core.grammar.json import JSONGrammar
+    from gemseo.core.problem.database import Database
+    from gemseo.dataset.dataset import Dataset
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.discipline.surrogate import SurrogateDiscipline
+    from gemseo.discipline.wrapper.job_scheduler.discipline import (
+        JobSchedulerDiscipline,
     )
-    from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-    from gemseo.mda.base_mda import BaseMDA
-    from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType as TransformerType
-    from gemseo.mlearning.regression.algos.base_regressor_settings import (
+    from gemseo.doe.core.base_doe_settings import BaseDOESettings
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.machine_learning.core.model.base_ml_model import (
+        TransformerType as TransformerType,
+    )
+    from gemseo.machine_learning.regression.core.base_regressor_settings import (
         BaseRegressorSettings,
     )
+    from gemseo.mda.core.base import BaseMDA
+    from gemseo.mda.core.base_settings import BaseMDASettings
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.optimization.result import OptimizationResult
     from gemseo.post._graph_view import GraphView
-    from gemseo.post.base_post import BasePost
-    from gemseo.post.base_post_settings import BasePostSettings
-    from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    from gemseo.post.core.base_post import BasePost
+    from gemseo.post.core.base_post_settings import BasePostSettings
+    from gemseo.problem.mdo.scalable.data_driven.discipline import (
         DataDrivenScalableDiscipline,
     )
-    from gemseo.scenarios.backup_settings import BackupSettings
-    from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
-    from gemseo.scenarios.scenario_results.scenario_result import (
+    from gemseo.scenario.backup_settings import BackupSettings
+    from gemseo.scenario.evaluation import EvaluationScenario
+    from gemseo.scenario.scenario_result.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
-    from gemseo.typing import NumberArray
-    from gemseo.typing import StrKeyMapping
-    from gemseo.utils.matplotlib_figure import FigSizeType
-    from gemseo.utils.xdsm.xdsm import XDSM
+    from gemseo.space.base import BaseVariableSpace
+    from gemseo.space.design import DesignSpace
+    from gemseo.space.random import RandomSpace
+    from gemseo.util.matplotlib_figure import FigSizeType
+    from gemseo.util.pydantic import BaseSettings
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
+    from gemseo.util.xdsm.xdsm import XDSM
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
 # All factories are Singletons which means that the scan for
 # plugins is done once only
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 # By default, no logging is produced.
-LOGGER.addHandler(logging.NullHandler())
+logger.addHandler(logging.NullHandler())
 
 
 def generate_n2_plot(
-    disciplines: Sequence[Discipline],
-    file_path: str | Path = "n2.pdf",
+    disciplines: Sequence[BaseDiscipline],
+    file_path: StrPath = "n2.pdf",
     show_data_names: bool = True,
     save: bool = True,
     show: bool = False,
@@ -168,11 +185,6 @@ def generate_n2_plot(
         show: Whether to show the static N2 chart.
         fig_size: The width and height of the static N2 chart.
         show_html: Whether to display the interactive N2 chart in a web browser.
-
-    Examples:
-        >>> from gemseo import create_discipline, generate_n2_plot
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> generate_n2_plot(disciplines)
     """
     from gemseo.core.coupling_structure import CouplingStructure
 
@@ -183,10 +195,11 @@ def generate_n2_plot(
 
 
 def generate_coupling_graph(
-    disciplines: Sequence[Discipline],
-    file_path: str | Path = "coupling_graph.pdf",
+    disciplines: Sequence[BaseDiscipline],
+    file_path: StrPath = "coupling_graph.pdf",
     full: bool = True,
     clean_up: bool = True,
+    show_edge_labels: bool = True,
 ) -> GraphView | None:
     """Generate a graph of the couplings between disciplines.
 
@@ -197,22 +210,17 @@ def generate_coupling_graph(
         full: Whether to generate the full coupling graph.
             Otherwise, the condensed coupling graph is generated.
         clean_up: Whether to remove the DOT source file.
+        show_edge_labels: Whether to display the coupling variable names on edges.
 
     Returns:
         Either the graph of the couplings between disciplines
-        or ``None`` when graphviz is not installed.
-
-    Examples:
-        >>> from gemseo import create_discipline, generate_coupling_graph
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> generate_coupling_graph(disciplines)
+        or `None` when graphviz is not installed.
     """
     from gemseo.core.coupling_structure import CouplingStructure
 
-    coupling_structure = CouplingStructure(disciplines)
-    if full:
-        return coupling_structure.graph.render_full_graph(file_path, clean_up=clean_up)
-    return coupling_structure.graph.render_condensed_graph(file_path, clean_up)
+    graph = CouplingStructure(disciplines).graph
+    render_graph = graph.render_full_graph if full else graph.render_condensed_graph
+    return render_graph(file_path, clean_up=clean_up, show_edge_labels=show_edge_labels)
 
 
 def get_available_formulations() -> list[str]:
@@ -220,14 +228,10 @@ def get_available_formulations() -> list[str]:
 
     Returns:
         The names of the available MDO formulations.
-
-    Examples:
-        >>> from gemseo import get_available_formulations
-        >>> get_available_formulations()
     """
-    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.class_names
+    return mdo_formulation_factory.class_names
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -235,14 +239,10 @@ def get_available_opt_algorithms() -> list[str]:
 
     Returns:
         The names of the available optimization algorithms.
-
-    Examples:
-        >>> from gemseo import get_available_opt_algorithms
-        >>> get_available_opt_algorithms()
     """
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.optimization.factory import optimization_library_factory
 
-    return OptimizationLibraryFactory().algorithms
+    return optimization_library_factory.algorithms
 
 
 def get_available_doe_algorithms() -> list[str]:
@@ -255,9 +255,9 @@ def get_available_doe_algorithms() -> list[str]:
         >>> from gemseo import get_available_doe_algorithms
         >>> get_available_doe_algorithms()
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.doe.factory import doe_library_factory
 
-    return DOELibraryFactory().algorithms
+    return doe_library_factory.algorithms
 
 
 def get_available_surrogates() -> list[str]:
@@ -265,13 +265,8 @@ def get_available_surrogates() -> list[str]:
 
     Returns:
         The names of the available surrogate disciplines.
-
-    Examples:
-        >>> from gemseo import get_available_surrogates
-        >>> print(get_available_surrogates())
-        ['RBFRegressor', 'GaussianProcessRegressor', 'LinearRegressor', 'PCERegressor']
     """
-    from gemseo.mlearning import get_regression_models
+    from gemseo.machine_learning import get_regression_models
 
     return get_regression_models()
 
@@ -281,21 +276,10 @@ def get_available_disciplines() -> list[str]:
 
     Returns:
         The names of the available disciplines.
-
-    Examples:
-        >>> from gemseo import get_available_disciplines
-        >>> print(get_available_disciplines())
-        ['RosenMF', 'SobieskiAerodynamics', 'ScalableKriging', 'DOEScenario',
-        'MDOScenario', 'SobieskiMission', 'SobieskiDiscipline', 'Sellar1',
-        'Sellar2', 'MDOChain', 'SobieskiStructure', 'AutoPyDiscipline',
-        'Structure', 'SobieskiPropulsion', 'Scenario', 'AnalyticDiscipline',
-        'MDOScenarioAdapter', 'ScalableDiscipline', 'SellarSystem', 'Aerodynamics',
-        'Mission', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3',
-        'PropaneReaction', 'MDOParallelChain']
     """
-    from gemseo.disciplines.factory import DisciplineFactory
+    from gemseo.discipline.factory import discipline_factory
 
-    return DisciplineFactory().class_names
+    return discipline_factory.class_names
 
 
 def get_surrogate_options_schema(
@@ -312,13 +296,8 @@ def get_surrogate_options_schema(
 
     Returns:
         The schema of the options of the surrogate discipline.
-
-    Examples:
-        >>> from gemseo import get_surrogate_options_schema
-        >>> tmp = get_surrogate_options_schema('LinRegSurrogateDiscipline',
-        >>>                                    pretty_print=True)
     """
-    from gemseo.mlearning import get_regression_options
+    from gemseo.machine_learning import get_regression_options
 
     return get_regression_options(surrogate_name, output_json, pretty_print)
 
@@ -340,20 +319,15 @@ def get_algorithm_options_schema(
 
     Raises:
         ValueError: When the algorithm is not available.
-
-    Examples:
-        >>> from gemseo import get_algorithm_options_schema
-        >>> schema = get_algorithm_options_schema("NLOPT_SLSQP", pretty_print=True)
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.doe.factory import doe_library_factory
+    from gemseo.optimization.factory import optimization_library_factory
 
-    for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
+    for factory in (doe_library_factory, optimization_library_factory):
         if factory.is_available(algorithm_name):
-            algo_lib = factory.create(algorithm_name)
-            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].Settings
+            settings_class = factory.get_settings_class(algorithm_name)
             return _get_json_schema_from_settings(
-                settings,
+                settings_class,
                 output_json,
                 pretty_print,
             )
@@ -400,11 +374,6 @@ def get_discipline_inputs_schema(
 
     Returns:
         The schema of the inputs of the discipline.
-
-    Examples:
-        >>> from gemseo import create_discipline, get_discipline_inputs_schema
-        >>> discipline = create_discipline("Sellar1")
-        >>> schema = get_discipline_inputs_schema(discipline, pretty_print=True)
     """
     return _get_schema(discipline.io.input_grammar, output_json, pretty_print)
 
@@ -423,11 +392,6 @@ def get_discipline_outputs_schema(
 
     Returns:
         The schema of the outputs of the discipline.
-
-    Examples:
-        >>> from gemseo import get_discipline_outputs_schema, create_discipline
-        >>> discipline = create_discipline("Sellar1")
-        >>> get_discipline_outputs_schema(discipline, pretty_print=True)
     """
     return _get_schema(discipline.io.output_grammar, output_json, pretty_print)
 
@@ -437,18 +401,10 @@ def get_available_post_processings() -> list[str]:
 
     Returns:
         The names of the available post-processings.
-
-    Examples:
-        >>> from gemseo import get_available_post_processings
-        >>> print(get_available_post_processings())
-        ['ScatterPlotMatrix', 'VariableInfluence', 'ConstraintsHistory',
-        'RadarChart', 'Robustness', 'Correlations', 'SOM', 'KMeans',
-        'ParallelCoordinates', 'GradientSensitivity', 'OptHistoryView',
-        'BasicHistory', 'ObjConstrHist', 'QuadApprox']
     """
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import post_factory
 
-    return PostFactory().class_names
+    return post_factory.class_names
 
 
 def get_post_processing_options_schema(
@@ -465,16 +421,11 @@ def get_post_processing_options_schema(
 
     Returns:
         The schema of the options of the post-processing.
-
-    Examples:
-        >>> from gemseo import get_post_processing_options_schema
-        >>> schema = get_post_processing_options_schema('OptHistoryView',
-        >>>                                             pretty_print=True)
     """
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import post_factory
 
-    cls = PostFactory().get_class(post_proc_name)
-    return _get_json_schema_from_settings(cls.Settings, output_json, pretty_print)
+    cls = post_factory.get_class(post_proc_name)
+    return _get_json_schema_from_settings(cls.settings_class, output_json, pretty_print)
 
 
 def get_formulation_options_schema(
@@ -491,14 +442,10 @@ def get_formulation_options_schema(
 
     Returns:
         The schema of the options of the formulation.
-
-    Examples:
-        >>> from gemseo import get_formulation_options_schema
-        >>> schema = get_formulation_options_schema("MDF", pretty_print=True)
     """
-    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    grammar = MDO_FORMULATION_FACTORY.get_options_grammar(formulation_name)
+    grammar = mdo_formulation_factory.get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -519,16 +466,10 @@ def get_formulation_sub_options_schema(
 
     Returns:
         The schema of the sub-options of the formulation, if any.
-
-    Examples:
-        >>> from gemseo import get_formulation_sub_options_schema
-        >>> schema = get_formulation_sub_options_schema('MDF',
-        >>>                                             main_mda_name='MDAJacobi',
-        >>>                                             pretty_print=True)
     """
-    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    grammar = MDO_FORMULATION_FACTORY.get_sub_options_grammar(
+    grammar = mdo_formulation_factory.get_sub_options_grammar(
         formulation_name, **formulation_settings
     )
     return _get_schema(grammar, output_json, pretty_print)
@@ -547,15 +488,10 @@ def get_formulations_sub_options_defaults(
 
     Returns:
         The default values of the sub-options of the formulation.
-
-    Examples:
-        >>> from gemseo import get_formulations_sub_options_defaults
-        >>> get_formulations_sub_options_defaults('MDF',
-        >>>                                       main_mda_name='MDAJacobi')
     """
-    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.get_default_sub_option_values(
+    return mdo_formulation_factory.get_default_sub_option_values(
         formulation_name, **formulation_settings
     )
 
@@ -570,17 +506,10 @@ def get_formulations_options_defaults(
 
     Returns:
         The default values of the options of the formulation.
-
-    Examples:
-        >>> from gemseo import get_formulations_options_defaults
-        >>> get_formulations_options_defaults("MDF")
-        {'main_mda_name': 'MDAChain',
-         'maximize_objective': False,
-         'inner_mda_name': 'MDAJacobi'}
     """
-    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.get_default_option_values(formulation_name)
+    return mdo_formulation_factory.get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -597,15 +526,10 @@ def get_discipline_options_schema(
 
     Returns:
         The schema of the discipline.
-
-    Examples:
-        >>> from gemseo import get_discipline_options_schema
-        >>> schema = get_discipline_options_schema("Sellar1", pretty_print=True)
     """
-    from gemseo.disciplines.factory import DisciplineFactory
+    from gemseo.discipline.factory import discipline_factory
 
-    disc_fact = DisciplineFactory()
-    grammar = disc_fact.get_options_grammar(discipline_name)
+    grammar = discipline_factory.get_options_grammar(discipline_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -623,21 +547,18 @@ def get_scenario_options_schema(
 
     Returns:
         The schema of the options of the scenario.
-
-    Examples:
-        >>> from gemseo import get_scenario_options_schema
-        >>> get_scenario_options_schema("MDO")
     """
+    from gemseo.scenario.factory import scenario_factory
+
     if scenario_type not in get_available_scenario_types():
         msg = f"Unknown scenario type {scenario_type}"
         raise ValueError(msg)
-    scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
-    grammar = ScenarioFactory().get_options_grammar(scenario_class)
+    grammar = scenario_factory.get_options_grammar(f"{scenario_type}Scenario")
     return _get_schema(grammar, output_json, pretty_print)
 
 
 def get_scenario_inputs_schema(
-    scenario: BaseScenario,
+    scenario: MDOScenario,
     output_json: bool = False,
     pretty_print: bool = False,
 ) -> str | dict[str, Any]:
@@ -650,25 +571,15 @@ def get_scenario_inputs_schema(
 
     Returns:
         The schema of the inputs of the scenario.
-
-    Examples:
-        >>> from gemseo import create_discipline, create_scenario,
-        get_scenario_inputs_schema
-        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
-        ...     SellarDesignSpace,
-        ... )
-        >>> design_space = SellarDesignSpace()
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> scenario = create_scenario(
-        ...     disciplines,
-        ...     "obj",
-        ...     design_space,
-        ...     formulation_name="MDF",
-        ...     scenario_type="MDO",
-        ... )
-        >>> get_scenario_inputs_schema(scenario)
     """
-    return scenario.Settings.model_json_schema()
+    from gemseo.core.algorithm.base_driver_settings import BaseDriverSettings
+
+    if scenario._algorithm_settings is None:
+        settings = BaseDriverSettings
+    else:
+        settings = scenario._algorithm_settings
+
+    return settings.model_json_schema()
 
 
 def get_discipline_options_defaults(
@@ -681,14 +592,10 @@ def get_discipline_options_defaults(
 
     Returns:
         The default values of the options of the discipline.
-
-    Examples:
-        >>> from gemseo import get_discipline_options_defaults
-        >>> get_discipline_options_defaults("Sellar1")
     """
-    from gemseo.disciplines.factory import DisciplineFactory
+    from gemseo.discipline.factory import discipline_factory
 
-    return DisciplineFactory().get_default_option_values(discipline_name)
+    return discipline_factory.get_default_option_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> tuple[
@@ -698,12 +605,8 @@ def get_scenario_differentiation_modes() -> tuple[
 
     Returns:
         The names of the available differentiation modes of a scenario.
-
-    Examples:
-        >>> from gemseo import get_scenario_differentiation_modes
-        >>> get_scenario_differentiation_modes()
     """
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.optimization.problem import OptimizationProblem
 
     return tuple(OptimizationProblem.DifferentiationMethod)
 
@@ -713,12 +616,10 @@ def get_available_scenario_types() -> list[str]:
 
     Returns:
         The names of the available scenario types.
-
-    Examples:
-        >>> from gemseo import get_available_scenario_types
-        >>> get_available_scenario_types()
     """
-    return ["MDO", "DOE"]
+    from gemseo.scenario.factory import scenario_factory
+
+    return sorted(n.removesuffix("Scenario") for n in scenario_factory.class_names)
 
 
 def _get_schema(
@@ -777,7 +678,7 @@ def _pretty_print_schema(schema: dict[str, Any]):
     table.sortby = "Name"
     table.min_width = 25
     print(table)  # noqa: T201
-    LOGGER.info("%s", table)
+    logger.info("%s", table)
 
 
 def get_available_mdas() -> list[str]:
@@ -785,14 +686,10 @@ def get_available_mdas() -> list[str]:
 
     Returns:
         The names of the available MDAs.
-
-    Examples:
-        >>> from gemseo import get_available_mdas
-        >>> get_available_mdas()
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import mda_factory
 
-    return MDAFactory().class_names
+    return mda_factory.class_names
 
 
 def get_mda_options_schema(
@@ -809,27 +706,23 @@ def get_mda_options_schema(
 
     Returns:
         The schema of the options of the MDA.
-
-    Examples:
-        >>> from gemseo import get_mda_options_schema
-        >>> get_mda_options_schema("MDAJacobi")
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import mda_factory
 
-    grammar = MDAFactory().get_options_grammar(mda_name)
+    grammar = mda_factory.get_options_grammar(mda_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
 def create_scenario(
     disciplines: Sequence[Discipline] | Discipline,
     objective_name: str,
-    design_space: DesignSpace | str | Path,
+    design_space: DesignSpace | StrPath,
     name: str = "",
     scenario_type: str = "MDO",
     maximize_objective: bool = False,
     formulation_settings_model: BaseFormulationSettings | None = None,
     **formulation_settings: Any,
-) -> BaseScenario:
+) -> MDOScenario:
     """Initialize a scenario.
 
     Args:
@@ -840,30 +733,19 @@ def create_scenario(
             If multiple names are passed, the objective will be a vector.
         design_space: The search space including at least the design variables
             (some formulations requires additional variables,
-            e.g. :class:`.IDF` with the coupling variables).
+            e.g. [IDF][gemseo.formulation.idf.IDF] with the coupling variables).
         name: The name to be given to this scenario.
             If empty, use the name of the class.
-        scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
+        scenario_type: The type of the scenario, e.g. `"MDO"` or `"DOE"`.
         maximize_objective: Whether to maximize the objective.
         formulation_settings_model: The formulation settings as a Pydantic model,
-            including the formulation name (use the keyword ``"formulation"``).
-            If ``None``, use ``**settings``.
+            including the formulation name (use the keyword `"formulation"`).
+            If `None`, use `**settings`.
         **formulation_settings: The formulation settings.
-            These arguments are ignored when ``settings_model`` is not ``None``.
-
-    Examples:
-        >>> from gemseo import create_discipline, create_scenario
-        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
-        ...     SellarDesignSpace,
-        ... )
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> design_space = SellarDesignSpace()
-        >>> scenario = create_scenario(
-        >>>     disciplines, "obj", design_space, formulation_name="MDF"
-        >>> )
+            These arguments are ignored when `settings_model` is not `None`.
     """
-    from gemseo.scenarios.doe_scenario import DOEScenario
-    from gemseo.scenarios.mdo_scenario import MDOScenario
+    from gemseo.formulation.factory import mdo_formulation_factory
+    from gemseo.scenario.mdo import MDOScenario
 
     if not isinstance(disciplines, Collection):
         disciplines = [disciplines]
@@ -871,48 +753,47 @@ def create_scenario(
     if isinstance(design_space, (str, Path)):
         design_space = read_design_space(design_space)
 
-    if scenario_type == "MDO":
+    if scenario_type in ["DOE", "MDO"]:
         cls = MDOScenario
-    elif scenario_type == "DOE":
-        cls = DOEScenario
     else:
         msg = f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
         raise ValueError(msg)
 
-    return cls(
-        disciplines,
-        objective_name,
-        design_space,
-        name=name,
-        maximize_objective=maximize_objective,
-        formulation_settings_model=formulation_settings_model,
-        **formulation_settings,
-    )
+    if formulation_settings_model is None:
+        formulation_name = formulation_settings.pop("formulation_name")
+        settings = mdo_formulation_factory.get_class(formulation_name).settings_class(
+            **formulation_settings
+        )
+    else:
+        settings = formulation_settings_model
+
+    scenario = cls(disciplines, design_space, name=name, formulation_settings=settings)
+    scenario.add_objective(objective_name, minimize=not maximize_objective)
+    return scenario
 
 
-# TODO: API: remove and use gemseo.configuration.logging instead.
 def configure_logger(
     logger_name: str = "",
-    level: str | int = _LOGGING_LEVEL,
-    date_format: str = _LOGGING_DATE_FORMAT,
-    message_format: str = _LOGGING_MESSAGE_FORMAT,
-    filename: str | Path = _LOGGING_FILE_PATH,
-    filemode: str = _LOGGING_FILE_MODE,
+    level: str | int = _logging_level,
+    date_format: str = _logging_date_format,
+    message_format: str = _logging_message_format,
+    filename: StrPath = _logging_file_path,
+    filemode: str = _logging_file_mode,
 ) -> Logger:
-    """Configure |g| logging.
+    """Configure GEMSEO logging.
 
     Args:
         logger_name: The name of the logger to configure.
             If empty, configure the root logger.
         level: The numerical value or name of the logging level,
-            as defined in :py:mod:`logging`.
+            as defined in `logging`.
             Values can either be
-            ``logging.NOTSET`` (``"NOTSET"``),
-            ``logging.DEBUG`` (``"DEBUG"``),
-            ``logging.INFO`` (``"INFO"``),
-            ``logging.WARNING`` (``"WARNING"`` or ``"WARN"``),
-            ``logging.ERROR`` (``"ERROR"``), or
-            ``logging.CRITICAL`` (``"FATAL"`` or ``"CRITICAL"``).
+            `logging.NOTSET` (`"NOTSET"`),
+            `logging.DEBUG` (`"DEBUG"`),
+            `logging.INFO` (`"INFO"`),
+            `logging.WARNING` (`"WARNING"` or `"WARN"`),
+            `logging.ERROR` (`"ERROR"`), or
+            `logging.CRITICAL` (`"FATAL"` or `"CRITICAL"`).
         date_format: The logging date format.
         message_format: The logging message format.
         filename: The path to the log file, if outputs must be written in a file.
@@ -921,14 +802,34 @@ def configure_logger(
 
     Returns:
         The configured logger.
-
-    Examples:
-        >>> import logging
-        >>> configure_logger(level=logging.WARNING)
     """
+    warnings.warn(
+        "configure_logger() is deprecated; use gemseo.configuration.logging instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    if logger_name == "":
+        configuration.logging.level = level
+        configuration.logging.date_format = date_format
+        configuration.logging.message_format = message_format
+        configuration.logging.file_path = filename
+        configuration.logging.file_mode = filemode
+
     return _configure_logger(
         logger_name, level, message_format, date_format, filename, filemode
     )
+
+
+@overload
+def create_discipline(
+    discipline_name: str, *args: Any, **kwargs: Any
+) -> Discipline: ...
+
+
+@overload
+def create_discipline(
+    discipline_name: Iterable[str], *args: Any, **kwargs: Any
+) -> list[Discipline]: ...
 
 
 # TODO: rename to create_disciplines (plural)
@@ -950,35 +851,27 @@ def create_discipline(
 
     Returns:
         The disciplines.
-
-    Examples:
-        >>> from gemseo import create_discipline
-        >>> discipline = create_discipline("Sellar1")
-        >>> discipline.execute()
-        {'x_local': array([0.+0.j]),
-         'x_shared': array([1.+0.j, 0.+0.j]),
-         'y_0': array([0.89442719+0.j]),
-         'y_1': array([1.+0.j])}
     """
-    from gemseo.disciplines.factory import DisciplineFactory
+    from gemseo.discipline.factory import discipline_factory
 
-    factory = DisciplineFactory()
+    factory = discipline_factory
     if isinstance(discipline_name, str):
         return factory.create(discipline_name, *args, **kwargs)
 
     return [factory.create(d_name, *args, **kwargs) for d_name in discipline_name]
 
 
+# TODO: API: remove cls argument.
 def import_discipline(
-    file_path: str | Path, cls: type[Discipline] | None = None
+    file_path: StrPath, cls: type[Discipline] | None = None
 ) -> Discipline:
     """Import a discipline from a pickle file.
 
     Args:
         file_path: The path to the file containing the discipline
-            saved with the method :meth:`.Discipline.to_pickle`.
+            saved with the function [to_pickle()][gemseo.util.pickle.to_pickle].
         cls: A class of discipline.
-            If ``None``, use ``Discipline``.
+            If `None`, use `Discipline`.
 
     Returns:
         The discipline.
@@ -989,7 +882,7 @@ def import_discipline(
 def create_scalable(
     name: str,
     data: Dataset,
-    sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    sizes: Mapping[str, int] = read_only_empty_dict,
     **parameters: Any,
 ) -> DataDrivenScalableDiscipline:
     """Create a scalable discipline from a dataset.
@@ -1003,7 +896,7 @@ def create_scalable(
     Returns:
         The scalable discipline.
     """
-    from gemseo.problems.mdo.scalable.data_driven.discipline import (  # noqa:F811
+    from gemseo.problem.mdo.scalable.data_driven.discipline import (  # noqa:F811
         DataDrivenScalableDiscipline,
     )
 
@@ -1011,81 +904,56 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | BaseRegressor | BaseRegressorSettings,
+    regressor: str | BaseRegressor | BaseRegressorSettings,
     data: IODataset | None = None,
-    # TODO: API: remove in favor of settings or surrogate as BaseRegressorSettings.
-    transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
-    # TODO: API: rename to name.
-    disc_name: str = "",
-    default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
-    input_names: Sequence[str] = (),
-    output_names: Sequence[str] = (),
-    **settings: Any,
+    transformer: TransformerType = BaseRegressor.default_transformer,
+    name: str = "",
 ) -> SurrogateDiscipline:
-    """Create a surrogate discipline.
+    """Create a surrogate model.
+
+    This discipline is based on a regressor.
+    The default input values correspond to
+    the average of the input values used to train the regressor.
 
     Args:
-        surrogate: Either a regressor class name,
-            a regressor instance or regressor settings.
-        data: The dataset to train the regression model.
-            If ``None``, the regression model is supposed to be trained.
-        transformer: The strategies to transform the variables.
-            This argument is ignored
-            when ``surrogate`` is a :class:`.BaseRegressor`;
-            in this case,
-            these strategies are defined
-            with the ``transformer`` argument of this :class:`.BaseRegressor`,
-            whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
-            which means no transformation.
-            In the other cases,
-            the values of the dictionary are instances of :class:`.BaseTransformer`
-            while the keys can be variable names,
-            the group name ``"inputs"``
-            or the group name ``"outputs"``.
-            If a group name is specified,
-            the :class:`.BaseTransformer` will be applied
-            to all the variables of this group.
-            If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
-            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
-            the :class:`.MinMaxScaler` strategy for both input and output variables.
-            This argument is ignored
-            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
-        disc_name: The name of the discipline.
+        regressor: Either a regressor, a regressor class name or regressor settings.
+        data: The training dataset.
+            This argument is mandatory when `regressor` is not a regressor.
+            This argument is ignored when `regressor` is a regressor.
+        transformer: The policy to transform the input and output variables.
+            This argument is ignored when `regressor` is a regressor;
+            in this case, the policy is defined by the regressor.
+            This argument is used instead of `regressor.transformer`
+            when `regressor` defines the regressor settings.
+            When used,
+            the input and output variables are scaled between 0 and 1 by default.
+            Use a dictionary to change this behavior.
+            The values of the dictionary are transformers
+            ([BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer])
+            while a key can be either
+            a variable name (apply the transformer to this variable),
+            `"inputs"` (apply the transformer to all the input variables),
+            or `"outputs"` (apply the transformer to all the output variables).
+        name: The name of the discipline.
             If empty,
             the concatenation of the short name of the surrogate algorithm
             and the name of the training dataset is used.
-        default_input_data: The default values of the input variables.
-            If empty,
-            the center of the learning input space is used.
-        input_names: The names of the input variables of the discipline.
-            If empty and ``surrogate`` is a regressor instance,
-            all input variables of the regressor are used.
-            If empty and ``surrogate`` is not a regressor instance,
-            all input variables mentioned in the training dataset are used.
-            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
-            ``surrogate.input_names`` is ignored and replaced by ``input_names``.
-        output_names: The names of the output variables of the discipline.
-            If empty and ``surrogate`` is a regressor instance,
-            all output variables of the regressor are used.
-            If empty and ``surrogate`` is not a regressor instance,
-            all output variables mentioned in the training dataset are used.
-            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
-            ``surrogate.output_names`` is ignored and replaced by ``output_names``.
-        **settings: The settings of the machine learning algorithm.
-            These arguments are ignored
-            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
     """
-    from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
+    from gemseo.discipline.surrogate import SurrogateDiscipline  # noqa:F811
 
-    return SurrogateDiscipline(
-        surrogate,
-        data=data,
+    if isinstance(regressor, BaseRegressor):
+        return SurrogateDiscipline(regressor, name=name)
+
+    if isinstance(regressor, str):
+        settings = regressor_factory.get_class(regressor).settings_class()
+    else:
+        settings = regressor
+
+    return SurrogateDiscipline.from_settings(
+        settings,
+        data,
         transformer=transformer,
-        disc_name=disc_name,
-        default_input_data=default_input_data,
-        input_names=input_names,
-        output_names=output_names,
-        **settings,
+        name=name,
     )
 
 
@@ -1093,7 +961,7 @@ def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
     settings_model: BaseMDASettings | None = None,
-    **settings: Any,
+    **kwargs: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
@@ -1101,36 +969,42 @@ def create_mda(
         mda_name: The name of the MDA.
         disciplines: The disciplines.
         settings_model: The MDA settings as a Pydantic model.
-            If ``None``, use ``**settings``.
-            The MDA settings model can be imported from :mod:`gemseo.settings.mda`.
-        **settings: The MDA settings as key/value pairs.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            If `None`, use `**settings`.
+            The MDA settings model can be imported from
+            [gemseo.mda][gemseo.mda].
+        **kwargs: The MDA arguments,
+            including the settings as key/value pairs when `settings_model` is `None`.
 
     Returns:
         The MDA.
-
-    Examples:
-        >>> from gemseo import create_discipline, create_mda
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2"])
-        >>> mda = create_mda("MDAGaussSeidel", disciplines)
-        >>> mda.execute()
-        {'x_local': array([0.+0.j]),
-         'x_shared': array([1.+0.j, 0.+0.j]),
-         'y_0': array([0.79999995+0.j]),
-         'y_1': array([1.79999995+0.j])}
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import mda_factory
 
-    return MDAFactory().create(
+    settings_class = mda_factory.get_class(mda_name).settings_class
+    settings = {
+        name: value
+        for name, value in kwargs.items()
+        if name in settings_class.model_fields
+    }
+    kwargs = {
+        name: value
+        for name, value in kwargs.items()
+        if name not in settings_class.model_fields
+    }
+    return mda_factory.create(
         mda_name,
         disciplines,
-        settings_model=settings_model,
-        **settings,
+        settings=create_model(
+            settings_class,
+            settings_model=settings_model,
+            **settings,
+        ),
+        **kwargs,
     )
 
 
 def execute_post(
-    to_post_proc: BaseScenario | OptimizationProblem | str | Path,
+    to_post_proc: MDOScenario | OptimizationProblem | StrPath,
     settings_model: BasePostSettings | None = None,
     **settings: Any,
 ) -> BasePost:
@@ -1138,41 +1012,23 @@ def execute_post(
 
     Args:
         to_post_proc: The result to be post-processed,
-            either a DOE scenario,
-            an MDO scenario,
+            either an MDO scenario,
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         settings_model: The post-processor settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The post-processor settings,
-            including the algorithm name (use the keyword ``"post_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            including the algorithm name (use the keyword `"post_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         The post-processor.
-
-    Examples:
-        >>> from gemseo import create_discipline, create_scenario, execute_post
-        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
-        ...     SellarDesignSpace,
-        ... )
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> design_space = SellarDesignSpace()
-        >>> scenario = create_scenario(
-        ...     disciplines,
-        ...     "obj",
-        ...     design_space,
-        ...     formulation_name="MDF",
-        ...     name="SellarMDFScenario",
-        ... )
-        >>> scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
-        >>> execute_post(scenario, post_name="OptHistoryView", show=False, save=True)
     """
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.factory import PostFactory
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.post.factory import post_factory
 
-    if isinstance(to_post_proc, BaseScenario):
-        opt_problem = to_post_proc.formulation.optimization_problem
+    if isinstance(to_post_proc, MDOScenario):
+        opt_problem = to_post_proc.formulation.problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
     elif isinstance(to_post_proc, (str, PathLike)):
@@ -1182,13 +1038,19 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return PostFactory().execute(opt_problem, settings_model=settings_model, **settings)
+
+    if settings_model is None:
+        post_name = settings.pop("post_name")
+        settings = post_factory.get_class(post_name).settings_class(**settings)
+    else:
+        settings = settings_model
+    return post_factory.execute(opt_problem, settings)
 
 
 def execute_algo(
     opt_problem: OptimizationProblem,
     algo_type: str = "opt",
-    settings_model: BaseAlgorithmSettings | None = None,
+    settings_model: BaseSettings | None = None,
     **settings: Any,
 ) -> OptimizationResult:
     """Solve an optimization problem.
@@ -1199,45 +1061,39 @@ def execute_algo(
             either "opt" for optimization
             or "doe" for design of experiments.
         settings_model: The algorithm settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The algorithm settings,
-            including the algorithm name (use the keyword ``"algo_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
-
-    Examples:
-        >>> from gemseo import execute_algo
-        >>> from gemseo.problems.optimization.rosenbrock import Rosenbrock
-        >>> opt_problem = Rosenbrock()
-        >>> opt_result = execute_algo(opt_problem, algo_name="SLSQP")
-        >>> opt_result
-        Optimization result:
-        |_ Design variables: [0.99999787 0.99999581]
-        |_ Objective function: 5.054173713127532e-12
-        |_ Feasible solution: True
+            including the algorithm name (use the keyword `"algo_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
     """
     if algo_type == "opt":
-        from gemseo.algos.opt.factory import OptimizationLibraryFactory
+        from gemseo.optimization.factory import optimization_library_factory
 
-        factory = OptimizationLibraryFactory()
+        factory = optimization_library_factory
 
     elif algo_type == "doe":
-        from gemseo.algos.doe.factory import DOELibraryFactory
+        from gemseo.doe.factory import doe_library_factory
 
-        factory = DOELibraryFactory()
+        factory = doe_library_factory
     else:
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
 
-    return factory.execute(opt_problem, settings_model=settings_model, **settings)
+    if settings_model is None:
+        algo_name = settings.pop("algo_name")
+        settings = factory.create_settings(algo_name, **settings)
+    else:
+        settings = settings_model
+    return factory.execute(opt_problem, settings=settings)
 
 
 def monitor_scenario(
-    scenario: BaseScenario,
-    observer,
+    scenario: MDOScenario,
+    observer: Any,
 ) -> None:
     """Add an observer to a scenario.
 
-    The observer must have an ``update`` method
+    The observer must have an `update` method
     that handles the execution status change of an atom.
     `update(atom)` is called everytime an atom execution changes.
 
@@ -1248,8 +1104,114 @@ def monitor_scenario(
     from gemseo.core.monitoring import Monitoring
 
     # Monitoring object is a singleton
-    monitor = Monitoring(scenario)
+    monitor = Monitoring(scenario.get_process_flow().get_execution_flow())
     monitor.add_observer(observer)
+
+
+def check_jacobian(
+    discipline: Discipline,
+    input_value: StrKeyMapping = read_only_empty_dict,
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+    input_names: Iterable[str] = (),
+    output_names: Iterable[str] = (),
+    reference_jacobian_path: StrPath = "",
+    save_reference_jacobian: bool = False,
+    approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
+    step: float | None = 1e-7,
+    n_processes: int = 1,
+    use_threading: bool = False,
+    wait_time_between_fork: float = 0.0,
+    linearization_mode: DerivationMode = DerivationMode.AUTO,
+    plot_result: bool = False,
+    file_path: StrPath = "jacobian_errors.pdf",
+    show: bool = False,
+    fig_size_x: float = 10,
+    fig_size_y: float = 10,
+    indices: Mapping[
+        str, int | Sequence[int] | Ellipsis | slice
+    ] = read_only_empty_dict,
+) -> bool:
+    """Check the analytical Jacobian of a discipline against an approximation.
+
+    Args:
+        discipline: The discipline whose Jacobian is to be checked.
+        input_value: The input at which to check the Jacobian.
+            If empty, use the default input data of the discipline.
+        atol: The absolute tolerance.
+        rtol: The relative tolerance.
+        input_names: The names of the inputs wrt which to differentiate the outputs.
+        output_names: The names of the outputs to be differentiated.
+        reference_jacobian_path: The path of the reference Jacobian file.
+            If empty, compute the reference Jacobian numerically.
+        save_reference_jacobian: Whether to save the reference Jacobian
+            to `reference_jacobian_path`.
+        approximation_mode: The numerical differentiation method.
+            Valid values are the members of
+            [ApproximationMode][gemseo.util.derivative.approximation_mode.ApproximationMode].
+        step: The step of the numerical differentiation method.
+            If `None`, an optimal step will be used.
+            The latter is not compatible with
+            `approximation_mode=ApproximationMode.COMPLEX_STEP`.
+        n_processes: The maximum number of threads to run simultaneously
+            if `use_threading` is `True`,
+            or processes otherwise,
+            used to parallelize the execution.
+            If `0`, use the number of CPUs available on the system.
+        use_threading: Whether to use threads instead of processes
+            to parallelize the execution;
+            multiprocessing will copy (serialize) all the data,
+            while threading will share all the memory.
+        wait_time_between_fork: The time waited between two forks
+            of the process or thread.
+        linearization_mode: The mode of linearization: direct, adjoint
+            or automated switch depending on dimensions of inputs and outputs.
+        plot_result: Whether to plot the result of the validation
+            (computed vs approximated Jacobians).
+        file_path: The path to the output file if `plot_result` is `True`.
+        show: Whether to open the figure.
+        fig_size_x: The x-size of the figure in inches.
+        fig_size_y: The y-size of the figure in inches.
+        indices: The indices of the inputs and outputs
+            for the different sub-Jacobian matrices,
+            formatted as `{variable_name: variable_components}`
+            where `variable_components` can be either
+            an integer, e.g. `2`,
+            a sequence of integers, e.g. `[0, 3]`,
+            a slice, e.g. `slice(0, 3)`,
+            the ellipsis symbol (`...`)
+            or `None`, which is the same as ellipsis.
+            If a variable name is missing, consider all its components.
+            If empty, consider all the components
+            of all the `input_names` and `output_names`.
+
+    Returns:
+        Whether the analytical Jacobian is correct
+        with respect to the reference one.
+    """
+    from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
+
+    return DisciplineJacobianChecker(discipline).check(
+        input_value,
+        atol=atol,
+        rtol=rtol,
+        inputs=input_names,
+        outputs=output_names,
+        reference_jacobian_path=reference_jacobian_path,
+        save_reference_jacobian=save_reference_jacobian,
+        approximation_mode=approximation_mode,
+        step=step,
+        n_processes=n_processes,
+        use_threading=use_threading,
+        wait_time_between_fork=wait_time_between_fork,
+        linearization_mode=linearization_mode,
+        plot_result=plot_result,
+        file_path=file_path,
+        show=show,
+        fig_size_x=fig_size_x,
+        fig_size_y=fig_size_y,
+        indices=indices,
+    )
 
 
 def print_configuration() -> None:
@@ -1257,21 +1219,17 @@ def print_configuration() -> None:
 
     The log message contains the successfully loaded modules
     and failed imports with the reason.
-
-    Examples:
-        >>> from gemseo import print_configuration
-        >>> print_configuration()
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
-    from gemseo.disciplines.factory import DisciplineFactory
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.discipline.factory import DisciplineFactory
+    from gemseo.doe.factory import DOELibraryFactory
+    from gemseo.formulation.factory import MDOFormulationFactory
+    from gemseo.machine_learning.regression.model.factory import RegressorFactory
     from gemseo.mda.factory import MDAFactory
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
+    from gemseo.optimization.factory import OptimizationLibraryFactory
     from gemseo.post.factory import PostFactory
 
     settings = _log_settings()
-    LOGGER.info("%s", settings)
+    logger.info("%s", settings)
     print(settings)  # noqa: T201
     for factory in (
         DisciplineFactory,
@@ -1283,12 +1241,12 @@ def print_configuration() -> None:
         PostFactory,
     ):
         factory_repr = repr(factory())
-        LOGGER.info("%s", factory_repr)
+        logger.info("%s", factory_repr)
         print(factory_repr)  # noqa: T201
 
 
 def read_design_space(
-    file_path: str | Path,
+    file_path: StrPath,
     header: Iterable[str] = (),
     delimiter: str = "",
 ) -> DesignSpace:
@@ -1304,6 +1262,12 @@ def read_design_space(
 
     Args:
         file_path: The path to the file.
+            If the content of the file is in HDF format,
+            whatever the extension,
+            the file will be considered as an HDF file,
+            otherwise as a CSV file.
+            A design space with a variable that is neither real nor integer
+            requires an HDF file.
         header: The names of the fields saved in the CSV file.
             If empty, read them in the first row of the CSV file.
         delimiter: The string used to separate values for CSV files. If empty, any
@@ -1312,73 +1276,70 @@ def read_design_space(
     Returns:
         The design space.
 
-    Examples:
-        >>> from gemseo import (create_design_space, write_design_space,
-        >>>     read_design_space)
-        >>> original_design_space = create_design_space()
-        >>> original_design_space.add_variable(
-        ...     "x", lower_bound=-1, value=0.0, upper_bound=1.0
-        ... )
-        >>> write_design_space(original_design_space, "file.csv")
-        >>> design_space = read_design_space("file.csv")
-        >>> print(design_space)
-        Design Space:
-        +------+-------------+-------+-------------+-------+
-        | name | lower_bound | value | upper_bound | type  |
-        +------+-------------+-------+-------------+-------+
-        | x    |      -1     |   0   |      1      | float |
-        +------+-------------+-------+-------------+-------+
+    Raises:
+        ValueError: If the file is a CSV file
+            whose header lacks a minimal field,
+            that has fewer columns than `header` has fields,
+            a variable whose rows are not consecutive,
+            a variable of unknown type,
+            a variable whose rows have different types,
+            a variable that is neither real nor integer,
+            as only an HDF file can store it,
+            a bound or value cell that is not a number,
+            or a variable with invalid bounds or an invalid value.
     """
-    from gemseo.algos.design_space import DesignSpace
+    from gemseo.space.design import DesignSpace
 
     return DesignSpace.from_file(file_path, header=header, delimiter=delimiter)
 
 
 def write_design_space(
     design_space: DesignSpace,
-    output_file: str | Path,
+    output_file: StrPath,
     fields: Sequence[str] = (),
     delimiter: str = " ",
-    # TODO: API: remove.
-    header_char: str = "",
-    # TODO: API: remove.
-    **table_options: Any,
+    append: bool = False,
 ) -> None:
     """Save a design space to a CSV or HDF file.
 
     Args:
         design_space: The design space to be saved.
         output_file: The path to the file.
-        fields: The fields to be exported.
+            If the extension starts with `".hdf"` or `".h5"`, e.g. `".hdf5"`,
+            the design space will be saved in an HDF file,
+            otherwise in a CSV file.
+            A design space with a variable that is neither real nor integer
+            requires an HDF file.
+        fields: The fields to be exported in the CSV file, without repetition,
+            including `"name"`;
+            `"type"` is added when a variable is not real.
             If empty, export all fields.
         delimiter: The string used to separate values for CSV files.
-            This argument is not compatible with ``header_char`` nor
-            ``**table_options``.
-        header_char: The header character.
-        **table_options:
-            For HDF files:
-                The ``append`` option may be passed here.
-                See :meth:`.DesignSpace.to_hdf`.
-            For CSV files:
-                The names and values of additional attributes
-                for the :class:`.PrettyTable` view
-                generated by :meth:`.DesignSpace.get_pretty_table`.
-                These options will be removed in GEMSEO 7.
+        append: If `False`, the file is truncated
+            and the design space is exported.
+            If `True` and the file does not contain a design space,
+            the design space is exported
+            and the rest of the file is left untouched.
+            If `True` and the file already contains a design space,
+            both design spaces must have the same structure
+            (variables, sizes and types)
+            and the same catalogs;
+            the bounds are overwritten,
+            and the current value is overwritten,
+            or removed when the exported design space has none.
+            This argument is ignored for CSV files.
 
-
-    Examples:
-        >>> from gemseo import create_design_space, write_design_space
-        >>> design_space = create_design_space()
-        >>> design_space.add_variable("x", lower_bound=-1, upper_bound=1, value=0.0)
-        >>> write_design_space(design_space, "file.csv")
+    Raises:
+        ValueError: If the HDF file already stores a design space with a
+            different structure,
+            or, if `append` is `True`, with different catalogs
+            for the catalog variables,
+            or, if the file is not an HDF file,
+            if the design space has a variable that is neither real nor integer,
+            if a field is unknown or repeated,
+            or if `"name"` is not a field.
     """
-    design_space.to_file(
-        output_file,
-        fields=fields,
-        delimiter=delimiter,
-        header_char=header_char,
-        **table_options,
-    )
+    design_space.to_file(output_file, fields=fields, delimiter=delimiter, append=append)
 
 
 def create_design_space() -> DesignSpace:
@@ -1386,33 +1347,21 @@ def create_design_space() -> DesignSpace:
 
     Returns:
         An empty design space.
-
-    Examples:
-        >>> from gemseo import create_design_space
-        >>> design_space = create_design_space()
-        >>> design_space.add_variable("x", lower_bound=-1, upper_bound=1, value=0.0)
-        >>> print(design_space)
-        Design Space:
-        +------+-------------+-------+-------------+-------+
-        | name | lower_bound | value | upper_bound | type  |
-        +------+-------------+-------+-------------+-------+
-        | x    |      -1     |   0   |      1      | float |
-        +------+-------------+-------+-------------+-------+
     """
-    from gemseo.algos.design_space import DesignSpace
+    from gemseo.space.design import DesignSpace
 
     return DesignSpace()
 
 
-def create_parameter_space() -> ParameterSpace:
-    """Create an empty parameter space.
+def create_random_space() -> RandomSpace:
+    """Create an empty random space.
 
     Returns:
-        An empty parameter space.
+        An empty random space.
     """
-    from gemseo.algos.parameter_space import ParameterSpace  # noqa: F811
+    from gemseo.space.random import RandomSpace  # noqa: F811
 
-    return ParameterSpace()
+    return RandomSpace()
 
 
 def get_available_caches() -> list[str]:
@@ -1420,13 +1369,8 @@ def get_available_caches() -> list[str]:
 
     Returns:
         The names of the available caches.
-
-    Examples:
-        >>> from gemseo import get_available_caches
-        >>> get_available_caches()
-        ['BaseFullCache', 'HDF5Cache', 'MemoryFullCache', 'SimpleCache']
     """
-    from gemseo.caches.factory import CacheFactory
+    from gemseo.core.cache.factory import CacheFactory
 
     return CacheFactory().class_names
 
@@ -1441,42 +1385,27 @@ def create_cache(
     Args:
         cache_type: The type of the cache.
         name: The name to be given to the cache.
-            If empty, use ``cache_type``.
+            If empty, use `cache_type`.
         **options: The options of the cache.
 
     Returns:
         The cache.
-
-    Examples:
-        >>> from gemseo import create_cache
-        >>> cache = create_cache("MemoryFullCache")
-        >>> print(cache)
-        +--------------------------------+
-        |        MemoryFullCache         |
-        +--------------+-----------------+
-        |   Property   |      Value      |
-        +--------------+-----------------+
-        |     Type     | MemoryFullCache |
-        |  Tolerance   |       0.0       |
-        | Input names  |       None      |
-        | Output names |       None      |
-        |    Length    |        0        |
         +--------------+-----------------+
     """
-    from gemseo.caches.factory import CacheFactory
+    from gemseo.core.cache.factory import CacheFactory
 
     return CacheFactory().create(cache_type, name=name, **options)
 
 
 def create_dataset(
     name: str = "",
-    data: ndarray | str | Path = "",
+    data: ndarray | StrPath = "",
     variable_names: str | Iterable[str] = (),
-    variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-    variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
+    variable_names_to_n_components: dict[str, int] = read_only_empty_dict,
+    variable_names_to_group_names: dict[str, str] = read_only_empty_dict,
     delimiter: str = ",",
     header: bool = True,
-    class_name: DatasetClassName = DatasetClassName.Dataset,
+    class_name: DatasetClassName = DatasetClassName.DATASET,
 ) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 
@@ -1491,10 +1420,11 @@ def create_dataset(
             If empty,
             assume that all the variables have a single component.
         variable_names_to_group_names: The groups of the variables.
-            If empty,
-            use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
+            If empty, use
+            [Dataset.default_group][gemseo.dataset.dataset.Dataset.default_group]
+            for all the variables.
         delimiter: The field delimiter.
-        header: If ``True`` and `data` is a string,
+        header: If `True` and `data` is a string,
             read the variables names on the first line of the file.
         class_name: The name of the dataset class.
 
@@ -1502,18 +1432,18 @@ def create_dataset(
         The dataset generated from the NumPy array or data file.
 
     Raises:
-        ValueError: If ``data`` is neither a file nor an array.
+        ValueError: If `data` is neither a file nor an array.
     """
-    from gemseo.datasets.factory import DatasetFactory
+    from gemseo.dataset.factory import dataset_factory
 
-    dataset_class = DatasetFactory().get_class(class_name)
+    dataset_class = dataset_factory.get_class(class_name)
 
     if isinstance(data, ndarray):
         dataset = dataset_class.from_array(
             data,
-            variable_names,
-            variable_names_to_n_components,
-            variable_names_to_group_names,
+            variable_names=variable_names,
+            variable_name_to_n_components=variable_names_to_n_components,
+            variable_name_to_group_name=variable_names_to_group_names,
         )
     elif not data:
         dataset = dataset_class()
@@ -1525,11 +1455,11 @@ def create_dataset(
         elif extension == ".txt":
             dataset = dataset_class.from_txt(
                 data,
-                variable_names,
-                variable_names_to_n_components,
-                variable_names_to_group_names,
-                delimiter,
-                header,
+                variable_names=variable_names,
+                variable_name_to_n_components=variable_names_to_n_components,
+                variable_name_to_group_name=variable_names_to_group_names,
+                delimiter=delimiter,
+                header=header,
             )
         else:
             msg = (
@@ -1555,7 +1485,8 @@ def create_benchmark_dataset(
 ) -> Dataset:
     """Instantiate a dataset.
 
-    Typically, benchmark datasets can be found in :mod:`gemseo.datasets.dataset`.
+    Typically, benchmark datasets can be found in
+    [gemseo.dataset.dataset][gemseo.dataset.dataset].
 
     Args:
         dataset_type: The type of the dataset.
@@ -1564,9 +1495,9 @@ def create_benchmark_dataset(
     Returns:
         The dataset.
     """
-    from gemseo.problems.dataset.burgers import create_burgers_dataset
-    from gemseo.problems.dataset.iris import create_iris_dataset
-    from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+    from gemseo.problem.dataset.burgers import create_burgers_dataset
+    from gemseo.problem.dataset.iris import create_iris_dataset
+    from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
 
     return {
         DatasetType.BURGER: create_burgers_dataset,
@@ -1576,15 +1507,16 @@ def create_benchmark_dataset(
 
 
 def import_database(
-    file_path: str | Path,
+    file_path: StrPath,
     hdf_node_path: str = "",
 ) -> Database:
     """Load a database from an HDF file path.
 
     This file could be generated using
-    :meth:`.Database.to_hdf`,
-    :meth:`.OptimizationProblem.to_hdf`
-    or :meth:`.Scenario.save_optimization_history`.
+    [Database.to_hdf()][gemseo.core.problem.database.Database.to_hdf],
+    [OptimizationProblem.to_hdf()][gemseo.optimization.problem.OptimizationProblem.to_hdf]
+    or
+    [MDOScenario.to_hdf()][gemseo.scenario.mdo.MDOScenario.to_hdf].
 
     Args:
         file_path: The path of the HDF file.
@@ -1595,8 +1527,8 @@ def import_database(
     Returns:
         The database.
     """
-    from gemseo.algos.database import Database
-    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.core.problem.database import Database
+    from gemseo.optimization.problem import OptimizationProblem
 
     try:
         return OptimizationProblem.from_hdf(
@@ -1607,53 +1539,58 @@ def import_database(
 
 
 def compute_doe(
-    variables_space: DesignSpace | int,
+    variables_space: BaseVariableSpace | int,
     unit_sampling: bool = False,
     settings_model: BaseDOESettings | None = None,
     **settings: DriverSettingType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
+    The space is sampled through its mapping from the unit hypercube,
+    which is geometric for a
+    [DesignSpace][gemseo.space.design.DesignSpace]
+    and iso-probabilistic for a
+    [RandomSpace][gemseo.space.random.RandomSpace].
+
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
         unit_sampling: Whether to sample in the unit hypercube.
-            If the value provided in ``variables_space`` is the dimension,
+            If the value provided in `variables_space` is the dimension,
             the samples will be generated in the unit hypercube
-            whatever the value of ``unit_sampling``.
+            whatever the value of `unit_sampling`.
         settings_model: The DOE settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The DOE settings,
-            including the algorithm name (use the keyword ``"algo_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            including the algorithm name (use the keyword `"algo_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
           The design of experiments
           whose rows are the samples and columns the variables.
-
-    Examples:
-        >>> from gemseo import compute_doe, create_design_space
-        >>> variables_space = create_design_space()
-        >>> variables_space.add_variable("x", 2, lower_bound=-1.0, upper_bound=1.0)
-        >>> doe = compute_doe(variables_space, algo_name="lhs", n_samples=5)
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
-    from gemseo.utils.pydantic import get_algo_name
+    from gemseo.doe.factory import doe_library_factory
+    from gemseo.util.pydantic import get_algo_name
 
     algo_name = get_algo_name(settings_model, settings)
-    library = DOELibraryFactory().create(algo_name)
-    return library.compute_doe(
-        variables_space,
-        unit_sampling=unit_sampling,
+    library = doe_library_factory.create(algo_name)
+    settings = create_model(
+        library.ALGORITHM_INFOS[algo_name].settings_class,
         settings_model=settings_model,
         **settings,
+    )
+    if isinstance(variables_space, int):
+        return library.sample_unit_hypercube(variables_space, settings=settings)
+
+    return library.sample_space(
+        variables_space, settings=settings, use_unit_samples=unit_sampling
     )
 
 
 def _log_settings() -> str:
-    from gemseo.algos.base_driver_library import BaseDriverLibrary
-    from gemseo.algos.problem_function import ProblemFunction
+    from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
     from gemseo.core.discipline import Discipline
-    from gemseo.utils.string_tools import MultiLineString
+    from gemseo.core.function.evaluation_function import EvaluationFunction
+    from gemseo.util.string import MultiLineString
 
     add_not_prefix = lambda x: "" if x else " not"  # noqa: E731
     text = MultiLineString()
@@ -1678,11 +1615,11 @@ def _log_settings() -> str:
         add_not_prefix(Discipline.validate_output_data),
     )
     text.dedent()
-    text.add("ProblemFunction")
+    text.add("EvaluationFunction")
     text.indent()
     text.add(
         "The counters are {}enabled.",
-        add_not_prefix(ProblemFunction.enable_statistics),
+        add_not_prefix(EvaluationFunction.enable_statistics),
     )
     text.dedent()
     text.add("BaseDriverLibrary")
@@ -1694,19 +1631,18 @@ def _log_settings() -> str:
     return str(text)
 
 
-# TODO: API: remove and use gemseo.configuration instead.
 def configure(
-    enable_discipline_statistics: bool = _ENABLE_DISCIPLINE_STATISTICS,
-    enable_function_statistics: bool = _ENABLE_FUNCTION_STATISTICS,
-    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR,
-    enable_discipline_cache: bool = _ENABLE_DISCIPLINE_CACHE,
-    validate_input_data: bool = _VALIDATE_INPUT_DATA,
-    validate_output_data: bool = _VALIDATE_OUTPUT_DATA,
-    check_desvars_bounds: bool = _CHECK_DESVARS_BOUNDS,
-    enable_parallel_execution: bool = _ENABLE_PARALLEL_EXECUTION,
-    enable_discipline_status: bool = _ENABLE_DISCIPLINE_STATUS,
+    enable_discipline_statistics: bool = _enable_discipline_statistics,
+    enable_function_statistics: bool = _enable_function_statistics,
+    enable_progress_bar: bool = _enable_progress_bar,
+    enable_discipline_cache: bool = _enable_discipline_cache,
+    validate_input_data: bool = _validate_input_data,
+    validate_output_data: bool = _validate_output_data,
+    check_desvars_bounds: bool = _check_desvars_bounds,
+    enable_parallel_execution: bool = _enable_parallel_execution,
+    enable_discipline_status: bool = _enable_discipline_status,
 ) -> None:
-    """Set the configuration of |g|.
+    """Set the configuration of GEMSEO.
 
     Args:
         enable_discipline_statistics: Whether to record execution statistics of the
@@ -1725,11 +1661,17 @@ def configure(
         validate_output_data: Whether to validate the output data of a discipline
             after execution.
         check_desvars_bounds: Whether to check the membership of design variables
-            in the bounds when evaluating the functions in OptimizationProblem.
-        enable_parallel_execution: Whether to let |g|
+            in the bounds when evaluating the functions in
+            [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem].
+        enable_parallel_execution: Whether to let GEMSEO
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
     """
+    warnings.warn(
+        "configure() is deprecated; use gemseo.configuration instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     configuration.check_desvars_bounds = check_desvars_bounds
     configuration.enable_discipline_cache = enable_discipline_cache
     configuration.enable_discipline_statistics = enable_discipline_statistics
@@ -1744,9 +1686,9 @@ def configure(
 def wrap_discipline_in_job_scheduler(
     discipline: Discipline,
     scheduler_name: str,
-    workdir_path: Path,
+    workdir_path: StrPath,
     **options: Any,
-) -> JobSchedulerDisciplineWrapper:
+) -> JobSchedulerDiscipline:
     """Wrap the discipline within another one to delegate its execution to a job
     scheduler.
 
@@ -1756,12 +1698,11 @@ def wrap_discipline_in_job_scheduler(
     the discipline and its inputs, execute it and serialize the outputs.
     Finally, the deserialized outputs are returned by the wrapper.
 
-    All process classes :class:`.MDOScenario`,
-    or :class:`.BaseMDA`, inherit from
-    :class:`.Discipline` so can be sent to HPCs in this way.
+    Process classes such as [BaseMDA][gemseo.mda.core.base.BaseMDA] inherit from
+    [Discipline][gemseo.core.discipline.discipline.Discipline] so can be sent to HPCs in this way.
 
     The job scheduler template script can be provided directly or the predefined
-    templates file names in gemseo.wrappers.job_schedulers.template can be used.
+    templates file names in gemseo.wrapper.job_scheduler.template can be used.
     SLURM and LSF templates are provided, but one can use other job schedulers
     or to customize the scheduler commands according to the user needs
     and infrastructure requirements.
@@ -1771,67 +1712,24 @@ def wrap_discipline_in_job_scheduler(
     Args:
         discipline: The discipline to wrap in the job scheduler.
         scheduler_name: The name of the job scheduler (for instance LSF, SLURM, PBS).
-        workdir_path: The path to the workdir
+        workdir_path: The path to the workdir.
         **options: The submission options.
 
     Raises:
         OSError: if the job template does not exist.
 
-    Warnings:
+    Warning:
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.
-        Also, see :ref:`platform-paths` to handle paths for cross-platforms.
-
-    Examples:
-        This example execute a DOE of 100 points on an MDA, each MDA is executed on 24
-        CPUS using the SLURM wrapper, on a HPC, and at most 10 points run in parallel,
-        everytime a point of the DOE is computed, another one is submitted to the queue.
-
-        >>> from gemseo.disciplines.wrappers.job_schedulers.factory import (
-        ...     JobSchedulerDisciplineWrapperFactory,
-        ... )
-        >>> from gemseo import create_discipline, create_scenario, create_mda
-        >>> from gemseo.problems.mdo.sellar.sellar_design_space import (
-        ...     SellarDesignSpace,
-        ... )
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> mda = create_mda(disciplines)
-        >>> wrapped_mda= wrap_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
-        >>>                                               workdir_path="workdir",
-        >>>                                               cpus_per_task=24)
-        >>> scn=create_scenario(
-        >>> ... mda, "obj", SellarDesignSpace(), formulation_name="DisciplinaryOpt", scenario_type="DOE"
-        >>> )
-        >>> scn.execute(algo_name="lhs", n_samples=100, n_processes=10)
-
-        In this variant, each discipline is wrapped independently in the job scheduler,
-        which allows to parallelize more the process because each discipline will run on
-        indpendent nodes, whithout being parallelized using MPI. The drawback is that
-        each discipline execution will be queued on the HPC.
-        A HDF5 cache is attached to the MDA, so all executions will be recorded.
-        Each wrapped discipline can also be cached using a HDF cache.
-
-        >>> from gemseo.core.discipline import Discipline
-        >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> wrapped_discs=[wrap_discipline_in_job_scheduler(disc,
-        >>>                                                 workdir_path="workdir",
-        >>>                                                 cpus_per_task=24,
-        >>>                                                 scheduler_name="SLURM"),
-        >>>                for disc in disciplines]
-        >>> scn=create_scenario(
-        >>>     wrapped_discs, "obj", SellarDesignSpace(), formulation_name="MDF", scenario_type="DOE"
-        >>> )
-        >>> scn.formulation.mda.set_cache(
-        ...     Discipline.HDF5_CACHE, hdf_file_path="mda_cache.h5"
-        ... )
-        >>> scn.execute(algo_name="lhs", n_samples=100, n_processes=10)
+        Also,
+        see [Handling paths for cross-platforms][handling-paths-for-different-oses].
     """  # noqa:D205 D212 D415 E501
-    from gemseo.disciplines.wrappers.job_schedulers.factory import (
-        JobSchedulerDisciplineWrapperFactory,
+    from gemseo.discipline.wrapper.job_scheduler.factory import (
+        JobSchedulerDisciplineFactory,
     )
 
-    return JobSchedulerDisciplineWrapperFactory().wrap_discipline(
+    return JobSchedulerDisciplineFactory().wrap_discipline(
         discipline=discipline,
         scheduler_name=scheduler_name,
         workdir_path=workdir_path,
@@ -1840,7 +1738,7 @@ def wrap_discipline_in_job_scheduler(
 
 
 def create_scenario_result(
-    scenario: BaseScenario | str | Path,
+    scenario: MDOScenario | StrPath,
     name: str = "",
     **options: Any,
 ) -> ScenarioResult | None:
@@ -1848,23 +1746,28 @@ def create_scenario_result(
 
     Args:
         scenario: The scenario to post-process or its path to its HDF5 file.
-        name: The class name of the :class:`.ScenarioResult`.
+        name: The class name of the
+            [ScenarioResult][gemseo.scenario.scenario_result.scenario_result.ScenarioResult].
             If empty,
-            use the :attr:`~.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME`
-            of the :class:`.BaseMDOFormulation` attached to the :class:`.Scenario`.
-        **options: The options of the :class:`.ScenarioResult`.
+            use the
+            [default_scenario_result_class_name][gemseo.formulation.core.base.BaseFormulation.default_scenario_result_class_name]
+            of the
+            [BaseMDOFormulation][gemseo.formulation.core.base_mdo.BaseMDOFormulation]
+            attached to the [MDOScenario][gemseo.scenario.mdo.MDOScenario].
+        **options: The options of the
+            [ScenarioResult][gemseo.scenario.scenario_result.scenario_result.ScenarioResult].
 
     Returns:
-        The result of a scenario execution or ``None`` if not yet executed`.
+        The result of a scenario execution or `None` if not yet executed`.
     """
     # TODO: use Scenario.get_result
     if scenario.optimization_result is None:
         return None
 
-    from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
+    from gemseo.scenario.scenario_result.factory import ScenarioResultFactory
 
     return ScenarioResultFactory().create(
-        name or scenario.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,
+        name or scenario.formulation.default_scenario_result_class_name,
         scenario=scenario,
         **options,
     )
@@ -1872,10 +1775,10 @@ def create_scenario_result(
 
 def sample_disciplines(
     disciplines: Sequence[Discipline],
-    input_space: DesignSpace,
+    input_space: BaseVariableSpace,
     output_names: str | Iterable[str],
     formulation_name: str = "MDF",
-    formulation_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    formulation_settings: StrKeyMapping = read_only_empty_dict,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
     algo_settings_model: BaseDOESettings | None = None,
@@ -1887,7 +1790,6 @@ def sample_disciplines(
         disciplines: The disciplines to be sampled.
         input_space: The input space on which to sample the discipline.
         output_names: The names of the outputs of interest.
-        n_samples: The number of samples.
         formulation_name: The name of the MDO formulation.
         formulation_settings: The settings of the MDO formulation.
             If empty, use the default ones.
@@ -1896,27 +1798,27 @@ def sample_disciplines(
         backup_settings: The settings of the backup file to store the evaluations
             if any.
         algo_settings_model: The DOE settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **algo_settings: The DOE settings.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         The input-output samples of the disciplines.
     """
-    from gemseo.scenarios.doe_scenario import DOEScenario
-    from gemseo.utils.string_tools import convert_strings_to_iterable
+    settings = dict(formulation_settings)
+    from gemseo.formulation.factory import mdo_formulation_factory
+    from gemseo.scenario.evaluation import EvaluationScenario
+    from gemseo.util.string import convert_strings_to_iterable
 
-    output_names = convert_strings_to_iterable(output_names)
-    output_names_iterator = iter(output_names)
-    scenario = DOEScenario(
+    formulation_class = mdo_formulation_factory.get_class(formulation_name)
+    formulation_settings = formulation_class.settings_class(**settings)
+    scenario = EvaluationScenario(
         disciplines,
-        next(output_names_iterator),
         input_space,
-        formulation_name=formulation_name,
         name=name,
-        **formulation_settings,
+        formulation_settings=formulation_settings,
     )
-    for output_name in output_names_iterator:
+    for output_name in convert_strings_to_iterable(output_names):
         scenario.add_observable(output_name)
 
     if not algo_settings_model:
@@ -1927,22 +1829,26 @@ def sample_disciplines(
             algo_settings["use_one_line_progress_bar"] = True
 
     if backup_settings is not None and backup_settings.file_path:
-        scenario.set_optimization_history_backup(
+        scenario.set_backup_settings(
             backup_settings.file_path,
             at_each_iteration=backup_settings.at_each_iteration,
             at_each_function_call=backup_settings.at_each_function_call,
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute(algo_settings_model=algo_settings_model, **algo_settings)
-    return scenario.formulation.optimization_problem.to_dataset(
-        name=name, opt_naming=False, export_gradients=True
-    )
+
+    if algo_settings_model is None:
+        algo_name = algo_settings.pop("algo_name")
+        factory = DOELibraryFactory()
+        algo_settings_model = factory.create_settings(algo_name, **algo_settings)
+
+    scenario.execute(algo_settings_model)
+    return scenario.formulation.problem.to_dataset(name=name, export_gradients=True)
 
 
 def generate_xdsm(
-    discipline: Discipline,
-    directory_path: str | Path = ".",
+    process: EvaluationScenario | BaseDiscipline,
+    directory_path: StrPath = ".",
     file_name: str = "xdsm",
     show_html: bool = False,
     save_html: bool = True,
@@ -1952,29 +1858,41 @@ def generate_xdsm(
     pdf_cleanup: bool = True,
     pdf_batchmode: bool = True,
 ) -> XDSM:
-    """Create the XDSM diagram of a discipline.
+    """Visualize a disciplinary process using an XDSM diagram.
+
+    An XDSM (eXtended Design Structure Matrix) diagram
+    describes the data flow and execution sequence of a multidisciplinary process.
+    The main multidisciplinary disciplinary process is the scenario.
+    However,
+    GEMSEO can also create an XDSM from a discipline.
+    In this case,
+    it will be supplemented by a block named *Caller*
+    that calls this discipline using all of its inputs
+    and receives all of its outputs from it.
 
     Args:
+        process: The multidisciplinary process,
+            which can be either a scenario or a discipline.
         directory_path: The path of the directory to save the files.
         file_name: The file name without the file extension.
         show_html: Whether to open the web browser and display the XDSM.
         save_html: Whether to save the XDSM as a HTML file.
         save_json: Whether to save the XDSM as a JSON file.
         save_pdf: Whether to save the XDSM as
-            a TikZ file ``"{file_name}.tikz"`` containing its definition and
-            a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+            a TikZ file `"{file_name}.tikz"` containing its definition and
+            a LaTeX file `"{file_name}.tex"` including this TikZ file.
             The LaTeX file can be compiled to a PDF file.
-        pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+        pdf_build: Whether to compile the LaTeX file `"{file_name}.tex"`
             to a PDF file using pdflatex.
         pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
         pdf_batchmode: Whether to suppress compilation logs.
 
     Returns:
-        The XDSM diagram of the discipline.
+        The XDSM diagram of the multidisciplinary process.
     """
-    from gemseo.utils.xdsm.xdsmizer import XDSMizer
+    from gemseo.util.xdsm.xdsmizer import XDSMizer
 
-    return XDSMizer(discipline).run(
+    return XDSMizer(process).run(
         directory_path=directory_path,
         save_pdf=save_pdf,
         show_html=show_html,
@@ -1994,14 +1912,22 @@ def set_data_converters(
 ) -> None:
     """Set data converters for custom disciplines variable types.
 
-    Natively, |g| supports disciplines that have the following variable types:
-    ``int``, ``float``, ``complex``, ``str`` and 1D NumPy array.
+    Natively, GEMSEO supports disciplines that have the following variable types:
+    `int`, `float`, `complex`, `str` and 1D NumPy array.
     Using custom variable types may require to add converters to transform the value of
     a variable to a 1D NumPy array back and forth, as well as to provide the size of the
     expected 1D NumPy array.
 
     See this
-    :ref:`example <sphx_glr_examples_disciplines_grammars_plot_data_converters.py>`.
+    [example][use-data-converters].
+
+    Warning:
+        The converters are stored as global state shared by every grammar and
+        discipline, and are keyed only by variable name.
+        Two variables sharing the same name will therefore use the same converters,
+        regardless of the discipline they belong to.
+        Each call replaces the previously set converters rather than merging with
+        them; pass all the converters in a single call.
 
     Args:
         to_array: The mapping from disciplines variable names
@@ -2011,7 +1937,7 @@ def set_data_converters(
         to_size: The mapping from disciplines variable names
             to functions returning the size of a variable value.
     """
-    from gemseo.core.data_converters.base import BaseDataConverter
+    from gemseo.core.data_converter.base import BaseDataConverter
 
     BaseDataConverter.value_to_array_converters = to_array
     BaseDataConverter.array_to_value_converters = from_array

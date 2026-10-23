@@ -17,10 +17,11 @@ from __future__ import annotations
 import pytest
 
 from gemseo import create_scenario
-from gemseo.problems.topology_optimization.topopt_initialize import (
+from gemseo.optimization.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
+from gemseo.post.topology_view_settings import TopologyView_Settings
+from gemseo.problem.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -48,50 +49,48 @@ def scenario_and_dimensions():
     scenario.add_constraint(
         "volume fraction", constraint_type=scenario.ConstraintType.INEQ, value=vf0
     )
-    scenario.execute(algo_name="NLOPT_MMA", max_iter=1)
+    scenario.execute(NLOPT_MMA_Settings(max_iter=1))
     return scenario, n_el, n_el
 
 
-@image_comparison(["l_shape_solution"])
-def test_l_shape(scenario_and_dimensions) -> None:
+def test_l_shape(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the design value.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
-        iterations=1,
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1],
+            n_y=scenario_and_dimensions[2],
+            save=False,
+            iterations=1,
+        )
     )
 
 
-@image_comparison(["l_shape_solution_xphys"])
-def test_l_shape_xphys(scenario_and_dimensions) -> None:
+def test_l_shape_xphys(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the value of an observable.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
-        iterations=1,
-        observable="xPhys",
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1],
+            n_y=scenario_and_dimensions[2],
+            save=False,
+            iterations=1,
+            observable="xPhys",
+        )
     )
 
 
-@image_comparison(["l_shape_solution_last_iter"])
-def test_l_shape_last_iter(scenario_and_dimensions) -> None:
+def test_l_shape_last_iter(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the last iteration.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1], n_y=scenario_and_dimensions[2], save=False
+        )
     )

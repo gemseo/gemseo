@@ -15,3 +15,52 @@
 """Multidisciplinary Analyses : coupled system solvers."""
 
 from __future__ import annotations
+
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from typing import Final
+
+from gemseo.util.package_import import install_lazy_reexport
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    # static visibility for mypy / IDEs
+    from gemseo.mda.chain import MDAChain  # noqa: F401
+    from gemseo.mda.chain_settings import MDAChain_Settings  # noqa: F401
+    from gemseo.mda.factory import mda_factory  # noqa: F401
+    from gemseo.mda.gauss_seidel import MDAGaussSeidel  # noqa: F401
+    from gemseo.mda.gauss_seidel_newton_raphson import MDAGaussSeidelNewtonRaphson  # noqa: F401
+    from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+        MDAGaussSeidelNewtonRaphson_Settings,  # noqa: F401
+    )
+    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings  # noqa: F401
+    from gemseo.mda.jacobi import MDAJacobi  # noqa: F401
+    from gemseo.mda.jacobi_settings import MDAJacobi_Settings  # noqa: F401
+    from gemseo.mda.newton_raphson import MDANewtonRaphson  # noqa: F401
+    from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings  # noqa: F401
+    from gemseo.mda.quasi_newton import MDAQuasiNewton  # noqa: F401
+    from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings  # noqa: F401
+    from gemseo.mda.sequential import MDASequential  # noqa: F401
+    from gemseo.mda.sequential_settings import MDASequential_Settings  # noqa: F401
+
+# Class name -> defining submodule (lazy-loaded on attribute access).
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
+    "MDAChain": "chain",
+    "MDAChain_Settings": "chain_settings",
+    "MDAGaussSeidel": "gauss_seidel",
+    "MDAGaussSeidelNewtonRaphson": "gauss_seidel_newton_raphson",
+    "MDAGaussSeidelNewtonRaphson_Settings": "gauss_seidel_newton_raphson_settings",
+    "MDAGaussSeidel_Settings": "gauss_seidel_settings",
+    "MDAJacobi": "jacobi",
+    "MDAJacobi_Settings": "jacobi_settings",
+    "MDANewtonRaphson": "newton_raphson",
+    "MDANewtonRaphson_Settings": "newton_raphson_settings",
+    "MDAQuasiNewton": "quasi_newton",
+    "MDAQuasiNewton_Settings": "quasi_newton_settings",
+    "MDASequential": "sequential",
+    "MDASequential_Settings": "sequential_settings",
+    "mda_factory": "factory",
+})
+
+install_lazy_reexport(globals(), _name_to_location)

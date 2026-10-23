@@ -1,0 +1,8 @@
+# serializer version: 1
+# name: test_validator
+  '''
+  1 validation error for SpecificUniformDistribution_Settings
+    Value error, The maximum of the uniform random variable must be greater than its minimum. [type=value_error, input_value={'minimum': 1.0, 'maximum': 0.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

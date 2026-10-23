@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_jacobian
+  'Unsupported LU factorization for LinearOperators! Please use Sparse matrices instead'
+# ---
+# name: test_settings_type_error
+  'The Pydantic model must be a BaseMDASettings; got str.'
+# ---

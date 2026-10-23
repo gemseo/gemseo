@@ -1,0 +1,108 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""The DOE used by a One-factor-at-a-Time (OAT) sensitivity analysis."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import TextIO
+
+from numpy import array
+
+from gemseo.doe.core.base_doe_library import BaseDOELibrary
+from gemseo.doe.core.base_doe_library import DOEAlgorithmDescription
+from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
+from gemseo.util.typing import RealArray
+
+if TYPE_CHECKING:
+    from gemseo.space.base import BaseVariableSpace
+
+OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
+
+
+class OATDOE(BaseDOELibrary[OATDOE_Settings]):
+    r"""The DOE used by a One-factor-at-a-Time sensitivity analysis.
+
+    The purpose of the OAT is to quantify the finite difference
+
+    $$
+       df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
+              -
+              f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
+    $$
+
+    associated with a small variation $dX_i$ of $X_i$ with
+
+    $$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
+
+    The finite differences $df_1,\ldots,df_d$ are computed sequentially
+    from an initial point
+
+    $$X=(X_1,\ldots,X_d)$$
+
+    From these finite differences, we can compare their absolute values
+    $|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
+
+    The OAT method works on the unit hypercube,
+    namely the probability scale of the input variables:
+    it adds the relative step $\delta_r$
+    to the $i$-th coordinate $u_i$ of the initial point,
+    and subtracts it instead whenever $u_i+\delta_r\geq 1$,
+    so that the perturbed coordinate stays in the open interval $(0,1)$
+    where the quantile functions of the input variables are finite.
+    This is why $\delta_r$ must be smaller than $1/2$.
+    The variation $dX_i$ is then negative,
+    which changes the sign of the corresponding finite difference.
+
+    Note that
+    GEMSEO does not implement this sensitivity analysis
+    but this DOE is used by
+    the [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
+    which repeats this sensitivity analysis
+    and computes statistics from the repetitions,
+    either from the finite differences
+    or from the elementary effects in the sense of Morris (1991),
+    namely the finite differences divided by the signed step that produced them.
+    """
+
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        "OATDOE": DOEAlgorithmDescription(
+            algorithm_name="OATDOE",
+            description="The DOE used by a One-factor-at-a-Time sensitivity analysis.",
+            internal_algorithm_name="OATDOE",
+            library_name="OATDOE",
+            settings_class=OATDOE_Settings,
+        )
+    }
+
+    def __init__(self, algo_name: str = "OATDOE") -> None:  # noqa:D107
+        super().__init__(algo_name)
+
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
+        step = self._settings.step
+        initial_point = self._settings.initial_point
+
+        points = [initial_point]
+        for i in range(len(initial_point)):
+            current_point = points[-1].copy()
+            points.append(current_point)
+            if current_point[i] + step >= 1:
+                current_point[i] -= step
+            else:
+                current_point[i] += step
+
+        return array(points)

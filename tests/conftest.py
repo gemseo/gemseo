@@ -16,30 +16,74 @@
 
 from __future__ import annotations
 
+import filecmp
 import operator
-from collections.abc import Generator
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import NamedTuple
 
+import matplotlib
 import pytest
+from matplotlib import font_manager
 from numpy import array
 
 from gemseo import set_data_converters
-from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.variables import X_SHARED
-from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
+from gemseo.problem.mdo.sellar import with_2d_array
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from typing import Any
 
-    from gemseo import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
-DOC_EXAMPLE_MARK = "doc_examples"
+# Use a non GUI rendering backend for matplotlib.
+matplotlib.use("agg")
+
+doc_example_mark = "doc_examples"
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Stop the session when matplotlib does not use its bundled fonts.
+
+    The images of the snapshot tests are rendered with the fonts bundled with
+    matplotlib. The matplotlib font cache is shared by all the environments of the
+    user; when it is written by a matplotlib whose bundled fonts are missing, for
+    example while a virtual environment is being reinstalled, the system fonts are
+    used instead and all the image comparisons fail.
+
+    The contents of the fonts are compared rather than their paths: the cache can
+    point to an identical copy of the bundled font from another environment, e.g. in
+    the uv cache, which renders the same images.
+
+    Args:
+        session: The pytest session.
+    """
+    font_path = Path(
+        font_manager.findfont(
+            font_manager.FontProperties(family=["DejaVu Sans"]),
+            fallback_to_default=False,
+        )
+    )
+    bundled_font_path = Path(
+        matplotlib.get_data_path(), "fonts", "ttf", "DejaVuSans.ttf"
+    )
+    if not filecmp.cmp(font_path, bundled_font_path, shallow=False):
+        cache_path = Path(
+            matplotlib.get_cachedir(),
+            f"fontlist-v{font_manager.FontManager.__version__}.json",
+        )
+        pytest.exit(
+            f"matplotlib uses the font {font_path} instead of the one it bundles, "
+            "the image comparisons would fail: its font cache is stale. "
+            f"Delete {cache_path} and run the tests again.",
+            returncode=pytest.ExitCode.USAGE_ERROR,
+        )
 
 
 def pytest_collection_modifyitems(
@@ -50,10 +94,10 @@ def pytest_collection_modifyitems(
     """Skip by default some marked tests."""
     if not config.getoption("-m"):
         skip_me = pytest.mark.skip(
-            reason=f"use '-m {DOC_EXAMPLE_MARK}' to run this test"
+            reason=f"use '-m {doc_example_mark}' to run this test"
         )
         for item in items:
-            if DOC_EXAMPLE_MARK in item.keywords:
+            if doc_example_mark in item.keywords:
                 item.add_marker(skip_me)
 
 
@@ -76,12 +120,34 @@ def sellar_disciplines() -> SellarDisciplines:
 
 
 @pytest.fixture
+def two_virtual_disciplines() -> list[Discipline]:
+    """Create two dummy disciplines that can only be executed in virtual mode."""
+
+    class VirtualDummy(DummyDiscipline):
+        virtual_execution = True
+
+    disc_1 = VirtualDummy("d1")
+    disc_1.io.input_grammar.update_from_names(["x"])
+    disc_1.io.output_grammar.update_from_names(["y"])
+    disc_1.io.input_grammar.defaults = {"x": array([1.0])}
+    disc_1.default_output_data = {"y": array([2.0])}
+
+    disc_2 = VirtualDummy("d2")
+    disc_2.io.input_grammar.update_from_names(["y"])
+    disc_2.io.output_grammar.update_from_names(["z"])
+    disc_2.io.input_grammar.defaults = {"y": array([3.0])}
+    disc_2.default_output_data = {"z": array([4.0])}
+
+    return [disc_1, disc_2]
+
+
+@pytest.fixture
 def sellar_with_2d_array() -> Generator[None, Any, None]:
     """Change the data-converter temporary for sellar with 2d x_shared array."""
-    if WITH_2D_ARRAY:  # pragma: no cover
+    if with_2d_array:  # pragma: no cover
         set_data_converters(
-            {X_SHARED: operator.itemgetter(0)},
-            {X_SHARED: lambda a: array([a])},
+            {x_shared: operator.itemgetter(0)},
+            {x_shared: lambda a: array([a])},
             {},
         )
         yield

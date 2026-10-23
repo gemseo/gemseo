@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_main_xdsm_with_coupling_study
+  "The option 'xdsm' is compatible only with the study type 'mdo'."
+# ---

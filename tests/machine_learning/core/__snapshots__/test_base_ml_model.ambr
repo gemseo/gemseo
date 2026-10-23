@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_transformer_wrong_type
+  'BaseTransformer type must be either BaseTransformer, Tuple[str, StrKeyMapping] or str.'
+# ---
+# name: test_transformers_error
+  'An BaseMLModel cannot have both a transformer for all variables of a group and a transformer for one variable of this group.'
+# ---

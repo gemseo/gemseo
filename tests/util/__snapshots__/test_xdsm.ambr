@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_visualize_without_html_file
+  'A HTML file is required to visualize the XDSM in a web browser.'
+# ---

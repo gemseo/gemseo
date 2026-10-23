@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_model_from_a_wrong_model
+  'The Pydantic model must be a Model; got WrongModel.'
+# ---

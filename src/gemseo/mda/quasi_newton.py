@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of quasi Newton algorithm variants for solving MDAs.
 
-`quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
+[quasi-Newton methods](https://en.wikipedia.org/wiki/Quasi-Newton_method)
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from typing import Literal
 from numpy import array
 from scipy.optimize import root
 
-from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
@@ -44,16 +44,16 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(BaseParallelMDASolver):
+class MDAQuasiNewton(BaseMDAParallelSolver):
     r"""Quasi-Newton solver for MDA.
 
-    `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
+    [Quasi-Newton methods](https://en.wikipedia.org/wiki/Quasi-Newton_method)
     include numerous variants (
-    `Broyden <https://en.wikipedia.org/wiki/Broyden%27s_method>`__,
-    `Levenberg-Marquardt <https://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm>`
+    [Broyden](https://en.wikipedia.org/wiki/Broyden%27s_method),
+    [Levenberg-Marquardt](https://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm)
     __, ...).
 
     The name of the variant should be provided via the :code:`method` parameter of the
@@ -61,23 +61,21 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
     The new iterate is given by:
 
-    .. math::
+    $$x_{k+1} = x_k - \\rho_k B_k f(x_k)$$
 
-       x_{k+1} = x_k - \\rho_k B_k f(x_k)
-
-    where :math:`\\rho_k` is a coefficient chosen in order to minimize the convergence
-    and :math:`B_k` is an approximation of :math:`Df(x_k)^{-1}`, the inverse of the
-    Jacobian of :math:`f` at :math:`x_k`.
+    where $\\rho_k$ is a coefficient chosen in order to minimize the convergence
+    and $B_k$ is an approximation of $Df(x_k)^{-1}$, the inverse of the
+    Jacobian of $f$ at $x_k$.
     """
 
-    Settings: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
+    settings_class: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
     """The pydantic model for the settings."""
 
-    _METHODS_SUPPORTING_CALLBACKS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
+    _methods_supporting_listeners: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
         QuasiNewtonMethod.BROYDEN1,
         QuasiNewtonMethod.BROYDEN2,
     )
-    """The methods supporting callback functions."""
+    """The methods supporting iteration listeners."""
 
     disciplines: tuple[Discipline, ...]
     """The disciplines."""
@@ -88,18 +86,17 @@ class MDAQuasiNewton(BaseParallelMDASolver):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAQuasiNewton_Settings | None = None,
-        **settings: Any,
+        settings: MDAQuasiNewton_Settings | None = None,
     ) -> None:
         """
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+        if self.settings.method not in self._methods_supporting_listeners:
+            del self.io.output_grammar[self.normalized_residual_norm_name]
 
     def __get_options(self) -> dict[str, float | int]:
         """Get the options adapted to the resolution method."""
@@ -151,7 +148,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             self._update_local_data_from_array(x_vect)
 
             for discipline in self._disciplines:
-                discipline.linearize(self.io.data)
+                discipline.linearize(self.io.get_merged_data())
 
             self.assembly.compute_sizes(
                 self._resolved_variable_names,
@@ -160,7 +157,8 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             )
 
             return (
-                self.assembly.assemble_jacobian(
+                self.assembly
+                .assemble_jacobian(
                     self._resolved_variable_names,
                     self._resolved_variable_names,
                     is_residual=True,
@@ -172,11 +170,16 @@ class MDAQuasiNewton(BaseParallelMDASolver):
         return compute_jacobian
 
     def __get_iteration_callback(self) -> Callable[[ndarray, Any], None] | None:
-        """Return the callback function to be called after each iteration.
+        """Return the callback passed to the SciPy solver.
 
-        This callback function computes and stores the residual of the iteration.
+        This callback computes and stores the residual of the iteration,
+        then executes the iteration listeners.
+
+        Returns:
+            The callback,
+            or `None` if the method does not support iteration listeners.
         """
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method not in self._methods_supporting_listeners:
             return None
 
         def callback(iterate: ndarray, residual: ndarray) -> None:
@@ -186,7 +189,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
                 iterate: The current iterate.
                 residual: The associated residual.
             """
-            self._check_stopping_criteria()
+            self._check_termination_criteria()
 
         return callback
 
@@ -201,7 +204,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
         """
         self._update_local_data_from_array(x_vect)
 
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
@@ -215,8 +218,8 @@ class MDAQuasiNewton(BaseParallelMDASolver):
                 "MDAQuasiNewton found no strong couplings. Executed all"
                 "disciplines once."
             )
-            LOGGER.warning(msg)
-            self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
+            logger.warning(msg)
+            self.io.output_data[self.normalized_residual_norm_name] = array([0.0])
             return False
 
         self._current_iter = 0
@@ -235,32 +238,34 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             options=self.__get_options(),
         )
 
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            self._check_stopping_criteria()
+        if self.settings.method not in self._methods_supporting_listeners:
+            self._check_termination_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
-        if self.settings.method in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method in self._methods_supporting_listeners:
             self.io.update_output_data({
-                self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
+                self.normalized_residual_norm_name: array([
+                    self.normalized_residual_norm
+                ]),
             })
 
         return False
 
-    def add_iteration_callback(
-        self, iteration_callback: Callable[[MDAQuasiNewton], None]
+    def add_iteration_listener(
+        self, iteration_listener: Callable[[MDAQuasiNewton], None]
     ) -> None:
         """
         Raises:
             RuntimeError: If the quasi-Newton method
-                does not support iteration callbacks.
+                does not support iteration listeners.
         """  # noqa: D205, D212
         method = self.settings.method
-        if method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if method not in self._methods_supporting_listeners:
             msg = (
-                "Iteration callbacks are only supported for the methods: "
-                f"{self._METHODS_SUPPORTING_CALLBACKS}, not for {method}."
+                "Iteration listeners are only supported for the methods: "
+                f"{self._methods_supporting_listeners}, not for {method}."
             )
             raise RuntimeError(msg)
 
-        super().add_iteration_callback(iteration_callback)
+        super().add_iteration_listener(iteration_listener)

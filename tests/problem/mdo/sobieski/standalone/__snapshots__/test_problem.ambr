@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_wrong_dtype
+  'Unknown dtype: foo.'
+# ---

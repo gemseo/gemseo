@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_discipline_self_coupled_one_disc
+  'N2 diagrams need at least two disciplines.'
+# ---

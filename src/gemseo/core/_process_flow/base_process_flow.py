@@ -19,15 +19,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core._process_flow.base_flow import BaseFlow
-from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
-from gemseo.core._process_flow.execution_sequences.sequential import (
+from gemseo.core._process_flow.execution_sequence.parallel import ParallelExecSequence
+from gemseo.core._process_flow.execution_sequence.sequential import (
     SequentialExecSequence,
 )
 
 if TYPE_CHECKING:
-    from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
+    from gemseo.core._process_flow.execution_sequence.base import BaseExecutionSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.core.process_discipline import ProcessDiscipline
+    from gemseo.core.discipline.process_discipline import ProcessDiscipline
 
 
 class BaseProcessFlow(BaseFlow):

@@ -1,0 +1,107 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under a BSD 0-Clause License.
+#
+# Permission to use, copy, modify, and/or distribute this software
+# for any purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+# WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+# THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+# OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+# FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+# NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+# WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# How to import and export a design space from disk
+
+## Problem
+
+You want to save a design space as a file, and be able to read it afterwards.
+
+## Solution
+
+GEMSEO brings high level functions to save and load a design space stored in a file.
+
+## Step-by-step guide
+
+"""
+
+from __future__ import annotations
+
+from gemseo import read_design_space
+from gemseo import write_design_space
+
+# %%
+# ### 1. Read a design space from a file
+#
+# Imagine you get a design space stored as:
+#
+# ``` txt
+# name lower_bound value upper_bound type
+# x1 -1. 0. 1. real
+# x2 5. 6. 8. real
+# x 2. 3. 5. integer
+# ```
+#
+# You can read a design space from a file using the
+# [read_design_space()][gemseo.read_design_space] function.
+design_space = read_design_space("design_space.csv")
+design_space
+
+# %%
+# !!! note
+#
+#     Files without any header can also be considered.
+#     To read such file, the `header` optional argument should be given:
+#     `header=["name", "lower_bound", "value", "upper_bound", "type"]`
+#
+# !!! warning
+#
+#     -   You must provide the following minimal fields in the file defining the design space: `'name'`, `'lower_bound'` and `'upper_bound'`.
+#     -   For each variable `'name'`, the inequality `'lower_bound'` <= `'upper_bound'` must be satisfied.
+#     If given, the `'value'` must satisfy `'lower_bound'` <= `'value'` <= `'upper_bound'`.
+#     -   A `'value'` cell that is empty or `None` means no value; a variable has a value in every row or in none.
+#     -   A CSV file stores only real and integer variables.
+#     Use an HDF file for a design space with other variables, e.g. discrete or categorical ones.
+#
+# !!! note
+#
+#     -   Available fields are `'name'`, `'lower_bound'`, `'upper_bound'`, `'value'` and `'type'`.
+#     -   The `'value'` field is optional. By default, it is set at `None`.
+#     -   The `'type'` field is optional. By default, it is set at `real`.
+#     -   Each dimension of a variable must be provided. E.g. when the `'size'` of `'x1'` is 2:
+#
+#         ```
+#         name lower_bound value upper_bound type
+#         x1 -1. 0. 1. real
+#         x1 -3. -1. 1. real
+#         x2 5. 6. 8. real
+#         ```
+#
+# !!! note
+#     -   Lower infinite bound is encoded `'-inf'` or `'-Inf'`.
+#     -   Upper infinite bound is encoded `'inf'`, `'Inf'`, `'+inf'` or `'+Inf'`.
+#
+
+# %%
+# ### 2. Export the design space
+#
+# Then, you can export this design space by using the
+# [write_design_space()][gemseo.write_design_space] function.
+write_design_space(design_space, "new_design_space.csv")
+
+# %%
+# !!! note
+#
+#     The `fields` optional argument selects the fields to export.
+#     It must include `'name'` and must not repeat a field.
+#     The `'type'` field is added when a variable is not real.
+
+# %%
+#
+# ## Summary
+#
+# Loading and exporting a design space can be done through the high-level functions
+# [read_design_space()][gemseo.read_design_space] and
+# [write_design_space()][gemseo.write_design_space].

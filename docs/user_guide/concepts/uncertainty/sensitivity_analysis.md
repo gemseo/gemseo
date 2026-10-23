@@ -1,0 +1,445 @@
+---
+reading_time: true
+complexity: advanced
+description: "Sensitivity analysis quantifies the relative contribution of each uncertain input to the variability of the model outputs."
+tags: ['user_guide']
+search:
+  boost: 2
+---
+
+<!--
+ Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+ International License. To view a copy of this license, visit
+ http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+ Commons, PO Box 1866, Mountain View, CA 94042, USA.
+-->
+
+# Sensitivity analysis { #concept-sensitivity-analysis }
+
+After [propagating uncertainty][concept-uncertainty-propagation] through a model,
+a natural question arises: *which uncertain inputs are responsible for the output variability?*
+Sensitivity analysis answers this by computing **sensitivity indices**,
+i.e. scalar scores that rank the uncertain inputs by their influence on each output.
+
+Global sensitivity analysis (GSA) evaluates the output variation across the entire input distribution,
+capturing nonlinear effects and interactions between inputs.
+Its results depend on the chosen input distributions, not on a fixed reference point,
+making it more informative than local (gradient-based) approaches
+for models that are nonlinear or whose inputs are uncertain over a wide range.
+
+GEMSEO provides six sensitivity analysis techniques,
+in two families:
+Correlation, Morris, Sobol' and HSIC analyses quantify the contribution of each uncertain input
+to the variability of a *raw disciplinary output*,
+while FORM and ROSobol analyses are **reliability-oriented** (RO, hence the name ROSobol):
+they quantify the contribution of each uncertain input to a binary *event*
+(e.g. a disciplinary output exceeding a threshold) rather than to the raw output itself.
+
+## Available sensitivity analyses { #concept-sensitivity-analyses }
+
+| Analysis    | Class                                                                                 | Approach                                                 | Key indices                                           |
+|-------------|---------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------------------------------------------|
+| Correlation | [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis] | Linear / Monotonic                                       | Pearson, Spearman, PCC, PRCC                          |
+| Morris      | [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]                | Screening                                                | $\mu^*$, $\sigma$                                     |
+| Sobol'      | [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]                   | Variance-based                                           | First-order $S_i$, total-order $S_T$                  |
+| HSIC        | [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]                      | Kernel-based                                             | HSIC, $R^2$-HSIC                                      |
+| FORM        | [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis]                      | Reliability-oriented (importance factors)                | Classical, elliptical, physical importance factors    |
+| ROSobol     | [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]            | Reliability-oriented Sobol' (FORM + importance sampling) | First-order $S_i$, total-order $S_i^T$ (of the event) |
+
+Correlation, Sobol', HSIC, FORM and ROSobol analyses integrate features from [OpenTURNS](https://openturns.github.io/www/)
+while Morris analysis is a custom implementation.
+
+!!! note "FORM and ROSobol analyze events, not raw outputs"
+    For [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] and
+    [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis],
+    the notion of *output* used throughout the common API
+    (e.g. the keys of `indices`, the `output`/`outputs` arguments of the plotting methods)
+    is equivalent to the notion of *event*: an output name is an event name.
+    Events are built from disciplinary outputs with
+    [get_event_variables()][gemseo.uncertainty.sensitivity.base_ro.BaseROSensitivityAnalysis.get_event_variables],
+    e.g. `y = analysis.get_event_variables("y")` then `y > 3.0` is the event `"y > 3.0"`.
+
+The choice of method depends on the available budget and the type of relationship expected.
+Broadly speaking, the following guidelines can be provided:
+
+| Method      | Use when                                                                 | Typical sample budget                            | Assumption on input-output relationship                     |
+|-------------|--------------------------------------------------------------------------|--------------------------------------------------|-------------------------------------------------------------|
+| Correlation | Model is linear or monotonic; fast screening needed                      | Hundreds                                         | Linear or monotonic                                         |
+| Morris      | Many inputs; initial screening before Sobol'                             | $r(d+1)$, typically $< 100$                      | None (finite differences)                                   |
+| Sobol'      | Full variance decomposition needed                                       | 10 000+                                          | None                                                        |
+| HSIC        | Non-monotonic dependence; target/conditional SA                          | Hundreds                                         | None (kernel-based)                                         |
+| FORM        | Importance factors needed for a rare event / limit-state                 | One FORM run (tens of evaluations)               | Event well-approximated by a hyperplane at the design point |
+| ROSobol     | Full Sobol' decomposition of a rare event; crude Monte Carlo intractable | FORM run(s) + shared Sobol' budget across events | None beyond FORM's per-event design-point search            |
+
+### Correlation analysis
+
+Correlation analysis measures the strength of the association between each input and each output
+by computing eight indices in three families:
+
+- **Raw association** —
+  [Pearson](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) (linear),
+  [Spearman](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient) (rank-based, monotonic),
+  and [Kendall](https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient) (rank-based concordance);
+- **[Partial correlation](https://en.wikipedia.org/wiki/Partial_correlation)** —
+  PCC and its rank-based version PRCC, which remove the linear effect of the other inputs
+  to isolate the direct contribution of each one;
+- **Regression-based** —
+  SRC, SRRC, and SSRC,
+  the standardized coefficients of a linear (or rank) regression of the output on the inputs;
+  SSRC is the square of SRC and measures the share of output variance explained by each input.
+
+All eight indices are summarized in the following table:
+
+| Index    | Type                                     | Characteristic                                     |
+|----------|------------------------------------------|----------------------------------------------------|
+| Pearson  | Linear correlation                       | Assumes linear relationship                        |
+| Spearman | Rank correlation                         | Robust for monotonic relationships                 |
+| Kendall  | Rank correlation                         | Robust concordance measure                         |
+| PCC      | Partial correlation                      | Removes linear effect of other inputs              |
+| PRCC     | Partial rank correlation                 | Rank-based version of PCC                          |
+| SRC      | Standardized regression coefficient      | Linear regression-based                            |
+| SRRC     | Standardized rank regression coefficient | Rank regression-based                              |
+| SSRC     | Squared SRC                              | Always positive; measures explained variance share |
+
+All values lie in $[-1, 1]$ (except SSRC which lies in $[0, 1]$).
+The default [main_method][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.main_method]
+is Spearman, which is robust for monotonic but not necessarily linear relationships.
+
+[CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.plot]
+with a radar chart that displays all eight indices at once for a given output:
+
+![Correlation indices for output y](figs/correlation_analysis.png)
+
+This method is cheap (a few dozens or hundred samples suffice) but limited to linear or monotonic models.
+
+### Morris analysis
+
+Morris analysis [@morris1991] is a screening method designed for high-dimensional problems.
+It is an [elementary effects method](https://en.wikipedia.org/wiki/Elementary_effects_method):
+along $r$ random trajectories in the input space,
+each input is perturbed one at a time (OAT)
+and the resulting finite difference of the output is recorded.
+Averaging these finite differences over the trajectories yields six statistics per input:
+
+| Index            | Interpretation                                                                              |
+|------------------|---------------------------------------------------------------------------------------------|
+| $\mu$            | Mean of the finite differences (sign indicates direction)                                   |
+| $\mu^*$          | Mean of the **absolute** finite differences [@campolongo2007] — overall influence           |
+| $\sigma$         | Unbiased standard deviation of the **signed** finite differences — non-linearity and interactions |
+| `relative_sigma` | Ratio $\sigma / \mu^*$                                                                      |
+| `min`            | Minimum of the absolute finite differences                                                  |
+| `max`            | Maximum of the absolute finite differences                                                  |
+
+A finite difference is an increment of the output.
+Passing `use_elementary_effects=True` to
+[compute_indices()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.compute_indices]
+computes the same six statistics from the *elementary effects* instead,
+namely from the finite differences divided by the signed perturbation
+$dx_i = F_i^{-1}(v_i) - F_i^{-1}(u_i)$ that produced them,
+where $\delta_r$ is the relative step of the OAT method,
+smaller than $1/2$ so that $v_i$ stays in $(0,1)$,
+$u_i$ the initial point of the trajectory on the probability scale,
+$F_i$ the cumulative distribution function of the $i$-th input
+and $v_i=u_i+\delta_r$ if $u_i+\delta_r<1$ and $v_i=u_i-\delta_r$ otherwise.
+This perturbation reduces to $\delta_r(\max(x_i) - \min(x_i))$
+for a uniformly distributed input,
+and is negative when the OAT method perturbed the input downwards,
+namely when $u_i+\delta_r\geq 1$.
+An elementary effect can be seen as
+a rough approximation of the derivative of an output with respect to an input.
+The perturbation $dx_i$ varies from one input to another,
+so the two conventions may rank the inputs differently,
+and `relative_sigma` differs as well.
+
+Interpretation: a high $\mu^*$ signals an influential input;
+a high $\sigma$ relative to $\mu^*$ signals non-linear effects or interactions with other inputs;
+a low $\mu^*$ and low $\sigma$ indicates a non-influential input that can be fixed.
+
+[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.plot]
+with a unique two-dimensional scatter plot of $\mu^*$ vs. $\sigma$
+that is not available in other analysis classes.
+Each point $(\mu_i^*, \sigma_i)$ represents one input;
+inputs in the upper-right quadrant are both influential and non-linear/interactive,
+while inputs near the origin can be screened out:
+
+![Morris μ* vs σ scatter plot](figs/morris_analysis.png)
+
+The title of this figure states
+whether the indices are those of the finite differences
+or those of the elementary effects,
+which
+[uses_elementary_effects][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.uses_elementary_effects]
+also reports.
+
+It is efficient for initial screening but does not quantify the exact contributions of the uncertain inputs.
+
+### Sobol' analysis { #concept-sobol-analysis }
+
+Sobol' analysis decomposes the total output variance by the [Sobol'-Hoeffding identity](https://openturns.github.io/openturns/latest/theory/reliability_sensitivity/sensitivity_sobol.html):
+
+$$\mathbb{V}[Y] = \sum_i V_i + \sum_{i<j} V_{ij} + \cdots$$
+
+where $V_i = \mathbb{V}[\mathbb{E}[Y|X_i]]$ is the variance explained by $X_i$ alone.
+The normalized indices $S_i = V_i / \mathbb{V}[Y]$ lie in $[0, 1]$ and sum to $1$.
+This decomposition yields three types of indices:
+
+| Index        | Symbol      | Interpretation                                   |
+|--------------|-------------|--------------------------------------------------|
+| First-order  | $S_i$       | Direct contribution of $X_i$ alone               |
+| Total-order  | $S_i^T$     | Direct + interaction contribution of $X_i$       |
+| Second-order | $S_{ij}$    | Pure interaction between $X_i$ and $X_j$         |
+
+A large gap $S_i^T - S_i$ signals strong interaction effects.
+
+[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot]
+to display first-order and total-order indices as dots
+together with their confidence intervals as vertical bars:
+
+![Sobol' first and total-order indices](figs/sobol_analysis.png)
+
+This method requires a large number of model evaluations (typically 10 000+).
+
+#### Estimators { #concept-sobol-estimators }
+
+The indices are estimated from a pick-and-freeze design [@saltelli2010]:
+two independent input samples $A$ and $B$ of size $N$,
+and the hybrid samples $E^i$ obtained from $A$ by replacing its $i$-th column by that of $B$
+(plus the symmetric samples $C^i$ when the second-order indices are requested).
+Several estimators are available via the `algo` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.compute_indices]:
+SALTELLI [@saltelli2002] (default), JANSEN [@jansen1999],
+MAUNTZ_KUCHERENKO [@sobol2007] and MARTINEZ [@martinez2011],
+as well as RANK [@gamboa2022],
+which uses a single sample of independent points instead of a pick-and-freeze design
+and only provides the first-order indices.
+Confidence intervals are retrieved with
+[get_intervals()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.get_intervals].
+
+#### Rare events { #concept-rosobol-analysis }
+
+A crude Monte Carlo estimation of the Sobol' indices is intractable
+when the quantity of interest is a rare event rather than a raw output.
+[ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis]
+estimates the Sobol' indices of a binary event,
+e.g. a disciplinary output exceeding a threshold,
+by combining three ingredients:
+
+1. [FORM][concept-form-analysis] to locate the most probable failure point (MPFP), a.k.a. design point, of the event;
+2. an importance sampling (IS) auxiliary density —
+   a unit-variance normal distribution centered on the design point in the standard space —
+   so that the samples land around the limit state;
+3. the estimators above, applied to the failure indicator,
+   with the sampled pairs weighted by the ratio between the true and auxiliary densities.
+
+Several events can be passed;
+each is processed independently
+(its own design point, auxiliary density and pick-and-freeze design),
+and the total model evaluation budget `n_samples` is shared across them:
+once every design point has been located with FORM,
+the remaining budget is split equally between the events to draw their Sobol' samples.
+
+!!! note "The indices are computed in the standard space"
+    For independent marginals,
+    the standard inputs map one-to-one to the physical inputs and share their names.
+
+??? note "Weighting the pairs under importance sampling"
+    The samples are drawn in the standard space
+    from the auxiliary density $h=\mathcal{N}(u^*, I_d)$ centered on the design point $u^*$,
+    while the indices of interest are those of the failure indicator $Y=\mathbb{1}_F(U)$
+    under the true density $\varphi=\mathcal{N}(0, I_d)$.
+    Both are product densities,
+    so the likelihood ratio factorizes over the coordinates:
+
+    $$w(u)=\frac{\varphi(u)}{h(u)}=\prod_{k=1}^d w_k(u_k),
+    \qquad \log w_k(u_k) = -u^*_k u_k + \frac{(u^*_k)^2}{2}.$$
+
+    Every Sobol' estimator averages a function of *pairs* of rows $(r, r')$
+    sharing a subset $K$ of coordinates,
+    e.g. the rows of $B$ and $E^i$ share the $i$-th coordinate.
+    Such a pair must be weighted by
+
+    $$\omega_K(r, r') = w(r) \prod_{k\notin K} w_k(r'_k)
+    = \frac{w(r)\,w(r')}{\prod_{k\in K} w_k(r_k)},$$
+
+    that is, the shared coordinates are counted once.
+    Weighting each row separately, i.e. using $w(r)w(r')$,
+    would estimate the Sobol' indices of $w(U)\mathbb{1}_F(U)$ under $h$
+    instead of those of $\mathbb{1}_F(U)$ under $\varphi$,
+    with a bias that does not vanish with the sample size.
+
+    The pick-and-freeze estimators are the OpenTURNS ones
+    in which every sample moment is replaced by its importance-sampling estimate:
+    the mean of a product of the indicators of two rows
+    is weighted by the weight $\omega_K$ of the pair,
+    the mean of a term involving a single row is weighted by the weight of this row
+    and a constant term is left as is, since the weights have expectation one under $h$.
+    In particular, a row whose indicators are all zero contributes nothing
+    to any average, whatever its weights.
+    With a design point at the origin, all the weights are equal to one
+    and the estimators coincide with the OpenTURNS ones.
+    The reference variance is that of the indicator over the block $A$ only,
+    the first-order index $S_i$ is estimated from the pairs $(B, E^i)$,
+    which share the $i$-th coordinate,
+    the total-order index $S_i^T$ from the pairs $(A, E^i)$,
+    which share all the coordinates but the $i$-th one,
+    and the second-order index $S_{ij}$ from the pairs $(E^j, C^i)$,
+    which share the $i$-th and $j$-th coordinates,
+    as in the design of [@saltelli2002].
+    For $d=2$, the blocks $C^1$ and $C^2$ are the blocks $E^2$ and $E^1$, as in OpenTURNS.
+
+    Because the indicator takes the values 0 and 1, its square is itself:
+    the JANSEN estimator, which averages the squared differences $(y-y')^2$,
+    is computed from the weighted means of $y$ and $y'$ and of the product $yy'$;
+    the discordant pairs, where the safe row can carry a weight
+    as large as $e^{\beta^2/2}$ with $\beta$ the distance from the design point to the origin,
+    only enter through these row-weighted means.
+
+    The RANK estimator [@gamboa2022] sorts the independent rows along each coordinate $i$
+    and pairs each row with its successor in that order;
+    under the product density $h$,
+    the coordinates of the successor other than the $i$-th one
+    are independent of the $i$-th one,
+    so the pair is weighted accordingly.
+
+    Every pick-and-freeze index is a smooth function
+    of the mean of independent per-row terms,
+    so the central limit theorem and the delta method give its asymptotic variance,
+    as [@janon2014] shows for the unweighted estimators,
+    hence asymptotic confidence intervals.
+    These intervals are optimistic in the rare-event regime:
+    most weighted terms are zero and a few are large,
+    so the empirical covariance of the terms underestimates the true one
+    until the sample counts many failing rows.
+    The alternative is a percentile bootstrap over the $N$ rows of each block.
+    The RANK estimator only offers bootstrap intervals,
+    as the asymptotic distribution of its weighted variant is not established.
+
+    Other reliability-oriented sensitivity indices are estimated
+    with the same importance sampling ingredients,
+    e.g. the indices of [@perrin2019] and the Shapley effects of [@demangechryst2023].
+
+This method makes Sobol' analysis tractable for rare events,
+but its cost scales with the number of events.
+It also scales with the input dimension $d$ in the case of pick-and-freeze sampling,
+as with the crude Monte Carlo method.
+
+### HSIC analysis
+
+HSIC analysis uses the Hilbert–Schmidt independence criterion (HSIC),
+a kernel-based statistical dependence measure that detects any type of relationship,
+including nonlinear and non-monotonic ones.
+Each variable is mapped into a reproducing kernel Hilbert space (RKHS)
+with a covariance (kernel) function,
+and HSIC is the Hilbert-Schmidt norm of the cross-covariance operator
+between the input and output RKHS embeddings.
+It compares the joint input-output distribution against the product of the marginals,
+so it is zero if and only if the input and the output are independent.
+
+[HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis] reports three quantities per input:
+
+| Index   | Interpretation                                     |
+|---------|----------------------------------------------------|
+| HSIC    | Raw dependence measure between input and output    |
+| R²-HSIC | Normalized version in $[0, 1]$, analogous to $R^2$ |
+| p-value | Statistical significance of the dependence         |
+
+The default [main_method][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.main_method]
+is R²-HSIC (normalized, always positive, comparable across inputs).
+[filter()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.filter]
+keeps only the inputs whose dependence is statistically significant.
+
+The p-value comes in two flavors:
+an asymptotic one, obtained with a closed-form formula,
+and one estimated through permutations.
+Only the asymptotic p-value is computed by default,
+as the permutation-based one costs `n_permutations` HSIC estimations
+and dominates the computation time on large samples;
+set the `use_permutations` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+to `True` to estimate it.
+The asymptotic p-value does not exist for a conditional analysis (see below),
+which therefore requires `use_permutations=True` to be filtered.
+
+In addition to GSA (default),
+GEMSEO supports three analysis modes via the `analysis_type` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]:
+
+| Mode        | Question answered                                                                |
+|-------------|----------------------------------------------------------------------------------|
+| GLOBAL      | Which inputs drive overall output variability?                                   |
+| TARGET      | Which inputs cause the output to enter a target region (e.g. extreme values)?    |
+| CONDITIONAL | Which inputs matter given a conditioning event (output in a certain domain)?     |
+
+TARGET and CONDITIONAL modes require specifying `output_bounds` to define the region of interest.
+
+![HSIC R²-HSIC indices](figs/hsic_analysis.png)
+
+### FORM analysis { #concept-form-analysis }
+
+[FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] turns the *importance factors*
+of the first-order reliability method (FORM) into sensitivity indices for a binary event,
+e.g. a disciplinary output exceeding a threshold.
+FORM estimates the probability of the event
+by searching for the most probable failure point (MPFP), a.k.a. design point,
+and approximating the limit-state surface at this point by a hyperplane;
+the importance factors quantify the contribution of each input to reaching this point.
+
+Three types of importance factors are available:
+
+| Factor       | Definition                                                                                                  |
+|--------------|-------------------------------------------------------------------------------------------------------------|
+| `classical`  | Squares of the co-factors of the design point in the physical space                                         |
+| `elliptical` | Squares of the co-factors of the design point in the standard space                                         |
+| `physical`   | Squares of the partial derivatives of the Hasofer-Lind reliability index w.r.t. the inputs (physical space) |
+
+The default [main_method][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis.main_method]
+is `classical`.
+
+Events are defined with
+[get_event_variables()][gemseo.uncertainty.sensitivity.base_ro.BaseROSensitivityAnalysis.get_event_variables],
+e.g. `y = analysis.get_event_variables("y")` then `events = {"y_high": y > 3.0}`,
+and passed to
+[compute_samples()][gemseo.uncertainty.sensitivity.form.FORMAnalysis.compute_samples],
+which runs the FORM study before
+[compute_indices()][gemseo.uncertainty.sensitivity.form.FORMAnalysis.compute_indices]
+derives the importance factors.
+
+This method is cheap (a single FORM run, i.e. tens of model evaluations)
+but relies on FORM's linear approximation of the limit-state surface at the design point.
+
+## Common interface { #concept-sensitivity-interface }
+
+All sensitivity analyses follow the same workflow:
+
+1. **Compute samples** — [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples] draws input–output samples
+   from the [RandomSpace][gemseo.space.random.RandomSpace]
+   passed as `random_space`.
+   Alternatively, an existing [IODataset][gemseo.dataset.io_dataset.IODataset] can be reused directly.
+2. **Compute indices** — [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
+   derives the sensitivity indices from the samples.
+3. **Visualize** — methods such as [plot_bar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_bar] and [plot_radar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_radar] display the indices.
+4. **Export** — [to_dataset()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.to_dataset]
+   exports the indices as a [Dataset][concept-dataset].
+
+Indices can be standardized so that different methods are compared on the same scale
+(e.g. using [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison]),
+and inputs can be sorted by decreasing influence via [sort_input_variables()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.sort_input_variables].
+
+!!! how-to
+    - [Compute sensitivity indices][compute-sensitivity-indices]
+    - [Plot sensitivity indices][plot-sensitivity-indices]
+    - [Export sensitivity indices to a dataset][export-sensitivity-indices-to-a-dataset]
+    - [Sort inputs by influence][sort-inputs-by-influence]
+    - [Change the main sensitivity method][change-the-main-sensitivity-method]
+    - [Compare sensitivity analyses][compare-sensitivity-analyses]
+    - [Save and reuse sensitivity analysis samples][save-and-reuse-sensitivity-analysis-samples]
+
+## Going further
+
+!!! explanations
+    - [Uncertainty propagation][concept-uncertainty-propagation]

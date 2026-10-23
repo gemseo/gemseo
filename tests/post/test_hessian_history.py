@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -27,28 +26,25 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.hessian_history import HessianHistory
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.hessian_history_settings import HessianHistory_Settings
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
-DIR_PATH = Path(__file__).parent
-POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
-POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
+dir_path = Path(__file__).parent
+power2_path = dir_path / "power2_opt_pb.h5"
+power2_nan_path = dir_path / "power2_opt_pb_nan.h5"
 
 
 @pytest.mark.parametrize(
-    ("obj_relative", "baseline_images"),
-    [
-        (False, ["power2_2_hessian_approximation"]),
-        (True, ["power2_2_hessian_approximation"]),
-    ],
+    "obj_relative",
+    [False, True],
 )
-@image_comparison(None)
-def test_opt_hist_const(baseline_images, obj_relative) -> None:
+def test_opt_hist_const(obj_relative, snapshot_matplotlib) -> None:
     """Test that a problem with constraints is properly rendered."""
-    problem = OptimizationProblem.from_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(power2_path)
     execute_post(
         problem,
         post_name="HessianHistory",
@@ -59,18 +55,16 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
 
 
 @pytest.mark.parametrize(
-    ("problem_path", "baseline_images"),
-    [(POWER2_PATH, ["power2view_hessian_approximation"])],
+    "problem_path",
+    [power2_path],
 )
-@image_comparison(None)
 def test_opt_hist_from_database(
-    baseline_images,
     problem_path,
+    snapshot_matplotlib,
 ) -> None:
     """Test the generation of the plots from databases.
 
     Args:
-        baseline_images: The reference images to be compared.
         problem_path: The path to the hdf5 database of the problem to test.
     """
     problem = OptimizationProblem.from_hdf(problem_path)
@@ -81,84 +75,63 @@ def test_opt_hist_from_database(
     )
 
 
-def test_diag_with_nan() -> None:
+def test_diag_with_nan(snapshot) -> None:
     """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(
-        lambda x: 2 * x, "obj", jac=lambda x: array([[2.0]])
+    problem.objective = ArrayFunction(
+        lambda x: 2 * x, name="obj", jac=lambda x: array([[2.0]])
     )
     execute_algo(
         problem, algo_name="PYDOE_FULLFACT", n_samples=3, eval_jac=True, algo_type="doe"
     )
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "HessianHistory cannot be plotted "
-            "because the approximated Hessian diagonal contains NaN."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
-TEST_PARAMETERS = {
-    "standardized": (
-        True,
-        [
-            "hessian_history_hessian_approximation_standardized",
-        ],
-    ),
-    "unstandardized": (
-        False,
-        ["hessian_history_hessian_approximation_unstandardized"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
     use_standardized_objective,
-    baseline_images,
     three_length_common_problem,
+    snapshot_matplotlib,
 ) -> None:
     """Check HessianHistory with objective, standardized or not."""
-    three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt = HessianHistory(three_length_common_problem)
-    opt.execute(save=False)
+    opt.execute(
+        HessianHistory_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 @pytest.mark.parametrize(
-    ("case", "baseline_images"),
-    [
-        (1, ["461_1_hessian_history_hessian"]),
-        (2, ["461_2_hessian_history_hessian"]),
-    ],
+    "case",
+    [1, 2],
 )
-@image_comparison(None)
-def test_461(case, baseline_images) -> None:
+def test_461(case, snapshot_matplotlib) -> None:
     """Check that HessianHistory works with the cases mentioned in issue 461.
 
     1. Design space of dimension 1 and scalar output.
     2. Design space of dimension > 1 and vector output.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-2, upper_bound=2.0, value=-2.0)
+    design_space.add_real_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-2.0)
     if case == 2:
-        design_space.add_variable("y", lower_bound=-2, upper_bound=2.0, value=-2.0)
+        design_space.add_real_variable(
+            "y", lower_bound=-2.0, upper_bound=2.0, value=-2.0
+        )
 
     problem = OptimizationProblem(design_space)
     if case == 1:
-        problem.objective = MDOFunction(lambda x: x[0] ** 2, "func")
+        problem.objective = ArrayFunction(lambda x: x[0] ** 2, name="func")
     elif case == 2:
-        problem.objective = problem.objective = MDOFunction(
-            lambda x: array([x[0] ** 2 + x[1] ** 2]), "func"
+        problem.objective = problem.objective = ArrayFunction(
+            lambda x: array([x[0] ** 2 + x[1] ** 2]), name="func"
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
@@ -166,8 +139,7 @@ def test_461(case, baseline_images) -> None:
     execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
-@image_comparison(baseline_images=["hessian_history_hessian_variable_names"])
-def test_variable_names() -> None:
+def test_variable_names(snapshot_matplotlib) -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
         post_name="HessianHistory",
@@ -177,21 +149,15 @@ def test_variable_names() -> None:
     )
 
 
-def test_no_gradient_history() -> None:
+def test_no_gradient_history(snapshot) -> None:
     """Check that HessianHistory cannot work without gradient history."""
     design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The HessianHistory cannot be plotted "
-            "because the history of the gradient of the objective is empty."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_post(problem, post_name="HessianHistory", save=False, show=False)

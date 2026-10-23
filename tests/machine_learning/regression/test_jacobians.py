@@ -1,0 +1,260 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Syver Doeving Agdestein
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Test analytical Jacobian expressions against finite difference approximations.
+
+This is done using the built in check method of Discipline. The regression models are
+thus converted to surrogate disciplines. The Jacobians are checked over different
+combinations of datasets (scalar and vector inputs and outputs), transformers and
+parameters.
+"""
+
+from __future__ import annotations
+
+from operator import itemgetter
+from typing import TYPE_CHECKING
+
+import pytest
+from numpy import arange
+from numpy import array
+
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.surrogate import SurrogateDiscipline
+from gemseo.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
+    LinearRegressor_Settings,
+)
+from gemseo.machine_learning.regression.model.pce_settings import PCERegressor_Settings
+from gemseo.machine_learning.regression.model.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
+from gemseo.machine_learning.regression.model.rbf_settings import RBF
+from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.helper import concretize_classes
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.dataset.dataset import Dataset
+from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
+
+learning_size = 10
+
+
+def create_dataset(
+    dataset_name: str,
+    expressions: Mapping[str, str],
+    design_space_variables: Mapping[str, Mapping[str, str]],
+    objective_name: str,
+    n_samples: int = learning_size,
+) -> IODataset:
+    """Return a dataset from a sampled function.
+
+    Args:
+        dataset_name: The name of the dataset.
+        expressions: The expressions to be sampled.
+        design_space_variables: A map from design space
+            variables names to bounds to be passed to DesignSpace.add_variable.
+        objective_name: The name of the objective variable.
+        n_samples: The number of learning samples.
+    """
+    discipline = AnalyticDiscipline(expressions)
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
+        "x_1", OTUniformDistribution_Settings(minimum=-3.0, maximum=3.0)
+    )
+    for name, bounds in design_space_variables.items():
+        parameter_space.add_variable(
+            name,
+            OTUniformDistribution_Settings(
+                minimum=bounds["lower_bound"], maximum=bounds["upper_bound"]
+            ),
+        )
+    scenario = EvaluationScenario([discipline], parameter_space)
+    scenario.add_observable(objective_name)
+    scenario.execute(LHS_Settings(n_samples=learning_size))
+    return scenario.to_dataset()
+
+
+# the following contains the arguments passed to create_dataset
+datasets_descriptions = (
+    # Dataset from a R -> R function sampled over [0,1]^2
+    ("scalar_scalar", {"y_1": "1+3*x_1"}, {}, "y_1"),
+    # Dataset from a R -> R^3 function sampled over [0,1]^2
+    (
+        "scalar_vector",
+        {"y_1": "1+2*x_1", "y_2": "-1-2*x_1", "y_3": "3"},
+        {},
+        "y_2",
+    ),
+    # Dataset from a R^2 -> R function sampled over [0,1]^2
+    (
+        "vector_scalar",
+        {"y_1": "1+2*x_1+3*x_2"},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
+        "y_1",
+    ),
+    # Dataset from a R^2 -> R^3 function sampled over [0,1]^2
+    (
+        "linear",
+        {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
+        "y_1",
+    ),
+    # Dataset from a R^3 -> R^3 function sampled over [0,1]^2
+    (
+        "polynomial",
+        {
+            "y_1": "1+2*x_1+3*x_2 + 0.5*x_1**5 + 4*x_1*x_2**3",
+            "y_2": "-1-2*x_1-3*x_2 - 0.5*x_2**4+ 7*x_1**3*x_3**2",
+            "y_3": "3-9*x_3**2",
+        },
+        {
+            "x_2": {"lower_bound": -3.0, "upper_bound": 3.0},
+            "x_3": {"lower_bound": -4.0, "upper_bound": 4.0},
+        },
+        "y_1",
+    ),
+)
+
+transformers = (
+    {},
+    {IODataset.input_group: Scaler(offset=5, coefficient=3)},
+    {IODataset.output_group: Scaler(offset=-3, coefficient=0.1)},
+    {
+        IODataset.input_group: Scaler(offset=10, coefficient=4),
+        IODataset.output_group: Scaler(offset=-7, coefficient=-8),
+    },
+    {
+        IODataset.input_group: PCA(n_components=1),
+        IODataset.output_group: PCA(n_components=1),
+    },
+)
+
+
+@pytest.fixture(
+    scope="module",
+    params=datasets_descriptions,
+    ids=map(itemgetter(0), datasets_descriptions),
+)
+def dataset(request) -> Dataset:
+    """Return one dataset by one at runtime from datasets_descriptions."""
+    return create_dataset(*request.param)
+
+
+def test_regression_model_jacobian(snapshot) -> None:
+    """Test that by default the computation of the Jacobian raises an error."""
+    dataset = create_dataset(*datasets_descriptions[0])
+    with (
+        assert_exception(NotImplementedError, snapshot),
+        concretize_classes(BaseRegressor),
+    ):
+        BaseRegressor(dataset).predict_jacobian(array([1.0]))
+
+
+def test_regression_model_hessian(snapshot) -> None:
+    """Test that by default the computation of the Hessian raises an error."""
+    dataset = create_dataset(*datasets_descriptions[0])
+    with (
+        assert_exception(NotImplementedError, snapshot),
+        concretize_classes(BaseRegressor),
+    ):
+        BaseRegressor(dataset).predict_hessian(array([1.0]))
+
+
+@pytest.mark.parametrize("transformer", transformers)
+@pytest.mark.parametrize("fit_intercept", [True, False])
+def test_linreg(dataset, transformer, fit_intercept) -> None:
+    """Test linear regression Jacobians."""
+    discipline = SurrogateDiscipline.from_settings(
+        LinearRegressor_Settings(fit_intercept=fit_intercept),
+        dataset,
+        transformer=transformer,
+    )
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("transformer", transformers)
+@pytest.mark.parametrize("fit_intercept", [True, False])
+@pytest.mark.parametrize("degree", arange(1, 5))
+def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
+    """Test polynomial regression Jacobians."""
+    discipline = SurrogateDiscipline.from_settings(
+        PolynomialRegressor_Settings(fit_intercept=fit_intercept, degree=degree),
+        dataset,
+        transformer=transformer,
+    )
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("transformer", transformers)
+@pytest.mark.parametrize("kernel", RBF)
+def test_rbf(dataset, transformer, kernel) -> None:
+    """Test RBF regression Jacobians."""
+    discipline = SurrogateDiscipline.from_settings(
+        RBFRegressor_Settings(kernel=kernel),
+        dataset,
+        transformer=transformer,
+    )
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-4, rtol=1e-4)
+
+
+@pytest.mark.parametrize("transformer", transformers)
+def test_rbf_high_degree(transformer) -> None:
+    """Test the RBF Jacobians when the polynomial degree exceeds the kernel minimum.
+
+    The per-kernel minimum degrees do not exceed 2,
+    so a higher degree is required to exercise the monomials
+    whose exponents are greater than 2.
+    """
+    # The polynomial of degree 3 has 10 monomials in dimension 2,
+    # hence the learning size greater than the default one.
+    dataset = create_dataset(*datasets_descriptions[3], n_samples=30)
+    discipline = SurrogateDiscipline.from_settings(
+        RBFRegressor_Settings(degree=3),
+        dataset,
+        transformer=transformer,
+    )
+    # The cubic polynomial makes the derivatives too steep
+    # for the default forward finite differences.
+    assert DisciplineJacobianChecker(discipline).check(
+        atol=1e-4,
+        rtol=1e-4,
+        approximation_mode=ApproximationMode.CENTERED_DIFFERENCES,
+        step=1e-6,
+    )
+
+
+def test_pce(dataset) -> None:
+    """Test polynomial regression Jacobians."""
+    discipline = SurrogateDiscipline.from_settings(
+        PCERegressor_Settings(), dataset, transformer={}
+    )
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)

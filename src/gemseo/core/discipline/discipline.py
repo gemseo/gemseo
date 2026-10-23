@@ -17,64 +17,61 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from multiprocessing import cpu_count
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import empty
 from numpy import zeros
 from scipy.sparse import csr_array
-from strenum import StrEnum
 
-from gemseo.core._discipline_class_injector import ClassInjector
-from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
-from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
-from gemseo.utils.derivatives.error_estimators import EPSILON
-from gemseo.utils.enumeration import merge_enums
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util.constant import epsilon
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.derivative.approximation_mode import HybridApproximationMode
+from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from collections.abc import Sequence
-    from enum import EnumType
-    from pathlib import Path
 
     from numpy import ndarray
 
-    from gemseo.caches.cache_entry import CacheEntry
+    from gemseo.core.cache.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.typing import JacobianData
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import JacobianData
+    from gemseo.util.typing import StrKeyMapping
 
 
 def _default_dict_factory() -> dict:
-    """Instantiate a ``defaultdict(None)`` object.
+    """Instantiate a `defaultdict(None)` object.
 
     Returns:
-        A ``defaultdict(None)`` object.
+        A `defaultdict(None)` object.
     """
     return defaultdict(None)
 
 
-class Discipline(BaseDiscipline, metaclass=ClassInjector):
+class Discipline(BaseDiscipline):
     """The base class for disciplines.
 
-    The :meth:`.execute` method is used to do compute output data from input data.
-    The :meth:`.linearize` method can be used
-    to compute the Jacobian of the differentiable outputs
+    The [execute()][gemseo.core.discipline.discipline.Discipline.execute]
+    method is used to do compute output data from input data.
+    The [linearize()][gemseo.core.discipline.discipline.Discipline.linearize]
+    method can be used to compute the Jacobian of the differentiable outputs
     with respect to differentiated inputs.
-    The :attr:`.jac` stores this Jacobian.
+    The [jac][gemseo.core.discipline.discipline.Discipline.jac] attribute
+    stores this Jacobian.
     This method can evaluate the true derivatives (default)
-    if the :meth:`_compute_jacobian` method is implemented
+    if the `_compute_jacobian()` method is implemented
     or approximated the derivatives,
-    depending on the :attr:`.linearization_mode`
-    (one of :attr:`.LinearizationMode`).
+    depending on the
+    [linearization_mode][gemseo.core.discipline.discipline.Discipline.linearization_mode]
+    (one of
+    [LinearizationMode][gemseo.core.discipline.discipline.Discipline.LinearizationMode]).
     """
 
     class InitJacobianType(StrEnum):
@@ -89,16 +86,42 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         SPARSE = "sparse"
         """Initialized as SciPy CSR arrays filled with zeros."""
 
-    ApproximationMode: EnumType = merge_enums(
-        "ApproximationMode", StrEnum, ApproximationMode, HybridApproximationMode
-    )
+    class LinearizationMode(StrEnum):
+        """All linearization modes available for disciplines.
 
-    LinearizationMode: EnumType = merge_enums(
-        "LinearizationMode",
-        StrEnum,
-        DerivationMode,
-        ApproximationMode,
-    )
+        Either compute the analytical Jacobian (`AUTO`) or approximate it; the
+        approximation members alias the corresponding `ApproximationMode` and
+        `HybridApproximationMode` members so values stay in sync.
+        """
+
+        AUTO = "auto"
+        """Compute the analytical Jacobian of the discipline."""
+
+        COMPLEX_STEP = ApproximationMode.COMPLEX_STEP
+        """Complex-step method: perturb each variable with a small imaginary number."""
+
+        FINITE_DIFFERENCES = ApproximationMode.FINITE_DIFFERENCES
+        """Finite differences: perturb each variable with a small real number."""
+
+        CENTERED_DIFFERENCES = ApproximationMode.CENTERED_DIFFERENCES
+        """Centered finite differences: two-sided perturbation with a small step."""
+
+        HYBRID_COMPLEX_STEP = HybridApproximationMode.HYBRID_COMPLEX_STEP
+        """Complex-step applied only to Jacobian blocks unavailable analytically."""
+
+        HYBRID_FINITE_DIFFERENCES = HybridApproximationMode.HYBRID_FINITE_DIFFERENCES
+        """Finite differences applied only to unavailable analytical Jacobian blocks."""
+
+        HYBRID_CENTERED_DIFFERENCES = (
+            HybridApproximationMode.HYBRID_CENTERED_DIFFERENCES
+        )
+        """Centered differences applied only to unavailable analytical blocks."""
+
+    ApproximationMode = ApproximationMode
+    """Enumeration of approximation modes."""
+
+    HybridApproximationMode = HybridApproximationMode
+    """Enumeration of hybrid (semi-analytical) approximation modes."""
 
     _linearize_on_last_state: ClassVar[bool] = False
     """Whether to update the local data from the input data before linearizing."""
@@ -106,7 +129,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     jac: JacobianData
     """The Jacobian matrices of the outputs.
 
-    The structure is ``{output_name: {input_name: jacobian_matrix}}``.
+    The structure is `{output_name: {input_name: jacobian_matrix}}`.
     """
 
     _differentiated_input_names: list[str]
@@ -127,13 +150,18 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     __output_names: Iterable[str]
     """The output names used for handling execution status and statistics."""
 
-    __hybrid_approximation_name_to_mode: ClassVar[
-        Mapping[ApproximationMode, ApproximationMode]
+    __hybrid_to_base_approximation_mode: ClassVar[
+        Mapping[HybridApproximationMode, ApproximationMode]
     ] = {
-        ApproximationMode.HYBRID_FINITE_DIFFERENCES: ApproximationMode.FINITE_DIFFERENCES,  # noqa: E501
-        ApproximationMode.HYBRID_CENTERED_DIFFERENCES: ApproximationMode.CENTERED_DIFFERENCES,  # noqa: E501
-        ApproximationMode.HYBRID_COMPLEX_STEP: ApproximationMode.COMPLEX_STEP,
+        hybrid_mode: ApproximationMode(hybrid_mode.removeprefix("hybrid_"))
+        for hybrid_mode in HybridApproximationMode
     }
+    """The base approximation mode underlying each hybrid approximation mode."""
+
+    __approximation_modes: ClassVar[frozenset[str]] = frozenset(
+        ApproximationMode
+    ) | frozenset(HybridApproximationMode)
+    """The linearization modes involving approximation methods."""
 
     def __init__(  # noqa: D107
         self,
@@ -154,21 +182,22 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         return self._linearization_mode
 
     @linearization_mode.setter
-    def linearization_mode(
-        self,
-        linearization_mode: LinearizationMode,
-    ) -> None:
+    def linearization_mode(self, linearization_mode: LinearizationMode) -> None:
         self._linearization_mode = linearization_mode
 
         if (
-            linearization_mode in set(self.ApproximationMode)
+            linearization_mode in self.__approximation_modes
             and self._jac_approx is None
         ):
-            self.set_jacobian_approximation(linearization_mode)
+            self.set_jacobian_approximation(
+                HybridApproximationMode(linearization_mode)
+                if linearization_mode in set(HybridApproximationMode)
+                else ApproximationMode(linearization_mode)
+            )
 
     def linearize(
         self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_data: StrKeyMapping = read_only_empty_dict,
         compute_all_jacobians: bool = False,
         execute: bool = True,
     ) -> JacobianData:
@@ -176,25 +205,29 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Args:
             input_data: The input data.
-                If empty, use the :attr:`.`default_input_data`.
+                If empty, use the
+                [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
             compute_all_jacobians: Whether to compute the Jacobians of
                 all the outputs with respect to all the inputs.
                 Otherwise,
                 set the output variables to differentiate
-                with :meth:`.add_differentiated_outputs`
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs]
                 and the input variables with respect to which to differentiate them
-                with :meth:`.add_differentiated_inputs`.
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             execute: Whether to start by executing the discipline
                 to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.cache`.
+                have been stored in the
+                [cache][gemseo.core.discipline.discipline.Discipline.cache].
 
         Returns:
             The Jacobian matrices
-            in the dictionary form ``{output_name: {input_name: jacobian_matrix}}``
-            where ``jacobian_matrix[i, j]`` is
-            the partial derivative of ``output_name[i]`` wrt ``input_name[j]``.
+            in the dictionary form `{output_name: {input_name: jacobian_matrix}}`
+            where `jacobian_matrix[i, j]` is
+            the partial derivative of `output_name[i]` wrt `input_name[j]`.
 
         Raises:
             ValueError: When either the inputs
@@ -216,11 +249,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             # The data shall be reset to their original values
             # in case an input is also an output,
             # if we don't want to keep the computed state (as in MDAs).
-            self.io._data.update(input_data)
+            self.io.input_data.update(input_data)
 
         # TODO: that should be before the previous bloc,
         # but a test_parallel_chain_combinatorial_thread fails,
-        # copy above bloc into MDOParallelChain linearization?
+        # copy above bloc into ParallelDisciplineChain linearization?
         if self._has_jacobian and self.jac:
             # For cases when linearization is called twice with different I/O
             # while cache_was_loaded=True,
@@ -266,7 +299,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
     def __compute_jacobian(self):
         """Callable used for handling execution status and statistics."""
-        if self._linearization_mode in set(self.ApproximationMode):
+        if self._linearization_mode in self.__approximation_modes:
             if self._linearization_mode in set(HybridApproximationMode):
                 self._compose_hybrid_jacobian(self.__output_names, self.__input_names)
             else:
@@ -278,7 +311,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
+        jac_approx_type: ApproximationMode | HybridApproximationMode = (
+            ApproximationMode.FINITE_DIFFERENCES
+        ),
         jax_approx_step: float = 1e-7,
         jac_approx_n_processes: int = 1,
         jac_approx_use_threading: bool = False,
@@ -288,14 +323,18 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Sets the linearization mode to approx_method,
         sets the parameters of the approximation for further use
-        when calling :meth:`.Discipline.linearize`.
+        when calling
+        [linearize()][gemseo.core.discipline.discipline.Discipline.linearize].
 
         Args:
             jac_approx_type: The approximation method,
-                either "complex_step" or "finite_differences".
+                either an
+                [ApproximationMode][gemseo.util.derivative.approximation_mode.ApproximationMode]
+                or a
+                [HybridApproximationMode][gemseo.util.derivative.approximation_mode.HybridApproximationMode].
             jax_approx_step: The differentiation step.
             jac_approx_n_processes: The maximum simultaneous number of threads,
-                if ``jac_approx_use_threading`` is True, or processes otherwise,
+                if `jac_approx_use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
             jac_approx_use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -307,22 +346,25 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_approx_wait_time: The time waited between two forks
                 of the process / thread.
         """
-        approx_method = (
-            self.__hybrid_approximation_name_to_mode[jac_approx_type]
-            if jac_approx_type in set(HybridApproximationMode)
-            else jac_approx_type
-        )
+        if jac_approx_type in set(HybridApproximationMode):
+            approximation_method = self.__hybrid_to_base_approximation_mode[
+                HybridApproximationMode(jac_approx_type)
+            ]
+        else:
+            approximation_method = ApproximationMode(jac_approx_type)
+
         self._jac_approx = DisciplineJacApprox(
             # TODO: pass the bare minimum instead of self.
             self,
-            approx_method=approx_method,
+            approx_method=approximation_method,
             step=jax_approx_step,
             parallel=jac_approx_n_processes > 1,
             n_processes=jac_approx_n_processes,
             use_threading=jac_approx_use_threading,
             wait_time_between_fork=jac_approx_wait_time,
         )
-        self._linearization_mode = jac_approx_type
+
+        self._linearization_mode = self.LinearizationMode(jac_approx_type)
 
     def set_optimal_fd_step(
         self,
@@ -330,7 +372,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         input_names: Iterable[str] = (),
         compute_all_jacobians: bool = False,
         print_errors: bool = False,
-        numerical_error: float = EPSILON,
+        numerical_error: float = epsilon,
     ) -> tuple[ndarray, dict[str, ndarray]]:
         """Compute the optimal finite-difference step.
 
@@ -343,12 +385,10 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         (round-off when doing f(x+step)-f(x))
         are approximately equal.
 
-        .. warning::
-
+        Warning:
            This calls the discipline execution twice per input variables.
 
-        .. seealso::
-
+        See Also:
            https://en.wikipedia.org/wiki/Numerical_differentiation
            and
            "Numerical Algorithms and Digital Representation", Knut Morken ,
@@ -357,18 +397,20 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         Args:
             input_names: The inputs with respect to which the outputs are linearized.
                 If empty, use the differentiated inputs defined by
-                :meth:`.add_differentiated_inputs`.
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             output_names: The outputs to be linearized.
                 If empty, use the outputs defined by
-                :meth:`.add_differentiated_outputs`.
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
                 set the input variables
                 with respect to which to differentiate the output ones
-                with :meth:`.add_differentiated_inputs`
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs]
                 and set these output variables to differentiate
-                with :meth:`.add_differentiated_outputs`.
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
                 By default, this is the machine epsilon (appx 1e-16),
@@ -447,7 +489,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 )
                 raise KeyError(msg)
 
-            output_value = self.io._data.get(output_name)
+            output_value = self.io.output_data.get(output_name)
             if output_value is None:
                 # Unknown dimension, don't check the shape.
                 continue
@@ -455,7 +497,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             output_size = get_output_size(output_name, output_value)
 
             for input_name in input_names:
-                input_value = self.io._data.get(input_name)
+                input_value = self.io.input_data.get(input_name)
                 if input_value is None:
                     # Unknown dimension, don't check the shape.
                     continue
@@ -484,7 +526,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         init_type: InitJacobianType = InitJacobianType.DENSE,
         fill_missing_keys: bool = False,
     ) -> tuple[list[str], list[str]]:
-        """Initialize the Jacobian dictionary :attr:`.jac`.
+        """Initialize the Jacobian dictionary `jac`.
 
         Args:
             input_names: The inputs with respect to which to differentiate the outputs.
@@ -511,25 +553,23 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             self.InitJacobianType(init_type)
 
         input_names = input_names or self._differentiated_input_names
-        input_names_to_sizes = (
-            self.io.input_grammar.data_converter.compute_names_to_sizes(
-                input_names, self.io._data
-            )
+        input_name_to_size = self.io.input_grammar.data_converter.compute_name_to_size(
+            input_names, self.io.input_data
         )
 
         output_names = output_names or self._differentiated_output_names
-        output_names_to_sizes = (
-            self.io.output_grammar.data_converter.compute_names_to_sizes(
-                output_names, self.io._data
+        output_name_to_size = (
+            self.io.output_grammar.data_converter.compute_name_to_size(
+                output_names, self.io.output_data
             )
         )
 
         if fill_missing_keys:
             jac = self.jac
             # Only fill the missing sub jacobians
-            for output_name, output_size in output_names_to_sizes.items():
+            for output_name, output_size in output_name_to_size.items():
                 jac_loc = jac.setdefault(output_name, defaultdict(None))
-                for input_name, input_size in input_names_to_sizes.items():
+                for input_name, input_size in input_name_to_size.items():
                     sub_jac = jac_loc.get(input_name)
                     if sub_jac is None:
                         jac_loc[input_name] = default_matrix((output_size, input_size))
@@ -538,158 +578,13 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(_default_dict_factory)
             if input_names:
-                for output_name, output_size in output_names_to_sizes.items():
+                for output_name, output_size in output_name_to_size.items():
                     jac_loc = jac[output_name]
-                    for input_name, input_size in input_names_to_sizes.items():
+                    for input_name, input_size in input_name_to_size.items():
                         jac_loc[input_name] = default_matrix((output_size, input_size))
             self.jac = jac
 
         return input_names, output_names
-
-    def _prepare_io_for_check_jacobian(
-        self,
-        input_names: Iterable[str],
-        output_names: Iterable[str],
-    ) -> tuple[Iterable[str], Iterable[str]]:
-        if not input_names:
-            input_names = self.io.input_grammar
-        if not output_names:
-            output_names = self.io.output_grammar
-        return input_names, output_names
-
-    def check_jacobian(
-        self,
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
-        derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
-        step: float = 1e-7,
-        threshold: float = 1e-8,
-        linearization_mode: LinearizationMode = LinearizationMode.AUTO,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        parallel: bool = False,
-        n_processes: int = cpu_count(),
-        use_threading: bool = False,
-        wait_time_between_fork: float = 0,
-        auto_set_step: bool = False,
-        plot_result: bool = False,
-        file_path: str | Path = "jacobian_errors.pdf",
-        show: bool = False,
-        fig_size_x: float = 10,
-        fig_size_y: float = 10,
-        reference_jacobian_path: str | Path = "",
-        save_reference_jacobian: bool = False,
-        indices: Mapping[
-            str, int | Sequence[int] | Ellipsis | slice
-        ] = READ_ONLY_EMPTY_DICT,
-    ) -> bool:
-        """Check if the analytical Jacobian is correct with respect to a reference one.
-
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `True`,
-        compute the reference Jacobian with the approximation method
-        and save it in `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `False`,
-        do not compute the reference Jacobian
-        but read it from `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is `None`,
-        compute the reference Jacobian without saving it.
-
-        Args:
-            input_data: The input data needed to execute the discipline
-                according to the discipline input grammar.
-                If ``None``, use the :attr:`.Discipline.io.input_grammar.defaults`.
-            derr_approx: The approximation method,
-                either "complex_step" or "finite_differences".
-            threshold: The acceptance threshold for the Jacobian error.
-            linearization_mode: the mode of linearization: direct, adjoint
-                or automated switch depending on dimensions
-                of inputs and outputs (Default value = 'auto')
-            input_names: The names of the inputs wrt which to differentiate the outputs.
-            output_names: The names of the outputs to be differentiated.
-            step: The differentiation step.
-            parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
-            wait_time_between_fork: The time waited between two forks
-                of the process / thread.
-            auto_set_step: Whether to compute the optimal step
-                for a forward first order finite differences gradient approximation.
-            plot_result: Whether to plot the result of the validation
-                (computed vs approximated Jacobians).
-            file_path: The path to the output file if ``plot_result`` is ``True``.
-            show: Whether to open the figure.
-            fig_size_x: The x-size of the figure in inches.
-            fig_size_y: The y-size of the figure in inches.
-            reference_jacobian_path: The path of the reference Jacobian file.
-            save_reference_jacobian: Whether to save the reference Jacobian.
-            indices: The indices of the inputs and outputs
-                for the different sub-Jacobian matrices,
-                formatted as ``{variable_name: variable_components}``
-                where ``variable_components`` can be either
-                an integer, e.g. `2`
-                a sequence of integers, e.g. `[0, 3]`,
-                a slice, e.g. `slice(0,3)`,
-                the ellipsis symbol (`...`)
-                or `None`, which is the same as ellipsis.
-                If a variable name is missing, consider all its components.
-                If ``None``,
-                consider all the components of all the ``inputs`` and ``outputs``.
-
-        Returns:
-            Whether the analytical Jacobian is correct
-            with respect to the reference one.
-        """
-        # Do not use self._jac_approx because we may want to check  complex
-        # step approximation with the finite differences for instance
-        input_names, output_names = self._prepare_io_for_check_jacobian(
-            input_names, output_names
-        )
-
-        # Differentiate analytically
-        self.add_differentiated_inputs(input_names)
-        self.add_differentiated_outputs(output_names)
-        self.linearization_mode = linearization_mode
-
-        approx = DisciplineJacApprox(
-            self,
-            derr_approx,
-            step,
-            parallel,
-            n_processes,
-            use_threading,
-            wait_time_between_fork,
-        )
-
-        if auto_set_step:
-            approx.auto_set_step(output_names, input_names)
-
-        self.linearize(input_data)
-
-        return approx.check_jacobian(
-            output_names,
-            input_names,
-            threshold=threshold,
-            plot_result=plot_result,
-            file_path=file_path,
-            show=show,
-            fig_size_x=fig_size_x,
-            fig_size_y=fig_size_y,
-            reference_jacobian_path=reference_jacobian_path,
-            save_reference_jacobian=save_reference_jacobian,
-            indices=indices,
-            input_data=input_data,
-        )
 
     def _get_differentiated_io(
         self,
@@ -703,9 +598,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 Otherwise,
                 set the input variables
                 with respect to which to differentiate the output ones
-                with :meth:`.add_differentiated_inputs`
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs]
                 and set these output variables to differentiate
-                with :meth:`.add_differentiated_outputs`.
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
         """
         if compute_all_jacobians:
             return (
@@ -724,6 +621,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         """Add the inputs with respect to which to differentiate the outputs.
 
         The inputs that do not represent continuous numbers are filtered out.
+
+        Note:
+            Filtering of non-numeric inputs is only supported when the discipline uses
+            a [JSONGrammar][gemseo.core.grammar.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
 
         Args:
             input_names: The input variables
@@ -760,6 +662,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         The outputs that do not represent continuous numbers are filtered out.
 
+        Note:
+            Filtering of non-numeric outputs is only supported when the discipline uses
+            a [JSONGrammar][gemseo.core.grammar.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
+
         Args:
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
@@ -791,8 +698,10 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         if self._has_jacobian:
             self.cache.cache_jacobian(input_data, self.jac)
 
-    def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
-        super()._set_data_from_cache(cache_entry)
+    def _set_data_from_cache(
+        self, input_data: StrKeyMapping, cache_entry: CacheEntry
+    ) -> None:
+        super()._set_data_from_cache(input_data, cache_entry)
         self._has_jacobian = True
         if cache_entry.jacobian:
             self.jac = cache_entry.jacobian
@@ -809,8 +718,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     ) -> None:
         """Compute one Jacobian matrix per input-output pair.
 
-        Store the result in :attr:`.jac`
-        as a dictionary ``{output_name: {input_name: jacobian_matrix}}``.
+        Store the result in
+        [jac][gemseo.core.discipline.discipline.Discipline.jac]
+        as a dictionary `{output_name: {input_name: jacobian_matrix}}`.
 
         Args:
             input_names: The names of the inputs
@@ -831,13 +741,12 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         inputs-outputs have been defined by using approximation methods.
 
         Args:
-            input_names: The names of the input wrt the ``output_names`` are
+            output_names: The names of the outputs to be linearized.
+            input_names: The names of the input wrt the `output_names` are
                 linearized.
-            output_names: The names  of the output to be linearized.
         """
+        self._compute_jacobian(self.__input_names, self.__output_names)
         analytical_jacobian = self.jac
-
-        self.set_jacobian_approximation(self._linearization_mode)
 
         approximated_jac = {}
         outputs_names_to_approximate = []
@@ -853,6 +762,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                     outputs_names_to_approximate.append(output_name)
                     input_names_to_approximate.append(input_name)
 
+        input_data = self.get_input_data().copy()
         # Compute approximated Jacobian elements.
         for output_name, input_name in zip(
             outputs_names_to_approximate, input_names_to_approximate, strict=False
@@ -860,6 +770,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_input_output = self._jac_approx.compute_approx_jac(
                 [output_name], [input_name]
             )
+            self.io.input_data |= input_data
             approximated_jac[output_name][input_name] = jac_input_output[output_name][
                 input_name
             ]

@@ -23,11 +23,18 @@ import os
 
 import numpy as np
 
-from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+    MDAGaussSeidelNewtonRaphson_Settings,
+)
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
-DIRNAME = os.path.dirname(__file__)
+from .mda_gauss_seidel import SobieskiMDAGaussSeidel
+from .mda_jacobi import SobieskiMDAJacobi
+
+dirname = os.path.dirname(__file__)
 
 
 def test_compare_mda_jacobi_gs() -> None:
@@ -39,7 +46,7 @@ def test_compare_mda_jacobi_gs() -> None:
     out2 = mda2.execute()
 
     for key, value1 in out1.items():
-        if key == mda.NORMALIZED_RESIDUAL_NORM:
+        if key == mda.normalized_residual_norm_name:
             continue
         assert (
             np.linalg.norm(np.array(out2[key] - value1)) / np.linalg.norm(value1) < 1e-2
@@ -48,17 +55,28 @@ def test_compare_mda_jacobi_gs() -> None:
 
 def test_mda_jacobi_newton_hybrid(sellar_with_2d_array, sellar_disciplines) -> None:
     """Compare Newton and Gauss-Seidel MDA."""
-    mda_j = MDAChain(sellar_disciplines, inner_mda_name="MDAJacobi")
+    mda_j = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDAJacobi_Settings()),
+    )
     out1 = mda_j.execute()
 
-    mda_newton = MDAChain(sellar_disciplines, inner_mda_name="MDANewtonRaphson")
+    mda_newton = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDANewtonRaphson_Settings()),
+    )
     out2 = mda_newton.execute()
 
-    mda_hybrid = MDAChain(sellar_disciplines, inner_mda_name="MDAGSNewton")
+    mda_hybrid = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(
+            inner_mda_settings=MDAGaussSeidelNewtonRaphson_Settings()
+        ),
+    )
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():
-        if key == mda_j.NORMALIZED_RESIDUAL_NORM:
+        if key == mda_j.normalized_residual_norm_name:
             continue
         nv1 = np.linalg.norm(value1)
         if nv1 > 1e-14:

@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_dimension
+  'The function output dimension is not available yet, please call function f0 once.'
+# ---
+# name: test_f_names
+  "The function 'bar' cannot be used as a function name since it is already used."
+# ---
+# name: test_f_types
+  "The function type 'ineq' is not one of those authorized (obj)."
+# ---

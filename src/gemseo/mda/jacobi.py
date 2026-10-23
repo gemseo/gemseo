@@ -21,11 +21,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
-from typing import ClassVar
 
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 if TYPE_CHECKING:
@@ -34,7 +32,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.base_mda import BaseProcessFlow
+    from gemseo.mda.core.base import BaseProcessFlow
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -63,14 +61,13 @@ class _ProcessFlow(_BaseMDAProcessFlow):
         return couplings_results
 
 
-class MDAJacobi(BaseParallelMDASolver):
+class MDAJacobi(BaseMDAParallelSolver):
     r"""Perform an MDA using the Jacobi algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear
     equations of the form,
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -79,12 +76,12 @@ class MDAJacobi(BaseParallelMDASolver):
                 F_n(x_1, x_2, \dots, x_n) = 0
             \end{matrix}
         \right.
+    $$
 
-    Beginning with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained as the
-    solution of the following :math:`n` **independent** non-linear equations:
+    Beginning with $x_1^{(0)}, \dots, x_n^{(0)}$, the iterates are obtained as the
+    solution of the following $n$ **independent** non-linear equations:
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 r_1\left( x_1^{(i+1)} \right) =
@@ -96,9 +93,10 @@ class MDAJacobi(BaseParallelMDASolver):
                 F_n(x_1^{(i)}, x_2^{(i)}, \dots, x_n^{(i+1)}) = 0
             \end{matrix}
         \right.
+    $$
     """
 
-    Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
+    settings_class: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
     """The pydantic model for the settings."""
 
     settings: MDAJacobi_Settings
@@ -109,10 +107,9 @@ class MDAJacobi(BaseParallelMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAJacobi_Settings | None = None,
-        **settings: Any,
+        settings: MDAJacobi_Settings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
 
@@ -147,11 +144,11 @@ class MDAJacobi(BaseParallelMDASolver):
         return None
 
     def _iterate_once(self) -> bool:
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         updated_couplings = self._sequence_transformer.compute_transformed_iterate(

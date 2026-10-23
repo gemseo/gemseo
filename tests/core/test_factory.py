@@ -19,37 +19,65 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
+from typing import ClassVar
 
 import pytest
 
-from gemseo.caches.factory import CacheFactory
 from gemseo.core import base_factory
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
-from gemseo.formulations.factory import MDOFormulationFactory
-from gemseo.utils.base_multiton import BaseABCMultiton
+from gemseo.core.cache.factory import CacheFactory
+from gemseo.formulation.factory import MDOFormulationFactory
+from gemseo.formulation.factory import mdo_formulation_factory
+from gemseo.util.base_multiton import BaseABCMultiton
+from gemseo.util.testing.helper import assert_exception
 
 # test data
-DATA = Path(__file__).parent / "data/factory"
+data = Path(__file__).parent / "data/factory"
+
+
+def normalize_schema(schema: Any) -> Any:
+    """Normalize a JSON schema for machine-independent comparison.
+
+    The default value of `n_processes` is the number of CPUs of the machine;
+    it is replaced by 0.
+
+    Args:
+        schema: The JSON schema or a piece of it.
+
+    Returns:
+        The normalized schema.
+    """
+    if isinstance(schema, dict):
+        return {
+            key: 0
+            if key == "n_processes" and isinstance(value, int)
+            else normalize_schema(value)
+            for key, value in schema.items()
+        }
+    if isinstance(schema, list):
+        return [normalize_schema(item) for item in schema]
+    return schema
 
 
 class MultitonFactory(metaclass=BaseABCMultiton):
-    _CLASS = int
-    _PACKAGE_NAMES = ()
+    _class: ClassVar[type[int]] = int
+    _package_names: ClassVar[tuple[str, ...]] = ()
 
 
 def test_multiton() -> None:
     """Verify the multiton behavior."""
 
     class MultitonFactory2(metaclass=BaseABCMultiton):
-        _CLASS = str
-        _PACKAGE_NAMES = ()
+        _class: ClassVar[type[str]] = str
+        _package_names: ClassVar[tuple[str, ...]] = ()
 
     a = MultitonFactory()
     assert a is MultitonFactory()
@@ -60,21 +88,21 @@ def test_multiton_cache_clear() -> None:
     """Verify the clearing of the cache of the multiton."""
     # The cache is not empty because of the Multiton* classes declared in the module.
     MultitonFactory()
-    assert BaseABCMultiton._BaseMultiton__keys_to_class_instances
+    assert BaseABCMultiton._BaseMultiton__key_to_class_instance
     BaseFactory.clear_cache()
-    assert not BaseABCMultiton._BaseMultiton__keys_to_class_instances
+    assert not BaseABCMultiton._BaseMultiton__key_to_class_instance
 
 
 def test_print_configuration(reset_factory) -> None:
     """Verify the string representation of a factory."""
-    factory = MDO_FORMULATION_FACTORY
+    factory = mdo_formulation_factory
 
     # check table header
     header_patterns = [
         r"^\+-+\+$",
         r"^\|\s+BaseMDOFormulation\s+\|$",
         r"^\+-+\+-+\+-+\+$",
-        r"^\|\s+Module\s+\|\s+Is avai.*\s+\|\s+Purpose or error " r"message\s+\|$",
+        (r"^\|\s+Module\s+\|\s+Is avai.*\s+\|\s+Purpose or error " r"message\s+\|$"),
     ]
 
     for pattern, line in zip(header_patterns, repr(factory).split("\n"), strict=False):
@@ -88,24 +116,23 @@ def test_print_configuration(reset_factory) -> None:
         assert re.findall(pattern, repr(factory))
 
 
-def test_create_error(reset_factory) -> None:
+def test_create_error(reset_factory, snapshot) -> None:
     """Verify that Factory.create catches bad sub-classes."""
-    msg = "The class dummy is not available; the available ones are: "
-    with pytest.raises(ImportError, match=msg):
-        MDO_FORMULATION_FACTORY.create("dummy", "dummy", "dummy", "dummy")
+    with assert_exception(ImportError, snapshot):
+        mdo_formulation_factory.create("dummy", "dummy", "dummy", "dummy")
 
 
 def test_create_bad_option(reset_factory) -> None:
     """Verify that a Factory.create catches bad options."""
     with pytest.raises(TypeError):
-        MDO_FORMULATION_FACTORY.create("MDF", bad_option="bad_value")
+        mdo_formulation_factory.create("MDF", bad_option="bad_value")
 
 
 @pytest.mark.parametrize(
     "formulation_name", ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
 )
 def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
-    factory = MDO_FORMULATION_FACTORY
+    factory = mdo_formulation_factory
     formulations = factory.class_names
 
     assert len(formulations) > 3
@@ -119,10 +146,9 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
 
     grammar = factory.get_options_grammar(formulation_name, write_schema=True)
     file_name = f"{grammar.name}.json"
-    assert (
-        Path(file_name).read_text().split()
-        == Path(DATA / file_name).read_text().split()
-    )
+    assert normalize_schema(
+        json.loads(Path(file_name).read_text())
+    ) == normalize_schema(json.loads((data / file_name).read_text()))
 
     grammar.validate(opt_vals)
 
@@ -140,12 +166,12 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path) -> None:
     # This test requires to use subprocess such that python can
     # be called from a temporary directory that will be automatically
     # inserted first in sys.path.
-    shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
+    shutil.copytree(data, tmp_path, dirs_exist_ok=True)
 
     # Create a module that shall fail to load the plugin.
     code = """
-from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
-assert 'DummyBiLevel' in MDO_FORMULATION_FACTORY.class_names
+from gemseo.formulation.factory import mdo_formulation_factory
+assert 'DummyBiLevel' in mdo_formulation_factory.class_names
 """
     module_path = tmp_path / "module.py"
     module_path.write_text(code)
@@ -162,14 +188,14 @@ assert 'DummyBiLevel' in MDO_FORMULATION_FACTORY.class_names
 
 def test_ext_plugin_gemseo_path(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
-    monkeypatch.setenv("GEMSEO_PATH", f"{DATA}{os.pathsep}dummy-path")
+    monkeypatch.setenv("GEMSEO_PATH", f"{data}{os.pathsep}dummy-path")
     # There could be more classes available with the plugins
     assert MDOFormulationFactory().is_available("DummyBiLevel")
 
 
 def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
-    monkeypatch.setenv("GEMSEO_PATH", str(DATA / "gemseo_dummy_plugins"))
+    monkeypatch.setenv("GEMSEO_PATH", str(data / "gemseo_dummy_plugins"))
     assert MDOFormulationFactory().failed_imports["bad"] == "division by zero"
 
 
@@ -184,7 +210,7 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:
         return [DummyEntryPoint]
 
     monkeypatch.setattr(base_factory, "entry_points", entry_points)
-    monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
+    monkeypatch.syspath_prepend(data / "gemseo_dummy_plugins")
 
     # There could be more classes available with the plugins
     assert MDOFormulationFactory().is_available("DummyBiLevel")
@@ -192,23 +218,50 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:
 
 def test_get_library_name(reset_factory) -> None:
     """Verify that the library names found are the expected ones."""
-    factory = MDO_FORMULATION_FACTORY
+    factory = mdo_formulation_factory
     assert factory.get_library_name("MDF") == "gemseo"
 
 
 def test_concrete_classes() -> None:
     """Check that the factory considers only the concrete classes."""
-    factory = MDO_FORMULATION_FACTORY
+    factory = mdo_formulation_factory
     assert factory.is_available("BiLevel")
-    assert not factory.is_available(factory._CLASS)
+    assert not factory.is_available(factory._class)
 
 
 def test_str() -> None:
     """Verify str() on a factory."""
-    assert str(MDO_FORMULATION_FACTORY) == "Factory of BaseMDOFormulation objects"
+    assert str(mdo_formulation_factory) == "Factory of BaseMDOFormulation objects"
 
 
 def test_positional_arguments() -> None:
     """Check that BaseFactory supports the positional arguments."""
     cache = CacheFactory().create("SimpleCache", tolerance=0.1)
     assert cache.tolerance == 0.1
+
+
+def test_get_sub_classes_filters_external_modules(reset_factory) -> None:
+    """Subclasses defined outside ``_package_names`` must not shadow real ones.
+
+    Reproduces the gallery scenario where a runpy-executed example defines
+    ``class Sellar2(Discipline)`` in ``__main__``. Without filtering by module
+    in ``__get_sub_classes``, that class would override the real
+    ``gemseo.problem.mdo.sellar.sellar_2.Sellar2`` in the factory and then
+    be rejected by ``__is_class_in_modules``, leaving the name unavailable.
+    """
+    test_module = __name__
+
+    class _Base:
+        pass
+
+    class _TestFactory(BaseFactory[_Base]):
+        _class: ClassVar[type[_Base]] = _Base
+        _package_names: ClassVar[tuple[str, ...]] = (test_module,)
+
+    in_module = type("Conflict", (_Base,), {"__module__": test_module})
+    type("Conflict", (_Base,), {"__module__": "external.module"})
+
+    factory = _TestFactory()
+
+    assert "Conflict" in factory.class_names
+    assert factory.get_class("Conflict") is in_module

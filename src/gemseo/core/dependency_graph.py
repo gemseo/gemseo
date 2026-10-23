@@ -21,39 +21,37 @@
 from __future__ import annotations
 
 import logging
+from importlib.util import find_spec
+from typing import TYPE_CHECKING
 from typing import Final
 from typing import cast
-
-from gemseo.core.discipline import Discipline
-from gemseo.utils.discipline import get_discipline_variable_properties
-from gemseo.utils.string_tools import pretty_str
-
-try:
-    # graphviz is an optional dependency.
-    from gemseo.post._graph_view import GraphView
-except ImportError:
-    GRAPHVIZ_IS_MISSING = True
-else:
-    GRAPHVIZ_IS_MISSING = False
-
-from typing import TYPE_CHECKING
 
 from networkx import DiGraph
 from networkx import condensation
 from networkx import strongly_connected_components
+
+from gemseo.core.discipline.base_discipline import BaseDiscipline
+from gemseo.util.discipline import get_discipline_variable_properties
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from pathlib import Path
 
-    from gemseo.utils.discipline import DisciplineVariableProperties
+    from gemseo.post._graph_view import GraphView
+    from gemseo.util.discipline import DisciplineVariableProperties
+    from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+# graphviz is an optional dependency;
+# the gemseo.post._graph_view import happens lazily where GraphView is used
+# so that gemseo.core does not depend on gemseo.post at module level.
+graphviz_is_missing: Final[bool] = find_spec("graphviz") is None
 
-ExecutionSequence = list[list[tuple[Discipline, ...]]]
+logger = logging.getLogger(__name__)
+
+ExecutionSequence = list[list[tuple[BaseDiscipline, ...]]]
 
 
 class DependencyGraph:
@@ -73,10 +71,10 @@ class DependencyGraph:
     The coupled inputs and outputs names are stored as an edge attributes named io.
     """
 
-    IO: Final[str] = "io"
+    io: Final[str] = "io"
     """The argument name for the coupling variables associated with an edge."""
 
-    def __init__(self, disciplines: Sequence[Discipline]) -> None:
+    def __init__(self, disciplines: Sequence[BaseDiscipline]) -> None:
         """
         Args:
             disciplines: The disciplines to build the graph with.
@@ -88,7 +86,7 @@ class DependencyGraph:
             self.__get_node_name_from_discipline = self._get_node_name_from_disc_id
 
     @staticmethod
-    def _get_node_name_from_disc_name(discipline: Discipline) -> str:
+    def _get_node_name_from_disc_name(discipline: BaseDiscipline) -> str:
         """Return the name of a node from the name of the associated discipline.
 
         Args:
@@ -100,7 +98,7 @@ class DependencyGraph:
         return discipline.name
 
     @staticmethod
-    def _get_node_name_from_disc_id(discipline: Discipline) -> str:
+    def _get_node_name_from_disc_id(discipline: BaseDiscipline) -> str:
         """Return the name of a node from the id of the associated discipline.
 
         Args:
@@ -112,7 +110,7 @@ class DependencyGraph:
         return str(id(discipline))
 
     @property
-    def disciplines(self) -> Iterator[Discipline]:
+    def disciplines(self) -> Iterator[BaseDiscipline]:
         """The disciplines used to build the graph."""
         return iter(self.__graph.nodes)
 
@@ -139,7 +137,7 @@ class DependencyGraph:
             parallel_tasks = [
                 tuple(
                     cast(
-                        "list[Discipline]",
+                        "list[BaseDiscipline]",
                         condensed_graph.nodes[node_id]["members"],
                     )
                 )
@@ -161,8 +159,8 @@ class DependencyGraph:
         )
 
     def __get_ordered_scc(
-        self, scc: Iterator[set[Discipline]]
-    ) -> Iterator[list[Discipline]]:
+        self, scc: Iterator[set[BaseDiscipline]]
+    ) -> Iterator[list[BaseDiscipline]]:
         """Return the scc nodes ordered by the initial disciplines.
 
         Args:
@@ -188,7 +186,7 @@ class DependencyGraph:
 
     def get_disciplines_couplings(
         self,
-    ) -> list[tuple[Discipline, Discipline, list[str]]]:
+    ) -> list[tuple[BaseDiscipline, BaseDiscipline, list[str]]]:
         """Return the couplings between the disciplines.
 
         Returns:
@@ -197,12 +195,12 @@ class DependencyGraph:
             variables names.
         """
         couplings = []
-        for from_disc, to_disc, edge_names in self.__graph.edges(data=self.IO):
+        for from_disc, to_disc, edge_names in self.__graph.edges(data=self.io):
             couplings += [(from_disc, to_disc, sorted(edge_names))]
         return couplings
 
     @staticmethod
-    def __create_graph(disciplines: Iterable[Discipline]) -> DiGraph:
+    def __create_graph(disciplines: Iterable[BaseDiscipline]) -> DiGraph:
         """Create the full graph.
 
         The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -213,10 +211,10 @@ class DependencyGraph:
         Returns:
             The graph of disciplines.
         """
-        nodes_to_ios = {}
+        node_to_ios = {}
 
         for disc in disciplines:
-            nodes_to_ios[disc] = (
+            node_to_ios[disc] = (
                 set(disc.io.input_grammar),
                 set(disc.io.output_grammar),
             )
@@ -225,8 +223,8 @@ class DependencyGraph:
         graph.add_nodes_from(disciplines)
         graph_add_edge = graph.add_edge
         # Create the graph edges by discovering the coupled disciplines
-        for disc_i, (_, outputs_i) in nodes_to_ios.items():
-            for disc_j, (inputs_j, _) in nodes_to_ios.items():
+        for disc_i, (_, outputs_i) in node_to_ios.items():
+            for disc_j, (inputs_j, _) in node_to_ios.items():
                 if disc_i != disc_j:
                     coupled_io = outputs_i & inputs_j
                     if coupled_io:
@@ -234,7 +232,7 @@ class DependencyGraph:
 
         return graph
 
-    def __get_node_name(self, graph: DiGraph, node: int | Discipline) -> str:
+    def __get_node_name(self, graph: DiGraph, node: int | BaseDiscipline) -> str:
         """Return the name of a node for the representation of a graph.
 
         Args:
@@ -244,7 +242,7 @@ class DependencyGraph:
         Returns:
             The name of the node.
         """
-        if isinstance(node, Discipline):
+        if isinstance(node, BaseDiscipline):
             # not a scc node
             return self.__get_node_name_from_discipline(node)
 
@@ -287,7 +285,12 @@ class DependencyGraph:
         return output_names & input_names
 
     def __render_graph(
-        self, graph: DiGraph, file_path: str | Path, is_full: bool, clean_up: bool
+        self,
+        graph: DiGraph,
+        file_path: StrPath,
+        is_full: bool,
+        clean_up: bool,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the graph when graphviz is installed.
 
@@ -297,16 +300,19 @@ class DependencyGraph:
                 If empty, the graphical representation is not saved.
             is_full: Whether the graph is full.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
-            Either the graph or ``None`` when graphviz is not installed.
+            Either the graph or `None` when graphviz is not installed.
         """
-        if GRAPHVIZ_IS_MISSING:
-            LOGGER.warning(
+        if graphviz_is_missing:
+            logger.warning(
                 "Cannot render graph: "
                 "GraphView cannot be imported because graphviz is not installed."
             )
             return None
+
+        from gemseo.post._graph_view import GraphView
 
         graph_view = GraphView()
         get_node_name_from_discipline = self.__get_node_name_from_discipline
@@ -318,12 +324,12 @@ class DependencyGraph:
         )
         if add_tooltip:
             get_properties = get_discipline_variable_properties
-            discipline_names_to_properties = {
+            discipline_name_to_properties = {
                 discipline.name: get_properties(discipline)
                 for discipline in self.__graph.nodes
             }
         else:
-            discipline_names_to_properties = {}
+            discipline_name_to_properties = {}
 
         if get_node_name_from_discipline == self._get_node_name_from_disc_id:
             for discipline in graph.nodes:
@@ -333,20 +339,21 @@ class DependencyGraph:
 
         # 1. Add the edges with different head and tail nodes
         #    (case: some outputs of a discipline are inputs of another one)
-        for tail_node, head_node, coupling_names in graph.edges(data=self.IO):
+        for tail_node, head_node, coupling_names in graph.edges(data=self.io):
             tail_name = self.__get_node_name(graph, tail_node)
             head_name = self.__get_node_name(graph, head_node)
-            if not isinstance(head_node, Discipline):
+            if not isinstance(head_node, BaseDiscipline):
                 # a scc edge
                 coupling_names = self.__get_scc_edge_names(graph, tail_node, head_node)
 
             self.__add_edge(
                 graph_view,
                 coupling_names,
-                discipline_names_to_properties,
+                discipline_name_to_properties,
                 tail_name,
                 head_name,
                 add_tooltip,
+                show_edge_labels=show_edge_labels,
             )
 
         # 2. Add the edges with same head and tail nodes
@@ -361,16 +368,17 @@ class DependencyGraph:
                     self.__add_edge(
                         graph_view,
                         coupling_names,
-                        discipline_names_to_properties,
+                        discipline_name_to_properties,
                         name,
                         name,
                         add_tooltip,
+                        show_edge_labels=show_edge_labels,
                     )
 
         # 3. Add the edges without head node
         #    (case: some output variables of discipline are not coupling variables).
         for leaf_node in self.__get_leaves(graph):
-            if isinstance(leaf_node, Discipline):
+            if isinstance(leaf_node, BaseDiscipline):
                 output_names = tuple(leaf_node.io.output_grammar)
                 node_name = get_node_name_from_discipline(leaf_node)
             else:
@@ -384,11 +392,12 @@ class DependencyGraph:
             self.__add_edge(
                 graph_view,
                 output_names,
-                discipline_names_to_properties,
+                discipline_name_to_properties,
                 node_name,
                 f"_{leaf_node}",
                 add_tooltip,
                 hide_head=True,
+                show_edge_labels=show_edge_labels,
             )
 
         if file_path:
@@ -401,7 +410,7 @@ class DependencyGraph:
     def __add_edge(
         graph_view: GraphView,
         coupling_names: Iterable[str],
-        discipline_names_to_properties: Mapping[
+        discipline_name_to_properties: Mapping[
             str,
             tuple[
                 Mapping[str, DisciplineVariableProperties],
@@ -412,13 +421,14 @@ class DependencyGraph:
         head_name: str,
         add_tooltip: bool,
         hide_head: bool = False,
+        show_edge_labels: bool = True,
     ) -> None:
         """Add an edge to a graph view.
 
         Args:
             graph_view: The graph view.
             coupling_names: The names of the coupling variables.
-            discipline_names_to_properties: The variables properties
+            discipline_name_to_properties: The variables properties
                 associated with the discipline names.
             tail_name: The name of the tail discipline.
             head_name: The name of the head discipline.
@@ -426,6 +436,7 @@ class DependencyGraph:
                 the original and current names of the coupling variables
                 when hovered over.
             hide_head: Whether to hide the head node.
+            show_edge_labels: Whether to display the coupling variable names on edges.
         """
         if add_tooltip:
             lines = []
@@ -439,13 +450,13 @@ class DependencyGraph:
                     f"Name in discipline {head_name!r}\n"
                 )
 
-            tail_properties = discipline_names_to_properties[tail_name][1]
+            tail_properties = discipline_name_to_properties[tail_name][1]
             if hide_head:
                 for coupling_name in coupling_names:
                     tail_original_name = tail_properties[coupling_name].original_name
                     lines.append(f"{coupling_name}{sep}{tail_original_name}")
             else:
-                head_properties = discipline_names_to_properties[head_name][0]
+                head_properties = discipline_name_to_properties[head_name][0]
                 for coupling_name in coupling_names:
                     head_original_name = head_properties[coupling_name].original_name
                     tail_original_name = tail_properties[coupling_name].original_name
@@ -455,16 +466,21 @@ class DependencyGraph:
                         f"{head_original_name}"
                     )
 
-            kwargs = {"labeltooltip": "\n".join(lines)}
+            key = "labeltooltip" if show_edge_labels else "edgetooltip"
+            kwargs = {key: "\n".join(lines)}
         else:
             kwargs = {}
 
-        graph_view.edge(tail_name, head_name, pretty_str(coupling_names), **kwargs)
+        label = pretty_str(coupling_names, use_and=False) if show_edge_labels else None
+        graph_view.edge(tail_name, head_name, label, **kwargs)
         if hide_head:
             graph_view.hide_node(head_name)
 
     def render_full_graph(
-        self, file_path: str | Path, clean_up: bool = True
+        self,
+        file_path: StrPath,
+        clean_up: bool = True,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the full graph.
 
@@ -473,14 +489,20 @@ class DependencyGraph:
                 to save the graphical representation of the full graph.
                 If empty, the graphical representation is not saved.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
-            Either the full graph or ``None`` when graphviz is not installed.
+            Either the full graph or `None` when graphviz is not installed.
         """
-        return self.__render_graph(self.__graph, file_path, True, clean_up)
+        return self.__render_graph(
+            self.__graph, file_path, True, clean_up, show_edge_labels
+        )
 
     def render_condensed_graph(
-        self, file_path: str | Path, clean_up: bool = True
+        self,
+        file_path: StrPath,
+        clean_up: bool = True,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the condensed graph.
 
@@ -489,16 +511,21 @@ class DependencyGraph:
                 to save the graphical representation of the condensed graph.
                 If empty, the graphical representation is not saved.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
-            Either the condensed graph or ``None`` when graphviz is not installed.
+            Either the condensed graph or `None` when graphviz is not installed.
         """
         return self.__render_graph(
-            self.__create_condensed_graph(), file_path, False, clean_up
+            self.__create_condensed_graph(),
+            file_path,
+            False,
+            clean_up,
+            show_edge_labels,
         )
 
     @staticmethod
-    def __get_leaves(graph: DiGraph) -> list[Discipline] | list[int]:
+    def __get_leaves(graph: DiGraph) -> list[BaseDiscipline] | list[int]:
         """Return the leaf nodes of a graph.
 
         Args:

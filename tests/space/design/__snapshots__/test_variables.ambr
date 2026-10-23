@@ -1,0 +1,28 @@
+# serializer version: 1
+# name: test_normalization_mask_is_read_only[n]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only[n].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_normalization_mask_is_read_only[x]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only[x].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_normalization_mask_is_read_only_after_copy[n-<lambda>]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only_after_copy[n-deepcopy]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only_after_copy[x-<lambda>]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only_after_copy[x-deepcopy]
+  'assignment destination is read-only'
+# ---
+# name: test_rename_collision
+  "Cannot rename 'x' to 'n': 'n' is already the name of another variable."
+# ---

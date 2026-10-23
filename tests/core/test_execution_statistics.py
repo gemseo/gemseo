@@ -24,11 +24,12 @@ from time import sleep
 
 import pytest
 
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.utils import timer  # noqa: E402
-from gemseo.utils.testing.mocks import SleepingCounter
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.util import timer  # noqa: E402
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.mock import SleepingCounter
 
-SLEEP_TIME = 0.1
+sleep_time = 0.1
 
 
 @pytest.fixture
@@ -53,7 +54,7 @@ def test_default_state():
     assert not ExecutionStatistics.is_time_stamps_enabled
 
 
-def test_n_calls(execution_statistics: ExecutionStatistics):
+def test_n_calls(execution_statistics: ExecutionStatistics, snapshot):
     """Verify n_calls."""
     ExecutionStatistics.is_enabled = True
 
@@ -65,8 +66,7 @@ def test_n_calls(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.n_executions is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.n_executions = 1
 
     # Re-enable to access the kept results.
@@ -75,7 +75,7 @@ def test_n_calls(execution_statistics: ExecutionStatistics):
     assert execution_statistics.n_executions == 1
 
 
-def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
+def test_n_calls_linearize(execution_statistics: ExecutionStatistics, snapshot):
     """Verify n_calls_linearizations."""
     ExecutionStatistics.is_enabled = True
 
@@ -87,8 +87,7 @@ def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.n_linearizations is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.n_linearizations = 1
 
     # Re-enable to access the kept results.
@@ -97,7 +96,7 @@ def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
     assert execution_statistics.n_linearizations == 1
 
 
-def test_duration(execution_statistics: ExecutionStatistics):
+def test_duration(execution_statistics: ExecutionStatistics, snapshot):
     """Verify duration."""
     ExecutionStatistics.is_enabled = True
 
@@ -109,8 +108,7 @@ def test_duration(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.duration is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.duration = 1.0
 
     # Re-enable to access the kept results.
@@ -121,12 +119,12 @@ def test_duration(execution_statistics: ExecutionStatistics):
 
 def _sleep() -> None:
     """Argument-less sleep function."""
-    sleep(SLEEP_TIME)
+    sleep(sleep_time)
 
 
 def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify record."""
-    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
+    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(sleep_time))
 
     ExecutionStatistics.is_enabled = True
 
@@ -165,7 +163,7 @@ def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify the time stamps."""
     ExecutionStatistics.is_enabled = True
 
-    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
+    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(sleep_time))
 
     assert ExecutionStatistics.time_stamps is None
 
@@ -180,7 +178,7 @@ def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     all_values = tuple(next(iter(ExecutionStatistics.time_stamps.values())))
 
     for values in all_values:
-        assert values[1] - values[0] == pytest.approx(SLEEP_TIME)
+        assert values[1] - values[0] == pytest.approx(sleep_time)
 
     # Check the linearization flag.
     assert not all_values[0][2]

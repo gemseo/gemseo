@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_init[coefficients1]
+  'Quadratic coefficients must be passed as a 2-dimensional square ndarray.'
+# ---
+# name: test_init[coefficients2]
+  'Quadratic coefficients must be passed as a 2-dimensional square ndarray.'
+# ---
+# name: test_init[test]
+  'Quadratic coefficients must be passed as a 2-dimensional square ndarray.'
+# ---

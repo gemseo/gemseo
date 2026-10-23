@@ -26,22 +26,22 @@ from typing import ClassVar
 
 from numpy import full
 
-from gemseo.algos.pareto.utils import generate_pareto_plots
-from gemseo.post.base_post import BasePost
+from gemseo.optimization.pareto.util import generate_pareto_plots
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.pareto_front_settings import ParetoFront_Settings
 
 if TYPE_CHECKING:
     from collections.abc import MutableSequence
     from collections.abc import Sequence
 
-    from gemseo.typing import BoolArray
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import BoolArray
+    from gemseo.util.typing import NumberArray
 
 
 class ParetoFront(BasePost[ParetoFront_Settings]):
     """Compute the Pareto front for a multi-objective problem.
 
-    The Pareto front of an optimization problem is the set of ``non-dominated`` points
+    The Pareto front of an optimization problem is the set of `non-dominated` points
     of the design space for which there is no other point that improves an objective
     without damaging another.
 
@@ -50,10 +50,10 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
     For a given plot, the red markers are the non-dominated points according to the
     objectives of this plot and the green markers are the non-dominated points
     according to all the objectives.
-    The latter are also called ``Pareto optimal points``.
+    The latter are also called `Pareto optimal points`.
     """
 
-    Settings: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
+    settings_class: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
 
     def _plot(self, settings: ParetoFront_Settings) -> None:
         """
@@ -72,7 +72,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        all_dv_names = self._dataset.misc["input_space"].variable_names
+        all_dv_names = list(self._dataset.misc["input_space"].variables)
 
         all_labels: Sequence[str]
         sample_values, all_labels = self.__compute_names_and_values(
@@ -210,7 +210,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             sample_values: The sample values.
 
         Returns:
-            An array of size ``n_samples``, True if the point is non-feasible.
+            An array of size `n_samples`, True if the point is non-feasible.
         """
         feasible_indexes = [
             iteration - 1

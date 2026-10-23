@@ -22,18 +22,19 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.chains.initialization_chain import MDOInitializationChain
-from gemseo.core.chains.initialization_chain import (
+from gemseo.discipline.chain.initialization_chain import InitializationDisciplineChain
+from gemseo.discipline.chain.initialization_chain import (
     order_disciplines_from_default_inputs,
 )
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
-DISC_DESCR_1 = [
+disc_descr_1 = [
     ("B", ["d", "c"], ["e"]),
     ("C", ["e", "g"], ["f"]),
     ("A", ["b", "f"], ["c"]),
@@ -47,7 +48,7 @@ def disciplines1() -> list[Discipline]:
     Returns:
          The disciplines.
     """
-    disciplines = create_disciplines_from_desc(DISC_DESCR_1)
+    disciplines = create_disciplines_from_desc(disc_descr_1)
     # Delete c default input of B
     disciplines[0].default_input_data.pop("c")
     # Delete e default input of E
@@ -64,15 +65,12 @@ def test_get_initialization_disciplines(disciplines1) -> None:
     ]
 
 
-def test_fail_get_initialization_disciplines(disciplines1) -> None:
+def test_fail_get_initialization_disciplines(disciplines1, snapshot) -> None:
     """Tests that the algorithm fails when not enough default inputs are present."""
     disciplines1[1].default_input_data.pop("g")
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)
     assert missing_inputs == ["g"]
-    with pytest.raises(
-        ValueError,
-        match=r"Cannot compute the inputs g, for the following disciplines C.",
-    ):
+    with assert_exception(ValueError, snapshot):
         order_disciplines_from_default_inputs(disciplines1, True)
 
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)
@@ -81,5 +79,5 @@ def test_fail_get_initialization_disciplines(disciplines1) -> None:
 
 def test_create_init_chain(disciplines1) -> None:
     """Tests the creation of the process."""
-    chain = MDOInitializationChain(disciplines1)
+    chain = InitializationDisciplineChain(disciplines1)
     chain.execute()

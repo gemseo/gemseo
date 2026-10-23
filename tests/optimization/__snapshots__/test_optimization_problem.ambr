@@ -1,0 +1,79 @@
+# serializer version: 1
+# name: test_add_constraints
+  'Constraint type must be provided, either when defining the function or when adding it to the problem.'
+# ---
+# name: test_add_constraints.1
+  "The function type 'obj' is not one of those authorized (eq and ineq)."
+# ---
+# name: test_categorical_opt_problem
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle categorical variables.
+  Use an algorithm handling them, e.g. a DOE algorithm.
+  '''
+# ---
+# name: test_constraints_dim
+  'The function output dimension is not available yet, please call function ineq1(x): 0.5 -x[0] ** 3 <= -1 once.'
+# ---
+# name: test_discrete_opt_problem[False-Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.\nSet 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_evaluate_unknown_jacobians[jacobian_names0-This name is]
+  'This name is not among the names of the functions: unknown.'
+# ---
+# name: test_evaluate_unknown_jacobians[jacobian_names1-These names are]
+  'These names are not among the names of the functions: other unknown and unknown.'
+# ---
+# name: test_get_function_dimension_unavailable
+  'The output dimension of function f is not available.'
+# ---
+# name: test_get_function_dimension_unknown
+  'The problem has no function named unknown.'
+# ---
+# name: test_get_missing_observable
+  'missing_observable_name is not among the names of the observables: a and b.'
+# ---
+# name: test_init_with_a_random_space
+  'An OptimizationProblem requires a design space; got a RandomSpace; use an EvaluationProblem to sample a random space.'
+# ---
+# name: test_int_opt_problem[False-Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.\nSet 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_int_opt_problem_discrete_check_independent
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_invalid_differentiation_method
+  'The class foo is not available; the available ones are: CenteredDifferences, ComplexStep, ForwardDifferences, centered_differences, complex_step and finite_differences.'
+# ---
+# name: test_is_mono_objective_without_objective
+  'Cannot determine the dimension of the objective.'
+# ---
+# name: test_is_multi_objective
+  'Cannot determine the dimension of the objective.'
+# ---
+# name: test_is_multi_objective.1
+  'Cannot determine the dimension of the objective.'
+# ---
+# name: test_missing_constjac
+  'The function computing the Jacobian of [sum+1] is not implemented.'
+# ---
+# name: test_no_points_in_database
+  'The optimization history is empty.'
+# ---
+# name: test_no_points_in_database.1
+  'The optimization history is empty.'
+# ---
+# name: test_scipy_milp_rejects_discrete_variables
+  '''
+  Algorithm MILP is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---

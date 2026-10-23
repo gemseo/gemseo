@@ -33,25 +33,26 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
+from typing import NamedTuple
 from typing import TypeVar
 
 from prettytable import PrettyTable
-from typing_extensions import NamedTuple
 
-from gemseo.utils.base_multiton import BaseABCMultiton
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from gemseo.utils.source_parsing import get_callable_argument_defaults
-from gemseo.utils.source_parsing import get_options_doc
+from gemseo.util.base_multiton import BaseABCMultiton
+from gemseo.util.repr_html import repr_html_wrapper
+from gemseo.util.source_parsing import get_callable_argument_defaults
+from gemseo.util.source_parsing import get_options_doc
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
-    from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.typing import StrKeyMapping
+    from gemseo.core.grammar.json import JSONGrammar
+    from gemseo.util.pydantic import BaseSettings
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
-
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=object)
 
@@ -76,17 +77,17 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     for instance::
 
         class AFactory(BaseFactory):
-            _CLASS = ABaseClass
-            _PACKAGE_NAMES = (
+            _class = ABaseClass
+            _package_names = (
                 "first.module.fully.qualified.name",
                 "second.module.fully.qualified.name",
             )
 
     There are 3 sources of modules that can be searched:
 
-    - fully qualified module names (such as gemseo.problems, ...),
+    - fully qualified module names (such as gemseo.problem, ...),
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
-    - |g| plugins, i.e. packages which have declared a setuptools entry point.
+    - GEMSEO plugins, i.e. packages which have declared a setuptools entry point.
 
     A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
@@ -94,12 +95,12 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         [project.entry-points]
         gemseo_plugins = { a-name = "plugin_package_name" }
 
-    Above ``a-name`` is not used
+    Above `a-name` is not used
     and can be any name,
     but we advise to use the plugin name.
 
     The plugin entry point searched by the factory could be changed
-    with :class:`.Factory.PLUGIN_ENTRY_POINT`.
+    with [BaseFactory][gemseo.core.base_factory.BaseFactory.plugin_entry_point].
 
     If a class,
     despite being a subclass of the base class,
@@ -117,44 +118,45 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     and not at instantiation.
     """
 
-    _ENV_VAR_WITH_SEARCH_PATHS: ClassVar[str] = "GEMSEO_PATH"
+    _env_var_with_search_paths: ClassVar[str] = "GEMSEO_PATH"
     """The name of the environment variable that contains the paths to search for
     classes."""
 
-    PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
+    plugin_entry_point: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    __names_to_class_info: dict[str, _ClassInfo[T]]
-    """The class names bound to the class information."""
+    __name_to_class_info: dict[str, _ClassInfo[T]]
+    """The map from a class name to a class information."""
 
     __failed_imports: dict[str, str]
     """The class names bound to the import errors."""
 
     def __init__(self) -> None:  # noqa: D107
-        self.__names_to_class_info = {}
+        self.__name_to_class_info = {}
         self.__failed_imports = {}
 
     @property
     @abstractmethod
-    def _CLASS(self) -> type[T]:  # noqa: N802
+    def _class(self) -> type[T]:  # noqa: N802
         """The base class that the factory can build."""
 
     @property
     @abstractmethod
-    def _PACKAGE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
+    def _package_names(self) -> tuple[str, ...]:
         """The fully qualified names of the packages to search."""
 
     @property
-    def _names_to_class_info(self) -> dict[str, _ClassInfo[T]]:
-        if not self.__names_to_class_info:
+    def _name_to_class_info(self) -> dict[str, _ClassInfo[T]]:
+        """The map from a class name to a class info."""
+        if not self.__name_to_class_info:
             self.update()
-        return self.__names_to_class_info
+        return self.__name_to_class_info
 
     @property
     def failed_imports(self) -> dict[str, str]:
-        """Return the class names bound to the import errors."""
+        """The map from a class name to an import error."""
         # Trigger the search.
-        self._names_to_class_info  # noqa: B018
+        self._name_to_class_info  # noqa: B018
         return self.__failed_imports
 
     def update(self) -> None:
@@ -164,8 +166,15 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             1. The fully qualified module names
             2. The plugin packages
             3. The packages from the environment variables
+
+        The known classes are rediscovered from scratch, so classes whose source
+        (e.g. a directory previously on the `GEMSEO_PATH` environment variable) is
+        no longer available are removed.
         """
-        module_names = list(self._PACKAGE_NAMES)
+        self.__name_to_class_info.clear()
+        self.__failed_imports.clear()
+
+        module_names = list(self._package_names)
 
         # Import the fully qualified modules names.
         for module_name in module_names:
@@ -174,26 +183,26 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         # Import the plugins packages.
 
         # Do not search the current working directory.
-        # See https://docs.python.org/3.9/library/sys.html#sys.path
+        # See https://docs.python.org/3/library/sys.html#sys.path
         sys_path = list(sys.path)
         sys_path.pop(0)
 
         # Import from the setuptools entry points.
-        for entry_point in entry_points(group=self.PLUGIN_ENTRY_POINT):
+        for entry_point in entry_points(group=self.plugin_entry_point):
             module_name = entry_point.value
             self.__import_modules_from(module_name)
             module_names += [module_name]
 
         module_names += self.__import_modules_from_env_var()
 
-        names_to_classes = self.__get_sub_classes(self._CLASS)
+        name_to_class = self.__get_sub_classes(self._class, module_names)
 
-        if not isabstract(self._CLASS):
-            names_to_classes[self._CLASS.__name__] = self._CLASS
+        if not isabstract(self._class):
+            name_to_class[self._class.__name__] = self._class
 
-        for name, cls in names_to_classes.items():
+        for name, cls in name_to_class.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
-                self.__names_to_class_info[name] = _ClassInfo(
+                self.__name_to_class_info[name] = _ClassInfo(
                     cls, cls.__module__.split(".")[0]
                 )
 
@@ -203,7 +212,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Returns:
             The imported fully qualified module names.
         """
-        search_paths = os.environ.get(self._ENV_VAR_WITH_SEARCH_PATHS)
+        search_paths = os.environ.get(self._env_var_with_search_paths)
         if search_paths is None:
             return []
 
@@ -256,17 +265,23 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             name: The name of the module or package to be imported.
             error: The exception object raised while importing the module or package.
         """
-        LOGGER.debug("Failed to import module: %s", name)
+        logger.debug("Failed to import module: %s", name)
         self.__failed_imports[name] = str(error)
 
-    def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
-        """Find all the subclasses of a class.
+    def __get_sub_classes(
+        self, cls: type[T], module_names: Iterable[str]
+    ) -> dict[str, type[T]]:
+        """Find all the subclasses of a class belonging to the given modules.
 
         The class names are unique,
         the last imported is kept when more than one class have the same name.
+        Classes defined outside ``module_names`` (e.g. in ``__main__`` from
+        a runpy-executed gallery example) are skipped so they cannot shadow
+        the legitimate ones.
 
         Args:
             cls: A class.
+            module_names: The fully qualified module names to keep.
 
         Returns:
             A mapping from the names to the unique subclasses.
@@ -274,8 +289,9 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         all_sub_classes: dict[str, type[T]] = {}
         sub_class: type[T]
         for sub_class in cls.__subclasses__():
-            all_sub_classes[sub_class.__name__] = sub_class
-            all_sub_classes.update(self.__get_sub_classes(sub_class))
+            if self.__is_class_in_modules(module_names, sub_class):
+                all_sub_classes[sub_class.__name__] = sub_class
+            all_sub_classes.update(self.__get_sub_classes(sub_class, module_names))
         return all_sub_classes
 
     @staticmethod
@@ -297,7 +313,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     @property
     def class_names(self) -> list[str]:
         """The sorted names of the available classes."""
-        return sorted(self._names_to_class_info.keys())
+        return sorted(self._name_to_class_info.keys())
 
     def is_available(self, name: str) -> bool:
         """Return whether a class can be instantiated.
@@ -308,7 +324,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Returns:
             Whether the class can be instantiated.
         """
-        return name in self._names_to_class_info
+        return name in self._name_to_class_info
 
     def get_library_name(self, name: str) -> str:
         """Return the name of the library related to the name of a class.
@@ -319,7 +335,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Returns:
             The name of the library.
         """
-        return self._names_to_class_info[name].library_name
+        return self._name_to_class_info[name].library_name
 
     def get_class(self, name: str) -> type[T]:
         """Return a class from its name.
@@ -333,10 +349,12 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Raises:
             ImportError: If the class is not available.
         """
-        class_info = self._names_to_class_info.get(name)
+        class_info = self._name_to_class_info.get(name)
         if class_info is None:
-            names = ", ".join(self.class_names)
-            msg = f"The class {name} is not available; the available ones are: {names}."
+            msg = (
+                f"The class {name} is not available; "
+                f"the available ones are: {pretty_str(self.class_names)}."
+            )
             raise ImportError(msg)
         return class_info.class_
 
@@ -350,7 +368,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         Args:
             class_name: The name of the class.
-            **args: The positional arguments to be passed to the class constructor.
+            *args: The positional arguments to be passed to the class constructor.
             **kwargs: The keyword arguments to be passed to the class constructor.
 
         Returns:
@@ -363,7 +381,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         try:
             return cls(*args, **kwargs)
         except TypeError:
-            LOGGER.exception(
+            logger.exception(
                 (
                     "Failed to create class %s "
                     "with positional arguments %s "
@@ -374,6 +392,27 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
                 kwargs,
             )
             raise
+
+    def create_from_settings(
+        self,
+        settings: BaseSettings,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
+        """Return an instance of a class.
+
+        Args:
+            settings: The settings of the class instance,
+                to be passed to the class constructor using the `settings` argument.
+            *args: The positional arguments to be passed to the class constructor.
+            **kwargs: The keyword arguments to be passed to the class constructor.
+
+        Returns:
+            The instance of the class.
+        """
+        return self.create(
+            settings.target_class_name, *args, settings=settings, **kwargs
+        )
 
     def get_options_doc(self, name: str) -> dict[str, str]:
         """Return the documentation for the arguments of a class.
@@ -401,7 +440,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         self,
         name: str,
         write_schema: bool = False,
-        schema_path: Path | str = "",
+        schema_path: StrPath = "",
     ) -> JSONGrammar:
         """Return the options JSON grammar for a class.
 
@@ -410,7 +449,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         Args:
             name: The name of the class.
-            write_schema: If ``True``, write the JSON schema to a file.
+            write_schema: If `True`, write the JSON schema to a file.
             schema_path: The path to the JSON schema file.
                 If empty, the file is saved in the current directory in a file named
                 after the name of the class.
@@ -429,7 +468,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         }
 
         # Import locally to avoid a cyclic import.
-        from gemseo.core.grammars.json_grammar import JSONGrammar
+        from gemseo.core.grammar.json import JSONGrammar
 
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
@@ -444,20 +483,20 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         return grammar
 
     def __str__(self) -> str:
-        return f"Factory of {self._CLASS.__name__} objects"
+        return f"Factory of {self._class.__name__} objects"
 
     @property
     def __pretty_table_representation(self) -> PrettyTable:
         """The successfully loaded modules and the failed imports with the reason."""
         table = PrettyTable(
             ["Module", "Is available?", "Purpose or error message"],
-            title=self._CLASS.__name__,
+            title=self._class.__name__,
             min_table_width=120,
             max_table_width=120,
         )
 
-        names_to_import_statuses = {}
-        for class_info in self._names_to_class_info.values():
+        name_to_import_status = {}
+        for class_info in self._name_to_class_info.values():
             cls = class_info.class_
             msg = ""
             if cls.__doc__ is not None:
@@ -467,14 +506,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
                     del class_docstring_lines[0]
 
             class_name = cls.__name__
-            names_to_import_statuses[class_name] = [class_name, "Yes", msg]
+            name_to_import_status[class_name] = [class_name, "Yes", msg]
 
         for package_name, err in self.__failed_imports.items():
-            names_to_import_statuses[package_name] = [package_name, "No", err]
+            name_to_import_status[package_name] = [package_name, "No", err]
 
         # Take them all and then sort them for pretty printing
-        for name in sorted(names_to_import_statuses.keys()):
-            table.add_row(names_to_import_statuses[name])
+        for name in sorted(name_to_import_status.keys()):
+            table.add_row(name_to_import_status[name])
 
         return table
 
@@ -482,6 +521,6 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         return self.__pretty_table_representation.get_string()
 
     def _repr_html_(self) -> str:
-        return REPR_HTML_WRAPPER.format(
+        return repr_html_wrapper.format(
             self.__pretty_table_representation.get_html_string()
         )

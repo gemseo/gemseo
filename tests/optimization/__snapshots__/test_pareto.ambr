@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_get_utopia_nearest_neighbors
+  'Reference point [1. 1. 1.] does not have the same amount of objectives as the pareto front.'
+# ---

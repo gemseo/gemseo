@@ -20,12 +20,14 @@ import pytest
 from numpy import concatenate
 from numpy.linalg import norm
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 
@@ -33,7 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+    from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.fixture(scope="module")
@@ -53,7 +55,7 @@ def disciplines() -> Sequence[LinearDiscipline]:
         outputs_size=10,
     )
 
-    # Scale the disciplines to illustrate the different stopping criteria
+    # Scale the disciplines to illustrate the different termination criteria
     disciplines[1].mat /= 100.0
     disciplines[2].mat *= 100.0
 
@@ -69,8 +71,9 @@ def get_jacobi_reference_residuals(
     """Compute the initial and final residual without scaling for MDAJacobi."""
     mda = MDAJacobi(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAJacobi_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     for discipline in disciplines:
@@ -114,8 +117,9 @@ def test_scaling_strategy_jacobi(
 
     mda = MDAJacobi(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAJacobi_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     mda.scaling = scaling_strategy
@@ -176,14 +180,15 @@ def get_gauss_seidel_reference_residuals(
     """Compute the initial and final residual without scaling for MDAGaussSeidel."""
     mda = MDAGaussSeidel(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAGaussSeidel_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
     mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
     mda.execute()
 
-    b = [value.outputs["b"] for value in disciplines[1].cache.get_all_entries()]
-    y = [value.outputs["y"] for value in disciplines[2].cache.get_all_entries()]
+    b = [entry.outputs["b"] for entry in disciplines[1].cache.values()]
+    y = [entry.outputs["y"] for entry in disciplines[2].cache.values()]
 
     initial_residual = {"b": b[1] - b[0], "y": y[1] - y[0]}
     final_residual = {"b": b[-1] - b[-2], "y": y[-1] - y[-2]}
@@ -206,8 +211,9 @@ def test_scaling_strategy_gauss_seidel(
 
     mda = MDAGaussSeidel(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAGaussSeidel_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     mda.scaling = scaling_strategy

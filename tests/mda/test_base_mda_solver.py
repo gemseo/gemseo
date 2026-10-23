@@ -19,17 +19,17 @@ import pytest
 from numpy import array
 from numpy import int32
 
-from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.mda.core.base_solver import BaseMDASolver
+from gemseo.mda.core.base_solver_settings import BaseMDASolverSettings
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.util.testing.helper import concretize_classes
 
 
 class _BaseMDASolver(BaseMDASolver):
     """Concretizable BaseMDASolver class for test purpose."""
 
-    Settings = BaseMDASolverSettings
+    settings_class = BaseMDASolverSettings
     """The Pydantic model for the settings."""
 
 
@@ -43,8 +43,8 @@ def test_integer_casting(base_mda_solver):
     """Tests residual computation with integers."""
     base_mda_solver._set_resolved_variables(["y_1", "y_2"])
 
-    base_mda_solver.io.data["y_1"] = array([2], dtype=int32)
-    base_mda_solver.io.data["y_2"] = array([2.0])
+    base_mda_solver.io.output_data["y_1"] = array([2], dtype=int32)
+    base_mda_solver.io.output_data["y_2"] = array([2.0])
 
     base_mda_solver._compute_residuals({"y_1": array([1.0]), "y_2": array([1.0])})
 

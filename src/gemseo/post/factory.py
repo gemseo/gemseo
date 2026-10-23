@@ -23,42 +23,41 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
+from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.post.base_post import BasePost
-from gemseo.utils.pydantic import get_class_name
+from gemseo.post.core.base_post import BasePost
 
 if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.base_post_settings import BasePostSettings
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.post.core.base_post_settings import BasePostSettings
 
 
 class PostFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
-    _CLASS = BasePost
-    _PACKAGE_NAMES = ("gemseo.post",)
+    _class: ClassVar[type[BasePost]] = BasePost
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.post",)
 
     def execute(
         self,
         opt_problem: OptimizationProblem,
-        settings_model: BasePostSettings | None = None,
-        **settings: Any,
+        settings: BasePostSettings,
     ) -> BasePost[Any]:
         """Post-process an optimization problem.
 
         Args:
             opt_problem: The optimization problem to be post-processed.
-            settings_model: The post-processor settings as a Pydantic model.
-                If ``None``, use ``**settings``.
-            **settings: The post-processor settings,
-                including the algorithm name (use the keyword ``"post_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+            settings: The post-processor settings.
 
         Returns:
             The post-processor.
         """
-        post_name = get_class_name(settings_model, settings, class_name_arg="post_name")
-        post = self.create(post_name, opt_problem)
-        post.execute(settings_model=settings_model, **settings)
+        post = self.create(settings.target_class_name, opt_problem)
+        post.execute(settings=settings)
         return post
+
+
+post_factory: Final[PostFactory] = PostFactory()
+"""The factory for `BasePost` objects."""

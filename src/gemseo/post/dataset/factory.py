@@ -21,12 +21,19 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+from typing import Final
+
 from gemseo.core.base_factory import BaseFactory
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
 
 
-class DatasetPlotFactory(BaseFactory[DatasetPlot]):
+class DatasetPlotFactory(BaseFactory[BaseDatasetPlot]):
     """A factory of dataset plot."""
 
-    _CLASS = DatasetPlot
-    _PACKAGE_NAMES = ("gemseo.post.dataset",)
+    _class: ClassVar[type[BaseDatasetPlot]] = BaseDatasetPlot
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.post.dataset",)
+
+
+dataset_plot_factory: Final[DatasetPlotFactory] = DatasetPlotFactory()
+"""The factory for `BaseDatasetPlot` objects."""

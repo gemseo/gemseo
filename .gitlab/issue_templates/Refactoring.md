@@ -29,7 +29,6 @@ If the refactoring involves changes apart from the main improvements, list them 
 It may be a good idea to create separate issues and link them here.
 -->
 
-
 ## Optional: Missing test coverage
 
 <!--

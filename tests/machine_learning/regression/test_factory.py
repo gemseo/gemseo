@@ -1,0 +1,79 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Unit test for RegressorFactory class in
+gemseo.machine_learning.regression.factory."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.factory import regressor_factory
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+
+if TYPE_CHECKING:
+    from gemseo.dataset.dataset import Dataset
+
+learning_size = 9
+
+
+@pytest.fixture
+def dataset() -> Dataset:
+    """The dataset used to train the regression model."""
+    discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
+    design_space = DesignSpace()
+    design_space.add_real_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective("y_1")
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
+    return discipline.cache.to_dataset("dataset_name")
+
+
+def test_constructor() -> None:
+    """Test factory constructor."""
+    assert {
+        "GaussianProcessRegressor",
+        "LinearRegressor",
+        "MOERegressor",
+        "PCERegressor",
+        "PolynomialRegressor",
+        "RBFRegressor",
+        "RandomForestRegressor",
+    } <= set(regressor_factory.class_names)
+
+
+def test_create(dataset) -> None:
+    """Test the creation of a model from data."""
+    assert isinstance(
+        regressor_factory.create("LinearRegressor", data=dataset), LinearRegressor
+    )
+
+
+def test_is_available() -> None:
+    """Test the existence of a regression model."""
+    assert regressor_factory.is_available("LinearRegressor")
+    assert not regressor_factory.is_available("Dummy")

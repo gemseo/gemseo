@@ -1,0 +1,711 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+"""Discipline utilities."""
+
+from __future__ import annotations
+
+import logging
+from collections import defaultdict
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+from typing import Final
+from typing import NamedTuple
+
+from pandas import read_csv
+from pandas import read_excel
+from prettytable import PrettyTable
+
+from gemseo.core.discipline.data_processor import NameMapping
+from gemseo.core.discipline.discipline import Discipline
+from gemseo.util.repr_html import repr_html_wrapper
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from typing import Self
+
+    from pandas import DataFrame
+
+    from gemseo.core._base_monitored_process import BaseMonitoredProcess
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.formulation.core.base import BaseFormulation
+    from gemseo.scenario.mdo import MDOScenario
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
+
+# TODO: API: limit the type annotations of the disciplines arguments to
+# Iterable[BaseDiscipline].
+
+logger = logging.getLogger(__name__)
+
+
+class DummyDiscipline(Discipline):
+    """A dummy discipline that does nothing."""
+
+    def __init__(
+        self,
+        name: str = "",
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """
+        Args:
+            input_names: The names of the input variables, if any.
+            output_names: The names of the output variables, if any.
+        """  # noqa: D205 D212 D415
+        super().__init__(name=name)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        pass
+
+
+def __get_all_disciplines(
+    disciplines: Iterable[Discipline | MDOScenario],
+    skip_scenarios: bool,
+) -> list[Discipline]:
+    """Return the non-scenario disciplines or also the disciplines of the scenario ones.
+
+    Args:
+        disciplines: The disciplines including potentially
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+            Otherwise, return their disciplines.
+
+    Returns:
+        The non-scenario disciplines
+        or also the disciplines of the scenario ones if any and `skip_scenario=False`.
+    """
+    from gemseo.scenario.mdo import MDOScenario
+
+    non_scenarios = [disc for disc in disciplines if not isinstance(disc, MDOScenario)]
+    scenarios = [disc for disc in disciplines if isinstance(disc, MDOScenario)]
+
+    if skip_scenarios:
+        return non_scenarios
+
+    disciplines_in_scenarios = list(
+        set.union(*(set(scenario.disciplines) for scenario in scenarios))
+    )
+    return disciplines_in_scenarios + non_scenarios
+
+
+def get_all_inputs(
+    disciplines: Iterable[Discipline],
+    skip_scenarios: bool = True,
+) -> list[str]:
+    """Return all the input names of the disciplines.
+
+    Args:
+        disciplines: The disciplines including potentially
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+            Otherwise, consider their disciplines.
+
+    Returns:
+        The names of the inputs.
+    """
+    return sorted(
+        set.union(
+            *(
+                set(discipline.io.input_grammar)
+                for discipline in __get_all_disciplines(
+                    disciplines, skip_scenarios=skip_scenarios
+                )
+            )
+        )
+    )
+
+
+def get_all_outputs(
+    disciplines: Iterable[Discipline | MDOScenario],
+    skip_scenarios: bool = True,
+) -> list[str]:
+    """Return all the output names of the disciplines.
+
+    Args:
+        disciplines: The disciplines including potentially
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [MDOScenario][gemseo.scenario.mdo.MDOScenario] objects.
+            Otherwise, consider their disciplines.
+
+    Returns:
+        The names of the outputs.
+    """
+    return sorted(
+        set.union(
+            *(
+                set(discipline.io.output_grammar)
+                for discipline in __get_all_disciplines(
+                    disciplines, skip_scenarios=skip_scenarios
+                )
+            )
+        )
+    )
+
+
+def get_sub_disciplines(
+    disciplines: Iterable[BaseMonitoredProcess | BaseFormulation],
+    recursive: bool = False,
+) -> list[BaseMonitoredProcess]:
+    """Replace disciplines by the disciplines they are made of.
+
+    A discipline exposing a non-empty `disciplines` attribute is replaced by these
+    disciplines, which can be composite themselves;
+    this covers
+    [ProcessDiscipline][gemseo.core.discipline.process_discipline.ProcessDiscipline],
+    [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
+    and [BaseFormulation][gemseo.formulation.core.base.BaseFormulation] objects.
+    Anything else is kept as is.
+
+    Args:
+        disciplines: The disciplines to flatten.
+        recursive: Whether to descend until reaching disciplines containing no
+            other discipline, so that the result contains no composite discipline.
+            Otherwise, descend by one level only
+            and the result can contain composite disciplines.
+
+    Returns:
+        The disciplines, without duplicates, in order of first appearance.
+    """
+    sub_disciplines = []
+    for discipline in disciplines:
+        inner_disciplines = getattr(discipline, "disciplines", ())
+        if not inner_disciplines:
+            sub_disciplines.append(discipline)
+        elif recursive:
+            sub_disciplines.extend(
+                get_sub_disciplines(inner_disciplines, recursive=True)
+            )
+        else:
+            sub_disciplines.extend(inner_disciplines)
+
+    return list(dict.fromkeys(sub_disciplines))
+
+
+_message: Final[str] = "Two disciplines, among which {}, compute the same outputs: {}"
+
+
+def check_disciplines_consistency(
+    disciplines: Iterable[Discipline],
+    log_message: bool,
+    raise_error: bool,
+) -> bool:
+    """Check if disciplines are consistent.
+
+    The disciplines are consistent
+    if each output is computed by one and only one discipline.
+
+    Args:
+        disciplines: The disciplines of interest.
+        log_message: Whether to log a message when the disciplines are not consistent.
+        raise_error: Whether to raise an error when the disciplines are not consistent.
+
+    Returns:
+        Whether the disciplines are consistent.
+
+    Raises:
+        ValueError: When two disciplines compute the same output
+            and `raise_error` is `True`.
+    """
+    output_names_until_now = set()
+    for discipline in disciplines:
+        new_output_names = set(discipline.io.output_grammar)
+        already_existing_output_names = new_output_names & output_names_until_now
+        if already_existing_output_names:
+            if raise_error:
+                raise ValueError(
+                    _message.format(discipline.name, already_existing_output_names)
+                )
+
+            if log_message:
+                logger.warning(
+                    _message.replace("{}", "%s"),
+                    discipline.name,
+                    already_existing_output_names,
+                )
+
+            return False
+
+        output_names_until_now |= new_output_names
+
+    return True
+
+
+class VariableRenamer:
+    """Renamer of discipline input and output variable names."""
+
+    __translations: tuple[VariableTranslation, ...]
+    """The translations of the discipline input and output variables."""
+
+    __translators: Mapping[str, tuple[Mapping[str, str], Mapping[str, str]]]
+    """The translators."""
+
+    def __init__(self) -> None:  # noqa: D107
+        self.__translations = ()
+        self.__translators = defaultdict(lambda: ({}, {}))
+
+    def __get_pretty_table(self) -> PrettyTable:
+        """Return a tabular view.
+
+        Returns:
+            A tabular view of the variable renamer.
+        """
+        pretty_table = PrettyTable()
+        pretty_table.field_names = [
+            "Discipline name",
+            "Is input?",
+            "Variable name",
+            "New variable name",
+        ]
+        for translation in self.__translations:
+            pretty_table.add_row([
+                translation.discipline_name,
+                translation.is_input,
+                translation.variable_name,
+                translation.new_variable_name,
+            ])
+
+        return pretty_table
+
+    def __repr__(self) -> str:
+        return str(self.__get_pretty_table())
+
+    def _repr_html_(self) -> str:
+        return repr_html_wrapper.format(self.__get_pretty_table().get_html_string())
+
+    @property
+    def translations(self) -> tuple[VariableTranslation, ...]:
+        """The translations of the discipline input and output variables."""
+        return self.__translations
+
+    @property
+    def translators(self) -> Mapping[str, tuple[Mapping[str, str], Mapping[str, str]]]:
+        """The translators.
+
+        As
+        ```python
+        {
+            discipline_name: (
+                {input_name: new_input_name, ...},
+                {output_name: new_output_name, ...}
+            ),
+            ...
+        }
+        ```
+        """
+        return self.__translators
+
+    @classmethod
+    def from_translations(
+        cls, *translations: VariableTranslation | tuple[str, bool, str, str]
+    ) -> VariableRenamer:
+        """Create from translations.
+
+        Args:
+            *translations: The translations
+                of the discipline input and output variables.
+                If `tuple`, formatted as
+                `(discipline_name, is_input, variable_name, new_variable_name)`.
+
+        Returns:
+            A renamer.
+        """
+        renamer = cls()
+        for translation in translations:
+            renamer.add_translation(translation)
+
+        return renamer
+
+    @classmethod
+    def from_dictionary(
+        cls,
+        translations: Mapping[str, tuple[Mapping[str, str], Mapping[str, str]]],
+    ) -> VariableRenamer:
+        """Create from dictionaries.
+
+        Args:
+            translations: The translations of the discipline input and output variables.
+
+                Formatted as
+                ```python
+                {
+                    discipline_name: (
+                        {input_name: new_input_name, ...},
+                        {output_name: new_output_name, ...}
+                    ),
+                    ...
+                }
+                ```
+
+        Returns:
+            A renamer.
+        """
+        renamer = cls()
+        for discipline_name, translation_dicts in translations.items():
+            renamer.add_translations_by_discipline(discipline_name, *translation_dicts)
+
+        return renamer
+
+    @classmethod
+    def from_spreadsheet(cls, file_path: StrPath) -> Self:
+        """Create from a spreadsheet file.
+
+        Structured as
+        `discipline_name, is_input, variable_name, new_variable_name`.
+        The `is_input` column must contain either `True` or `False`;
+        any other value raises a `TypeError`.
+
+        Args:
+            file_path: The path to the spreadsheet file.
+
+        Returns:
+            A renamer.
+        """
+        return cls.__from_dataframe(read_excel(file_path, header=None))
+
+    @classmethod
+    def from_csv(cls, file_path: StrPath, sep: str = ",") -> Self:
+        """Create from a CSV file.
+
+        Structured as
+        `discipline_name, is_input, variable_name, new_variable_name`.
+        The `is_input` column must contain either `True` or `False`;
+        any other value raises a `TypeError`.
+
+        Args:
+            file_path: The path to the CSV file.
+            sep: The separator character.
+
+        Returns:
+            A renamer.
+        """
+        return cls.__from_dataframe(read_csv(file_path, sep=sep, header=None))
+
+    @classmethod
+    def __from_dataframe(cls, dataframe: DataFrame) -> Self:
+        """Create from a pandas dataframe.
+
+        Args:
+            dataframe: A pandas dataframe.
+
+        Returns:
+            A renamer.
+        """
+        translations = [
+            VariableTranslation(
+                discipline_name=discipline_name,
+                is_input=is_input,
+                variable_name=variable_name,
+                new_variable_name=new_variable_name,
+            )
+            for (
+                discipline_name,
+                is_input,
+                variable_name,
+                new_variable_name,
+            ) in dataframe.to_numpy()
+        ]
+        return cls.from_translations(*translations)
+
+    def add_translation(
+        self,
+        translation: VariableTranslation | tuple[str, bool, str, str],
+    ) -> None:
+        """Add a translation.
+
+        Args:
+            translation: A variable translation.
+                If `tuple`, formatted as
+                    `(discipline_name, is_input, variable_name, new_variable_name)`.
+
+        Raises:
+            TypeError: When `is_input` is neither `True` nor `False`.
+            ValueError: When a variable has already been renamed.
+        """
+        if not isinstance(translation, VariableTranslation):
+            translation = VariableTranslation(
+                discipline_name=translation[0],
+                is_input=translation[1],
+                variable_name=translation[2],
+                new_variable_name=translation[3],
+            )
+
+        if not isinstance(translation.is_input, bool):
+            msg = (
+                f"In discipline {translation.discipline_name!r}, "
+                f"the translation of the variable {translation.variable_name!r} "
+                f"uses {translation.is_input!r} to try to differentiate an input "
+                f"from an output; expected the boolean `True` or `False`."
+            )
+            raise TypeError(msg)
+
+        self.__translations = (*self.__translations, translation)
+
+        translator = self.__translators[translation.discipline_name]
+        new_variable_name = translator[not translation.is_input].get(
+            translation.variable_name
+        )
+        if new_variable_name is not None:
+            msg = (
+                f"In discipline {translation.discipline_name!r}, "
+                f"the variable {translation.variable_name!r} cannot be renamed "
+                f"to {translation.new_variable_name!r} "
+                f"because it has already been renamed to {new_variable_name!r}."
+            )
+            if new_variable_name == translation.new_variable_name:
+                logger.warning(msg)
+            else:
+                raise ValueError(msg)
+
+        translator[not translation.is_input][translation.variable_name] = (
+            translation.new_variable_name
+        )  # noqa: E501
+
+    def add_translations_by_discipline(
+        self,
+        discipline_name: str,
+        input_name_to_new_input_name: Mapping[str, str],
+        output_name_to_new_output_name: Mapping[str, str],
+    ) -> None:
+        """Add one or more translations for a given discipline.
+
+        Args:
+            discipline_name: The name of the discipline.
+            input_name_to_new_input_name: The new input name bound
+                to the old input name.
+            output_name_to_new_output_name: The new output name bound
+                to the old output name.
+        """
+        for is_input, mapping in (
+            (True, input_name_to_new_input_name),
+            (False, output_name_to_new_output_name),
+        ):
+            for variable_name, new_variable_name in mapping.items():
+                self.add_translation(
+                    VariableTranslation(
+                        discipline_name=discipline_name,
+                        is_input=is_input,
+                        variable_name=variable_name,
+                        new_variable_name=new_variable_name,
+                    )
+                )
+
+    def add_translations_by_variable(
+        self,
+        new_variable_name: str,
+        discipline_name_and_io_mapping: Mapping[str, tuple[str, bool]],
+    ) -> None:
+        """Add one or more translations for a same variable.
+
+        Args:
+            new_variable_name: The new name of the variable
+                to rename discipline variables.
+            discipline_name_and_io_mapping: The `(variable_name, is_input)` pair
+                bound to the discipline name,
+                where `is_input` is `True` for an input variable
+                and `False` for an output one.
+        """
+        for discipline_name, io_mapping in discipline_name_and_io_mapping.items():
+            variable_name, is_input = io_mapping
+            self.add_translation(
+                VariableTranslation(
+                    discipline_name=discipline_name,
+                    is_input=is_input,
+                    variable_name=variable_name,
+                    new_variable_name=new_variable_name,
+                )
+            )
+
+
+class VariableTranslation(NamedTuple):
+    """The translation of a discipline input or output variable."""
+
+    discipline_name: str
+    """The name of the discipline."""
+
+    is_input: bool
+    """Identifier to check if the translation refers to an input or output variable."""
+
+    variable_name: str
+    """The name of the variable."""
+
+    new_variable_name: str
+    """The new name of the variable."""
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.discipline_name!r}.{self.is_input!r}.{self.variable_name!r}"
+            f"={self.new_variable_name!r}"
+        )
+
+
+def rename_discipline_variables(
+    disciplines: Iterable[BaseDiscipline],
+    translators: Mapping[str, tuple[Mapping[str, str], Mapping[str, str]]],
+) -> None:
+    """Rename input and output variables of disciplines.
+
+    Args:
+        disciplines: The disciplines.
+        translators: The translators.
+            Formatted as
+            ```python
+            {
+                discipline_name: (
+                    {input_name: new_input_name, ...},
+                    {output_name: new_output_name, ...}
+                ),
+                ...
+            }
+            ```
+
+    Raises:
+        TypeError: When a translator is not a pair of mappings.
+        ValueError: When a translator uses a `variable_name` that does not exist.
+    """
+    for discipline in disciplines:
+        translator = translators.get(discipline_name := discipline.name)
+        if translator is None:
+            logger.warning("The discipline '%s' has no translator.", discipline_name)
+            continue
+
+        if isinstance(translator, Mapping) or len(translator) != 2:
+            msg = (
+                f"The translator of the discipline {discipline_name!r} "
+                "must be a pair of mappings, "
+                "the first one for the input variables "
+                "and the second one for the output variables."
+            )
+            raise TypeError(msg)
+
+        for is_output, (grammar, mapping) in enumerate(
+            zip(
+                (discipline.io.input_grammar, discipline.io.output_grammar),
+                translator,
+                strict=True,
+            )
+        ):
+            for variable_name, new_variable_name in mapping.items():
+                if variable_name not in grammar:
+                    msg = (
+                        f"The discipline {discipline_name!r} has no "
+                        f"{'output' if is_output else 'input'} variable "
+                        f"{variable_name!r}."
+                    )
+                    raise ValueError(msg)
+
+                grammar.rename_element(variable_name, new_variable_name)
+
+        discipline.io.data_processor = NameMapping(
+            *({new: old for old, new in mapping.items()} for mapping in translator)
+        )
+
+
+@dataclass
+class DisciplineVariableProperties:
+    """The properties of a discipline variable."""
+
+    current_name: str
+    """The current name of the variable."""
+
+    current_name_without_namespace: str
+    """The current name of the variable without namespace."""
+
+    description: str
+    """The description of the variable."""
+
+    original_name: str
+    """The original name of the variable."""
+
+
+def get_discipline_variable_properties(
+    discipline: Discipline,
+) -> tuple[
+    dict[str, DisciplineVariableProperties], dict[str, DisciplineVariableProperties]
+]:
+    """Return the properties of the input and output variables of a discipline.
+
+    Args:
+        discipline: The discipline.
+
+    Returns:
+        The properties of the input variables,
+        then the properties of the output variables.
+    """
+    input_name_to_properties = {}
+    output_name_to_properties = {}
+    data_processor = discipline.io.data_processor
+    is_name_mapping = isinstance(data_processor, NameMapping)
+    if is_name_mapping:
+        mappings = (data_processor.input_mapping, data_processor.output_mapping)
+
+    for is_output, (grammar, name_to_properties) in enumerate(
+        zip(
+            (discipline.io.input_grammar, discipline.io.output_grammar),
+            (input_name_to_properties, output_name_to_properties),
+            strict=False,
+        )
+    ):
+        from_namespaced = grammar.from_namespaced
+        for current_name in grammar:
+            current_name_without_namespace = from_namespaced.get(
+                current_name, current_name
+            )
+
+            if is_name_mapping:
+                original_name = mappings[is_output].get(
+                    current_name_without_namespace, current_name_without_namespace
+                )
+            else:
+                original_name = current_name_without_namespace
+
+            name_to_properties[current_name] = DisciplineVariableProperties(
+                current_name=current_name,
+                current_name_without_namespace=current_name_without_namespace,
+                original_name=original_name,
+                description=grammar.descriptions.get(current_name, ""),
+            )
+
+    return input_name_to_properties, output_name_to_properties
+
+
+def update_default_input_values(
+    disciplines: Iterable[Discipline],
+    input_name_to_default_value: StrKeyMapping,
+    input_names: Iterable[str] = (),
+) -> None:
+    """Update the default values of certain inputs of given disciplines.
+
+    Args:
+        disciplines: The disciplines.
+        input_name_to_default_value: The mapping
+            between the names of the input variables and their default input values.
+        input_names: The names of the input variables to be considered.
+            If empty, all the input variables are considered.
+    """
+    input_names = input_names or set(input_name_to_default_value)
+    for discipline in disciplines:
+        defaults = discipline.io.input_grammar.defaults
+        for input_name in set(discipline.io.input_grammar).intersection(input_names):
+            defaults[input_name] = input_name_to_default_value[input_name]

@@ -1,0 +1,8 @@
+# serializer version: 1
+# name: test_cannot_disable_root_logger
+  '''
+  1 validation error for LoggingConfiguration
+    Value error, The root logger configuration cannot be disabled once it is enabled. [type=value_error, input_value=LoggingConfiguration(conf...asctime)s: %(message)s'), input_type=LoggingConfiguration]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

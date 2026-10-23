@@ -16,24 +16,31 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
+from typing import Literal
+from typing import overload
 
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.grammars.factory import GrammarFactory
-from gemseo.core.grammars.factory import GrammarType
-from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.discipline.namespace import namespaces_separator
+from gemseo.core.grammar.factory import GrammarType
+from gemseo.core.grammar.factory import grammar_factory
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
     from gemseo.core.discipline.data_processor import DataProcessor
-    from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
+    from gemseo.core.grammar.base import BaseGrammar
+    from gemseo.util.typing import MutableStrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
-_GRAMMAR_FACTORY = GrammarFactory()
+_data_deprecation_msg: Final[str] = (
+    "`IO.data` is deprecated; use `IO.input_data` / `IO.output_data` instead."
+)
 
 
 class IO:
@@ -43,24 +50,36 @@ class IO:
     output data of the last execution.
     """
 
-    _data: DisciplineData
-    """The input and output data."""
+    input_data: DisciplineData
+    """The input data of the last execution.
+
+    The underlying store is mutable; changes to it are reflected immediately on
+    the [IO][gemseo.core.discipline.io.IO].
+    """
+
+    output_data: DisciplineData
+    """The output data of the last execution.
+
+    The underlying store is mutable; changes to it are reflected immediately on
+    the [IO][gemseo.core.discipline.io.IO].
+    """
 
     __linear_relationships: tuple[()] | tuple[set[str], set[str]]
     """The linear relationships between the inputs and outputs.
 
-    Expressed as ``(input_names, output_names)``.
+    Expressed as `(input_names, output_names)`.
     """
 
     data_processor: DataProcessor | None
     """A pre- and post-processor for the discipline data.
 
     This mechanism requires that
-    the ``_run()`` method of the discipline
-    for which the :class:`.IO` is an attribute
+    the `_run()` method of the discipline
+    for which the [IO][gemseo.core.discipline.io.IO] is an attribute
     uses input data,
     returns input data
-    and does not use the ``io.data`` or ``local_data`` attributes.
+    and does not use the `input_data`, `output_data`
+    or the deprecated `data` / `local_data` attributes.
     """
 
     input_grammar: BaseGrammar
@@ -82,9 +101,9 @@ class IO:
         discipline_name: str,
         grammar_type: GrammarType,
         auto_detect_grammar_files: bool = False,
-        grammar_directory: Path | str = "",
-        input_grammar_file: str | Path = "",
-        output_grammar_file: str | Path = "",
+        grammar_directory: StrPath = "",
+        input_grammar_file: StrPath = "",
+        output_grammar_file: StrPath = "",
     ):
         """
         Args:
@@ -96,7 +115,7 @@ class IO:
             input_grammar_file: The path to the file of the input grammar.
             output_grammar_file: The path to the file of the output grammar.
         """  # noqa: D205, D212
-        self.input_grammar = _GRAMMAR_FACTORY.create(
+        self.input_grammar = grammar_factory.create(
             grammar_type,
             name=f"{discipline_name}_discipline_input",
             file_path=input_grammar_file,
@@ -105,7 +124,7 @@ class IO:
             directory_path=grammar_directory,
             file_name_suffix="input",
         )
-        self.output_grammar = _GRAMMAR_FACTORY.create(
+        self.output_grammar = grammar_factory.create(
             grammar_type,
             name=f"{discipline_name}_discipline_output",
             file_path=output_grammar_file,
@@ -115,7 +134,8 @@ class IO:
             file_name_suffix="output",
         )
 
-        self.data = {}
+        self.input_data = DisciplineData()
+        self.output_data = DisciplineData()
         self.data_processor = None
         self.residual_to_state_variable = {}
         self.state_equations_are_solved = False
@@ -126,7 +146,7 @@ class IO:
         """The type of grammar used for inputs and outputs."""
         return GrammarType(type(self.input_grammar).__name__)
 
-    def prepare_input_data(self, data: StrKeyMapping) -> StrKeyMapping:
+    def prepare_input_data(self, data: StrKeyMapping) -> dict[str, Any]:
         """Prepare the input data.
 
         The missing input items that have default values are added,
@@ -140,7 +160,10 @@ class IO:
         """
         # TODO: remove comment: removing this line breaks one parallel test
         if not data:
-            return self.input_grammar.defaults.copy()
+            # Copy via casting in order to consistently have a dict object
+            # instead of a GrammarProperty which may have side effects
+            # and does not play well with the strictness of pydantic grammars.
+            return dict(self.input_grammar.defaults)
 
         input_data = {}
         defaults = self.input_grammar.defaults
@@ -156,38 +179,133 @@ class IO:
 
         return input_data
 
+    @overload
+    def get_merged_data(self, as_dict: Literal[True] = ...) -> dict[str, Any]: ...
+
+    @overload
+    def get_merged_data(self, as_dict: Literal[False]) -> DisciplineData: ...
+
+    def get_merged_data(self, as_dict: bool = True) -> dict[str, Any] | DisciplineData:
+        """Return a fresh union of the input and output stores.
+
+        Output values override input values on overlap.
+
+        Args:
+            as_dict: Whether to return a plain `dict`.
+                If `False`,
+                return a
+                [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData].
+
+        Returns:
+            The merged data.
+        """
+        merged = {**self.input_data, **self.output_data}
+        if as_dict:
+            return merged
+        return DisciplineData(merged)
+
     @property
     def data(self) -> DisciplineData:
-        """The current input and output data.
+        """The merged input and output data (deprecated).
 
-        When set, the passed data are shallow copied.
+        Use [input_data][gemseo.core.discipline.io.IO.input_data] and
+        [output_data][gemseo.core.discipline.io.IO.output_data] instead.
+
+        On read, returns a fresh union of the two stores (output overrides
+        input on overlap).
+        On write, splits the assigned mapping into the two stores by grammar
+        membership; names in neither grammar are stored on the output side.
         """
-        return self._data
+        warnings.warn(_data_deprecation_msg, DeprecationWarning, stacklevel=2)
+        return self.get_merged_data(as_dict=False)
 
     @data.setter
     def data(self, data: MutableStrKeyMapping) -> None:
-        self._data = DisciplineData(data)
+        warnings.warn(_data_deprecation_msg, DeprecationWarning, stacklevel=2)
+        self._set_data_no_warn(data)
 
-    def __get_data(self, with_namespaces: bool, grammar: BaseGrammar) -> dict[str, Any]:
-        """Return the local data restricted to the items in a grammar.
+    def _set_data_no_warn(self, data: MutableStrKeyMapping) -> None:
+        """Replace both stores from `data`, routing by grammar membership.
+
+        Names in the input grammar go to `input_data`; names in the output
+        grammar go to `output_data`; names in neither grammar go to
+        `output_data` as a permissive catch-all matching the legacy
+        behavior of the merged `data` attribute. Emits no warning so it can
+        be reused by other deprecated public entry points without
+        double-warning.
+        """
+        self.input_data = DisciplineData()
+        self.output_data = DisciplineData()
+        self.__route_into_stores(data)
+
+    def __route_into_stores(self, data: StrKeyMapping) -> None:
+        """Route items of `data` into `input_data` and `output_data` by grammar.
+
+        Names in the input grammar go to `input_data`; names in the output
+        grammar go to `output_data`; names in neither grammar fall into
+        `output_data` as a catch-all.
 
         Args:
-            with_namespaces: Whether to keep the namespace prefix of the
-                output names, if any.
-            grammar: The grammar that provides the names to be restricted to.
+            data: The data to route. The two stores are assumed to be empty or to
+                be progressively populated.
+        """
+        in_names = self.input_grammar
+        out_names = self.output_grammar
+        for key, value in data.items():
+            if key in in_names:
+                self.input_data[key] = value
+            # Catch-all: keys outside both grammars fall into the output store,
+            # matching the legacy merged `data` attribute.
+            if key in out_names or key not in in_names:
+                self.output_data[key] = value
+
+    def propagate_to_input(self, updates: StrKeyMapping) -> None:
+        """Copy items of `updates` whose name is an input to the input store.
+
+        Used by MDA solvers to propagate auto-coupled outputs back into the input
+        store between iterations.
+
+        Args:
+            updates: The values to propagate.
+        """
+        in_names = self.input_grammar
+        for name, value in updates.items():
+            if name in in_names:
+                self.input_data[name] = value
+
+    def get(self, name: str) -> Any:
+        """Return the value of `name` from the output or input data.
+
+        The output store is searched first; if `name` is absent, the input
+        store is searched. This matches the override semantics of
+        [get_merged_data][gemseo.core.discipline.io.IO.get_merged_data],
+        where output values take precedence over input values on overlap.
+
+        Args:
+            name: The name of the variable.
 
         Returns:
-            The local output data.
+            The value of the variable.
+
+        Raises:
+            KeyError: If `name` is in neither store.
         """
-        copy_ = self._data.copy()
-        for name in copy_.keys() - grammar:
-            del copy_[name]
+        if name in self.output_data:
+            return self.output_data[name]
+        return self.input_data[name]
 
-        if not with_namespaces and grammar.to_namespaced:
-            for key in tuple(copy_.keys()):
-                copy_[key.rsplit(namespaces_separator, 1)[-1]] = copy_.pop(key)
+    @staticmethod
+    def __strip_namespaces(data: dict[str, Any], grammar: BaseGrammar) -> None:
+        """Strip namespace prefixes from `data` keys in place, if any.
 
-        return copy_
+        Args:
+            data: The dict whose keys are mutated in place.
+            grammar: The grammar that owns the namespace mapping.
+        """
+        if grammar.to_namespaced:
+            for key in tuple(data.keys()):
+                if namespaces_separator in key:
+                    data[key.rsplit(namespaces_separator, 1)[-1]] = data.pop(key)
 
     def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the items of the data that are inputs.
@@ -199,7 +317,10 @@ class IO:
         Returns:
             The input data.
         """
-        return self.__get_data(with_namespaces, self.input_grammar)
+        data = self.input_data.copy()
+        if not with_namespaces:
+            self.__strip_namespaces(data, self.input_grammar)
+        return data
 
     def get_output_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the items of the data that are outputs.
@@ -211,24 +332,28 @@ class IO:
         Returns:
             The output data.
         """
-        return self.__get_data(with_namespaces, self.output_grammar)
+        data = self.output_data.copy()
+        if not with_namespaces:
+            self.__strip_namespaces(data, self.output_grammar)
+        return data
 
     def update_output_data(self, output_data: StrKeyMapping) -> None:
-        """Update the output in data, taking care of the namespaces if any.
+        """Update the output data, taking care of the namespaces if any.
 
         The namespaces of the output data, if any, are automatically handled:
-        if the key of an item of ``output_data`` is in a namespace and the key is a name
+        if the key of an item of `output_data` is in a namespace and the key is a name
         without the namespace prefix then the item will be stored with the namespace
         prefix.
 
-        If an item of ``output_data`` is not an output then it is ignored.
+        If an item of `output_data` is not an output then it is ignored.
 
         Args:
-            output_data: The output data to update :attr:`.data` with.
+            output_data: The output data to update
+                [output_data][gemseo.core.discipline.io.IO.output_data] with.
         """
         out_ns = self.output_grammar.to_namespaced
         out_names = self.output_grammar
-        data = self._data
+        data = self.output_data
         if out_ns:
             for key, value in output_data.items():
                 if key in out_names:
@@ -240,17 +365,39 @@ class IO:
                 if key in out_names:
                     data[key] = value
 
+    def get_extra_output_names(self, output_data: StrKeyMapping) -> set[str]:
+        """Return the names of output data that are not outputs.
+
+        A name without namespace prefix is an output
+        if the output grammar has this name with a namespace prefix.
+
+        Args:
+            output_data: The output data.
+
+        Returns:
+            The names of the items of `output_data`
+            that [update_output_data][gemseo.core.discipline.io.IO.update_output_data]
+            would ignore.
+        """
+        output_grammar = self.output_grammar
+        return (
+            output_data.keys()
+            - output_grammar.keys()
+            - output_grammar.to_namespaced.keys()
+        )
+
     def initialize(self, input_data: StrKeyMapping, validate: bool) -> None:
         """Initialize the data from input data.
 
         Args:
             input_data: The input data.
-            validate: Whether to validate ``input_data``.
+            validate: Whether to validate `input_data`.
         """
         if validate:
             self.input_grammar.validate(input_data)
 
-        self.data = input_data
+        self.input_data = DisciplineData(input_data)
+        self.output_data = DisciplineData()
 
     def finalize(self, validate: bool) -> None:
         """Validate the output data.
@@ -259,7 +406,7 @@ class IO:
             validate: Whether to validate the (eventually post-processed) cleaned data.
         """
         if validate:
-            self.output_grammar.validate(self._data)
+            self.output_grammar.validate(self.output_data)
 
     def set_linear_relationships(
         self,
@@ -314,7 +461,7 @@ class IO:
         if alien_names := names.difference(grammar_names):
             msg = (
                 f"The following {prefix}_names are not in the {prefix} grammar: "
-                f"{','.join(alien_names)}."
+                f"{pretty_str(alien_names)}."
             )
             raise ValueError(msg)
 
@@ -340,3 +487,16 @@ class IO:
         return self.__linear_relationships[0].issuperset(
             input_names
         ) and self.__linear_relationships[1].issuperset(output_names)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        # One-way upgrade path: a legacy pickle had a single `_data` store;
+        # split it by grammar membership on load. Auto-coupled keys land in
+        # both stores; keys outside both grammars fall into `output_data`.
+        if "_data" in state and "input_data" not in state:
+            legacy = state.pop("_data")
+            self.__dict__.update(state)
+            self.input_data = DisciplineData()
+            self.output_data = DisciplineData()
+            self.__route_into_stores(legacy)
+        else:
+            self.__dict__.update(state)

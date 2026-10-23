@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_less_than_3_design_variables[0]
+  'The design space must have at least three design variables; got 0.'
+# ---
+# name: test_less_than_3_design_variables[1]
+  'The design space must have at least three design variables; got 1.'
+# ---
+# name: test_less_than_3_design_variables[2]
+  'The design space must have at least three design variables; got 2.'
+# ---
+# name: test_non_differentiable_link_discipline
+  'The discipline L was not linearized.'
+# ---

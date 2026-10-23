@@ -30,14 +30,13 @@ import matplotlib.pyplot as plt
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
+from gemseo.post._engine.robustness_quantifier import RobustnessQuantifier
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.robustness_settings import Robustness_Settings
-from gemseo.utils.compatibility.matplotlib import boxplot
-from gemseo.utils.seeder import SEED
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.seeder import seed
+from gemseo.util.string import repr_variable
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Robustness(BasePost[Robustness_Settings]):
@@ -49,10 +48,10 @@ class Robustness(BasePost[Robustness_Settings]):
     and plot the corresponding output boxplot.
     """
 
-    SR1_APPROX: ClassVar[str] = "SR1"
-    Settings: ClassVar[type[Robustness_Settings]] = Robustness_Settings
+    sr1_approx: ClassVar[str] = "SR1"
+    settings_class: ClassVar[type[Robustness_Settings]] = Robustness_Settings
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: Robustness_Settings) -> None:
         standard_deviation = settings.stddev
@@ -75,12 +74,12 @@ class Robustness(BasePost[Robustness_Settings]):
         for func in all_function_names:
             func_name = dataset_func_name = func
             if (
-                self._change_obj
+                self._change_objective(settings.use_standardized_objective)
                 and func_name == f"-{optimization_metadata.objective_name}"
             ):
                 func_name = optimization_metadata.objective_name
 
-            dim = self._dataset.variable_names_to_n_components[func]
+            dim = self._dataset.variable_name_to_n_components[func]
             at_most_niter = int(1.5 * n_x)
             for func_index in range(dim):
                 robustness.compute_approximation(
@@ -91,13 +90,13 @@ class Robustness(BasePost[Robustness_Settings]):
                 )
                 x_ref = robustness.x_ref
                 mean = robustness.compute_expected_value(x_ref, cov)
-                if self._change_obj:
+                if self._change_objective(settings.use_standardized_objective):
                     mean = -mean
 
                 variance = robustness.compute_variance(x_ref, cov)
                 if variance > 0:  # Otherwise normal doesn't work
                     function_samples.append(
-                        default_rng(SEED).normal(mean, sqrt(variance), 500)
+                        default_rng(seed).normal(mean, sqrt(variance), 500)
                     )
                     function_names.append(repr_variable(func_name, func_index, dim))
 
@@ -106,5 +105,5 @@ class Robustness(BasePost[Robustness_Settings]):
             "Boxplot of the optimization functions "
             f"with normalized stddev {standard_deviation}"
         )
-        boxplot(function_samples, showfliers=False, labels=function_names)
+        plt.boxplot(function_samples, showfliers=False, tick_labels=function_names)
         fig.tight_layout()

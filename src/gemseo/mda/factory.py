@@ -24,15 +24,17 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
 
 from pydantic_core import PydanticUndefined
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 MDAOptionType = (
     float | int | bool | str | Iterable[CouplingStructure] | Sequence[BaseMDA] | None
@@ -42,8 +44,8 @@ MDAOptionType = (
 class MDAFactory(BaseFactory):
     """A factory of MDAs."""
 
-    _CLASS = BaseMDA
-    _PACKAGE_NAMES = ("gemseo.mda",)
+    _class: ClassVar[type[BaseMDA]] = BaseMDA
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.mda",)
 
     def get_options_doc(self, name: str) -> dict[str, str]:
         """Return the constructor documentation of a class.
@@ -54,7 +56,7 @@ class MDAFactory(BaseFactory):
         Returns:
             The mapping from the argument names to their documentation.
         """
-        fields = self.get_class(name).Settings.model_fields
+        fields = self.get_class(name).settings_class.model_fields
         return {k: v.description for k, v in fields.items()}
 
     def get_default_option_values(self, name: str) -> StrKeyMapping:
@@ -66,7 +68,7 @@ class MDAFactory(BaseFactory):
         Returns:
             The mapping from the argument names to their default values.
         """
-        fields = self.get_class(name).Settings.model_fields
+        fields = self.get_class(name).settings_class.model_fields
         defaults = {}
         for field_name, field_default in fields.items():
             default_value = field_default.default
@@ -76,3 +78,7 @@ class MDAFactory(BaseFactory):
 
             defaults[field_name] = default_value
         return defaults
+
+
+mda_factory: Final[MDAFactory] = MDAFactory()
+"""The factory for `MDA` objects."""

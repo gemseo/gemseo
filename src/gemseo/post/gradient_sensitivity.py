@@ -31,10 +31,10 @@ from numpy import arange
 from numpy import atleast_2d
 from numpy import where
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
+from gemseo.core.problem.database import Database
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -42,20 +42,20 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy import ndarray
 
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    Settings: ClassVar[type[GradientSensitivity_Settings]] = (
+    settings_class: ClassVar[type[GradientSensitivity_Settings]] = (
         GradientSensitivity_Settings
     )
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: GradientSensitivity_Settings) -> None:
         compute_missing_gradients = settings.compute_missing_gradients
@@ -79,6 +79,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             ),
             settings.scale_gradients,
             settings.fig_size,
+            settings.use_standardized_objective,
         )
         fig.tight_layout()
         self._add_figure(fig)
@@ -99,19 +100,21 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             compute_missing_gradients: Whether to compute the gradients at the
                 selected iteration if they were not computed by the algorithm.
 
-                .. warning::
-                   Activating this option may add considerable computation time
-                   depending on the cost of the gradient evaluation.
-                   This option will not compute the gradients if the
-                   :class:`.OptimizationProblem` instance was imported from an HDF5
-                   file. This option requires an :class:`.OptimizationProblem` with a
-                   gradient-based algorithm.
+        Warning:
+            Activating this option may add considerable computation time
+            depending on the cost of the gradient evaluation.
+            This option will not compute the gradients if the
+            [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+            instance was imported from an HDF5 file.
+            This option requires an
+            [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+            with a gradient-based algorithm.
 
         Returns:
             The gradients of the outputs
             indexed by the names of the output,
-            e.g. ``"output_name"`` for a mono-dimensional output,
-            or ``"output_name_i"`` for the i-th component of a multidimensional output.
+            e.g. `"output_name"` for a mono-dimensional output,
+            or `"output_name_i"` for the i-th component of a multidimensional output.
         """
         gradient_values = {}
         if compute_missing_gradients:
@@ -122,13 +125,13 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     )
                 )
                 _, gradient_values = self.optimization_problem.evaluate_functions(
-                    design_vector=design_value,
-                    design_vector_is_normalized=False,
+                    input_value=design_value,
+                    input_value_is_normalized=False,
                     output_functions=output_functions or None,
                     jacobian_functions=jacobian_functions or None,
                 )
             except NotImplementedError:
-                LOGGER.info(
+                logger.info(
                     "The missing gradients for an OptimizationProblem without "
                     "callable functions cannot be computed."
                 )
@@ -139,8 +142,8 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        scale_gradient = self._dataset.misc["input_space"].unnormalize_vect
-        function_names_to_gradients = {}
+        scale_gradient = self._dataset.misc["input_space"].denormalize_vect
+        function_name_to_gradient = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
                 gradient_value = gradient_values[function_name]
@@ -150,7 +153,8 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     iteration = self._optimization_metadata.optimum_iteration
                 try:
                     gradient_value = (
-                        self._dataset.get_view(variable_names=grad_name)
+                        self._dataset
+                        .get_view(variable_names=grad_name)
                         .loc[iteration]
                         .to_numpy()
                     )
@@ -173,11 +177,11 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             for i, gradient_value_ in enumerate(gradient_value):
                 if scale_gradients:
                     gradient_value_ = scale_gradient(gradient_value_, minus_lb=False)
-                function_names_to_gradients[repr_variable(function_name, i, size)] = (
+                function_name_to_gradient[repr_variable(function_name, i, size)] = (
                     gradient_value_
                 )
 
-        return function_names_to_gradients
+        return function_name_to_gradient
 
     def __generate_subplots(
         self,
@@ -186,6 +190,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         gradients: dict[str, RealArray],
         scale_gradients: bool,
         fig_size: tuple[float, float],
+        use_standardized_objective: bool,
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -196,6 +201,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
             fig_size: The size of the figure.
+            use_standardized_objective: Whether to use the standardized objective.
 
         Returns:
             The gradients subplots.
@@ -216,7 +222,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         )
 
         abscissa = arange(len(design_value))
-        if self._change_obj:
+        if self._change_objective(use_standardized_objective):
             gradients[self._optimization_metadata.objective_name] = -gradients.pop(
                 self._optimization_metadata.standardized_objective_name
             )

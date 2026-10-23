@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_ode_discipline_bad_grammar
+  "'not_position' and 'not_velocity' are not input variables of the RHS discipline."
+# ---
+# name: test_ode_discipline_missing_names_time_derivatives
+  "'c_dot' are not output variables of the RHS discipline."
+# ---
+# name: test_ode_discipline_not_convergent
+  'ODE solver RK45 failed to converge. Message = Required step size is less than spacing between numbers.'
+# ---

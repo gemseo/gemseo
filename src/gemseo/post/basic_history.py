@@ -27,9 +27,10 @@ from typing import Final
 from numpy import arange
 from numpy import newaxis
 
-from gemseo.post.base_post import BasePost
 from gemseo.post.basic_history_settings import BasicHistory_Settings
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.lines_settings import Lines_Settings
 
 
 class BasicHistory(BasePost[BasicHistory_Settings]):
@@ -38,9 +39,9 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
     This post-processor requires the names of these selected outputs.
     """
 
-    Settings: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
+    settings_class: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
 
-    __ITERATION_NAME: Final[str] = ",;:!"
+    __iteration_name: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.
 
     A name that a user cannot chose for its own variables. Only used in the background.
@@ -50,13 +51,13 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         optimization_metadata = self._optimization_metadata
         dataset = self._dataset.copy()
         dataset.add_variable(
-            self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]
+            self.__iteration_name, arange(1, len(dataset) + 1)[:, newaxis]
         )
 
         variable_names = list(settings.variable_names)
         if optimization_metadata.objective_name in variable_names:
             if (
-                optimization_metadata.use_standardized_objective
+                settings.use_standardized_objective
                 and not optimization_metadata.minimize_objective
             ):
                 obj_index = variable_names.index(optimization_metadata.objective_name)
@@ -64,7 +65,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                     optimization_metadata.standardized_objective_name
                 )
 
-            if self._change_obj:
+            if self._change_objective(settings.use_standardized_objective):
                 dataset.transform_data(
                     operator.neg,
                     variable_names=optimization_metadata.standardized_objective_name,
@@ -77,23 +78,22 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         if settings.normalize:
             dataset = dataset.get_normalized()
 
-        plot = Lines(
-            dataset,
-            abscissa_variable=self.__ITERATION_NAME,
-            variables=[
+        settings = Lines_Settings(
+            abscissa_variable=self.__iteration_name,
+            variables=tuple(
                 names
                 for variable_name in variable_names
                 for names in (
-                    optimization_metadata.output_names_to_constraint_names.get(
+                    optimization_metadata.output_name_to_constraint_names.get(
                         variable_name, [variable_name]
                     )
                 )
-            ],
+            ),
             use_integer_xticks=True,
+            font_size=12,
+            xlabel="Iterations",
+            title="History plot",
+            fig_size=settings.fig_size,
         )
-        plot.font_size = 12
-        plot.xlabel = "Iterations"
-        plot.fig_size_x = settings.fig_size[0]
-        plot.fig_size_y = settings.fig_size[1]
-        plot.title = "History plot"
+        plot = Lines(dataset, settings)
         self._add_figure(plot)

@@ -16,22 +16,22 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
-class Robustness_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "Robustness"
+class Robustness_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (8.0, 5.0)}
     stddev: float = Field(
         default=0.01,
-        description="The standard deviation of the normal uncertain variable to be "
+        description="The standard deviation of the normal random variable to be "
         "added to the optimal design value; expressed as a fraction of "
         "the bounds of the design variables.",
         ge=0.0,
         le=1.0,
     )
-
-
-update_field(Robustness_Settings, "fig_size", default=(8.0, 5.0))

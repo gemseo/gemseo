@@ -1,0 +1,170 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Damien Guenot
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""PyDOE algorithms wrapper."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from collections.abc import Sequence
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
+
+from numpy.random import RandomState
+from pydoe import bbdesign
+from pydoe import ccdesign
+from pydoe import ff2n
+from pydoe import lhs
+from pydoe import pbdesign
+
+from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
+from gemseo.doe.core.base_doe_library import BaseDOELibrary
+from gemseo.doe.core.base_doe_library import DOEAlgorithmDescription
+from gemseo.doe.pydoe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+from gemseo.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
+from gemseo.doe.pydoe.settings.pydoe_bbdesign import PYDOE_BBDESIGN_Settings
+from gemseo.doe.pydoe.settings.pydoe_ccdesign import PYDOE_CCDESIGN_Settings
+from gemseo.doe.pydoe.settings.pydoe_ff2n import PYDOE_FF2N_Settings
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.doe.pydoe.settings.pydoe_pbdesign import PYDOE_PBDESIGN_Settings
+from gemseo.util.typing import RealArray
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.space.base import BaseVariableSpace
+
+OptionType = (
+    str
+    | int
+    | float
+    | bool
+    | Sequence[int]
+    | tuple[int, int]
+    | RealArray
+    | RandomState
+    | None
+)
+
+
+class PyDOEAlgorithmDescription(DOEAlgorithmDescription):
+    """The description of a pyDOE algorithm."""
+
+    library_name = "PyDOE"
+    """The library name."""
+
+
+class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
+    """The PyDOE DOE algorithms library."""
+
+    __names_to_functions: ClassVar[Mapping[str, Callable]] = MappingProxyType({
+        "PYDOE_BBDESIGN": bbdesign,
+        "PYDOE_CCDESIGN": ccdesign,
+        "PYDOE_FF2N": ff2n,
+        "PYDOE_LHS": lhs,
+        "PYDOE_PBDESIGN": pbdesign,
+    })
+    """The algorithm names bound to the corresponding pyDOE function."""
+
+    __doc: Final[str] = "https://pydoe.github.io/pydoe/reference/"
+
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        "PYDOE_BBDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_BBDESIGN",
+            description="Box-Behnken design",
+            internal_algorithm_name="bbdesign",
+            website=f"{__doc}response_surface/#box_behnken",
+            settings_class=PYDOE_BBDESIGN_Settings,
+            minimum_dimension=3,
+        ),
+        "PYDOE_CCDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_CCDESIGN",
+            description="Central Composite",
+            internal_algorithm_name="ccdesign",
+            website=f"{__doc}response_surface/#central_composite",
+            settings_class=PYDOE_CCDESIGN_Settings,
+            minimum_dimension=2,
+        ),
+        "PYDOE_FF2N": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_FF2N",
+            description="2-Level Full-Factorial",
+            internal_algorithm_name="ff2n",
+            website=f"{__doc}factorial/#2-level-full-factorial-ff2n",
+            settings_class=PYDOE_FF2N_Settings,
+        ),
+        "PYDOE_FULLFACT": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_FULLFACT",
+            description="Full-Factorial",
+            internal_algorithm_name="fullfact",
+            website=f"{__doc}factorial/#general-full-factorial-fullfact",
+            settings_class=PYDOE_FULLFACT_Settings,
+        ),
+        "PYDOE_LHS": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_LHS",
+            description="Latin Hypercube Sampling",
+            internal_algorithm_name="lhs",
+            website=f"{__doc}randomized/#latin-hypercube",
+            settings_class=PYDOE_LHS_Settings,
+        ),
+        "PYDOE_PBDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_PBDESIGN",
+            description="Plackett-Burman design",
+            internal_algorithm_name="pbdesign",
+            website=f"{__doc}factorial/#plackett-burman",
+            settings_class=PYDOE_PBDESIGN_Settings,
+        ),
+    }
+
+    _settings_class_to_exclude: ClassVar[type[BasePyDOESettings]] = BasePyDOESettings
+
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
+        if self._algo_name == "PYDOE_FULLFACT":
+            return PyDOEFullFactorialDOE().generate_samples(
+                input_space.dimension, self._settings
+            )
+
+        filtered_settings = self._filter_settings()
+        doe_algorithm = self.__names_to_functions[self._algo_name]
+        if self._algo_name == "PYDOE_LHS":
+            filtered_settings["seed"] = self._seeder.get_seed(self._settings.seed)
+            filtered_settings["samples"] = filtered_settings.pop("n_samples")
+            return doe_algorithm(input_space.dimension, **filtered_settings)
+
+        data = doe_algorithm(input_space.dimension, **filtered_settings)
+        # Scale data from [-1,1] to [0,1]
+        return (data + 1.0) / 2.0
+
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
+        algorithm_description: DOEAlgorithmDescription,
+        problem: OptimizationProblem,
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if (
+            reason
+            or problem.input_space.dimension >= algorithm_description.minimum_dimension
+        ):
+            return reason
+
+        return _UnsuitabilityReason.SMALL_DIMENSION

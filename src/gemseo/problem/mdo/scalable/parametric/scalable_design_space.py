@@ -1,0 +1,92 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""The design space for the scalable problem."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
+    default_d_0,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.scalable_design_space import (
+    ScalableDesignSpace as _ScalableDesignSpace,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
+    default_scalable_discipline_settings,
+)
+from gemseo.space.design import DesignSpace
+from gemseo.util.constant import read_only_empty_dict
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
+        ScalableDisciplineSettings,
+    )
+    from gemseo.util.typing import RealArray
+
+
+class ScalableDesignSpace(DesignSpace):
+    """The design space for the scalable problem.
+
+    It is the space in which the design and coupling variables vary. For all the
+    variables, the lower bound is 0, the upper bound is 1 and the default value is 0.5.
+    """
+
+    def __init__(
+        self,
+        discipline_settings: Iterable[
+            ScalableDisciplineSettings
+        ] = default_scalable_discipline_settings,
+        d_0: int = default_d_0,
+        name_to_default_value: Mapping[str, RealArray] = read_only_empty_dict,
+    ) -> None:
+        r"""Args:
+            discipline_settings: The configurations of the different disciplines.
+                If `None`,
+                use a single discipline
+                with default
+                [ScalableDisciplineSettings][gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings.ScalableDisciplineSettings].
+            d_0: The size of the shared design variable $x_0$.
+            name_to_default_value: The default values of the variables.
+
+        Notes:
+            The lengths of `n_local` and `n_coupling` must be equal
+            and correspond to the number of scalable disciplines.
+            `n_local[i]` (resp. `n_coupling[i]`)
+            is the number of local design variables (resp. coupling variables)
+            of the *i*-th scalable discipline.
+        """  # noqa: D205 D212
+        super().__init__()
+        design_space = _ScalableDesignSpace(
+            scalable_discipline_settings=discipline_settings,
+            d_0=d_0,
+            name_to_default_value=name_to_default_value,
+        )
+        for variable in design_space.variables:
+            self.add_real_variable(
+                name=variable.name,
+                size=variable.size,
+                lower_bound=variable.lower_bound,
+                upper_bound=variable.upper_bound,
+                value=variable.default_value,
+            )

@@ -28,14 +28,18 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.core.base import BaseMDA
+from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+    MDAGaussSeidelNewtonRaphson_Settings,
+)
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.mda.sequential_mda import MDASequential
-from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.utils import get_y_opt
+from gemseo.mda.sequential import MDASequential
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.util import get_y_opt
 
 from .utils import generate_parallel_doe
 
@@ -49,7 +53,7 @@ def mda_sequential() -> MDASequential:
     return MDASequential(
         disciplines,
         [
-            MDAJacobi(disciplines, max_mda_iter=2),
+            MDAJacobi(disciplines, MDAJacobi_Settings(max_mda_iter=2)),
             MDANewtonRaphson(disciplines),
         ],
     )
@@ -60,16 +64,18 @@ def test_execution(mda_sequential) -> None:
     mda_sequential.execute()
 
     assert allclose_(array([0.8, 1.8]), get_y_opt(mda_sequential))
-    assert mda_sequential.normed_residual <= 1e-6
+    assert mda_sequential.normalized_residual_norm <= 1e-6
 
     mda_1, mda_2 = mda_sequential.mda_sequence
-    assert mda_sequential.normed_residual == mda_2.normed_residual
+    assert mda_sequential.normalized_residual_norm == mda_2._normalized_residual_norm
     assert mda_sequential._current_iter == mda_1._current_iter + mda_2._current_iter
 
 
 def test_parallel_doe() -> None:
     """Test the execution of GaussSeidel in parallel."""
-    obj = generate_parallel_doe(main_mda_settings={"inner_mda_name": "MDAGSNewton"})
+    obj = generate_parallel_doe(
+        main_mda_settings={"inner_mda_settings": MDAGaussSeidelNewtonRaphson_Settings()}
+    )
     assert allclose_(array([-obj]), array([608.175]), atol=1e-3)
 
 
@@ -106,7 +112,7 @@ def test_set_bounds():
     mda = MDASequential(
         disciplines=disciplines,
         mda_sequence=[
-            MDAJacobi(disciplines, max_mda_iter=2),
+            MDAJacobi(disciplines, MDAJacobi_Settings(max_mda_iter=2)),
             MDANewtonRaphson(disciplines),
         ],
     )

@@ -16,22 +16,25 @@
 
 from __future__ import annotations  # noqa: I001
 
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-
-from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from typing import TYPE_CHECKING
 
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
+from gemseo.mda.factory import mda_factory
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.util.constant import read_only_empty_dict
+
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def generate_parallel_doe(
     main_mda_name: str = "MDAChain",
     n_samples: int = 4,
-    main_mda_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    main_mda_settings: StrKeyMapping = read_only_empty_dict,
 ) -> float:
     """Execute a parallel DOE with a custom `main_mda_name`.
 
@@ -45,6 +48,7 @@ def generate_parallel_doe(
         The optimum solution of the parallel DOE scenario.
     """
     design_space = SobieskiDesignSpace()
+    settings = mda_factory.get_class(main_mda_name).settings_class(**main_mda_settings)
     scenario = create_scenario(
         create_discipline([
             "SobieskiPropulsion",
@@ -55,14 +59,8 @@ def generate_parallel_doe(
         "y_4",
         design_space,
         formulation_name="MDF",
-        scenario_type="DOE",
         maximize_objective=True,
-        main_mda_name=main_mda_name,
-        main_mda_settings=main_mda_settings,
+        main_mda_settings=settings,
     )
-    scenario.execute(
-        algo_name="DiagonalDOE",
-        n_samples=n_samples,
-        n_processes=2,
-    )
+    scenario.execute(DiagonalDOE_Settings(n_samples=n_samples, n_processes=2))
     return scenario.optimization_result.f_opt

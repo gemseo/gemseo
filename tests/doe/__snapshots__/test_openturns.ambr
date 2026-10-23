@@ -1,0 +1,70 @@
+# serializer version: 1
+# name: test_opt_lhs_wrong_properties[options0]
+  '''
+  1 validation error for OT_OPT_LHS_Settings
+  criterion
+    Input should be 'C2', 'PhiP' or 'MinDist' [type=enum, input_value='unknown_criterion', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_opt_lhs_wrong_properties[options1]
+  '''
+  1 validation error for OT_OPT_LHS_Settings
+  temperature
+    Input should be 'Geometric' or 'Linear' [type=enum, input_value='unknown_temperature', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_optimized_lhs_size_1
+  '''
+  1 validation error for OT_OPT_LHS_Settings
+  n_samples
+    Input should be greater than or equal to 2 [type=greater_than_equal, input_value=1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than_equal
+  '''
+# ---
+# name: test_ot_stratified_centers_dimension_error[OTAxialDOE]
+  'The number of centers must be 3; got 2.'
+# ---
+# name: test_ot_stratified_centers_dimension_error[OTCompositeDOE]
+  'The number of centers must be 3; got 2.'
+# ---
+# name: test_ot_stratified_centers_dimension_error[OTFactorialDOE]
+  'The number of centers must be 3; got 2.'
+# ---
+# name: test_ot_stratified_centers_value_error[centers0-OTAxialDOE]
+  'The centers must be in ]0,1[; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_centers_value_error[centers0-OTCompositeDOE]
+  'The centers must be in ]0,1[; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_centers_value_error[centers0-OTFactorialDOE]
+  'The centers must be in ]0,1[; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_centers_value_error[centers1-OTAxialDOE]
+  'The centers must be in ]0,1[; got [0.5, 1.0].'
+# ---
+# name: test_ot_stratified_centers_value_error[centers1-OTCompositeDOE]
+  'The centers must be in ]0,1[; got [0.5, 1.0].'
+# ---
+# name: test_ot_stratified_centers_value_error[centers1-OTFactorialDOE]
+  'The centers must be in ]0,1[; got [0.5, 1.0].'
+# ---
+# name: test_ot_stratified_doe_n_samples_error[OTAxialDOE-An axial DOE in dimension d=2 requires at least 1+2*d=5 samples; got 4.]
+  'An axial DOE in dimension d=2 requires at least 1+2*d=5 samples; got 4.'
+# ---
+# name: test_ot_stratified_doe_n_samples_error[OTCompositeDOE-A composite DOE in dimension d=2 requires at least 1+2*d+2^d=9 samples; got 4.]
+  'A composite DOE in dimension d=2 requires at least 1+2*d+2^d=9 samples; got 4.'
+# ---
+# name: test_ot_stratified_doe_n_samples_error[OTFactorialDOE-A factorial DOE in dimension d=2 requires at least 1+2^d=5 samples; got 4.]
+  'A factorial DOE in dimension d=2 requires at least 1+2^d=5 samples; got 4.'
+# ---
+# name: test_ot_stratified_levels_value_error[OTAxialDOE]
+  'The levels must be in ]0,1]; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_levels_value_error[OTCompositeDOE]
+  'The levels must be in ]0,1]; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_levels_value_error[OTFactorialDOE]
+  'The levels must be in ]0,1]; got [0.0, 0.5].'
+# ---

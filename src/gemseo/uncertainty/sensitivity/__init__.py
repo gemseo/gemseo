@@ -16,16 +16,48 @@
 
 This package contains:
 
-- an abstract class :class:`.BaseSensitivityAnalysis`
+- an abstract class
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis]]
   to define the concept of sensitivity analysis,
-- a factory :class:`.SensitivityAnalysisFactory`
-  to create instances of :class:`.BaseSensitivityAnalysis`,
+- a factory
+  [SensitivityAnalysisFactory][gemseo.uncertainty.sensitivity.factory.SensitivityAnalysisFactory]
+  to create instances of
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis]],
 - concrete classes implementing this abstract class:
-
-  - :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities)
-  - :class:`.MorrisAnalysis`,
-  - :class:`.SobolAnalysis` (based on OpenTURNS capabilities),
-  - :class:`.HSICAnalysis` (based on OpenTURNS capabilities).
+  [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
+  (based on OpenTURNS),
+  [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
+  [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
+  (based on OpenTURNS)
+  and [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
+  (based on OpenTURNS).
 """
 
 from __future__ import annotations
+
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from typing import Final
+
+from gemseo.util.package_import import install_lazy_reexport
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    # static visibility for mypy / IDEs
+    from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.factory import sensitivity_analysis_factory  # noqa: F401
+    from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis  # noqa: F401
+
+# Class name -> defining submodule (lazy-loaded on attribute access).
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
+    "CorrelationAnalysis": "correlation",
+    "HSICAnalysis": "hsic",
+    "MorrisAnalysis": "morris",
+    "SobolAnalysis": "sobol",
+    "sensitivity_analysis_factory": "factory",
+})
+
+install_lazy_reexport(globals(), _name_to_location)

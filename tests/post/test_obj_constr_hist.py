@@ -21,25 +21,22 @@ from __future__ import annotations
 import pytest
 
 from gemseo.post.obj_constr_hist import ObjConstrHist
-from gemseo.utils.testing.helpers import image_comparison
-
-TEST_PARAMETERS = {
-    "standardized": (True, ["ObjConstrHist_standardized"]),
-    "unstandardized": (False, ["ObjConstrHist_unstandardized"]),
-}
+from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check ObjConstrHist."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = ObjConstrHist(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)
+    opt.execute(
+        ObjConstrHist_Settings(
+            constraint_names=["eq", "neg", "pos"],
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )

@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_crossed_transformer_failure
+  'The transformer PLS cannot be applied to the outputs to build a supervised machine learning model.'
+# ---

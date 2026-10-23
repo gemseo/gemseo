@@ -25,10 +25,11 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.bars import BarPlot
+from gemseo.dataset.dataset import Dataset
+from gemseo.post.dataset.bar_plot import BarPlot
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 from gemseo.post.dataset.yvsx import YvsX
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 
 @pytest.fixture(scope="module")
@@ -42,17 +43,18 @@ def dataset() -> Dataset:
     return dataset
 
 
-@image_comparison(["Subplots"])
-def test_plot(dataset) -> None:
+def test_plot(dataset, snapshot_matplotlib) -> None:
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)
-    plot_1 = BarPlot(dataset, n_digits=2)
-    plot_1.colormap = "PiYG"
-    plot_1.title = "Plot 1"
+    settings = BarPlot_Settings(n_digits=2)
+    plot_1 = BarPlot(dataset, settings)
+    plot_1.settings.colormap = "PiYG"
+    plot_1.settings.title = "Plot 1"
     plot_1.execute(save=False, fig=fig, ax=ax1)
-    plot_2 = YvsX(dataset, "x2", "x3")
-    plot_2.linestyle = "-d"
-    plot_2.color = "r"
-    plot_2.title = "Plot 2"
+    settings = YvsX_Settings(x="x2", y="x3")
+    plot_2 = YvsX(dataset, settings)
+    plot_2.settings.linestyle = "-d"
+    plot_2.settings.color = "r"
+    plot_2.settings.title = "Plot 2"
     plot_2.execute(save=False, fig=fig, ax=ax2)
     fig.suptitle("Plots 1 and 2")

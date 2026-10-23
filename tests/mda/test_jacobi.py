@@ -30,25 +30,25 @@ from numpy.testing import assert_equal
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import create_scenario
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
-from gemseo.utils.discipline import DummyDiscipline
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
+from gemseo.util.discipline import DummyDiscipline
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
+from .mda_jacobi import SobieskiMDAJacobi
 from .test_gauss_seidel import SelfCoupledDisc
 from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def allclose(a, b):
@@ -65,7 +65,10 @@ def mda_setting() -> StrKeyMapping:
 def reference(mda_setting) -> MDAJacobi:
     """An instance of Jacobi MDA on the Sobieski problem."""
     mda_jacobi = SobieskiMDAJacobi(
-        **mda_setting, acceleration_method=AccelerationMethod.NONE
+        settings=MDAJacobi_Settings(
+            acceleration_method=AccelerationMethod.NONE,
+            **mda_setting,
+        ),
     )
     mda_jacobi.execute()
     return mda_jacobi
@@ -75,9 +78,11 @@ def reference(mda_setting) -> MDAJacobi:
 def test_over_relaxation(mda_setting, relaxation, reference) -> None:
     """Tests the relaxation factor."""
     mda = SobieskiMDAJacobi(
-        **mda_setting,
-        acceleration_method=AccelerationMethod.NONE,
-        over_relaxation_factor=relaxation,
+        settings=MDAJacobi_Settings(
+            acceleration_method=AccelerationMethod.NONE,
+            over_relaxation_factor=relaxation,
+            **mda_setting,
+        ),
     )
     mda.execute()
 
@@ -94,7 +99,12 @@ def test_over_relaxation(mda_setting, relaxation, reference) -> None:
 @pytest.mark.parametrize("acceleration", AccelerationMethod)
 def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     """Tests the acceleration methods."""
-    mda = SobieskiMDAJacobi(**mda_setting, acceleration_method=acceleration)
+    mda = SobieskiMDAJacobi(
+        settings=MDAJacobi_Settings(
+            acceleration_method=acceleration,
+            **mda_setting,
+        )
+    )
     mda.execute()
 
     assert mda._current_iter <= reference._current_iter
@@ -118,19 +128,19 @@ def test_jacobi_sobieski() -> None:
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < 1e-4
 
 
 def test_mda_jacobi_parallel() -> None:
     """Comparison of Jacobi on Sobieski problem: 1 and 4 processes."""
     sorted_couplings = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
 
-    mda_seq = SobieskiMDAJacobi(n_processes=1)
+    mda_seq = SobieskiMDAJacobi(settings=MDAJacobi_Settings(n_processes=1))
     assert mda_seq._input_couplings == sorted_couplings
     assert mda_seq.parallel_execution is None
     mda_seq_local_data = mda_seq.execute()
 
-    mda_parallel = SobieskiMDAJacobi(n_processes=4)
+    mda_parallel = SobieskiMDAJacobi(settings=MDAJacobi_Settings(n_processes=4))
     assert mda_seq._input_couplings == sorted_couplings
     assert mda_parallel.parallel_execution is not None
     mda_parallel_local_data = mda_parallel.execute()
@@ -144,7 +154,7 @@ def test_jacobi_sellar(sellar_with_2d_array, sellar_disciplines) -> None:
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < 1e-4
 
 
 def test_expected_workflow() -> None:
@@ -155,14 +165,14 @@ def test_expected_workflow() -> None:
     disc3 = DummyDiscipline()
     disciplines = [disc1, disc2, disc3]
 
-    mda = MDAJacobi(disciplines, n_processes=1)
+    mda = MDAJacobi(disciplines, settings=MDAJacobi_Settings(n_processes=1))
     expected = (
         "{MDAJacobi(DONE), [DummyDiscipline(DONE), DummyDiscipline(DONE), "
         "DummyDiscipline(DONE)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
-    mda = MDAJacobi(disciplines, n_processes=2)
+    mda = MDAJacobi(disciplines, settings=MDAJacobi_Settings(n_processes=2))
     expected = (
         "{MDAJacobi(DONE), (DummyDiscipline(DONE), DummyDiscipline(DONE), "
         "DummyDiscipline(DONE))}"
@@ -237,14 +247,14 @@ def test_log_convergence(sellar_with_2d_array, sellar_disciplines) -> None:
     assert mda.settings.log_convergence
 
 
-def test_iteration_callbacks_execution(sellar_disciplines) -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(MDAJacobi(sellar_disciplines))
+def test_iteration_listeners_execution(sellar_disciplines) -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(MDAJacobi(sellar_disciplines))
 
 
-def test_iteration_callbacks_clearing(sellar_disciplines) -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(MDAJacobi(sellar_disciplines))
+def test_iteration_listeners_clearing(sellar_disciplines) -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(MDAJacobi(sellar_disciplines))
 
 
 def test_parallel_doe() -> None:
@@ -261,16 +271,16 @@ def test_no_coupling():
     assert not mda.get_process_flow()._get_disciplines_couplings(
         DependencyGraph(disciplines)
     )
-    local_data = mda.execute()
+    output_data = mda.execute()
     assert_equal(
-        local_data,
+        output_data,
         {
-            "a": array([1.0]),
             "y": array([1.0]),
             "z": array([2.0]),
             "MDA residuals norm": array([0.0]),
         },
     )
+    assert_equal(mda.input_data["a"], array([1.0]))
 
 
 def test_settings():

@@ -30,28 +30,26 @@ from numpy.testing import assert_almost_equal
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import create_scenario
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.helpers import image_comparison
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
+from gemseo.util.discipline import DummyDiscipline
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
-from ..core.test_chain import two_virtual_disciplines  # noqa: F401
+from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def allclose(a, b):
@@ -67,7 +65,7 @@ def mda_setting() -> MDAGaussSeidel_Settings:
 @pytest.fixture
 def reference(mda_setting) -> MDAGaussSeidel:
     """An instance of Gauss-Seidel MDA on the Sobieski problem."""
-    mda_gauss_seidel = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda_gauss_seidel = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda_gauss_seidel.execute()
     return mda_gauss_seidel
 
@@ -76,7 +74,7 @@ def reference(mda_setting) -> MDAGaussSeidel:
 def test_over_relaxation(mda_setting, relaxation, reference) -> None:
     """Tests the relaxation factor."""
     mda_setting.over_relaxation_factor = relaxation
-    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda.execute()
 
     assert allclose(
@@ -93,7 +91,7 @@ def test_over_relaxation(mda_setting, relaxation, reference) -> None:
 def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     """Tests the acceleration methods."""
     mda_setting.acceleration_method = acceleration
-    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda.execute()
 
     assert mda._current_iter <= reference._current_iter
@@ -108,10 +106,11 @@ def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     )
 
 
-@image_comparison(["sobieski"])
-def test_sobieski(tmp_wd) -> None:
+def test_sobieski(tmp_wd, snapshot_matplotlib) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
-    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda = SobieskiMDAGaussSeidel(
+        settings=MDAGaussSeidel_Settings(tolerance=1e-12, max_mda_iter=30)
+    )
     mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
     mda.io.input_grammar.defaults["x_shared"] += 0.1
@@ -192,7 +191,10 @@ def test_expected_workflow_with_adapter() -> None:
 def test_self_coupled() -> None:
     for plus_y in [False, True]:
         sc_disc = SelfCoupledDisc(plus_y)
-        mda = MDAGaussSeidel([sc_disc], tolerance=1e-14, max_mda_iter=40)
+        mda = MDAGaussSeidel(
+            [sc_disc],
+            settings=MDAGaussSeidel_Settings(tolerance=1e-14, max_mda_iter=40),
+        )
         _ = mda.execute()
         # assert abs(out["y"] - 2. / 3.) < 1e-6
 
@@ -218,10 +220,9 @@ class SelfCoupledDisc(Discipline):
             self.coeff = -1.0
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["y"] = (
-            1.0 + self.coeff * 0.5 * self.io.data["y"] + self.io.data["x"]
-        )
-        self.io.data["o"] = self.io.data["y"] + self.io.data["x"]
+        y = 1.0 + self.coeff * 0.5 * input_data["y"] + input_data["x"]
+        self.io.output_data["y"] = y
+        self.io.output_data["o"] = y + input_data["x"]
 
     def _compute_jacobian(
         self,
@@ -250,26 +251,26 @@ def test_parallel_doe() -> None:
 
 
 @pytest.mark.parametrize(
-    ("baseline_images", "n_iterations", "logscale"),
+    ("n_iterations", "logscale"),
     [
-        (["all_iter_default_log"], None, None),
-        (["all_iter_modified_log"], None, [1e-10, 10.0]),
-        (["five_iter_default_log"], 5, None),
-        (["five_iter_modified_log"], 5, [1e-10, 10.0]),
-        (["n_iter_larger_than_history"], 50, None),
+        (None, None),
+        (None, [1e-10, 10.0]),
+        (5, None),
+        (5, [1e-10, 10.0]),
+        (50, None),
     ],
 )
-@image_comparison(None, tol=0.098)
-def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) -> None:
+def test_plot_residual_history(
+    n_iterations, logscale, caplog, snapshot_matplotlib
+) -> None:
     """Test the residual history plot.
 
     Args:
-        baseline_images: The reference images for the test.
         n_iterations: The number of iterations to plot.
-        logscale: The limits of the ``y`` axis.
+        logscale: The limits of the `y` axis.
         caplog: Fixture to access and control log capturing.
     """
-    mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
+    mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=15))
     mda.execute()
     mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
@@ -287,14 +288,14 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
     """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
-    assert chain.io.data["x"] == 1.0
-    assert chain.io.data["y"] == 2.0
+    assert chain.io.input_data["x"] == 1.0
+    assert chain.io.output_data["y"] == 2.0
 
 
 def test_max_mda_iter_0(enable_discipline_statistics):
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
-    mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
-    assert mda.NORMALIZED_RESIDUAL_NORM not in mda.io.output_grammar
+    mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=0))
+    assert mda.normalized_residual_norm_name not in mda.io.output_grammar
 
     mda.execute()
 
@@ -316,11 +317,11 @@ def test_max_mda_iter_0(enable_discipline_statistics):
         assert_almost_equal(output_value, expected_output_data[output_name])
 
 
-def test_iteration_callbacks_execution() -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(SobieskiMDAGaussSeidel())
+def test_iteration_listeners_execution() -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(SobieskiMDAGaussSeidel())
 
 
-def test_iteration_callbacks_clearing() -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(SobieskiMDAGaussSeidel())
+def test_iteration_listeners_clearing() -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(SobieskiMDAGaussSeidel())

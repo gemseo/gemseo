@@ -30,20 +30,20 @@ import pytest
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.post._graph_view import GraphView
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 
-DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
+data_path = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
-DISC_DESCRIPTIONS = {
+disc_descriptions = {
     "3-weak": {
         "A": (["x"], ["a"]),
         "B": (["x", "a"], ["b"]),
@@ -92,7 +92,7 @@ DISC_DESCRIPTIONS = {
 }
 
 
-@pytest.fixture(params=DISC_DESCRIPTIONS.items(), ids=DISC_DESCRIPTIONS.keys())
+@pytest.fixture(params=disc_descriptions.items(), ids=disc_descriptions.keys())
 def name_and_graph(request):
     """Return the name and graph from the full description."""
     name, disc_desc = request.param
@@ -111,7 +111,7 @@ def assert_file(file_path: Path) -> None:
     # strip because some reference files are stripped by our pre-commit hooks
     assert (
         file_path.read_text().strip()
-        == (DATA_PATH / file_path.name).read_text().strip()
+        == (data_path / file_path.name).read_text().strip()
     )
 
 
@@ -133,6 +133,23 @@ def test_render_without_saving(tmp_wd, method_name) -> None:
     graph_view = getattr(graph, method_name)(file_path="")
     assert isinstance(graph_view, GraphView)
     assert not os.listdir(tmp_wd)
+
+
+@pytest.mark.parametrize("method_name", ["render_full_graph", "render_condensed_graph"])
+@pytest.mark.parametrize("show_edge_labels", [False, True])
+def test_render_show_edge_labels(method_name, show_edge_labels) -> None:
+    """Check that show_edge_labels controls the coupling variable names on edges."""
+    graph = DependencyGraph((Sellar1(), Sellar2(), SellarSystem()))
+    source = getattr(graph, method_name)(
+        file_path="", show_edge_labels=show_edge_labels
+    ).source
+    assert ("label=" in source) is show_edge_labels
+    if method_name == "render_condensed_graph":
+        assert "labeltooltip=" not in source
+        assert "edgetooltip=" not in source
+    else:
+        key = "labeltooltip=" if show_edge_labels else "edgetooltip"
+        assert key in source
 
 
 def test_render_condensed_graph(tmp_wd, name_and_graph) -> None:
@@ -164,7 +181,7 @@ def test_couplings(tmp_wd, name_and_graph) -> None:
 
     # read back the just created json and the reference
     couplings = json.load(file_path.open())
-    ref_couplings = json.load((DATA_PATH / file_path).open())
+    ref_couplings = json.load((data_path / file_path).open())
 
     assert couplings == ref_couplings
 
@@ -208,7 +225,7 @@ def test_coupling_structure_plot(
 
 def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
     """Check the message logged when graphviz is missing."""
-    with patch("gemseo.core.dependency_graph.GRAPHVIZ_IS_MISSING", True):
+    with patch("gemseo.core.dependency_graph.graphviz_is_missing", True):
         assert graph_with_self_coupling.render_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING

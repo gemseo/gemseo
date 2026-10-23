@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_unknown_attribute
+  "module 'gemseo.machine_learning.clustering.quality' has no attribute 'NotAClass'"
+# ---

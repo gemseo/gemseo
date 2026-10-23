@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_split_array_to_dict_of_arrays_with_inconsistency_check[1]
+  'The total size of the elements (2) and the size of the last dimension of the array (3) are different.'
+# ---
+# name: test_split_array_to_dict_of_arrays_with_inconsistency_check[3]
+  'The total size of the elements (4) and the size of the last dimension of the array (3) are different.'
+# ---

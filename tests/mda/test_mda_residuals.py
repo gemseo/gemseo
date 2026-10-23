@@ -40,7 +40,8 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.mda.jacobian_assembly import JacobianAssembly
+from gemseo.util.derivative.check.mda import MDAJacobianChecker
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -205,7 +206,10 @@ def test_residuals_mda(res_disciplines) -> None:
 
 @pytest.mark.parametrize(
     "mode",
-    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
+    [
+        JacobianAssembly.MDADerivationMode.ADJOINT,
+        JacobianAssembly.MDADerivationMode.DIRECT,
+    ],
 )
 @pytest.mark.parametrize(
     "matrix_type",
@@ -216,4 +220,4 @@ def test_adjoint(res_disciplines, mode, matrix_type) -> None:
     mda = create_mda("MDAChain", disciplines=res_disciplines)
     mda.linearization_mode = mode
     mda.matrix_type = matrix_type
-    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
+    assert MDAJacobianChecker(mda).check(inputs=["x"], outputs=["obj"])

@@ -1,0 +1,46 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Test the factory used to create instances of BaseToleranceInterval."""
+
+from __future__ import annotations
+
+from gemseo.uncertainty.statistic.tolerance_interval.factory import (
+    tolerance_interval_factory,
+)
+from gemseo.uncertainty.statistic.tolerance_interval.normal import (
+    NormalToleranceInterval,
+)
+from gemseo.util.testing.helper import assert_exception
+
+
+def test_create() -> None:
+    """Check the creation of a BaseToleranceInterval from the
+    ToleranceIntervalFactory."""
+    tolerance_interval = tolerance_interval_factory.create(
+        "NormalToleranceInterval", 100000, 0, 1
+    )
+    assert isinstance(tolerance_interval, NormalToleranceInterval)
+    assert tolerance_interval._NormalToleranceInterval__mean == 0.0
+    assert tolerance_interval._NormalToleranceInterval__std == 1.0
+
+
+def test_create_fail(snapshot) -> None:
+    """Check the creation of a BaseToleranceInterval from the
+    ToleranceIntervalFactory."""
+    with assert_exception(ImportError, snapshot):
+        tolerance_interval_factory.create("WrongName", 100000, 0, 1)
+
+    with assert_exception(TypeError, snapshot):
+        tolerance_interval_factory.create("NormalToleranceInterval", 100000)

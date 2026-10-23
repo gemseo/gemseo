@@ -1,0 +1,188 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import pytest
+from numpy import array
+from numpy import nan
+from numpy import ones
+from numpy import zeros
+
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.core.base_optimization_library import _KKTChecker
+from gemseo.optimization.factory import optimization_library_factory
+from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.optimization.termination_criteria import is_kkt_residual_norm_reached
+from gemseo.optimization.termination_criteria import kkt_residual_norm
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
+
+
+@pytest.mark.parametrize("is_optimum", [False, True])
+def test_is_kkt_norm_tol_reached_rosenbrock(is_optimum) -> None:
+    """Test KKT criterion on Rosenbrock problem."""
+    problem = Rosenbrock(l_b=0, u_b=1.0)
+    design_point = ones(2) if is_optimum else zeros(2)
+    assert (
+        is_kkt_residual_norm_reached(
+            problem, design_point, kkt_abs_tol=1e-2, kkt_rel_tol=1e-2
+        )
+        == is_optimum
+    )
+    assert (
+        problem.database.get_function_value(kkt_residual_norm, design_point) is not None
+    )
+
+
+@pytest.mark.parametrize("is_optimum", [False, True])
+def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
+    """Test KKT criterion on Power2 problem."""
+    problem = Power2()
+    problem.bind_functions()
+    design_point = (
+        array([0.5 ** (1.0 / 3.0), 0.5 ** (1.0 / 3.0), 0.9 ** (1.0 / 3.0)])
+        if is_optimum
+        else ones(3)
+    )
+    assert (
+        is_kkt_residual_norm_reached(
+            problem, design_point, kkt_abs_tol=1e-2, kkt_rel_tol=1e-2
+        )
+        == is_optimum
+    )
+    assert (
+        problem.database.get_function_value(kkt_residual_norm, design_point) is not None
+    )
+
+
+@pytest.mark.parametrize("settings_class", [NLOPT_SLSQP_Settings, SLSQP_Settings])
+@pytest.mark.parametrize("store_jacobian", [True, False])
+@pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
+def test_kkt_norm_correctly_stored(settings_class, problem, store_jacobian) -> None:
+    """Test that kkt norm is stored at each iteration requiring gradient."""
+    problem.bind_functions()
+    options = {
+        "normalize_design_space": True,
+        "kkt_tol_abs": 1e-5,
+        "kkt_tol_rel": 1e-5,
+        "max_iter": 100,
+        "store_jacobian": store_jacobian,
+    }
+    problem.reset()
+    if store_jacobian:
+        optimization_library_factory.execute(
+            problem, settings=settings_class(**options)
+        )
+        kkt_hist = problem.database.get_function_history(kkt_residual_norm)
+        obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
+        obj_hist = problem.database.get_function_history(problem.objective.name)
+        assert len(kkt_hist) == obj_grad_hist.shape[0]
+        assert len(obj_hist) >= len(kkt_hist)
+        assert (
+            pytest.approx(problem.get_solution()[0], abs=1e-2) == problem.solution.x_opt
+        )
+        assert (
+            pytest.approx(problem.get_solution()[1], abs=1e-2) == problem.solution.f_opt
+        )
+    else:
+        with pytest.raises(ValueError):
+            optimization_library_factory.execute(
+                problem, settings=settings_class(**options)
+            )
+
+
+def test_kkt_checker_removed_after_each_run() -> None:
+    """A KKT checker no longer accumulates as a store listener across runs."""
+    problem = Power2()
+    problem.bind_functions()
+    settings = SLSQP_Settings(max_iter=50, kkt_tol_abs=1e-3)
+    for _ in range(3):
+        optimization_library_factory.execute(problem, settings=settings)
+
+    _, store_listeners = problem.database.clear_listeners()
+    assert not store_listeners
+
+
+def test_stale_kkt_checker_does_not_shortcut_a_tighter_run() -> None:
+    """A loose KKT tolerance from a previous run does not leak into the next one."""
+    reference_problem = Power2()
+    reference_problem.bind_functions()
+    reference_result = optimization_library_factory.execute(
+        reference_problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-12)
+    )
+
+    problem = Power2()
+    problem.bind_functions()
+    optimization_library_factory.execute(
+        problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-1)
+    )
+    problem.reset()
+    result = optimization_library_factory.execute(
+        problem, settings=SLSQP_Settings(max_iter=100, kkt_tol_abs=1e-12)
+    )
+
+    assert result.f_opt == pytest.approx(reference_result.f_opt, abs=1e-10)
+
+
+def test_kkt_checker_does_not_cache_an_infinite_reference_norm() -> None:
+    """A NaN constraint value must not make the KKT checker stop too early.
+
+    Regression test:
+    the first residual computed by the `_KKTChecker`,
+    here infinite because of a NaN constraint value,
+    was cached unconditionally as the reference KKT norm;
+    the relative criterion `residual <= kkt_tolerance_rel * reference_norm`
+    then always held (`inf <= inf`),
+    so `KKTReached` was raised at an infeasible point
+    instead of only at a converged one.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=-10.0, upper_bound=10.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([x.sum()]), name="f", jac=lambda x: array([[1.0, 1.0]])
+    )
+    problem.add_constraint(
+        ArrayFunction(
+            lambda x: array([2.0, nan]),
+            name="g",
+            jac=lambda x: array([[0.0, 0.0], [0.0, 0.0]]),
+        ),
+        constraint_type="ineq",
+    )
+
+    x_vect = array([0.0, 0.0])
+    objective_name = problem.standardized_objective_name
+    constraint_name = problem.constraints.get_names()[0]
+    database = problem.database
+    database.store(
+        x_vect,
+        {
+            objective_name: problem.objective.evaluate(x_vect),
+            database.get_gradient_name(objective_name): problem.objective.jac(x_vect),
+            constraint_name: problem.constraints[0].evaluate(x_vect),
+            database.get_gradient_name(constraint_name): problem.constraints[0].jac(
+                x_vect
+            ),
+        },
+    )
+
+    kkt_checker = _KKTChecker(
+        problem, kkt_abs_tol=1e-5, kkt_rel_tol=1e-2, ineq_tolerance=1e-6
+    )
+    kkt_checker(x_vect)  # Must not raise KKTReached.

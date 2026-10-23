@@ -1,0 +1,121 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Some cache utilities."""
+
+from __future__ import annotations
+
+from pathlib import PurePath
+from typing import TYPE_CHECKING
+from typing import cast
+
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import ndarray
+from xxhash import xxh3_64_hexdigest
+
+from gemseo.util._numpy import hash_array
+from gemseo.util.portable_path import ensure_path_to_array
+
+if TYPE_CHECKING:
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import RealOrComplexArray
+    from gemseo.util.typing import StrKeyMapping
+
+
+def hash_data(
+    data: StrKeyMapping,
+) -> int:
+    """Hash data using xxh3_64 from the xxhash library.
+
+    The values are hashed in a canonical form,
+    regardless of their numeric data types, of the signs of their zeros,
+    of the lengths of their text data types and of the units of their times,
+    so that two data equal for
+    [compare_dict_of_arrays][gemseo.util.comparison.compare_dict_of_arrays]
+    have the same hash value.
+
+    A path is hashed as its string with forward slashes,
+    so that it has the same hash on Windows and POSIX platforms.
+    A `str` is hashed exactly as written.
+    A path and a `str` therefore have the same hash
+    only when the string is written exactly as the path's string with forward slashes,
+    e.g. `Path("a") / "b"` and `"a/b"`, but not `"./a/b"`, `"a//b"` or `"a/b/"`.
+    On Windows,
+    a `str` with backslashes does not have the same hash as the path built from it,
+    and two paths that differ only by letter case,
+    e.g. `Path("C:/Data")` and `Path("c:/data")`,
+    are equal but do not have the same hash.
+    Only a path given as a single value is supported:
+    a list, a tuple or a NumPy array of paths is not supported and raises an error.
+
+    Args:
+        data: The data to hash.
+
+    Returns:
+        The hash value of the data.
+
+    Raises:
+        TypeError: When the value of a data is an array of Python objects,
+            e.g. a list, a tuple or a NumPy array of paths,
+            or when its type is not supported, e.g. a dict.
+    """
+    names_with_hashed_values = []
+
+    for name in sorted(data):
+        value = data.get(name)
+        if value is None:
+            continue
+
+        original_value = value
+        value = ensure_path_to_array(value)
+        if not isinstance(value, ndarray):
+            value = array([value])
+
+        if value.dtype.kind == "O":
+            if any(isinstance(item, PurePath) for item in value.flat):
+                reason = (
+                    "only a single path is supported, "
+                    "not a list, a tuple or a NumPy array of paths."
+                )
+            elif not isinstance(original_value, ndarray):
+                reason = f"its type {type(original_value).__name__} is not supported."
+            else:
+                reason = "it is an array of Python objects, which cannot be hashed."
+            msg = f"The value of {name} cannot be hashed: {reason}"
+            raise TypeError(msg)
+
+        hashed_value = hash_array(value)
+        hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))
+        names_with_hashed_values.append((hashed_name, hashed_value))
+
+    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)
+
+
+def to_real(
+    data: RealOrComplexArray,
+) -> RealArray:
+    """Convert a NumPy array to a float NumPy array.
+
+    Args:
+        data: The NumPy array to be converted to real.
+
+    Returns:
+        A float NumPy array.
+    """
+    if data.dtype == complex128:
+        return array(array(data, copy=False).real, dtype=float64)
+
+    return cast("RealArray", data)

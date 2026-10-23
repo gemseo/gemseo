@@ -17,20 +17,19 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
-class ObjConstrHist_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "ObjConstrHist"
+class ObjConstrHist_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     constraint_names: Sequence[str] = Field(
         default=(),
         description="The names of the constraints to plot. "
         "If empty, use all the constraints.",
     )
-
-
-update_field(ObjConstrHist_Settings, "fig_size", default=(11.0, 6.0))

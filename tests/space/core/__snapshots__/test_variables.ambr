@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_rename_collision
+  "Cannot rename 'x' to 'n': 'n' is already the name of another variable."
+# ---

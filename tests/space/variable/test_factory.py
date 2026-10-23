@@ -1,0 +1,226 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Tests for the factory of variables."""
+
+from __future__ import annotations
+
+from typing import ClassVar
+
+import pytest
+from numpy.testing import assert_array_equal
+
+from gemseo.enum import VariableType
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
+from gemseo.space.variable.factory import DeterministicVariableFactory
+from gemseo.util.pydantic import BaseSettings
+from gemseo.util.testing.helper import assert_exception
+
+pytestmark = pytest.mark.usefixtures("reset_factory")
+
+
+@pytest.fixture
+def factory() -> DeterministicVariableFactory:
+    """The factory of variables."""
+    return DeterministicVariableFactory()
+
+
+def test_create_from_settings_not_implemented(factory) -> None:
+    """Check `create_from_settings` raises error."""
+    with pytest.raises(NotImplementedError):
+        factory.create_from_settings(BaseSettings())
+
+
+def test_class_names(factory) -> None:
+    """Check that the concrete kinds are discovered and the abstract base is not."""
+    assert factory.class_names == [
+        "CatalogVariable",
+        "CategoricalVariable",
+        "DiscreteVariable",
+        "IntegerVariable",
+        "RealVariable",
+    ]
+
+
+def test_singleton(factory) -> None:
+    """Check that the factory is a singleton."""
+    assert DeterministicVariableFactory() is factory
+
+
+def test_create(factory) -> None:
+    """Check the creation of a variable from its class name."""
+    variable = factory.create("integer", size=2, lower_bound=0, upper_bound=10)
+    assert isinstance(variable, IntegerVariable)
+    assert variable.size == 2
+    assert_array_equal(variable.lower_bound, [0, 0])
+    assert_array_equal(variable.upper_bound, [10, 10])
+
+
+@pytest.mark.parametrize(
+    ("variable_type", "cls"),
+    [
+        (VariableType.REAL, RealVariable),
+        (VariableType.INTEGER, IntegerVariable),
+        ("real", RealVariable),
+        ("integer", IntegerVariable),
+        (b"real", RealVariable),
+        (b"integer", IntegerVariable),
+    ],
+)
+def test_create_kind(factory, variable_type, cls) -> None:
+    """Check the resolution of a variable type to the kind pinning it."""
+    variable = factory.create(variable_type, size=2)
+    assert isinstance(variable, cls)
+    assert variable.size == 2
+
+
+@pytest.mark.parametrize("variable_type", ["float", b"float"])
+def test_create_kind_from_a_legacy_variable_type(factory, variable_type) -> None:
+    """Check that a variable type value of a past release still resolves."""
+    with pytest.deprecated_call():
+        variable = factory.create(variable_type, size=2)
+
+    assert isinstance(variable, RealVariable)
+    assert variable.type == VariableType.REAL
+
+
+def test_create_for_unknown_variable_type(factory, snapshot) -> None:
+    """Check that an unknown variable type raises."""
+    with assert_exception(ValueError, snapshot):
+        factory.create("complex")
+
+
+def test_update_invalidates_the_variable_types(factory, monkeypatch) -> None:
+    """Check that rediscovering the classes rebuilds the variable-type map.
+
+    The interval variable types derive from this map, so they are rebuilt too.
+    """
+
+    class OtherIntegerVariable(IntegerVariable):
+        """Another variable class pinning the integer variable type."""
+
+    # Build the map from the classes discovered so far.
+    assert isinstance(factory.create("integer"), IntegerVariable)
+    assert VariableType.REAL in factory.interval_variable_types
+
+    # Rediscover the classes with the integer variable type pinned by another class
+    # and without the real variable type.
+    class_names = ("OtherIntegerVariable",)
+    # IntegerVariable is still resolvable by name, but no longer discovered,
+    # so that a stale map fails the assertion below instead of raising.
+    name_to_class = {
+        "RealVariable": RealVariable,
+        "IntegerVariable": IntegerVariable,
+        "OtherIntegerVariable": OtherIntegerVariable,
+    }
+    monkeypatch.setattr(
+        DeterministicVariableFactory, "class_names", property(lambda self: class_names)
+    )
+    monkeypatch.setattr(
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
+    )
+    factory.update()
+
+    # Without the invalidation, the stale map would still resolve to IntegerVariable.
+    variable = factory.create("integer")
+    assert isinstance(variable, OtherIntegerVariable)
+    assert factory.variable_types == (VariableType.INTEGER,)
+    assert factory.interval_variable_types == (VariableType.INTEGER,)
+
+
+@pytest.mark.parametrize(
+    "class_names",
+    [
+        (
+            "RealVariable",
+            "IntegerVariable",
+            "DiscreteVariable",
+            "CategoricalIntervalVariable",
+        ),
+        (
+            "IntegerVariable",
+            "DiscreteVariable",
+            "CategoricalIntervalVariable",
+            "RealVariable",
+        ),
+    ],
+    ids=["real-first", "real-last"],
+)
+def test_interval_variable_types(factory, monkeypatch, class_names) -> None:
+    """Check the interval variable types and their order.
+
+    The real one comes first, then the others in alphabetical order,
+    whatever the order in which the classes are discovered.
+    """
+
+    class CategoricalIntervalVariable(IntegerVariable):
+        """An interval variable class pinning the categorical variable type."""
+
+        type: ClassVar[VariableType] = VariableType.CATEGORICAL
+
+    name_to_class = {
+        "RealVariable": RealVariable,
+        "IntegerVariable": IntegerVariable,
+        "DiscreteVariable": DiscreteVariable,
+        "CategoricalIntervalVariable": CategoricalIntervalVariable,
+    }
+    monkeypatch.setattr(
+        DeterministicVariableFactory, "class_names", property(lambda self: class_names)
+    )
+    monkeypatch.setattr(
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
+    )
+    assert factory.interval_variable_types == (
+        VariableType.REAL,
+        VariableType.CATEGORICAL,
+        VariableType.INTEGER,
+    )
+
+
+def test_duplicate_variable_type(factory, monkeypatch, snapshot) -> None:
+    """Check that two classes pinning the same variable type raise."""
+
+    class OtherRealVariable(RealVariable):
+        """Another variable class pinning the real variable type."""
+
+    name_to_class = {
+        "RealVariable": RealVariable,
+        "OtherRealVariable": OtherRealVariable,
+    }
+    monkeypatch.setattr(
+        DeterministicVariableFactory,
+        "class_names",
+        property(lambda self: list(name_to_class)),
+    )
+    monkeypatch.setattr(
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
+    )
+    with assert_exception(ValueError, snapshot):
+        factory.create("real")
+
+
+def test_create_discrete_variable(factory) -> None:
+    """Check the creation of a discrete variable from its variable type."""
+    variable = factory.create(VariableType.DISCRETE, choices=[4, 2])
+
+    assert isinstance(variable, DiscreteVariable)
+    assert_array_equal(variable.choices, [2.0, 4.0])

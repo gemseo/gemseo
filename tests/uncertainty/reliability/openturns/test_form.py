@@ -1,0 +1,204 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import pickle
+
+import pytest
+from numpy import array
+from numpy.testing import assert_almost_equal
+from openturns import AnalyticalResult
+from openturns import CorrelationMatrix
+from openturns import FORMResult
+from openturns import NormalCopula
+
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.reliability.openturns.form import OT_FORM
+from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
+from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
+from gemseo.uncertainty.reliability.openturns.optimizer import NLoptAlgorithmName
+from gemseo.uncertainty.reliability.openturns.optimizer import OTNLopt
+from gemseo.uncertainty.reliability.problem import ReliabilityProblem
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
+
+
+@pytest.mark.parametrize("settings", [None, *BaseOTOptimizer.__subclasses__()])
+@pytest.mark.parametrize(
+    ("greater", "expected"), [(None, 0.25), (True, 0.25), (False, 0.75)]
+)
+def test_form(function, random_space, settings, greater, expected):
+    """Test OT_FORM."""
+    form = OT_FORM()
+    kwargs = {}
+    if settings is not None:
+        kwargs["settings"] = OT_FORM_Settings(optimizer=settings())
+
+    problem = ReliabilityProblem(random_space)
+    f = problem.get_event_variables(function)
+    problem.add_event(
+        f < 0.75 if greater is False else f > 0.75,
+        event_name="a",
+    )
+    results = form.execute(problem, **kwargs)
+    assert len(results) == 1
+    assert results["a"].name == "a"
+    probability = results["a"].probability
+    reliability_index = results["a"].reliability_index
+    raw_result = results["a"].raw_result
+    assert probability == pytest.approx(expected, abs=1e-3)
+    assert isinstance(raw_result, FORMResult)
+    assert raw_result.getEventProbability() == probability
+    assert raw_result.getHasoferReliabilityIndex() == reliability_index
+
+    design_point = results["a"].design_point
+    assert_almost_equal(design_point.physical, raw_result.getPhysicalSpaceDesignPoint())
+    assert_almost_equal(design_point.standard, raw_result.getStandardSpaceDesignPoint())
+    assert compare_dict_of_arrays(
+        design_point.physical_as_dict,
+        random_space.convert_array_to_dict(design_point.physical),
+    )
+    assert compare_dict_of_arrays(
+        design_point.standard_as_dict,
+        random_space.convert_array_to_dict(design_point.standard),
+    )
+
+    importance_factors = results["a"].importance_factors
+    assert_almost_equal(
+        importance_factors.classical,
+        raw_result.getImportanceFactors(AnalyticalResult.CLASSICAL),
+    )
+    assert_almost_equal(
+        importance_factors.elliptical,
+        raw_result.getImportanceFactors(AnalyticalResult.ELLIPTICAL),
+    )
+    assert_almost_equal(
+        importance_factors.physical,
+        raw_result.getImportanceFactors(AnalyticalResult.PHYSICAL),
+    )
+    assert compare_dict_of_arrays(
+        importance_factors.classical_as_dict,
+        random_space.convert_array_to_dict(importance_factors.classical),
+    )
+    assert compare_dict_of_arrays(
+        importance_factors.elliptical_as_dict,
+        random_space.convert_array_to_dict(importance_factors.elliptical),
+    )
+    assert compare_dict_of_arrays(
+        importance_factors.physical_as_dict,
+        random_space.convert_array_to_dict(importance_factors.physical),
+    )
+
+
+def test_type_errors(random_space, f, snapshot):
+    """Check the type errors when events are wrong."""
+    problem = ReliabilityProblem(random_space)
+    form = OT_FORM()
+    with assert_exception(ValueError, snapshot):
+        form.execute(problem)
+
+    problem = ReliabilityProblem(random_space)
+    function = ArrayFunction(f, name="y")
+    f = problem.get_event_variables(function)
+    problem.add_event((f > 0.75) & (f > 0.5), event_name="a")
+    with assert_exception(TypeError, snapshot):
+        form.execute(problem)
+
+
+def test_empty_random_space(f, snapshot):
+    """Check the error raised when the random space is empty.
+
+    The problem is checked as a driver checks it,
+    so that an empty space is named by the space check
+    instead of surfacing as an `AttributeError` raised by OpenTURNS.
+    """
+    problem = ReliabilityProblem(RandomSpace())
+    function = ArrayFunction(f, name="y")
+    problem.add_event(problem.get_event_variables(function) > 0.75, event_name="a")
+
+    with assert_exception(ValueError, snapshot):
+        OT_FORM().execute(problem)
+
+
+@pytest.mark.parametrize(
+    ("use_database", "length", "n_calls"),
+    [(False, (0, 0), (36, 32)), (True, (31, 29), (36, 32)), (None, (0, 0), (36, 32))],
+)
+def test_database(problem, use_database, length, n_calls, enable_function_statistics):
+    """Test the use of the database."""
+    index = int(problem.observables[0].has_jac)
+    kwargs = {} if use_database is None else {"use_database": use_database}
+    form = OT_FORM()
+    form.execute(problem, settings=OT_FORM_Settings(**kwargs))
+    assert len(problem.database) == length[index]
+    assert problem.observables[0].n_calls == n_calls[index]
+
+
+def test_form_slsqp(parametric_f_and_j, random_space):
+    """Test OT_FORM using a gradient-based optimizer."""
+    f, j = parametric_f_and_j
+    function = ArrayFunction(f, name="y", jac=j)
+
+    problem = ReliabilityProblem(random_space)
+    f = problem.get_event_variables(function)
+    problem.add_event(f < 0.75, event_name="a")
+
+    form = OT_FORM()
+    results = form.execute(
+        problem,
+        OT_FORM_Settings(optimizer=OTNLopt(algo_name=NLoptAlgorithmName.LD_SLSQP)),
+    )
+    assert results["a"].probability == pytest.approx(0.75, abs=1e-3)
+
+
+def test_nlopt_settings_are_picklable() -> None:
+    """The NLopt optimizer settings must survive a pickle round trip."""
+    settings = OTNLopt(algo_name=NLoptAlgorithmName.LD_SLSQP)
+    assert pickle.loads(pickle.dumps(settings)) == settings
+
+
+@pytest.mark.parametrize("use_block_copula", [False, True])
+def test_form_with_block_copula(use_block_copula):
+    """Check OT_FORM with a copula defined on a subset of the random variables.
+
+    The probability must match the one obtained
+    with the equivalent copula defined on all the random variables,
+    and the analysis must be fast,
+    which requires OpenTURNS to compute the iso-probabilistic transformation
+    analytically.
+    """
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.5
+    full_correlation = CorrelationMatrix(3)
+    full_correlation[0, 1] = 0.5
+    random_space = RandomSpace()
+    for name in ["x1", "x2", "x3"]:
+        random_space.add_variable(name, OTNormalDistribution_Settings())
+
+    if use_block_copula:
+        random_space.add_copula(("x1", "x2"), NormalCopula(correlation))
+    else:
+        random_space.add_copula(("x1", "x2", "x3"), NormalCopula(full_correlation))
+
+    problem = ReliabilityProblem(random_space)
+    f = problem.get_event_variables(ArrayFunction(lambda x: array([x.sum()]), name="y"))
+    problem.add_event(f > 2.0, event_name="a")
+    results = OT_FORM().execute(problem)
+    # x1 + x2 + x3 ~ N(0, 3 + 2 * 0.5) = N(0, 4)
+    assert results["a"].probability == pytest.approx(0.158655, abs=1e-4)

@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_complex_step_and_auto_step
+  'The complex step approximation technique does not support the value None for the step parameter.'
+# ---

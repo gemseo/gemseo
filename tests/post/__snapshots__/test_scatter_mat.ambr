@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_filter_non_feasible_exception
+  'No feasible points were found.'
+# ---
+# name: test_non_existent_var
+  "Cannot build scatter plot matrix: function foo is neither among optimization problem functions: ['eq', 'ineq1', 'ineq2', 'pow2'] nor design variables: ['x']"
+# ---

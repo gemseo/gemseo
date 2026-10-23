@@ -2,21 +2,200 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "minimize_objective": {
-      "type": "boolean",
-      "description": "Whether to minimize the objective."
-    },
     "differentiated_input_names_substitute": {
       "type": "array",
-      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an :class:`.MDOFunction` is built from the ``disciplines``, which depend on input variables :math:`x_1,\\ldots,x_d,x_{d+1}`, and over an input space spanned by the input variables :math:`x_1,\\ldots,x_d` and depending on both the MDO formulation and the ``design_space``. Then, the methods :meth:`.MDOFunction.evaluate` and :meth:`.MDOFunction.jac` are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs :math:`x_1,\\ldots,x_d` at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. :math:`x_{d-1}` and :math:`x_{d+1}`. Mathematically speaking, this matrix returned by :meth:`.MDOFunction.jac` is no longer a Jacobian."
-    },
-    "main_mda_name": {
-      "type": "string",
-      "description": "The name of the class of the main MDA.  Typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance. This field is ignored when ``main_mda_settings`` is a Pydantic model."
+      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] is built from the `disciplines`, which depend on input variables $x_1,\\ldots,x_d,x_{d+1}$, and over an input space spanned by the input variables $x_1,\\ldots,x_d$ and depending on both the MDO formulation and the `design_space`. Then, the methods [ArrayFunction.evaluate()][gemseo.core.function.array_function.ArrayFunction.evaluate] and [ArrayFunction.jac()][gemseo.core.function.array_function.ArrayFunction.jac] are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs $x_1,\\ldots,x_d$ at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. $x_{d-1}$ and $x_{d+1}$. Mathematically speaking, this matrix returned by [ArrayFunction.jac()][gemseo.core.function.array_function.ArrayFunction.jac] is no longer a Jacobian.",
+      "default": []
     },
     "main_mda_settings": {
       "type": "object",
-      "description": "The settings of the main MDA.  These settings may include those of the inner-MDA."
+      "properties": {
+        "coupling_structure": {
+          "type": "null"
+        },
+        "linear_solver_settings": {
+          "type": "object",
+          "properties": {
+            "store_residuals": {
+              "type": "boolean"
+            },
+            "use_ilu_precond": {
+              "type": "boolean"
+            },
+            "save_when_fail": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "save_when_fail",
+            "store_residuals",
+            "use_ilu_precond"
+          ]
+        },
+        "log_convergence": {
+          "type": "boolean"
+        },
+        "max_mda_iter": {
+          "type": "integer"
+        },
+        "max_consecutive_unsuccessful_iterations": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tolerance": {
+          "type": "number"
+        },
+        "warm_start": {
+          "type": "boolean"
+        },
+        "acceleration_method": {
+          "type": "string"
+        },
+        "over_relaxation_factor": {
+          "type": "number"
+        },
+        "execute_before_linearizing": {
+          "type": "boolean"
+        },
+        "n_processes": {
+          "type": "integer"
+        },
+        "use_threading": {
+          "type": "boolean"
+        },
+        "chain_linearize": {
+          "type": "boolean"
+        },
+        "inner_mda_settings": {
+          "type": "object",
+          "properties": {
+            "coupling_structure": {
+              "type": "null"
+            },
+            "linear_solver_settings": {
+              "type": "object",
+              "properties": {
+                "store_residuals": {
+                  "type": "boolean"
+                },
+                "use_ilu_precond": {
+                  "type": "boolean"
+                },
+                "save_when_fail": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "save_when_fail",
+                "store_residuals",
+                "use_ilu_precond"
+              ]
+            },
+            "log_convergence": {
+              "type": "boolean"
+            },
+            "max_mda_iter": {
+              "type": "integer"
+            },
+            "max_consecutive_unsuccessful_iterations": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "tolerance": {
+              "type": "number"
+            },
+            "warm_start": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "coupling_structure",
+            "linear_solver_settings",
+            "log_convergence",
+            "max_consecutive_unsuccessful_iterations",
+            "max_mda_iter",
+            "name",
+            "tolerance",
+            "warm_start"
+          ]
+        },
+        "initialize_defaults": {
+          "type": "boolean"
+        },
+        "mdachain_parallel_settings": {
+          "type": "object"
+        },
+        "mdachain_parallelize_tasks": {
+          "type": "boolean"
+        },
+        "sub_coupling_structures": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "acceleration_method",
+        "chain_linearize",
+        "coupling_structure",
+        "execute_before_linearizing",
+        "initialize_defaults",
+        "inner_mda_settings",
+        "linear_solver_settings",
+        "log_convergence",
+        "max_consecutive_unsuccessful_iterations",
+        "max_mda_iter",
+        "mdachain_parallel_settings",
+        "mdachain_parallelize_tasks",
+        "n_processes",
+        "name",
+        "over_relaxation_factor",
+        "sub_coupling_structures",
+        "tolerance",
+        "use_threading",
+        "warm_start"
+      ],
+      "description": "The settings of the main MDA.  These settings may include those of the inner-MDA.",
+      "default": {
+        "coupling_structure": null,
+        "linear_solver_settings": {
+          "store_residuals": false,
+          "use_ilu_precond": false,
+          "save_when_fail": false
+        },
+        "log_convergence": false,
+        "max_mda_iter": 20,
+        "max_consecutive_unsuccessful_iterations": 8,
+        "name": "",
+        "tolerance": 1e-06,
+        "warm_start": false,
+        "acceleration_method": "NoTransformation",
+        "over_relaxation_factor": 1.0,
+        "execute_before_linearizing": true,
+        "n_processes": 0,
+        "use_threading": true,
+        "chain_linearize": false,
+        "inner_mda_settings": {
+          "coupling_structure": null,
+          "linear_solver_settings": {
+            "store_residuals": false,
+            "use_ilu_precond": false,
+            "save_when_fail": false
+          },
+          "log_convergence": false,
+          "max_mda_iter": 20,
+          "max_consecutive_unsuccessful_iterations": 8,
+          "name": "",
+          "tolerance": 1e-06,
+          "warm_start": false
+        },
+        "initialize_defaults": false,
+        "mdachain_parallel_settings": {},
+        "mdachain_parallelize_tasks": false,
+        "sub_coupling_structures": []
+      }
     }
   }
 }

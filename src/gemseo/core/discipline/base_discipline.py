@@ -17,43 +17,43 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from abc import abstractmethod
 from copy import deepcopy
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
-from strenum import StrEnum
-
-from gemseo.caches.factory import CacheFactory
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
+from gemseo.core.cache.factory import CacheFactory
+from gemseo.core.discipline.discipline_data import DisciplineData
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.discipline.io import IO
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.grammars.factory import GrammarType as _GrammarType
-from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
-from gemseo.utils.constants import _VALIDATE_INPUT_DATA
-from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_str
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.factory import GrammarType as _GrammarType
+from gemseo.util.constant import _enable_discipline_cache
+from gemseo.util.constant import _validate_input_data
+from gemseo.util.constant import _validate_output_data
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from gemseo.core.cache.base import BaseCache
+    from gemseo.core.cache.cache_entry import CacheEntry
+    from gemseo.core.grammar.base import BaseGrammar
+    from gemseo.core.grammar.properties import GrammarProperties
+    from gemseo.util.typing import MutableStrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
-    from gemseo.caches.base_cache import BaseCache
-    from gemseo.caches.cache_entry import CacheEntry
-    from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.core.grammars.grammar_properties import GrammarProperties
-    from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
+logger = logging.getLogger(__name__)
 
-
-LOGGER = logging.getLogger(__name__)
-
-_CACHE_FACTORY = CacheFactory()
+_cache_factory: Final[CacheFactory] = CacheFactory()
 
 
 class CacheType(StrEnum):
@@ -76,67 +76,96 @@ class BaseDiscipline(BaseMonitoredProcess):
     """The base class defining the concept of discipline.
 
     A discipline computes output data from input data
-    using its :meth:`.execute` method.
+    using its
+    [execute()][gemseo.core.discipline.base_discipline.BaseDiscipline.execute].
     These data are in dictionary form,
-    i.e. ``{variable_name: variable_value, ...}``.
+    i.e. `{variable_name: variable_value, ...}`.
     The input-output data resulting from an execution
-    can be accessed via :attr:`.local_data`
-    or separately via :meth:`.get_input_data` and :meth:`.get_output_data`.
+    can be accessed via
+    [input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.input_data]
+    and
+    [output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.output_data]
+    or via the helpers
+    [get_input_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_input_data]
+    and
+    [get_output_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_output_data].
 
     For both input and output variables,
     default values can be provided
-    using the mappings :attr:`.default_input_data` and :attr:`.default_output_data`.
+    using the mappings
+    [default_input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_input_data]
+    and
+    [default_output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_output_data].
     In this case,
     the discipline will use these default input values at execution
     when an input value is not provided
-    and these default output values in the case of :attr:`.virtual_execution`.
+    and these default output values in the case of
+    [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution].
 
     In other aspects,
-    the :attr:`.cache` can store zero, one or more discipline evaluations
-    depending on the :attr:`.CacheType`.
+    the
+    [cache][gemseo.core.discipline.base_discipline.BaseDiscipline.cache]
+    can store zero, one or more discipline evaluations
+    depending on the
+    [CacheType][gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType].
     This cache is set at instantiation
-    and can be changed with the :meth:`.set_cache` method.
+    and can be changed with the
+    [set_cache()][gemseo.core.discipline.base_discipline.BaseDiscipline.set_cache]
+    method.
 
     Lastly,
-    a discipline is equipped with
-    an :attr:`.input_grammar` to check the input data
-    and an :attr:`.output_grammar` to check the output data.
-    This validation depends on the :class:`.GrammarType`,
+    a discipline is equipped with an
+    [input_grammar][gemseo.core.discipline.base_discipline.BaseDiscipline.input_grammar]
+    to check the input data
+    and an
+    [output_grammar][gemseo.core.discipline.base_discipline.BaseDiscipline.output_grammar]
+    to check the output data.
+    This validation depends
+    on the [GrammarType][gemseo.core.grammar.factory.GrammarType],
     e.g. name verification, data type verification, etc.
     """
 
     GrammarType: ClassVar[type[_GrammarType]] = _GrammarType
     """The types of grammar."""
 
-    GRAMMAR_DIRECTORY: ClassVar[str | Path] = ""
+    grammar_directory: ClassVar[StrPath] = ""
     """The directory in which to search for the grammar files if not the class one."""
 
-    default_grammar_type: ClassVar[_GrammarType] = GrammarType.JSON
+    default_grammar_type: ClassVar[_GrammarType] = GrammarType.SIMPLE
     """The default type of grammar."""
 
     auto_detect_grammar_files: ClassVar[bool] = False
     """Whether to find the grammar files automatically."""
 
-    validate_input_data: ClassVar[bool] = _VALIDATE_INPUT_DATA
-    """Whether to validate the input data."""
+    validate_input_data: ClassVar[bool] = _validate_input_data
+    """Whether to validate the input data.
 
-    validate_output_data: ClassVar[bool] = _VALIDATE_OUTPUT_DATA
-    """Whether to validate the output data."""
+    Driven by the `validate_input_data` option of the global configuration.
+    """
+
+    validate_output_data: ClassVar[bool] = _validate_output_data
+    """Whether to validate the output data.
+
+    Driven by the `validate_output_data` option of the global configuration.
+    """
 
     virtual_execution: ClassVar[bool] = False
-    """Whether :meth:`.execute` returns the :attr:`.default_output_data`.
+    """Whether the execution method return the default output data.
 
-    A virtual execution mocks the input-output process without performing the true
-    execution.
+    A virtual execution mocks the input-output process
+    without performing the true execution.
     """
 
     CacheType: ClassVar[type[CacheType]] = CacheType
     """The type of cache."""
 
     default_cache_type: ClassVar[CacheType] = (
-        CacheType.SIMPLE if _ENABLE_DISCIPLINE_CACHE else CacheType.NONE
+        CacheType.SIMPLE if _enable_discipline_cache else CacheType.NONE
     )
-    """The default type of cache."""
+    """The default type of cache.
+
+    Driven by the `enable_discipline_cache` option of the global configuration.
+    """
 
     cache: BaseCache | None
     """The execution and linearization data saved according to the cache type."""
@@ -145,7 +174,16 @@ class BaseDiscipline(BaseMonitoredProcess):
     """The class used to create the process flow."""
 
     _has_jacobian: bool
-    """Whether the Jacobian has been set either by :meth:`_run` or from the cache."""
+    """Whether the Jacobian has been set either by `_run()` or from the cache."""
+
+    forbid_extra_output_names: bool
+    """Whether to raise an error when `_run()` returns names not in the output grammar.
+
+    Otherwise, these names are ignored.
+
+    Only the disciplines using the default `_execute()` honour this setting;
+    the ones overriding it, such as the MDAs, ignore it.
+    """
 
     def __init__(
         self,
@@ -158,13 +196,14 @@ class BaseDiscipline(BaseMonitoredProcess):
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self._has_jacobian = False
+        self.forbid_extra_output_names = False
         self.cache = None
         self.io = IO(
             self.__class__,
             self.name,
             self.default_grammar_type,
             self.auto_detect_grammar_files,
-            self.GRAMMAR_DIRECTORY,
+            self.grammar_directory,
         )
         self.set_cache(self.default_cache_type)
 
@@ -174,11 +213,11 @@ class BaseDiscipline(BaseMonitoredProcess):
         mls.indent()
         mls.add(
             "Inputs: {}",
-            pretty_str(self.io.input_grammar.keys()),
+            pretty_str(self.io.input_grammar.keys(), use_and=False),
         )
         mls.add(
             "Outputs: {}",
-            pretty_str(self.io.output_grammar.keys()),
+            pretty_str(self.io.output_grammar.keys(), use_and=False),
         )
         return mls
 
@@ -193,9 +232,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not output_grammar:
             return
 
-        output_data = self.io._data.copy()
-        for name in output_data.keys() - output_grammar:
-            del output_data[name]
+        output_data = self.io.output_data.copy()
 
         self.cache.cache_outputs(input_data, output_data)  # type: ignore[union-attr]  # because cache is checked to be not None in the caller
 
@@ -225,14 +262,17 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         return input_data_
 
-    def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
-        """Update the local data from a cache entry.
+    def _set_data_from_cache(
+        self, input_data: StrKeyMapping, cache_entry: CacheEntry
+    ) -> None:
+        """Restore the input and output data from a cache entry.
 
         Args:
+            input_data: The input data.
             cache_entry: The cache entry.
         """
-        self.io.data = cache_entry.inputs
-        self.io._data.update(cache_entry.outputs)
+        self.io.input_data = DisciplineData(input_data)
+        self.io.output_data = DisciplineData(cache_entry.outputs)
 
     def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
@@ -250,7 +290,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not cache_entry.outputs:
             return False
 
-        self._set_data_from_cache(cache_entry)
+        self._set_data_from_cache(input_data, cache_entry)
         return True
 
     def set_cache(
@@ -265,21 +305,24 @@ class BaseDiscipline(BaseMonitoredProcess):
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a :class:`.SimpleCache` recording the last execution
+        The cache can be either a [SimpleCache][gemseo.core.cache.simple.SimpleCache]
+        recording the last execution
         or a cache storing all executions,
-        e.g. :class:`.MemoryFullCache` and :class:`.HDF5Cache`.
+        e.g. [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache]
+        and [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache].
         Caching data can be either in-memory,
-        e.g. :class:`.SimpleCache` and :class:`.MemoryFullCache`,
+        e.g. [SimpleCache][gemseo.core.cache.simple.SimpleCache]
+        and [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache],
         or on the disk,
-        e.g. :class:`.HDF5Cache`.
+        e.g. [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache].
 
         Args:
             cache_type: The type of cache.
             tolerance: The cache tolerance.
-            **kwargs: The other arguments passed to :meth:`.CacheFactory.create`
+            **kwargs: The other arguments passed to
+                [CacheFactory.create][gemseo.core.cache.factory.CacheFactory.create].
 
-        .. warning:
-
+        Warning:
            If is_memory_shared is set to False,
            and multiple disciplines point
            to the same cache or the process is multiprocessed,
@@ -303,11 +346,11 @@ class BaseDiscipline(BaseMonitoredProcess):
                 kwargs.setdefault("hdf_node_path", self.name)
                 kwargs["input_data_converter"] = self.io.input_grammar.data_converter
                 kwargs["output_data_converter"] = self.io.output_grammar.data_converter
-            self.cache = _CACHE_FACTORY.create(
+            self.cache = _cache_factory.create(
                 cache_type, tolerance=tolerance, **kwargs
             )
         else:
-            LOGGER.warning(
+            logger.warning(
                 (
                     "The cache policy is already set to %s "
                     "with the file path %r and node name %r; "
@@ -320,23 +363,27 @@ class BaseDiscipline(BaseMonitoredProcess):
 
     def execute(
         self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_data: StrKeyMapping = read_only_empty_dict,
     ) -> DisciplineData:
         """Execute the discipline, i.e. compute output data from input data.
 
-        If :attr:`.virtual_execution` is ``True``,
-        this method returns the :attr:`.default_output_data`.
+        If
+        [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution]
+        is `True`,
+        this method returns the
+        [default_output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_output_data].
         Otherwise,
-        it calls the :meth:`._run` method performing the true execution
+        it calls the `_run()` method performing the true execution
         and returns the corresponding output data.
-        This :meth:`._run` method must be implemented in subclasses.
+        This `_run()` method must be implemented in subclasses.
 
         Args:
             input_data: The input data.
-                Complete this dictionary with the :attr:`.default_input_data`.
+                Complete this dictionary with the
+                [default_input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_input_data].
 
         Returns:
-            The input and output data.
+            The output data.
         """
         self._has_jacobian = False
         io = self.io
@@ -348,8 +395,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         if use_cache:
             if self._can_load_cache(input_data):
                 if self.validate_output_data:
-                    io.output_grammar.validate(io._data)
-                return io._data
+                    io.output_grammar.validate(io.output_data)
+                return io.output_data
 
             # Keep a pristine copy of the input data before it is eventually changed.
             input_data_for_cache = self.__create_input_data_for_cache(input_data)
@@ -368,7 +415,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if use_cache:
             self._store_cache(input_data_for_cache)
 
-        return io._data
+        return io.output_data
 
     def _execute(self) -> None:
         io = self.io
@@ -376,7 +423,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             input_data = io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.
-            input_data = io._data
+            input_data = io.input_data
 
         data_processor = io.data_processor
         if data_processor is not None:
@@ -388,27 +435,39 @@ class BaseDiscipline(BaseMonitoredProcess):
             if data_processor is not None:
                 output_data = data_processor.post_process_data(output_data)
 
+            if self.forbid_extra_output_names and (
+                extra_names := io.get_extra_output_names(output_data)
+            ):
+                msg = (
+                    f"The discipline {self.name} returned outputs "
+                    "that are not in its output grammar: "
+                    f"{pretty_str(extra_names)}. "
+                    "This strict check was enabled by setting "
+                    "forbid_extra_output_names attribute to True."
+                )
+                raise InvalidDataError(msg)
+
             io.update_output_data(output_data)
 
     @abstractmethod
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         """Compute the outputs from the inputs.
 
         This method shall be implemented in derived classes.
 
-        The ``input_data`` are the discipline inputs completed with the default inputs.
+        The `input_data` are the discipline inputs completed with the default inputs.
         This method may return the output data.
 
         These input and output data are dictionaries
-        of the form ``{variable_name_without_namespace: variable_value, ...}``.
+        of the form `{variable_name_without_namespace: variable_value, ...}`.
 
-        Using the provided ``input_data`` and also returning the output data
+        Using the provided `input_data` and also returning the output data
         will ensure that the discipline can be used with namespaces.
-        This approach, which appeared in the version 6 of |g|, is preferable.
+        This approach, which appeared in the version 6 of GEMSEO, is preferable.
 
-        As in the |g| versions prior to 6,
-        you can also avoid using ``input_data`` and return output data,
-        and thus leave the body ``_run`` unchanged.
+        As in the GEMSEO versions prior to 6,
+        you can also avoid using `input_data` and return output data,
+        and thus leave the body `_run` unchanged.
         But in that case
         the discipline does not automatically support the use of namespaces.
         For this reason,
@@ -445,9 +504,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Rename an input name with a namespace prefix.
 
         The updated input name will be
-        ``namespace``
-        + :data:`~gemseo.core.namespaces.namespaces_separator`
-        + ``input_name``.
+        `namespace`
+        + [namespaces_separator][gemseo.core.discipline.namespace.namespaces_separator]
+        + `input_name`.
 
         Args:
             input_name: The input name to rename.
@@ -478,7 +537,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
     @property
     def default_output_data(self) -> GrammarProperties:
-        """The default output data used when :attr:`.virtual_execution` is ``True``."""
+        """The default output data used when [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution]. is `True`."""  # noqa: E501
         return self.io.output_grammar.defaults
 
     @default_output_data.setter
@@ -489,9 +548,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Rename an output name with a namespace prefix.
 
         The updated output name will be
-        ``namespace``
-        + :data:`~gemseo.core.namespaces.namespaces_separator`
-        + ``output_name``.
+        `namespace`
+        + [namespaces_separator][gemseo.core.discipline.namespace.namespaces_separator]
+        + `output_name`.
 
         Args:
             output_name: The output name to rename.
@@ -512,10 +571,50 @@ class BaseDiscipline(BaseMonitoredProcess):
         return self.io.get_output_data(with_namespaces)
 
     @property
+    def input_data(self) -> DisciplineData:
+        """The input data of the last execution.
+
+        The returned
+        [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData]
+        is the underlying store: it is mutable and reflects changes immediately.
+        """
+        return self.io.input_data
+
+    @property
+    def output_data(self) -> DisciplineData:
+        """The output data of the last execution.
+
+        The returned
+        [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData]
+        is the underlying store: it is mutable and reflects changes immediately.
+        """
+        return self.io.output_data
+
+    @property
     def local_data(self) -> DisciplineData:
-        """The current input and output data."""
-        return self.io._data
+        """The merged input and output data (deprecated).
+
+        Use
+        [input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.input_data]
+        and
+        [output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.output_data]
+        instead.
+        """
+        warnings.warn(
+            "`Discipline.local_data` is deprecated; "
+            "use `input_data` / `output_data` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.io.get_merged_data(as_dict=False)
 
     @local_data.setter
     def local_data(self, data: MutableStrKeyMapping) -> None:
-        self.io.data = data
+        warnings.warn(
+            "`Discipline.local_data` is deprecated; "
+            "use `input_data` / `output_data` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        # Delegate routing to the IO helper to keep the split logic in one place.
+        self.io._set_data_no_warn(data)

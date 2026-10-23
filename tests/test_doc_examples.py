@@ -16,26 +16,43 @@ from __future__ import annotations
 
 import runpy
 from pathlib import Path
-from re import findall
 from shutil import copytree
 
 import pytest
 
-EXAMPLE_PATHS = [
-    path
-    for path in Path(__file__, "..", "..", "doc_src", "_examples")
-    .resolve()
-    .rglob("*.py")
-    if (path.parent / "README.rst").is_file()
-    and not findall(r"(run|post_process_|save_from_)\w*\.py$", path.name)
-]
+from gemseo.util.global_configuration import _configuration
+
+_directory_manager_example = "plot_howto_directory_manager.py"
+
+example_paths = sorted(
+    (
+        path
+        for path in Path(__file__, "..", "..", "docs", "examples")
+        .resolve()
+        .rglob("*.py")
+        if path.name.startswith("plot_")
+    ),
+    key=lambda path: (path.name == _directory_manager_example, path.name),
+)
+"""The directory manager example is sorted last because it leaks global state."""
+
+
+@pytest.fixture
+def reset_global_configuration() -> None:
+    """Reset the global configuration to defaults before each example."""
+    _configuration.__init__()
 
 
 @pytest.mark.doc_examples
 @pytest.mark.parametrize(
-    "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
+    "example_path", example_paths, ids=(path.name for path in example_paths)
 )
-def test_script_execution(example_path: Path, tmp_wd: Path, monkeypatch) -> None:
+def test_script_execution(
+    example_path: Path,
+    tmp_wd: Path,
+    monkeypatch,
+    reset_global_configuration,
+) -> None:
     dir_path = example_path.parent.name
     copytree(example_path.parent, dir_path)
     monkeypatch.chdir(dir_path)

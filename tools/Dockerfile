@@ -1,17 +1,16 @@
-ARG FEDORA_VERSION=42
+ARG FEDORA_VERSION=43
 
 FROM fedora:$FEDORA_VERSION
 
-RUN  dnf -y update \
-  && dnf -y install python-unversioned-command \
-                    python3-pip \
-                    python310 \
+RUN  dnf -y --setopt=install_weak_deps=False --nodocs update \
+  && dnf -y --setopt=install_weak_deps=False --nodocs install \
+                    python-unversioned-command \
                     python311 \
                     python312 \
                     python313 \
+                    python314 \
                     graphviz \
                     git \
-  && dnf clean all \
-  && rm -rf /var/cache/dnf
-
-RUN pip install 'tox<5' tox-uv --no-cache-dir --break-system-packages
+                    just \
+                    uv \
+  && dnf clean all

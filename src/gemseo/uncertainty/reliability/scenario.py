@@ -1,0 +1,123 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Reliability analysis scenario."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import ClassVar
+
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.reliability.event_variable import EventVariable
+from gemseo.uncertainty.reliability.factory import ReliabilityAlgorithmFactory
+from gemseo.uncertainty.reliability.problem import ReliabilityProblem
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.uncertainty.reliability.elementary_event import ElementaryEvent
+    from gemseo.uncertainty.reliability.event import Event
+    from gemseo.uncertainty.reliability.result import ReliabilityResult
+
+
+class ReliabilityScenario(EvaluationScenario[RandomSpace]):
+    """A reliability analysis scenario."""
+
+    _evaluation_problem_class: type[ReliabilityProblem] = ReliabilityProblem
+
+    _algo_factory_class: ClassVar[type[ReliabilityAlgorithmFactory]] = (
+        ReliabilityAlgorithmFactory
+    )
+
+    __name_to_function: dict[str, FunctionFromDiscipline]
+    """The map from a disciplinary output name to a function."""
+
+    def __init__(  # noqa: D107
+        self,
+        disciplines: Sequence[BaseDiscipline],
+        random_space: RandomSpace,
+        name: str = "",
+        formulation_settings: BaseFormulationSettings | None = None,
+    ) -> None:
+        super().__init__(
+            disciplines,
+            random_space,
+            name=name,
+            formulation_settings=formulation_settings,
+        )
+        self.__name_to_function = {}
+        self._execution_result = {}
+
+    def add_event(self, event: Event, event_name: str = "") -> None:
+        """Add an event.
+
+        Args:
+            event: The event
+                built from variables and boolean and comparison operators,
+                e.g. `(f < 3) & (g > 4) | (2 < h) & (h < 5)`
+                where the variables are created using
+                [get_event_variables][gemseo.uncertainty.reliability.scenario.ReliabilityScenario.get_event_variables]
+                as `f, g, h = scenario.get_event_variables("f", "g", "h")`.
+            event_name: The name to be given to this event.
+                If empty, use `"event_i"` for the i-th event.
+        """
+        self.formulation.problem.add_event(
+            event.map(self.__bind_function), event_name=event_name
+        )
+
+    def __bind_function(self, elementary_event: ElementaryEvent) -> ElementaryEvent:
+        """Bind an elementary event to the function evaluating its variable.
+
+        Args:
+            elementary_event: The elementary event.
+
+        Returns:
+            The elementary event, bound to the function.
+        """
+        name = elementary_event.name
+        function = self.__name_to_function.get(name)
+        if function is None:
+            function = self.formulation.create_function((name,))
+            self.__name_to_function[name] = function
+
+        return elementary_event.bind_function(function)
+
+    def _execute(self) -> None:
+        settings = self._algorithm_settings
+        algo = self._algo_factory.create(settings.target_class_name)
+        self._execution_result = algo.execute(
+            self.formulation.problem, settings=settings
+        )
+
+    @property
+    def event_name_to_reliability_result(self) -> dict[str, ReliabilityResult]:
+        """The map from an event name to a reliability analysis result."""
+        return self._execution_result
+
+    @staticmethod
+    def get_event_variables(*names: str) -> EventVariable | tuple[EventVariable, ...]:
+        """Return event variables.
+
+        Args:
+            *names: The names of the event variables.
+
+        Returns:
+            The event variables.
+        """
+        return EventVariable.from_names(*names)

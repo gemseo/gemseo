@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_coefficients_with_transform
+  'Coefficients are only representable in dictionary form if the transformers do not change the dimensions of the variables.'
+# ---
+# name: test_intercept_with_output_dimension_change
+  'Intercept is only representable in dictionary form if the transformers do not change the dimensions of the output variables.'
+# ---
+# name: test_prediction_with_pls_failure
+  'The transformer PLS cannot be applied to the outputs to build a supervised machine learning model.'
+# ---

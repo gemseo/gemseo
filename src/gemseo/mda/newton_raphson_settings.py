@@ -16,64 +16,24 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from pydantic import Field
-from pydantic import model_validator
-from strenum import StrEnum
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverSettings,  # noqa: TC001
-)
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-from gemseo.typing import StrKeyMapping  # noqa: TC001
-from gemseo.utils.pydantic import copy_field
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-
-LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
+from gemseo.linear.core.base_linear_solver_settings import BaseLinearSolverSettings  # noqa: TC001
+from gemseo.linear.scipy_linalg import LGMRES_Settings
+from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.util.typing import StrKeyMapping  # noqa: TC001
 
 
-class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDANewtonRaphson`."""
+class MDANewtonRaphson_Settings(BaseMDAParallelSolverSettings):  # noqa: N801
+    """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
-    _TARGET_CLASS_NAME = "MDANewtonRaphson"
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {
+        "execute_before_linearizing": False
+    }
 
-    execute_before_linearizing: bool = copy_field(
-        "execute_before_linearizing",
-        BaseParallelMDASettings,
-        default=False,
-    )
-
-    newton_linear_solver_name: LinearSolver = Field(
-        default=LinearSolver.DEFAULT,
-        description="""The name of the linear solver for the Newton method.
-
-This field is ignored when ``newton_linear_solver_settings`` is a Pydantic model.""",
-    )
-
-    newton_linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
-        default_factory=dict,
+    newton_linear_solver_settings: BaseLinearSolverSettings = Field(
+        default_factory=LGMRES_Settings,
         description="""The settings for the Newton linear solver.""",
     )
-
-    @model_validator(mode="after")
-    def __newton_linear_solver_settings_to_pydantic_model(self) -> Self:
-        """Convert MDA settings into a Pydantic model."""
-        if isinstance(self.newton_linear_solver_settings, Mapping):
-            factory = LinearSolverLibraryFactory()
-            library_name = factory.algo_names_to_libraries[
-                self.newton_linear_solver_name
-            ]
-            settings_model = (
-                factory.get_class(library_name)
-                .ALGORITHM_INFOS[self.newton_linear_solver_name]
-                .Settings
-            )
-            self.newton_linear_solver_settings = settings_model(
-                **self.newton_linear_solver_settings
-            )
-        return self

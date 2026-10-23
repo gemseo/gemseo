@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_labels
+  'NewModel._fit() did not set the labels attribute.'
+# ---

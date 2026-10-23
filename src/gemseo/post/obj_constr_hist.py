@@ -31,14 +31,14 @@ from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import SymmetricalLogLocator
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import RG_SEISMIC
+from gemseo.post._engine.colormap import rg_seismic
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
@@ -52,9 +52,9 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
     - red: the inequality constraint is violated.
     """
 
-    Settings: ClassVar[type[ObjConstrHist_Settings]] = ObjConstrHist_Settings
+    settings_class: ClassVar[type[ObjConstrHist_Settings]] = ObjConstrHist_Settings
 
-    __Y_MARGIN: Final[float] = 0.05
+    __y_margin: Final[float] = 0.05
     """The left and right margin for the y-axis."""
 
     def _plot(self, settings: ObjConstrHist_Settings) -> None:
@@ -79,7 +79,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
         if not (
             optimization_metadata.minimize_objective
-            or optimization_metadata.use_standardized_objective
+            or settings.use_standardized_objective
         ):
             # Use the opposite of the standardized history.
             obj_history = -obj_history
@@ -90,7 +90,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         plt.plot(obj_history)
         plt.xlabel("Iterations", fontsize=12)
         plt.ylabel(objective_name, fontsize=12)
-        margin = (obj_max - obj_min) * self.__Y_MARGIN
+        margin = (obj_max - obj_min) * self.__y_margin
         plt.ylim([obj_min - margin, obj_max + margin])
         plt.grid(True)
         plt.title("Evolution of the objective and maximum constraint")
@@ -117,7 +117,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         c_max = abs(constraint_history).max()
         im1 = ax1.imshow(
             np.atleast_2d(np.amax(constraint_history, axis=1)),
-            cmap=RG_SEISMIC,
+            cmap=rg_seismic,
             interpolation="nearest",
             aspect="auto",
             extent=(-0.5, n_iterations - 0.5, obj_min - margin, obj_max + margin),

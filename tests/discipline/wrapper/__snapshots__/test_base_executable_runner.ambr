@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_run_options_error[options0]
+  '"[\'shell\'] must not be defined a second time in subprocess_run_options."'
+# ---
+# name: test_run_options_error[options1]
+  '"[\'cwd\'] must not be defined a second time in subprocess_run_options."'
+# ---
+# name: test_run_options_error[options2]
+  '"[\'args\'] must not be defined a second time in subprocess_run_options."'
+# ---
+# name: test_run_options_error[options3]
+  '"[\'cwd\', \'shell\'] must not be defined a second time in subprocess_run_options."'
+# ---

@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_compute_sizes_ko
+  'Failed to determine the size of input variable foo'
+# ---
+# name: test_total_derivatives_ko[args0-kwargs0-Some outputs are not computed by the disciplines:{'toto'} available outputs are: [['y_21', 'y_23', 'y_24', 'g_2', 'y_2'], ['y_4']]]
+  "Some outputs are not computed by the disciplines:{'toto'} available outputs are: [['y_21', 'y_23', 'y_24', 'g_2', 'y_2'], ['y_4']]"
+# ---
+# name: test_total_derivatives_ko[args1-kwargs1-Some of the specified variables are not inputs of the disciplines: {'toto'} possible inputs are: [['x_2', 'y_32', 'x_shared', 'y_12', 'c_4'], ['y_14', 'x_shared', 'y_24', 'y_34']]]
+  "Some of the specified variables are not inputs of the disciplines: {'toto'} possible inputs are: [['x_2', 'y_32', 'x_shared', 'y_12', 'c_4'], ['y_14', 'x_shared', 'y_24', 'y_34']]"
+# ---
+# name: test_total_derivatives_ko[args2-kwargs2-Variable x_shared is both a coupling and a design variable]
+  'Variable x_shared is both a coupling and a design variable'
+# ---
+# name: test_total_derivatives_ko[args3-kwargs3-Some of the specified variables are not inputs of the disciplines: {'x_3'} possible inputs are: [['x_2', 'y_32', 'x_shared', 'y_12', 'c_4'], ['y_14', 'x_shared', 'y_24', 'y_34']]]
+  "Some of the specified variables are not inputs of the disciplines: {'x_3'} possible inputs are: [['x_2', 'y_32', 'x_shared', 'y_12', 'c_4'], ['y_14', 'x_shared', 'y_24', 'y_34']]"
+# ---

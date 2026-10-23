@@ -1,0 +1,107 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+import pytest
+from numpy import inf
+from numpy import ones
+from numpy import zeros
+
+from gemseo import execute_algo
+from gemseo.optimization.termination_criteria import KKTConditionsTester
+from gemseo.optimization.termination_criteria import is_f_tol_reached
+from gemseo.optimization.termination_criteria import is_x_tol_reached
+from gemseo.optimization.termination_criteria import kkt_residual_norm
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+
+from .problem.constant import Constant
+
+
+def test_is_x_tol_reached() -> None:
+    pb = Rosenbrock(l_b=0, u_b=1.0)
+    pb.bind_functions()
+    pb.objective.evaluate(0 * ones(2))
+    pb.objective.evaluate(ones(2))
+
+    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1)
+    pb.objective.evaluate(1.01 * ones(2))
+    assert is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1 + 1e-13)
+    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.001)
+
+    assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.2, n_x=3)
+    assert is_x_tol_reached(pb, x_tol_rel=0.1, x_tol_abs=0.0)
+
+
+def test_is_f_tol_reached() -> None:
+    pb = Rosenbrock(l_b=0, u_b=1.0)
+    pb.bind_functions()
+
+    pb.objective.evaluate(0 * ones(2))
+    pb.objective.evaluate(ones(2))
+
+    # rosen(0,0)=1
+    # rosen(1,1)=0
+    #     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.4, n_x=2)
+    # abs(1-0.5)<=1.*0.5
+    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
+    pb.objective.evaluate(1.05 * ones(2))  # 0.278
+
+    assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2)
+    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001)
+
+    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=3)
+    pb.objective.jac(0.5 * ones(2))
+    pb.objective.evaluate(ones(2))
+    assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
+
+
+@pytest.mark.parametrize("n_stop_crit_x", [2, 4, 6, 10, 20])
+def test_n_stop_crit_x(n_stop_crit_x, enable_function_statistics) -> None:
+    """Test that the parameter n_stop_crit_x behave as expected.
+
+    As the Constant problem always returns a constant objective value,
+    the number of iterations should be n_stop_crit_x + 1.
+    """
+    pb = Constant()
+    pb.bind_functions()
+    res = execute_algo(
+        pb,
+        algo_name="NLOPT_COBYLA",
+        max_iter=100,
+        stop_crit_n_x=n_stop_crit_x,
+    )
+    assert res.n_obj_call == n_stop_crit_x + 1
+
+
+@pytest.mark.parametrize(
+    ("residual", "is_reached"),
+    [(1e-6, True), (1.0, False)],
+    ids=["below_absolute_tolerance", "above_absolute_tolerance"],
+)
+def test_kkt_conditions_tester_check_with_infinite_reference_norm(
+    residual, is_reached
+) -> None:
+    """Check that an infinite reference KKT norm leaves only the absolute tolerance."""
+    problem = Rosenbrock()
+    input_vector = zeros(2)
+    problem.database.store(input_vector, {kkt_residual_norm: residual})
+    tester = KKTConditionsTester(absolute=1e-5, relative=1e-2, kkt_norm=inf)
+
+    assert tester.check(problem, input_vector=input_vector) == is_reached

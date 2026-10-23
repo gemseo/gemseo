@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_mda_newton_no_couplings
+  'There is no couplings to compute. Please consider using MDAChain.'
+# ---
+# name: test_mda_newton_weak_couplings
+  "The MDANewtonRaphson has weakly coupled disciplines, which is not supported. Please consider using a MDAChain with the option inner_mda_name='MDANewtonRaphson'."
+# ---

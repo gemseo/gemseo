@@ -1,0 +1,196 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Test machine learning regression model module."""
+
+from __future__ import annotations
+
+import re
+
+import pytest
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import zeros
+from numpy.testing import assert_allclose
+
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.regression.model.factory import regressor_factory
+from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
+    LinearRegressor_Settings,
+)
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
+
+input_value = array([0.4, 1.8])
+
+
+@pytest.fixture
+def io_dataset() -> IODataset:
+    """The dataset used to train the regression models."""
+    data = arange(60).reshape(10, 6)
+    variables = ["x_1", "x_2", "y_1"]
+    variable_name_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
+    variable_name_to_group_name = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    dataset = IODataset.from_array(
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
+    )
+    dataset.name = "dataset_name"
+    return dataset
+
+
+@pytest.fixture
+def rosenbrock_dataset() -> IODataset:
+    """The Rosenbrock dataset."""
+    return create_rosenbrock_dataset(opt_naming=False, n_samples=25)
+
+
+@pytest.fixture(scope="module")
+def probability_space() -> RandomSpace:
+    """The probability space for the Rosenbrock function."""
+    space = RandomSpace()
+    space.add_variable(
+        "x", *[OTUniformDistribution_Settings(minimum=-2, maximum=2)] * 2
+    )
+    return space
+
+
+def test_predict(io_dataset) -> None:
+    """Test prediction."""
+    ml_model = GaussianProcessRegressor(io_dataset)
+    ml_model.learn()
+    input_data = io_dataset.get_view(group_names="inputs", indices=0)
+    input_names = [x[1] for x in input_data.columns]
+    input_data = {
+        name: io_dataset.get_view(group_names="inputs", variable_names=name).to_numpy()[
+            0
+        ]
+        for name in input_names
+    }
+
+    output_data = io_dataset.get_view(group_names="outputs")
+    output_names = [x[1] for x in output_data.columns]
+    output_data = {
+        name: io_dataset.get_view(
+            group_names="outputs", variable_names=name
+        ).to_numpy()[0]
+        for name in output_names
+    }
+    prediction = ml_model.predict(input_data)
+    assert allclose(prediction["y_1"], output_data["y_1"])
+
+
+@pytest.fixture(scope="module")
+def dataset_for_jacobian() -> IODataset:
+    """The dataset used to check the Jacobian computation."""
+    samples = array([
+        [1.0, 2.0, 3.0, 6.0, -6.0],
+        [2.0, 3.0, 4.0, 9.0, -9.0],
+        [3.0, 4.0, 5.0, 12.0, -12.0],
+    ])
+    variables = ["x_1", "x_2", "y_1"]
+    sizes = {"x_1": 1, "x_2": 2, "y_1": 2}
+    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    data = IODataset.from_array(samples, variables, sizes, groups)
+    data.name = "dataset_name"
+    return data
+
+
+@pytest.mark.parametrize(
+    "groups", [None, ["inputs"], ["outputs"], ["inputs", "outputs"]]
+)
+def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
+    """Test predict Jacobian."""
+    transformer = {} if not groups else dict.fromkeys(groups, "MinMaxScaler")
+    ml_model = LinearRegressor(
+        dataset_for_jacobian, LinearRegressor_Settings(transformer=transformer)
+    )
+    ml_model.learn()
+    jac = ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
+    assert allclose(jac["y_1"]["x_1"], array([[1.0], [-1.0]]))
+    assert allclose(jac["y_1"]["x_2"], array([[1.0, 1.0], [-1.0, -1.0]]))
+
+
+@pytest.mark.parametrize("variable", ["x_1", "y_1"])
+def test_predict_jacobian_failure(dataset_for_jacobian, variable, snapshot) -> None:
+    """Test predict Jacobian when the transformer uses a variable name."""
+    re.escape(
+        "The Jacobian of regression models cannot be computed "
+        "when the transformed quantities are variables; "
+        "please transform the whole group 'inputs' or 'outputs' "
+        "or do not use data transformation."
+    )
+    ml_model = LinearRegressor(
+        dataset_for_jacobian,
+        LinearRegressor_Settings(transformer={variable: "MinMaxScaler"}),
+    )
+    ml_model.learn()
+    with assert_exception(NotImplementedError, snapshot):
+        ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
+
+
+class_names = regressor_factory.class_names
+class_names.remove("OTGaussianProcessRegressor")
+
+
+# test_pickle succeeds with OTGaussianProcessRegressor when run separately
+# but fails when run with the other tests. To be investigated.
+
+
+@pytest.mark.parametrize("class_name", class_names)
+@pytest.mark.parametrize("before_training", [False, True])
+def test_pickle(
+    class_name, rosenbrock_dataset, before_training, probability_space, tmp_wd
+):
+    """Check that regression models are picklable."""
+    # Prevent failure when testing in environments with plugins.
+    if not regressor_factory.get_class(class_name).__module__.startswith("gemseo."):
+        return
+    if class_name in ["PCERegressor", "FCERegressor"]:
+        rosenbrock_dataset.misc["input_space"] = probability_space
+
+    reference_model = regressor_factory.create(class_name, rosenbrock_dataset)
+    if class_name == "RegressorChain":
+        reference_model.add_regressor(LinearRegressor_Settings())
+
+    if before_training:
+        to_pickle(reference_model, "model.pkl")
+        reference_model.learn()
+    else:
+        reference_model.learn()
+        to_pickle(reference_model, "model.pkl")
+
+    reference_prediction = reference_model.predict(input_value)
+
+    model = from_pickle("model.pkl")
+    if before_training:
+        model.learn()
+
+    output_value = model.predict(input_value)
+
+    assert_allclose(output_value, reference_prediction)

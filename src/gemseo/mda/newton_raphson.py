@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Newton-Raphson algorithm for solving MDAs.
 
-`Newton-Raphson <https://en.wikipedia.org/wiki/Newton%27s_method>`__
+[Newton-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method)
 """
 
 from __future__ import annotations
@@ -27,48 +27,44 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Any
 
     from numpy.typing import NDArray
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
     """The process data and execution flow."""
 
 
-class MDANewtonRaphson(BaseParallelMDASolver):
+class MDANewtonRaphson(BaseMDAParallelSolver):
     r"""Newton solver for MDA.
 
-    The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
+    The [Newton-Raphson method](https://en.wikipedia.org/wiki/Newton%27s_method) is
     an iterative method to solve general equations of the form,
 
-    .. math::
+    $$F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.$$
 
-        F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.
+    Beginning with $x_0 \in \mathbb{R}^n$ the successive iterates are given by:
 
-    Beginning with :math:`x_0 \in \mathbb{R}^n` the successive iterates are given by:
+    $$x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),$$
 
-    .. math::
-
-       x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),
-
-    where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
+    where $J_f(x_k)$ denotes the Jacobian of $f$ at $x_k$.
     """
 
-    Settings: ClassVar[type[MDANewtonRaphson_Settings]] = MDANewtonRaphson_Settings
+    settings_class: ClassVar[type[MDANewtonRaphson_Settings]] = (
+        MDANewtonRaphson_Settings
+    )
     """The pydantic model for the settings."""
 
     settings: MDANewtonRaphson_Settings
@@ -79,15 +75,14 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDANewtonRaphson_Settings | None = None,
-        **settings: Any,
+        settings: MDANewtonRaphson_Settings | None = None,
     ) -> None:
         """
         Raises:
             ValueError: When there are no coupling variables, or when there are weakly
                 coupled disciplines. In these cases, use MDAChain.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
 
         # We use all couplings to form the Newton matrix otherwise the effect of the
         # weak couplings are not taken into account in the coupling updates.
@@ -111,7 +106,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     def _set_differentiated_ios(self) -> None:
         """Set the differentiated inputs and outputs for the Newton algorithm.
 
-        Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
+        Also ensures that `JacobianAssembly.sizes` contains the sizes of all
         the coupling sizes needed for Newton.
         """
         for discipline in self._disciplines:
@@ -137,7 +132,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     def __compute_newton_step(self, input_data: StrKeyMapping) -> NDArray:
         """Compute the full Newton step without relaxation.
 
-        The Newton's step is defined as :math:`-[∂R/∂Y(y)]^{-1} R(y)`, where R(y) is the
+        The Newton's step is defined as $-[∂R/∂Y(y)]^{-1} R(y)$, where R(y) is the
         vector of coupling residuals and Y is the vector of couplings.
 
         Args:
@@ -151,30 +146,29 @@ class MDANewtonRaphson(BaseParallelMDASolver):
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
             self._resolved_variable_names,
-            self.settings.newton_linear_solver_name,
+            self.settings.newton_linear_solver_settings,
             matrix_type=self.matrix_type,
             residuals=self.get_current_resolved_residual_vector(),
             resolved_residual_names=self._resolved_residual_names,
-            **self.settings.newton_linear_solver_settings.model_dump(),
         )
 
         if not is_converged:
-            LOGGER.warning(
+            logger.warning(
                 "The linear solver %s failed "
                 "to converge during the Newton's step computation.",
-                self.settings.newton_linear_solver_name,
+                self.settings.newton_linear_solver_settings.target_class_name,
             )
 
         return newton_step
 
     def _iterate_once(self) -> bool:
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         input_couplings = self.get_current_resolved_variables_vector()
 
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         newton_step = self.__compute_newton_step(local_data_before_execution)

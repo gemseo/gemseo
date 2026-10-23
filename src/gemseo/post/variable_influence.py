@@ -28,36 +28,37 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from matplotlib import pyplot
+from matplotlib import rcParams
 from numpy import absolute
 from numpy import argsort
 from numpy import array
 from numpy import savetxt
 from numpy import stack
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
+from gemseo.core.problem.database import Database
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.variable_influence_settings import VariableInfluence_Settings
-from gemseo.utils.string_tools import pretty_str
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import pretty_str
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class VariableInfluence(BasePost[VariableInfluence_Settings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
-    :math:`\frac{\partial f(x)}{\partial x_i}\left(x_i^* - x_i^{(0)}\right)`
-    where :math:`x_i^{(0)}` is the initial value of the variable
-    and :math:`x_i^*` is the optimal value of the variable.
+    $\frac{\partial f(x)}{\partial x_i}\left(x_i^* - x_i^{(0)}\right)$
+    where $x_i^{(0)}$ is the initial value of the variable
+    and $x_i^*$ is the optimal value of the variable.
 
     Options of the plot method are:
 
@@ -68,9 +69,11 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
       in a NumPy file.
     """
 
-    Settings: ClassVar[type[VariableInfluence_Settings]] = VariableInfluence_Settings
+    settings_class: ClassVar[type[VariableInfluence_Settings]] = (
+        VariableInfluence_Settings
+    )
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: VariableInfluence_Settings) -> None:
         level = settings.level
@@ -92,7 +95,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         x_0 = dataset.design_dataset.iloc[0].to_numpy()
         absolute_value = log_scale or absolute_value
 
-        names_to_sensitivities = {}
+        name_to_sensitivity = {}
         for function_name in function_names:
             grad_name = Database.get_gradient_name(function_name)
             if grad_name in dataset.variable_names:
@@ -108,12 +111,13 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
             f_0 = dataset.get_view(variable_names=function_name).iloc[0].to_numpy()
             f_opt = (
-                dataset.get_view(variable_names=function_name)
+                dataset
+                .get_view(variable_names=function_name)
                 .loc[optimization_metadata.optimum_iteration]
                 .to_numpy()
             )
             if (
-                self._change_obj
+                self._change_objective(settings.use_standardized_objective)
                 and function_name == f"-{optimization_metadata.objective_name}"
             ):
                 grad = -grad
@@ -124,20 +128,18 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
                 sensitivity *= (f_opt - f_0) / sensitivity.sum()
                 if absolute_value:
                     sensitivity = absolute(sensitivity)
-                names_to_sensitivities[function_name] = sensitivity
+                name_to_sensitivity[function_name] = sensitivity
             else:
-                for i, _grad in enumerate(grad):
-                    sensitivity = _grad * (x_opt - x_0)
+                for i, grad_ in enumerate(grad):
+                    sensitivity = grad_ * (x_opt - x_0)
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[repr_variable(function_name, i)] = (
-                        sensitivity
-                    )
+                    name_to_sensitivity[repr_variable(function_name, i)] = sensitivity
 
         self._add_figure(
             self.__generate_subplots(
-                names_to_sensitivities,
+                name_to_sensitivity,
                 level,
                 log_scale,
                 save_var_files,
@@ -176,16 +178,16 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
         influential_variables = absolute_sensitivity_indices[:n_variables]
         x_names = self._get_design_variable_names()
-        LOGGER.info(
+        logger.info(
             "   %s; %s",
             func,
-            pretty_str([x_names[i] for i in influential_variables]),
+            pretty_str([x_names[i] for i in influential_variables], use_and=False),
         )
         if save:
-            input_space = self._dataset.misc["input_space"]
+            input_variables = self._dataset.misc["input_space"].variables
             names = [
-                [f"{name}${i}" for i in range(input_space.get_size(name))]
-                for name in input_space
+                [f"{name}${i}" for i in range(variable.size)]
+                for name, variable in input_variables.items()
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"
@@ -202,7 +204,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
     def __generate_subplots(
         self,
-        names_to_sensitivities: Mapping[str, RealArray],
+        name_to_sensitivity: Mapping[str, RealArray],
         level: float,
         log_scale: bool,
         save: bool,
@@ -211,7 +213,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         """Generate the gradients subplots from the data.
 
         Args:
-            names_to_sensitivities: The output sensitivities
+            name_to_sensitivity: The output sensitivities
                 w.r.t. the design variables.
             level: The proportion of the total sensitivity
                 to use as a threshold to filter the variables.
@@ -222,9 +224,9 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             The gradients subplots.
 
         Raises:
-            ValueError: If the `names_to_sensitivities` is empty.
+            ValueError: If the `name_to_sensitivity` is empty.
         """
-        n_funcs = len(names_to_sensitivities)
+        n_funcs = len(name_to_sensitivity)
         if not n_funcs:
             msg = "No gradients to plot at current iteration."
             raise ValueError(msg)
@@ -235,50 +237,54 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         )
 
         x_labels = self._get_design_variable_names()
+        n_x_labels = len(x_labels)
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
         # because the problem dimension is not updated when the history is filtered.
-        abscissas = range(len(next(iter(names_to_sensitivities.values()))))
+        abscissas = range(len(next(iter(name_to_sensitivity.values()))))
 
-        LOGGER.info(
+        logger.info(
             "Output name; "
             "most influential variables to explain %s%% of the output variation ",
             level,
         )
-        for index, (name, sensitivity) in enumerate(
-            sorted(names_to_sensitivities.items())
-        ):
+        sorted_names = sorted(name_to_sensitivity)
+        n_outputs = len(sorted_names)
+        for index in range(n_rows * n_cols):
             i = index // n_cols
             j = index % n_cols
             ax = axs[i][j]
-            quantile, threshold = self.__get_quantile(
-                sensitivity, name, level=level, save=save
-            )
-            ax.fill_between(
-                [-1, len(sensitivity) + 1],
-                -threshold,
-                threshold,
-                color="gray",
-                facecolor="none",
-                hatch="///",
-                label="Non-influential domain",
-            )
-            ax.axhline(y=0.0, color="black")
-            ax.bar(
-                abscissas,
-                sensitivity,
-                color="blue",
-                align="center",
-                label="Partial derivatives",
-            )
-            ax.set_title(
-                f"{quantile} variables explain {round(level * 100)}% of {name}"
-            )
+            if index < n_outputs:
+                name = sorted_names[index]
+                sensitivity = name_to_sensitivity[name]
+                quantile, threshold = self.__get_quantile(
+                    sensitivity, name, level=level, save=save
+                )
+                ax.fill_between(
+                    [-1, n_x_labels],
+                    -threshold,
+                    threshold,
+                    color="gray",
+                    facecolor="none",
+                    hatch="///",
+                    label="Non-influential domain",
+                )
+                ax.axhline(color=rcParams["axes.edgecolor"])
+                ax.bar(
+                    abscissas,
+                    sensitivity,
+                    color="blue",
+                    align="center",
+                    label="Partial derivatives",
+                )
+                ax.set_title(
+                    f"{quantile} variables explain {round(level * 100)}% of {name}"
+                )
+                ax.grid()
             ax.set_xticks(abscissas)
             ax.set_xticklabels(x_labels, rotation=90)
-            ax.set_xlim(-1, len(sensitivity) + 1)
-            ax.grid()
+            ax.set_xlim(-1, n_x_labels)
             ax.set_axisbelow(True)
             if log_scale:
                 ax.set_yscale("log")

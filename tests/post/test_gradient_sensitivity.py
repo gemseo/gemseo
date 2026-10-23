@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from pathlib import Path
 from unittest import mock
 
@@ -30,23 +29,26 @@ from numpy import empty
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post.factory import post_factory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.util.testing.helper import assert_exception
 
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
-SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"
-SOBIESKI_ALL_GRADIENTS = Path(__file__).parent / "sobieski_all_gradients.h5"
-SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
+power2 = Path(__file__).parent / "power2_opt_pb.h5"
+sobieski_missing_gradients = Path(__file__).parent / "sobieski_missing_gradients.h5"
+sobieski_all_gradients = Path(__file__).parent / "sobieski_all_gradients.h5"
+sobieski_gradient_values = Path(__file__).parent / "sobieski_gradient.pkl"
 
 
 @pytest.fixture(scope="module")
 def factory():
-    return PostFactory()
+    return post_factory
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
@@ -58,13 +60,12 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         factory: Fixture that returns a post-processing factory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
     """
-    problem = OptimizationProblem.from_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(power2)
     post = factory.execute(
         problem,
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens1",
-        save=True,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients, file_path="grad_sens1", save=True
+        ),
     )
     assert len(post.output_file_paths) == 1
     assert Path(post.output_file_paths[0]).exists()
@@ -73,18 +74,19 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     problem.database[x_0].pop("@eq")
     post = factory.execute(
         problem,
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens2",
-        save=True,
-        iteration=1,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens2",
+            save=True,
+            iteration=1,
+        ),
     )
     assert len(post.output_file_paths) == 1
     assert Path(post.output_file_paths[0]).exists()
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
+def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, snapshot) -> None:
     """Test the gradient sensitivity post-processing with the Sobieski problem.
 
     Args:
@@ -95,29 +97,23 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    mdo_scenario = MDOScenario([disc], design_space)
+    mdo_scenario.add_objective("y_12")
+    mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=True))
+    mdo_scenario.post_process(
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients, file_path="grad_sens", save=True
+        )
     )
-    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
-    doe_scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens",
-        save=True,
-    )
-    doe_scenario2 = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
-    )
-    doe_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
+    mdo_scenario2 = MDOScenario([disc], design_space)
+    mdo_scenario2.add_objective("y_12")
+    mdo_scenario2.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
 
-    with pytest.raises(
-        ValueError, match=re.escape("No gradients to plot at current iteration.")
-    ):
-        doe_scenario2.post_process(
-            post_name="GradientSensitivity",
-            file_path="grad_sens",
-            save=True,
-            scale_gradients=scale_gradients,
+    with assert_exception(ValueError, snapshot):
+        mdo_scenario2.post_process(
+            GradientSensitivity_Settings(
+                file_path="grad_sens", save=True, scale_gradients=scale_gradients
+            )
         )
 
 
@@ -147,18 +143,19 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
-    design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
+    design_sp.add_real_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=2.0)
+    design_sp.add_real_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=2.0)
 
     scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
-    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+    scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     post = scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens_analytical",
-        file_extension="png",
-        save=True,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens_analytical",
+            file_extension="png",
+            save=True,
+        )
     )
 
     actual_jac = post._GradientSensitivity__get_output_gradients(
@@ -171,101 +168,88 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
 
 
 @pytest.mark.parametrize(
-    ("scale_gradients", "baseline_images"),
-    [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
+    "scale_gradients",
+    [True, False],
 )
-@image_comparison(None)
-def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
+def test_plot(scale_gradients, snapshot_matplotlib) -> None:
     """Test images created by the post_process method against references.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        baseline_images: The reference images to be compared.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
     """
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
 
     design_sp = create_design_space()
-    design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
-    design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
+    design_sp.add_real_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=2.0)
+    design_sp.add_real_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=2.0)
 
     scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
 
-    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+    scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens_analytical",
-        file_extension="png",
-        save=False,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens_analytical",
+            file_extension="png",
+            save=False,
+        )
     )
 
 
-TEST_PARAMETERS = {
-    "standardized": (True, ["GradientSensitivity_standardized"]),
-    "unstandardized": (False, ["GradientSensitivity_unstandardized"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check GradientSensitivity with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = GradientSensitivity(common_problem)
-    opt.execute(save=False)
+    opt.execute(
+        GradientSensitivity_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 @pytest.mark.parametrize(
-    ("compute_missing_gradients", "opt_problem", "baseline_images"),
+    ("compute_missing_gradients", "opt_problem"),
     [
-        (True, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
-        (
-            True,
-            SOBIESKI_MISSING_GRADIENTS,
-            [],
-        ),
-        (False, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
-        (False, SOBIESKI_MISSING_GRADIENTS, []),
+        (True, sobieski_all_gradients),
+        (True, sobieski_missing_gradients),
+        (False, sobieski_all_gradients),
+        (False, sobieski_missing_gradients),
     ],
 )
-@image_comparison(None)
 def test_compute_missing_gradients(
     compute_missing_gradients,
     opt_problem,
-    baseline_images,
     factory,
     caplog,
+    snapshot,
 ) -> None:
     """Test the option to compute missing gradients for a given iteration.
 
     Args:
         compute_missing_gradients: Whether to compute the gradients if they are missing.
         opt_problem: The path to an HDF5 file of the Sobieski problem.
-        baseline_images: The references images for the image comparison test.
         factory: Fixture that returns a post-processing factory.
         caplog: Fixture to access and control log capturing.
     """
     problem = OptimizationProblem.from_hdf(str(opt_problem))
 
-    if opt_problem == SOBIESKI_MISSING_GRADIENTS:
-        with pytest.raises(
-            ValueError, match=re.escape("No gradients to plot at current iteration.")
-        ):
+    if opt_problem == sobieski_missing_gradients:
+        with assert_exception(ValueError, snapshot):
             factory.execute(
                 problem,
-                post_name="GradientSensitivity",
-                compute_missing_gradients=compute_missing_gradients,
-                save=False,
-                show=False,
+                GradientSensitivity_Settings(
+                    compute_missing_gradients=compute_missing_gradients,
+                    save=False,
+                    show=False,
+                ),
             )
 
         if compute_missing_gradients:
@@ -276,32 +260,31 @@ def test_compute_missing_gradients(
     else:
         factory.execute(
             problem,
-            post_name="GradientSensitivity",
-            compute_missing_gradients=compute_missing_gradients,
-            save=False,
-            show=False,
+            GradientSensitivity_Settings(
+                compute_missing_gradients=compute_missing_gradients,
+                save=False,
+                show=False,
+            ),
         )
 
 
-@image_comparison(["grad_sens_sobieski"])
-def test_compute_missing_gradients_with_eval(factory) -> None:
+def test_compute_missing_gradients_with_eval(factory, snapshot_matplotlib) -> None:
     """Test that the computation of the missing gradients works well with functions.
 
     Args:
         factory: Fixture that returns a post-processing factory.
     """
-    problem = OptimizationProblem.from_hdf(str(SOBIESKI_MISSING_GRADIENTS))
+    problem = OptimizationProblem.from_hdf(str(sobieski_missing_gradients))
 
-    with open(SOBIESKI_GRADIENT_VALUES, "rb") as handle:
+    with open(sobieski_gradient_values, "rb") as handle:
         gradients = pickle.load(handle)
 
     with mock.patch.object(problem, "evaluate_functions") as mocked_evaluate_functions:
         mocked_evaluate_functions.return_value = (None, gradients)
         factory.execute(
             problem,
-            post_name="GradientSensitivity",
-            compute_missing_gradients=True,
-            save=False,
-            show=False,
+            GradientSensitivity_Settings(
+                compute_missing_gradients=True, save=False, show=False
+            ),
         )
         mocked_evaluate_functions.assert_called()

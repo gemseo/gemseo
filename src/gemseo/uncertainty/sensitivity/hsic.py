@@ -1,0 +1,463 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Olivier Sapin
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC)."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from dataclasses import field
+from enum import StrEnum
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
+
+from numpy import nonzero
+from openturns import HSICEstimatorConditionalSensitivity
+from openturns import HSICEstimatorGlobalSensitivity
+from openturns import HSICEstimatorTargetSensitivity
+from openturns import HSICUStat
+from openturns import HSICVStat
+from openturns import IndicatorFunction
+from openturns import Interval
+from openturns import Sample
+from openturns import SquaredExponential
+
+from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.seeder import seed
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from openturns import CovarianceModelImplementation
+    from openturns import HSICEstimatorImplementation
+    from openturns import HSICStatImplementation
+
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.util.typing import IntegerArray
+
+
+class HSICAnalysisMethod(StrEnum):
+    """An HSIC analysis method."""
+
+    HSIC = "HSIC"
+    """The HSIC indices."""
+
+    P_VALUE_ASYMPTOTIC = "p-value-asymptotic"
+    """The p-value obtained with an asymptotic formula."""
+
+    P_VALUE_PERMUTATION = "p-value-permutation"
+    """The p-value estimated through permutations."""
+
+    R2_HSIC = "R2-HSIC"
+    """The normalized HSIC (R2-HSIC) indices."""
+
+
+class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
+    """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC).
+
+    The
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+    method proposes three types of sensitivity analysis:
+
+    - global sensitivity analysis (GSA, default)
+      to identify the input variables
+      most likely to cause the output to deviate from a nominal value,
+    - target sensitivity analysis (TSA)
+      to identify the input variables
+      most likely to cause the output to reach a certain domain,
+    - conditional sensitivity analysis (CSA)
+      most likely to cause the output to deviate from a nominal value
+      under the condition that the considered output is in a certain domain.
+
+    For GSA and CSA,
+    the sensitivity indices can be estimated with both U- and V- statistics.
+    For TSA,
+    only U-statistics is possible.
+
+    Given a sensitivity analysis type and a statistics estimation technique,
+    the
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+    method returns the standard HSIC indices
+    and the normalized ones, also called R2-HSIC indices.
+    """
+
+    @dataclass(frozen=True)
+    class SensitivityIndices:  # noqa: D106
+        hsic: FirstOrderIndicesType = field(default_factory=dict)
+        """The HSIC indices."""
+
+        r2_hsic: FirstOrderIndicesType = field(default_factory=dict)
+        """The normalized HSIC indices."""
+
+        p_value_permutation: FirstOrderIndicesType = field(default_factory=dict)
+        """The p-value estimated through permutations."""
+
+        p_value_asymptotic: FirstOrderIndicesType = field(default_factory=dict)
+        """The p-value obtained with an asymptotic formula."""
+
+    _indices: SensitivityIndices
+
+    @staticmethod
+    def __compute_covariance_models(
+        sample: Sample,
+        covariance_model_class: type[
+            CovarianceModelImplementation
+        ] = SquaredExponential,
+    ) -> Sequence[CovarianceModelImplementation]:
+        r"""Create $d$ covariance models.
+
+        Args:
+            sample: A sample of a $d$-length vector.
+            covariance_model_class: A name of covariance model class.
+
+        Returns:
+            One covariance model per vector dimension.
+        """
+        covariance_models = []
+        for i in range(sample.getDimension()):
+            covariance_model = covariance_model_class(1)
+            covariance_model.setScale(sample.getMarginal(i).computeStandardDeviation())
+            covariance_models.append(covariance_model)
+
+        return covariance_models
+
+    __methods_to_ot_methods: Final[Mapping[HSICAnalysisMethod, str]] = (
+        MappingProxyType({
+            HSICAnalysisMethod.HSIC: "getHSICIndices",
+            HSICAnalysisMethod.P_VALUE_ASYMPTOTIC: "getPValuesAsymptotic",
+            HSICAnalysisMethod.P_VALUE_PERMUTATION: "getPValuesPermutation",
+            HSICAnalysisMethod.R2_HSIC: "getR2HSICIndices",
+        })
+    )
+    """The mapping from the sensitivity indices to the OT classes."""
+
+    class AnalysisType(StrEnum):
+        """The sensitivity analysis type."""
+
+        GLOBAL = "global"
+        """Global sensitivity analysis."""
+
+        TARGET = "target"
+        """Target sensitivity analysis."""
+
+        CONDITIONAL = "conditional"
+        """Conditional sensitivity analysis.
+
+        This sensitivity analysis is incompatible
+        with
+        [StatisticEstimator.USTAT][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.StatisticEstimator.USTAT].
+        """
+
+    __analysis_to_ot_classes: Final[
+        Mapping[AnalysisType, type[HSICEstimatorImplementation]]
+    ] = MappingProxyType({
+        AnalysisType.CONDITIONAL: HSICEstimatorConditionalSensitivity,
+        AnalysisType.GLOBAL: HSICEstimatorGlobalSensitivity,
+        AnalysisType.TARGET: HSICEstimatorTargetSensitivity,
+    })
+    """The mapping from the analysis types to the OT classes."""
+
+    class StatisticEstimator(StrEnum):
+        """The statistic estimator type."""
+
+        USTAT = "U-statistic"
+        """U-statistic."""
+
+        VSTAT = "V-statistic"
+        """V-statistic."""
+
+    __statistic_estimators_to_ot_classes: Final[
+        Mapping[StatisticEstimator, type[HSICStatImplementation]]
+    ] = MappingProxyType({
+        StatisticEstimator.USTAT: HSICUStat,
+        StatisticEstimator.VSTAT: HSICVStat,
+    })
+    """The mapping from the statistic estimators to the OT classes."""
+
+    class CovarianceModel(StrEnum):
+        """The covariance model type."""
+
+        GAUSSIAN = "Gaussian"
+        """Squared exponential covariance model."""
+
+    __covariance_models_to_ot_classes: Final[
+        Mapping[CovarianceModel, type[CovarianceModelImplementation]]
+    ] = MappingProxyType({
+        CovarianceModel.GAUSSIAN: SquaredExponential,
+    })
+    """The mapping from the covariance model names to the OT classes."""
+
+    default_driver: ClassVar[str] = "OT_MONTE_CARLO"
+
+    _default_main_method: ClassVar[HSICAnalysisMethod] = HSICAnalysisMethod.R2_HSIC
+
+    def compute_indices(
+        self,
+        output_names: str | Iterable[str] = (),
+        output_bounds: Mapping[
+            str, tuple[Iterable[float], Iterable[float]]
+        ] = read_only_empty_dict,
+        statistic_estimator: StatisticEstimator = StatisticEstimator.USTAT,
+        input_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
+        output_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
+        analysis_type: AnalysisType = AnalysisType.GLOBAL,
+        seed: int | None = seed,
+        n_permutations: int = 100,
+        use_permutations: bool = False,
+    ) -> SensitivityIndices:
+        """
+        Args:
+            output_names: The name(s) of the output(s)
+                for which to compute the sensitivity indices.
+                If empty,
+                use the names of the outputs set at instantiation.
+                In the case of target and conditional sensitivity analyses,
+                these output names are the keys of the dictionary `output_bounds`
+                and the argument `output_names` is ignored.
+            output_bounds: The lower and upper bounds of the outputs
+                specified as `{name: (lower, upper), ...}`.
+                This argument is ignored in the case of global sensitivity analysis.
+                This argument is mandatory
+                in the case of target and conditional sensitivity analyses.
+            statistic_estimator: The name of the statistic estimator type.
+                This argument is ignored
+                when `analysis_type` is
+                [CONDITIONAL][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.AnalysisType.CONDITIONAL];
+                in this case,
+                the U-statistics do not exist and V-statistics are considered.
+            input_covariance_model: The name of the covariance model class of the
+                estimator associated to the input variables.
+            output_covariance_model: The name of the covariance model class of the
+                estimator associated to the output variables.
+            analysis_type: The sensitivity analysis type.
+            seed: The seed for reproducible results.
+                If `None`,
+                the current state of `openturns.RandomGenerator` is used
+                (no reseeding).
+            n_permutations: The number of permutations used to estimate the p-values.
+                This argument is ignored when `use_permutations` is `False`.
+            use_permutations: Whether to estimate the p-values by permutations,
+                in addition to the asymptotic estimate.
+                This estimation costs `n_permutations` HSIC estimations
+                and dominates the computation time;
+                the asymptotic p-values are a much cheaper alternative,
+                except for conditional sensitivity analysis
+                for which they do not exist.
+        """  # noqa: D205 D212 D415
+        if analysis_type == self.AnalysisType.CONDITIONAL:
+            statistic_estimator = self.StatisticEstimator.VSTAT
+
+        output_names = self._get_output_names(output_names)
+
+        statistic_estimator_class = self.__statistic_estimators_to_ot_classes[
+            statistic_estimator
+        ]
+
+        if analysis_type in {self.AnalysisType.CONDITIONAL, self.AnalysisType.TARGET}:
+            output_bounds = {
+                name: tuple(zip(*value, strict=False))
+                for name, value in output_bounds.items()
+            }
+            output_names = output_bounds.keys()
+
+        input_covariance_model_class = self.__covariance_models_to_ot_classes[
+            input_covariance_model
+        ]
+        output_covariance_model_class = self.__covariance_models_to_ot_classes[
+            output_covariance_model
+        ]
+        input_samples = Sample(self._get_input_sample_array())
+        hsic_class = self.__analysis_to_ot_classes[analysis_type]
+        # The input covariance models do not depend on the output: build them once.
+        input_covariance_models = self.__compute_covariance_models(
+            input_samples, input_covariance_model_class
+        )
+        skipped_methods = set()
+        # The asymptotic p-value does not exist for conditional analysis.
+        if analysis_type == self.AnalysisType.CONDITIONAL:
+            skipped_methods.add(HSICAnalysisMethod.P_VALUE_ASYMPTOTIC)
+        # Estimating the p-values by permutations costs n_permutations HSIC
+        # estimations and dominates the computation time: do it only on demand.
+        if not use_permutations:
+            skipped_methods.add(HSICAnalysisMethod.P_VALUE_PERMUTATION)
+        active_methods = [
+            method for method in HSICAnalysisMethod if method not in skipped_methods
+        ]
+        # Keep every method field so the dataclass is fully built;
+        # a skipped method (e.g. the asymptotic p-value for CSA) stays empty.
+        indices = {
+            self._get_index_field_name(method): {} for method in HSICAnalysisMethod
+        }
+        with seed_ot_random_generator(seed):
+            for output_name, i, data in self._iter_output_components(output_names):
+                method_to_output_indices = {
+                    self._get_index_field_name(method): indices[
+                        self._get_index_field_name(method)
+                    ].setdefault(output_name, [])
+                    for method in active_methods
+                }
+                if data is None:
+                    for output_indices in method_to_output_indices.values():
+                        output_indices.append(None)
+                    continue
+
+                output_samples = Sample(data)
+                covariance_models = [
+                    *input_covariance_models,
+                    *self.__compute_covariance_models(
+                        output_samples, output_covariance_model_class
+                    ),
+                ]
+                if analysis_type == self.AnalysisType.GLOBAL:
+                    args = (statistic_estimator_class(),)
+                elif analysis_type == self.AnalysisType.TARGET:
+                    args = (
+                        statistic_estimator_class(),
+                        IndicatorFunction(Interval(*output_bounds[output_name][i])),
+                    )
+                else:
+                    args = (
+                        IndicatorFunction(Interval(*output_bounds[output_name][i])),
+                    )
+
+                # A single estimator provides all the methods for this component.
+                hsic_estimator = hsic_class(
+                    covariance_models, input_samples, output_samples, *args
+                )
+                hsic_estimator.setPermutationSize(n_permutations)
+                for method in active_methods:
+                    get_indices = getattr(
+                        hsic_estimator, self.__methods_to_ot_methods[method]
+                    )
+                    method_to_output_indices[self._get_index_field_name(method)].append(
+                        self._split_index_array(get_indices())
+                    )
+
+        self._indices = self.SensitivityIndices(**indices)
+        return self.indices
+
+    def __check_indices_are_available(
+        self, indices: FirstOrderIndicesType, method: HSICAnalysisMethod
+    ) -> None:
+        """Check that the sensitivity indices of a given method are available.
+
+        Args:
+            indices: The sensitivity indices related to the method.
+            method: The sensitivity analysis method.
+
+        Raises:
+            ValueError: When the sensitivity indices are not available.
+        """
+        if indices:
+            return
+
+        # The HSIC indices are computed whatever the settings of compute_indices.
+        if not self._indices.hsic:
+            msg = (
+                "The sensitivity indices have not been computed; use compute_indices()."
+            )
+        elif method == HSICAnalysisMethod.P_VALUE_PERMUTATION:
+            msg = (
+                "The p-values estimated through permutations are not available; "
+                "use compute_indices(..., use_permutations=True)."
+            )
+        else:
+            msg = "Asymptotic p-values are not available for conditional HSIC."
+
+        raise ValueError(msg)
+
+    @property
+    def main_indices(self) -> FirstOrderIndicesType:
+        """The main sensitivity indices.
+
+        Given an input and an output,
+        a main sensitivity index is a NumPy array that can be accessed through
+        `analysis.main_indices.method_name[output_name][output_component][input_name]`.
+
+        For constant output components,
+        `analysis.main_indices.method_name[output_name][output_component]` is `None`.
+
+        Raises:
+            ValueError: When the sensitivity indices related to
+                [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
+                are not available.
+        """
+        indices = super().main_indices
+        self.__check_indices_are_available(indices, self.main_method)
+        return indices
+
+    def filter(
+        self, level: float = 0.05, use_asymptotic: bool = True
+    ) -> dict[str, list[dict[str, IntegerArray]]]:
+        r"""Filter the significant input components.
+
+        You must first call the
+        [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+        method.
+
+        Args:
+            level: The significance level of the statistical hypothesis test in $(0,1)$.
+            use_asymptotic: Whether to use asymptotic p-values.
+                Otherwise, use the p-values estimated through permutations,
+                which requires
+                [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+                to have been called with `use_permutations` set to `True`.
+                Asymptotic p-values are not available for conditional HSIC.
+
+        Returns:
+            The significant input components for each output component.
+
+        Raises:
+            ValueError: When the requested p-values have not been computed,
+                either because
+                [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+                has not been called,
+                or because `use_asymptotic` is `True`
+                and the type of HSIC is conditional,
+                or because `use_asymptotic` is `False`
+                and the p-values were not estimated through permutations.
+        """
+        method = (
+            HSICAnalysisMethod.P_VALUE_ASYMPTOTIC
+            if use_asymptotic
+            else HSICAnalysisMethod.P_VALUE_PERMUTATION
+        )
+        output_name_to_p_values = getattr(
+            self._indices, self._get_index_field_name(method)
+        )
+        self.__check_indices_are_available(output_name_to_p_values, method)
+
+        return {
+            output_name: [
+                {
+                    input_name: nonzero(input_components_are_significant)[0]
+                    for input_name, p_values in output_component.items()
+                    if (input_components_are_significant := p_values < level)
+                }
+                for output_component in output_components
+            ]
+            for output_name, output_components in output_name_to_p_values.items()
+        }

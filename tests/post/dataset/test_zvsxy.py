@@ -25,9 +25,9 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 
 @pytest.fixture(scope="module")
@@ -39,11 +39,11 @@ def dataset():
     sample4 = [1.0, 1.0, 1.0, 0.0]
     sample5 = [0.5, 0.5, 0.5, 0.5]
     data_array = array([sample1, sample2, sample3, sample4, sample5])
-    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
     return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
-        variable_names_to_n_components=variable_names_to_n_components,
+        variable_name_to_n_components=variable_name_to_n_components,
     )
 
 
@@ -53,96 +53,53 @@ sample3 = [1.0, 0.0, 0.0, 1.0]
 sample4 = [1.0, 1.0, 1.0, 0.0]
 sample5 = [0.5, 0.5, 0.5, 0.5]
 data_array = array([[0.25, 0.25, 0.25, 0.25], [0.75, 0.75, 0.75, 0.75]])
-variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
 other_dataset = Dataset.from_array(
     data_array,
     variable_names=["x", "y", "z"],
-    variable_names_to_n_components=variable_names_to_n_components,
+    variable_name_to_n_components=variable_name_to_n_components,
 )
 other_dataset.name = "foo"
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to ParallelCoordinates._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default_z0": ({"x": "x", "y": "y", "z": "z"}, {}, ["ZvsXY_z0"]),
-    "default_z1": (
-        {"x": "x", "y": "y", "z": ("z", 1)},
-        {},
-        ["ZvsXY_z1"],
-    ),
-    "default_x0": ({"x": "z", "y": "y", "z": "z"}, {}, ["ZvsXY_x0"]),
-    "default_x1": (
-        {"x": ("z", 1), "y": "y", "z": "z"},
-        {},
-        ["ZvsXY_x1"],
-    ),
-    "default_y0": ({"x": "x", "y": "z", "z": "z"}, {}, ["ZvsXY_y0"]),
-    "default_y1": (
-        {"x": "x", "y": ("z", 1), "z": "z"},
-        {},
-        ["ZvsXY_y1"],
-    ),
-    "with_colormap": (
-        {"x": "x", "y": "y", "z": "z"},
-        {"colormap": "viridis"},
-        ["ZvsXY_colormap"],
-    ),
-    "with_points": (
-        {"x": "x", "y": "y", "z": "z", "add_points": True},
-        {},
-        ["ZvsXY_points"],
-    ),
-    "with_points_and_color": (
-        {
-            "x": "x",
-            "y": "y",
-            "z": "z",
-            "add_points": True,
-        },
-        {"color": "white"},
-        ["ZvsXY_points_and_color"],
-    ),
-    "with_other_datasets": (
-        {"x": "x", "y": "y", "z": "z", "other_datasets": [other_dataset]},
-        {"color": "white", "grid": True},
-        ["ZvsXY_other_datasets"],
-    ),
-    "with_isolines": (
-        {"x": "x", "y": "y", "z": "z", "fill": False},
-        {},
-        ["ZvsXY_isolines"],
-    ),
-    "with_levels": (
-        {"x": "x", "y": "y", "z": "z", "levels": 2},
-        {},
-        ["ZvsXY_levels"],
-    ),
-    "with_properties": (
-        {"x": "x", "y": "y", "z": "z"},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-        },
-        ["ZvsXY_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({"x": "x", "y": "y", "z": "z"}, {}),
+        ({"x": "x", "y": "y", "z": ("z", 1)}, {}),
+        ({"x": "z", "y": "y", "z": "z"}, {}),
+        ({"x": ("z", 1), "y": "y", "z": "z"}, {}),
+        ({"x": "x", "y": "z", "z": "z"}, {}),
+        ({"x": "x", "y": ("z", 1), "z": "z"}, {}),
+        ({"x": "x", "y": "y", "z": "z"}, {"colormap": "viridis"}),
+        ({"x": "x", "y": "y", "z": "z", "add_points": True}, {}),
+        (
+            {"x": "x", "y": "y", "z": "z", "add_points": True},
+            {"color": "white"},
+        ),
+        (
+            {"x": "x", "y": "y", "z": "z", "other_datasets": [other_dataset]},
+            {"color": "white", "grid": True},
+        ),
+        ({"x": "x", "y": "y", "z": "z", "fill": False}, {}),
+        ({"x": "x", "y": "y", "z": "z", "levels": 2}, {}),
+        (
+            {"x": "x", "y": "y", "z": "z"},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "zlabel": "The zlabel",
+                "title": "The title",
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by ZvsXY._plot against references."""
-    plot = ZvsXY(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = ZvsXY_Settings(**kwargs, **properties)
+    plot = ZvsXY(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)

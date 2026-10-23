@@ -1,0 +1,187 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Test principal component analysis dimension reduction."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import diag
+from numpy import tile
+
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.util.derivative.check.function import FunctionJacobianChecker
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+n_samples = 10
+n_features = 8
+n_components = 3
+
+
+@pytest.fixture(scope="module")
+def data() -> ndarray:
+    """The dataset used to build the transformer, based on a 1D-mesh."""
+    return arange(n_samples * n_features).reshape(n_samples, n_features)
+
+
+@pytest.fixture(scope="module", params=[False, True])
+def pca(request, data) -> PCA:
+    """A PCA with or without data scaling."""
+    if request.param:
+        pca = PCA(n_components=n_components, scale=True)
+    else:
+        pca = PCA(n_components=n_components)
+    pca.fit(data)
+    return pca
+
+
+def test_constructor() -> None:
+    """Test constructor."""
+    pca = PCA(n_components=n_components)
+    assert pca.name == "PCA"
+    assert pca.algo is not None
+    assert pca.n_components == n_components
+    assert not pca.data_is_scaled
+    assert pca._PCA__scaler.__class__.__name__ == "Scaler"
+
+
+def test_scales_data() -> None:
+    """Test data_is_scaled."""
+    pca = PCA(n_components=n_components, scale=True)
+    assert pca.data_is_scaled
+    assert pca._PCA__scaler.__class__.__name__ == "StandardScaler"
+
+
+def test_learn(pca) -> None:
+    """Test learn with the default number of components (None)."""
+    assert pca.n_components == pca.algo.n_components_
+
+
+def test_learn_custom(pca) -> None:
+    """Test learn with a custom number of components."""
+    assert pca.n_components == n_components
+
+
+def test_transform(data, pca) -> None:
+    """Test transform."""
+    reduced_data = pca.transform(data)
+    assert reduced_data.shape[0] == data.shape[0]
+    assert reduced_data.shape[1] == n_components
+
+
+def test_inverse_transform(pca) -> None:
+    """Test inverse transform."""
+    data = arange(n_samples * n_components).reshape((n_samples, n_components))
+    restored_data = pca.inverse_transform(data)
+    assert restored_data.shape[0] == data.shape[0]
+    assert restored_data.shape[1] == n_features
+
+
+def test_compute_jacobian(data, pca) -> None:
+    """Test compute_jacobian method."""
+    jac = pca.compute_jacobian(data)
+    assert jac.shape == (data.shape[0], n_components, data.shape[1])
+    shape = (len(data), 1, 1)
+    expectation = tile(pca.algo.components_, shape)
+    if pca.data_is_scaled:
+        coefficient = 1 / data.std(0)
+        expectation = expectation @ tile(diag(coefficient), shape)
+    assert allclose(jac, expectation)
+
+
+def test_compute_jacobian_inverse(data, pca) -> None:
+    """Test compute_jacobian_inverse method."""
+    transformed_data = pca.transform(data)
+    jac_inv = pca.compute_jacobian_inverse(transformed_data)
+    assert jac_inv.shape == (data.shape[0], data.shape[1], n_components)
+    shape = (len(data), 1, 1)
+    expectation = tile(pca.algo.components_.T, shape)
+    if pca.data_is_scaled:
+        coefficient = 1 / data.std(0)
+        expectation = tile(diag(1 / coefficient), shape) @ expectation
+
+    assert allclose(jac_inv, expectation)
+
+
+def test_components(pca) -> None:
+    """Test transform."""
+    assert pca.components.shape[0] == n_features
+    assert pca.components.shape[1] == n_components
+
+
+def test_shape(data, pca) -> None:
+    """Check the shapes of the data."""
+    n = n_samples
+    p = n_features
+    q = n_components
+    transformed_data = pca.transform(data)
+    assert transformed_data.shape == (n, q)
+    assert pca.inverse_transform(transformed_data).shape == (n, p)
+
+    assert pca.transform(data[0]).shape == (q,)
+    assert pca.inverse_transform(transformed_data[0]).shape == (p,)
+
+    assert pca.compute_jacobian(data).shape == (n, q, p)
+    assert pca.compute_jacobian_inverse(transformed_data).shape == (n, p, q)
+
+    assert pca.compute_jacobian(data[0]).shape == (q, p)
+    assert pca.compute_jacobian_inverse(transformed_data[0]).shape == (p, q)
+
+
+def test_transformation_jacobian(pca) -> None:
+    """Check the Jacobian of the transformation."""
+    function = ArrayFunction(pca.transform, name="transform", jac=pca.compute_jacobian)
+    input_data = array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
+    assert FunctionJacobianChecker(function).check(input_data, atol=1e-7, rtol=1e-7)
+    assert FunctionJacobianChecker(function).check(
+        input_data[::-1], atol=1e-7, rtol=1e-7
+    )
+
+
+def test_inverse_transformation_jacobian(pca) -> None:
+    """Check the Jacobian of the inverse transformation."""
+    function = ArrayFunction(
+        pca.inverse_transform,
+        name="inverse_transform",
+        jac=pca.compute_jacobian_inverse,
+    )
+    input_data = array([1.0, 2.0, 3.0])
+    assert FunctionJacobianChecker(function).check(input_data, atol=1e-7, rtol=1e-7)
+    assert FunctionJacobianChecker(function).check(
+        input_data[::-1], atol=1e-7, rtol=1e-7
+    )
+
+
+@pytest.mark.parametrize(
+    ("n_components", "final_n_components"), [(3, 3), (0.6, 1), ("mle", 1), (None, 8)]
+)
+def test_n_components_type(data, n_components, final_n_components):
+    """Check that n_components can support integer, float and "mle" literal."""
+    pca = PCA(n_components=n_components)
+    pca.fit(data)
+    assert pca.n_components == final_n_components

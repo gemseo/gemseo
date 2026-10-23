@@ -18,44 +18,34 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 
 from gemseo.post.parallel_coordinates import ParallelCoordinates
-from gemseo.utils.testing.helpers import image_comparison
-
-TEST_PARAMETERS = {
-    "standardized": (True, ["PC_standardized_0", "PC_standardized_1"]),
-    "unstandardized": (False, ["PC_unstandardized_0", "PC_unstandardized_1"]),
-}
+from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check ParallelCoordinates with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = ParallelCoordinates(common_problem)
-    opt.execute(save=False)
+    opt.execute(
+        ParallelCoordinates_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
-def test_shape_error() -> None:
+def test_shape_error(snapshot) -> None:
     """Check the error raised by parallel_coordinates if shapes are inconsistent."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The data shape (1, 1) is not equal to the expected one (2, 1)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         ParallelCoordinates._ParallelCoordinates__parallel_coordinates(
             array([[1]]), ["x"], [0.0, 0.5], (0.0, 0.0)
         )

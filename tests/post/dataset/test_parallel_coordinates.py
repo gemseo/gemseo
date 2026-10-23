@@ -21,15 +21,16 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -43,52 +44,36 @@ def dataset():
     )
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to ParallelCoordinates._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, {}, ["ParallelCoordinates"]),
-    "with_lower": ({"lower": 0.25}, {}, ["ParallelCoordinates_lower"]),
-    "with_upper": ({"upper": 0.75}, {}, ["ParallelCoordinates_upper"]),
-    "with_lower_upper": (
-        {"lower": 0.1, "upper": 0.75},
-        {},
-        ["ParallelCoordinates_lower_upper"],
-    ),
-    "with_properties": (
-        {},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "grid": False,
-        },
-        ["ParallelCoordinates_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        ({"lower": 0.25}, {}),
+        ({"upper": 0.75}, {}),
+        ({"lower": 0.1, "upper": 0.75}, {}),
+        (
+            {},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by ParallelCoordinates._plot against references."""
-    plot = ParallelCoordinates(dataset, classifier="x1", **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = ParallelCoordinates_Settings(classifier="x1", **kwargs, **properties)
+    plot = ParallelCoordinates(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
-def test_wrong_classifier_name(dataset) -> None:
+def test_wrong_classifier_name(dataset, snapshot) -> None:
     """Check that the message of the error raised when the classifier name is wrong."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Classifier must be one of these names: x1, x2 and x3."),
-    ):
-        ParallelCoordinates(dataset, classifier="foo")
+    with assert_exception(ValueError, snapshot):
+        ParallelCoordinates(dataset, ParallelCoordinates_Settings(classifier="foo"))

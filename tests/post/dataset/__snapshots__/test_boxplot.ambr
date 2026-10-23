@@ -1,0 +1,33 @@
+# serializer version: 1
+# name: test_unsupported_options[labels]
+  '''
+  1 validation error for Boxplot_Settings
+  options
+    Value error, The boxplot options ['labels'] are not supported; use the matplotlib option tick_labels instead. [type=value_error, input_value={'labels': ['a', 'b']}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unsupported_options[orientation]
+  '''
+  1 validation error for Boxplot_Settings
+  options
+    Value error, The boxplot options ['orientation'] are not supported; use the setting use_vertical_bars to set the orientation. [type=value_error, input_value={'orientation': 'horizontal'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unsupported_options[orientation_and_vert]
+  '''
+  1 validation error for Boxplot_Settings
+  options
+    Value error, The boxplot options ['orientation', 'vert'] are not supported; use the setting use_vertical_bars to set the orientation. [type=value_error, input_value={'orientation': 'h', 'vert': True}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unsupported_options[vert]
+  '''
+  1 validation error for Boxplot_Settings
+  options
+    Value error, The boxplot options ['vert'] are not supported; use the setting use_vertical_bars to set the orientation. [type=value_error, input_value={'vert': False}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

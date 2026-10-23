@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_init_fails_if_multioutput_
+  'MLModelSelection does not support multioutput; the measure shall return one value.'
+# ---

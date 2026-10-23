@@ -16,25 +16,19 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
-from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post import BasePost
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.util.typing import StrPath
 
 
 class Animation_Settings(BasePostSettings):  # noqa: D101, N801
-    # This is required to supporting the field post_processor.
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    _TARGET_CLASS_NAME = "Animation"
-
     frame_rate: PositiveInt = Field(
         default=1,
         description="The number of iterations per time step.",
@@ -48,14 +42,14 @@ class Animation_Settings(BasePostSettings):  # noqa: D101, N801
     n_repetitions: NonNegativeInt = Field(
         default=0,
         description="The number of times the animation is played. "
-        "If ``0``, play infinitely.",
+        "If `0`, play infinitely.",
     )
-    temporary_database_path: str | Path = Field(
+    temporary_database_path: StrPath = Field(
         default="",
         description="The path to a temporary database to avoid deepcopy memory errors."
         "If empty, deepcopy is used instead.",
     )
-    gif_file_path: str | Path = Field(
+    gif_file_path: StrPath = Field(
         default="animated_gif",
         description="The path to the GIF file.",
     )

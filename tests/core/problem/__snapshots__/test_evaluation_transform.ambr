@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_bind_functions_without_database_stops_a_nan_point
+  'Found a NaN in the input array [nan  2.].'
+# ---
+# name: test_doe_gives_the_stop_if_nan_back_to_the_problem_it_is_built_from
+  'Found a NaN in the output data of the function f evaluated at the input array [9. 1.].'
+# ---
+# name: test_transform_refuses_a_function_that_has_not_been_bound
+  'The following functions have not been bound: f; call bind_functions before create_working_problem.'
+# ---
+# name: test_transform_refuses_a_transformation_built_for_another_space
+  'The SpaceComposition is not built for the input space of the problem; build it for that space.'
+# ---

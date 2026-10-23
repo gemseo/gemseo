@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_bad_distribution
+  'Dummy cannot be imported from scipy.stats.'
+# ---
+# name: test_bad_distribution_parameters
+  'The arguments of norm(loc=0.0, max=1) are wrong; more details on https://docs.scipy.org/doc/scipy/reference/stats.html.'
+# ---

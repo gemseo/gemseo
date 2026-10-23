@@ -22,49 +22,59 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import isnan
 from numpy import linspace
+from numpy import nan
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
+from gemseo.dataset.dataset import Dataset
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
+from gemseo.problem.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.scenario.backup_settings import BackupSettings
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
-from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
+from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
-    from gemseo.disciplines.analytic import AnalyticDiscipline
-    from gemseo.typing import StrKeyMapping
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
+    from gemseo.discipline.analytic import AnalyticDiscipline
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.util.typing import StrKeyMapping
 
 
 @pytest.fixture(scope="module")
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
-    return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
+    return create_discipline("AnalyticDiscipline", {"out": "x1+2*x2+3*x3"})
 
 
 @pytest.fixture(scope="module")
-def parameter_space() -> ParameterSpace:
+def parameter_space() -> RandomSpace:
     """Return the parameter space on which to evaluate the discipline."""
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ["x1", "x2", "x3"]:
-        space.add_random_variable(name, "OTNormalDistribution")
+        space.add_variable(name, OTNormalDistribution_Settings())
     return space
 
 
@@ -77,10 +87,9 @@ class Ishigami1D(Discipline):
         self.io.output_grammar.update_from_names(["out"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        local_data = self.io.data
-        x_1 = local_data["x1"]
-        x_2 = local_data["x2"]
-        x_3 = local_data["x3"]
+        x_1 = input_data["x1"]
+        x_2 = input_data["x2"]
+        x_3 = input_data["x3"]
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
         return {"out": output}
@@ -104,10 +113,10 @@ class MockSensitivityAnalysis(BaseSensitivityAnalysis):
         self._input_names = ["x1", "x2"]
         self._output_names = ["y1", "y2"]
         self.dataset.add_group(
-            self.dataset.INPUT_GROUP, data, self._input_names, {"x1": 1, "x2": 2}
+            self.dataset.input_group, data, self._input_names, {"x1": 1, "x2": 2}
         )
         self.dataset.add_group(
-            self.dataset.OUTPUT_GROUP, data, ["y1", "y2"], {"y1": 1, "y2": 2}
+            self.dataset.output_group, data, ["y1", "y2"], {"y1": 1, "y2": 2}
         )
 
     @property
@@ -140,6 +149,37 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
     @property
     def main_indices(self):
         return self.indices.m2
+
+
+class NaNMockSensitivityAnalysis(MockSensitivityAnalysis):
+    """A sensitivity analysis whose indices are partly `nan`.
+
+    The input `x1` has no index at all,
+    and the first component of the input `x2` has no index either.
+    """
+
+    @property
+    def main_indices(self):
+        return {
+            "y1": [{"x1": array([nan]), "x2": array([nan, 1.75])}],
+            "y2": [
+                {"x1": array([nan]), "x2": array([nan, 2.75])},
+                {"x1": array([nan]), "x2": array([nan, 3.75])},
+            ],
+        }
+
+
+class ZeroAndNaNMockSensitivityAnalysis(MockSensitivityAnalysis):
+    """A sensitivity analysis mixing a `nan` index and a zero one.
+
+    The input `x1` has no index at all,
+    while the indices of the input `x2` are zero,
+    as when an output does not depend on an input.
+    """
+
+    @property
+    def main_indices(self):
+        return {"y1": [{"x1": array([nan]), "x2": array([0.0, 0.0])}]}
 
 
 class MockMorrisAnalysisIndices(MorrisAnalysis):
@@ -218,79 +258,60 @@ def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
         return SecondMockSensitivityAnalysis()
 
 
-BARPLOT_TEST_PARAMETERS = {
-    "without_option": ({}, ["bar_plot"]),
-    "standardize": ({"outputs": "y2", "standardize": True}, ["bar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["bar_plot_inputs"]),
-    "inputs_standardize": (
+@pytest.fixture
+def nan_mock_sensitivity_analysis() -> NaNMockSensitivityAnalysis:
+    """Return an instance of NaNMockSensitivityAnalysis."""
+    with concretize_classes(NaNMockSensitivityAnalysis):
+        return NaNMockSensitivityAnalysis()
+
+
+@pytest.fixture
+def zero_and_nan_mock_sensitivity_analysis() -> ZeroAndNaNMockSensitivityAnalysis:
+    """Return an instance of ZeroAndNaNMockSensitivityAnalysis."""
+    with concretize_classes(ZeroAndNaNMockSensitivityAnalysis):
+        return ZeroAndNaNMockSensitivityAnalysis()
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"outputs": "y2", "standardize": True},
+        {"outputs": "y2", "input_names": ["x1"]},
         {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
-        ["bar_plot_inputs_standardize"],
-    ),
-    "outputs": ({"outputs": [("y2", 0)]}, ["bar_plot_outputs"]),
-    "n_digits": ({"outputs": "y2", "n_digits": 1}, ["bar_plot_n_digits"]),
-    "do_not_sort": ({"outputs": ["y1", "y2"], "sort": False}, ["bar_plot_do_not_sort"]),
-    "sorting_output_as_str": (
+        {"outputs": [("y2", 0)]},
+        {"outputs": "y2", "bar_plot_settings": BarPlot_Settings(n_digits=1)},
+        {"outputs": ["y1", "y2"], "sort": False},
         {"outputs": ["y1", "y2"], "sorting_output": "y2"},
-        ["bar_plot_sorting_output_as_str"],
-    ),
-    "sorting_output_as_tuple": (
         {"outputs": ["y1", "y2"], "sorting_output": ("y2", 1)},
-        ["bar_plot_sorting_output_as_tuple"],
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    BARPLOT_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=BARPLOT_TEST_PARAMETERS.keys(),
+    ],
 )
-@image_comparison(None)
-def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
+def test_plot_bar(kwargs, mock_sensitivity_analysis, snapshot_matplotlib) -> None:
     """Check that a Barplot is created with plot_bar."""
-    mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
-
-
-RADAR_TEST_PARAMETERS = {
-    "without_option": ({}, ["radar_plot"]),
-    "standardize": ({"outputs": "y2", "standardize": True}, ["radar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["radar_plot_inputs"]),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
-        ["radar_plot_inputs_standardize"],
-    ),
-    "outputs": ({"outputs": [("y2", 0)]}, ["radar_plot_outputs"]),
-}
+    mock_sensitivity_analysis.plot_bar(save=False, **kwargs)
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    RADAR_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=RADAR_TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"outputs": "y2", "standardize": True},
+        {"outputs": "y2", "input_names": ["x1"]},
+        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
+        {"outputs": [("y2", 0)]},
+    ],
 )
-@image_comparison(None)
-def test_plot_radar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
+def test_plot_radar(kwargs, mock_sensitivity_analysis, snapshot_matplotlib) -> None:
     """Check that a RadarChart is created with plot_radar."""
     mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
 
-COMPARISON_TEST_PARAMETERS = {
-    "use_bar": (True, ["comparison_bar"]),
-    "use_radar": (False, ["comparison_radar"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_bar_plot", "baseline_images"),
-    COMPARISON_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=COMPARISON_TEST_PARAMETERS.keys(),
+    "use_bar_plot",
+    [True, False],
 )
-@image_comparison(None)
 def test_plot_comparison(
-    use_bar_plot, baseline_images, discipline, parameter_space
+    use_bar_plot, discipline, parameter_space, snapshot_matplotlib
 ) -> None:
     """Check if the comparison of sensitivity indices works."""
     spearman = CorrelationAnalysis()
@@ -298,12 +319,12 @@ def test_plot_comparison(
     spearman.compute_indices()
     pearson = CorrelationAnalysis()
     pearson.compute_samples([discipline], parameter_space, 10)
-    pearson.main_method = pearson.Method.PEARSON
+    pearson.main_method = CorrelationAnalysisMethod.PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
     )
-    assert plot.title == "foo"
+    assert plot.settings.title == "foo"
 
 
 def test_input_names(mock_sensitivity_analysis) -> None:
@@ -325,6 +346,50 @@ def test_sort_parameters(mock_sensitivity_analysis, output) -> None:
     """
     parameters = mock_sensitivity_analysis.sort_input_variables(output)
     assert parameters == ["x2", "x1"]
+
+
+@pytest.mark.parametrize("output", ["y1", ("y1", 0), ("y2", 0)])
+def test_sort_parameters_with_nan(nan_mock_sensitivity_analysis, output) -> None:
+    """Check that the inputs whose indices are `nan` are ranked last.
+
+    The cumulative index of an input sums the components that have an index,
+    and so `x1`, which has none, comes after `x2`,
+    whose second component has one.
+    """
+    assert nan_mock_sensitivity_analysis.sort_input_variables(output) == ["x2", "x1"]
+
+
+def test_sort_parameters_with_nan_and_zero(
+    zero_and_nan_mock_sensitivity_analysis,
+) -> None:
+    """Check that an input without index is ranked after an input with a zero index.
+
+    The cumulative index of `x1`, which has no index at all,
+    and that of `x2`, whose indices are zero, are both zero,
+    and so only the presence of an index can tell the two apart.
+    """
+    analysis = zero_and_nan_mock_sensitivity_analysis
+    assert analysis.sort_input_variables("y1") == ["x2", "x1"]
+
+
+@pytest.mark.parametrize(
+    ("standardize", "expected"),
+    [(False, [[1.75], [2.75], [3.75]]), (True, [[1.0]] * 3)],
+)
+def test_plot_bar_without_the_components_without_indices(
+    nan_mock_sensitivity_analysis, standardize, expected
+) -> None:
+    """Check that the plotted dataset leaves out the components without indices.
+
+    The input `x1` has no index at all
+    and the first component of the input `x2` has no index either,
+    and so the second component of `x2` is the only one left to plot.
+    """
+    dataset = nan_mock_sensitivity_analysis.plot_bar(
+        save=False, standardize=standardize
+    ).dataset
+    assert dataset.columns.tolist() == [(dataset.parameter_group, "x2", 1)]
+    assert_array_equal(dataset.to_numpy(), array(expected))
 
 
 def test_convert_to_dataset(mock_sensitivity_analysis) -> None:
@@ -351,10 +416,10 @@ def test_convert_to_dataset(mock_sensitivity_analysis) -> None:
 @pytest.fixture(scope="module")
 def ishigami() -> SobolAnalysis:
     """Return the Sobol' analysis for the Ishigami function."""
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in ["x1", "x2", "x3"]:
-        space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+        space.add_variable(
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 
     sobol_analysis = SobolAnalysis()
@@ -366,62 +431,37 @@ def ishigami() -> SobolAnalysis:
     return sobol_analysis
 
 
-ONE_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["1d_field"], "out"),
-    "without_option_with_tuple": ({}, ["1d_field"], ("out", 0)),
-    "standardize": ({"standardize": True}, ["1d_field_standardize"], "out"),
-    "inputs": ({"input_names": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1", "x3"]},
-        ["1d_field_inputs_standardize"],
-        "out",
-    ),
-    "properties": ({"properties": {"xlabel": "foo"}}, ["1d_field_properties"], "out"),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images", "output"),
-    ONE_D_FIELD_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
+    ("kwargs", "output"),
+    [
+        ({}, "out"),
+        ({}, ("out", 0)),
+        ({"standardize": True}, "out"),
+        ({"input_names": ["x1", "x3"]}, "out"),
+        ({"standardize": True, "input_names": ["x1", "x3"]}, "out"),
+        ({"properties": {"xlabel": "foo"}}, "out"),
+    ],
 )
-@image_comparison(None)
-def test_plot_1d_field(kwargs, baseline_images, output, ishigami) -> None:
+def test_plot_1d_field(kwargs, output, ishigami, snapshot_matplotlib) -> None:
     """Check if a 1D field is well plotted."""
     ishigami.plot_field(output, save=False, show=False, **kwargs)
 
 
-TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
+two_d_field_test_parameters_wo_mesh = {
     "without_option": ({}, ["2d_field_wo_mesh"]),
 }
 
 
-TWO_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, [f"2d_field_{i}" for i in range(3)]),
-    "standardize": (
-        {"standardize": True},
-        [f"2d_field_standardize_{i}" for i in range(3)],
-    ),
-    "inputs": (
-        {"input_names": ["x1", "x3"]},
-        [f"2d_field_inputs_{i}" for i in range(2)],
-    ),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1", "x3"]},
-        [f"2d_field_inputs_standardize_{i}" for i in range(2)],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TWO_D_FIELD_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"standardize": True},
+        {"input_names": ["x1", "x3"]},
+        {"standardize": True, "input_names": ["x1", "x3"]},
+    ],
 )
-@image_comparison(None)
-def test_plot_2d_field(kwargs, baseline_images, ishigami) -> None:
+def test_plot_2d_field(kwargs, ishigami, snapshot_matplotlib) -> None:
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
@@ -448,22 +488,40 @@ def test_standardize_indices() -> None:
     assert standardized_indices == expected_standardized_indices
 
 
+def test_standardize_indices_with_nan() -> None:
+    """Check that standardize_indices() ignores the indices that are `nan`.
+
+    A `nan` index does not contribute to the largest index,
+    which the other indices are divided by,
+    and is left as it is.
+    """
+    indices = {
+        "y1": [{"x1": array([nan]), "x2": array([0.5]), "x3": array([1.0])}],
+        "y2": [{"x1": array([nan]), "x2": array([nan]), "x3": array([nan])}],
+    }
+    standardized_indices = BaseSensitivityAnalysis.standardize_indices(indices)
+    assert isnan(standardized_indices["y1"][0]["x1"]).all()
+    assert_array_equal(standardized_indices["y1"][0]["x2"], array([0.5]))
+    assert_array_equal(standardized_indices["y1"][0]["x3"], array([1.0]))
+    # No index of the output y2 is a number, and so all of them are left as they are.
+    assert all(isnan(value).all() for value in standardized_indices["y2"][0].values())
+
+
 def test_multiple_disciplines(parameter_space) -> None:
-    """Test a BaseSensitivityAnalysis with multiple disciplines.
+    """Test a sensitivity analysis with multiple disciplines.
 
     Args:
         parameter_space: A parameter space for the analysis.
     """
     expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
-    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
-    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
-    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+    d1 = create_discipline("AnalyticDiscipline", expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions[2])
 
-    with concretize_classes(BaseSensitivityAnalysis):
-        sensitivity_analysis = BaseSensitivityAnalysis()
-        sensitivity_analysis.compute_samples(
-            [d1, d2, d3], parameter_space, 5, algo="OT_MONTE_CARLO"
-        )
+    sensitivity_analysis = CorrelationAnalysis()
+    sensitivity_analysis.compute_samples(
+        [d1, d2, d3], parameter_space, 5, algo_settings=OT_MONTE_CARLO_Settings()
+    )
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
         "x1",
@@ -476,3 +534,15 @@ def test_multiple_disciplines(parameter_space) -> None:
         "y2",
     ]
     assert sensitivity_analysis.dataset.n_samples == 5
+
+
+def test_backup(tmp_wd):
+    """Check the creation of a backup file."""
+    sensitivity_analysis = SobolAnalysis()
+    sensitivity_analysis.compute_samples(
+        [IshigamiDiscipline()],
+        IshigamiSpace(),
+        n_samples=50,
+        backup_settings=BackupSettings(file_path=".backup"),
+    )
+    assert Path(".backup").exists()

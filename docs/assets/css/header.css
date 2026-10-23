@@ -1,0 +1,320 @@
+/* Merge the navbar into the single header row (see docs/overrides/partials/header.html). */
+
+/*
+ * mkdocs-material's JS only toggles the header drop-shadow on scroll — designed for
+ * tabs in a separate row that hide when scrolled.
+ * Here the tabs live in the always-visible header row, so the shadow should always be
+ * present. Force material's default shadow regardless of scroll state.
+ */
+.md-header {
+  box-shadow:
+    0 0 0.2rem #0000001a,
+    0 0.2rem 0.4rem #0000001a;
+}
+
+.md-header__inner {
+  flex-wrap: nowrap;
+}
+
+/*
+ * Spacer only: the tab list is absolutely positioned on .md-header__inner (see
+ * .md-tabs__list below), so this element has no in-flow content — it just keeps
+ * the left (logo) and right (search/version) clusters apart. Overflow handling
+ * lives on the list itself.
+ */
+.md-header__tabs {
+  flex-grow: 1;
+  margin: 0 1rem;
+}
+
+.md-header__tabs .md-tabs {
+  width: auto;
+  /* Drop the grey divider mkdocs-material draws under the tab row. */
+  border-bottom: none;
+  box-shadow: none;
+}
+
+/*
+ * Material hides the header logo below the tabs breakpoint and relies on the
+ * site title to identify the site — but this override drops the title block
+ * (the logo bar carries the branding) and the drawer title block too (see
+ * .md-nav__title below), which would leave narrow viewports with no branding at
+ * all. Keep the logo visible everywhere; the hamburger moves to the far left,
+ * where mobile navigation is expected. The logo bar is sized in style.css, which
+ * also makes the anchor a flex container — repeated here because Material hides it
+ * with `display: none`, so restoring it means restating the display value.
+ */
+@media screen and (max-width: 76.234375em) {
+  .md-header .md-logo {
+    display: flex;
+    /* Half of material's .4rem: see the row budget below. */
+    padding: 0.2rem;
+  }
+
+  .md-header__button[for="__drawer"] {
+    order: -1;
+  }
+
+  /*
+   * The logo bar is 242px at its full size, against the 24px icon material shows here
+   * by default, and the row also carries the hamburger, the palette toggle, the
+   * magnifier and the mike selector — 346px of them together. On a 390px phone the row
+   * therefore measured 607px, and since .md-header__inner does not wrap and material
+   * sets `html { overflow-x: hidden }`, the magnifier and the version selector were
+   * simply clipped away, not merely pushed off-screen.
+   *
+   * Two things fix that: give the row back the space it wastes below this breakpoint
+   * (the rules just below, ~109px in total), then size the lockup to whatever is left
+   * (the .gemseo-bar rule at the end).
+   */
+
+  /*
+   * The spacer only exists to keep the logo and the controls apart while the tabs are
+   * shown, and material hides the .md-tabs inside it here, so its 1rem side margins
+   * are dead space. Biggest single saving of the group.
+   */
+  .md-header__tabs {
+    margin: 0;
+  }
+
+  /*
+   * Tighter icon buttons: 1.2rem icon + .3rem padding = 36px, still above the 24px
+   * minimum target size of WCAG 2.5.8, and material's own box is 40px rather than the
+   * recommended 48px anyway.
+   */
+  .md-header__button[for="__drawer"],
+  .md-header__controls .md-header__button {
+    margin: 0.1rem;
+    padding: 0.3rem;
+  }
+
+  .md-header__inner {
+    padding: 0 0.1rem;
+  }
+
+  /*
+   * The version selector is the widest item after the lockup (146px with a title such
+   * as "1.7.0 (stable)"), mostly through material's 1.4rem indent, which is there to
+   * separate it from a site title this override does not render. Reclaim that indent
+   * and drop the label from the .8rem it inherits to .7rem, which hands ~7px of the
+   * button width back to the lockup; the title itself is left
+   * uncapped, since it fits at every width down to 320px — where the lockup, sized
+   * from what the row has left (see below), yields first.
+   */
+  .md-header .md-version__current {
+    margin-left: 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  /*
+   * Size the lockup from the space the row has left. With the trims above, everything
+   * around the lockup measures 13.3rem: .2rem of inner padding, 2rem for the hamburger
+   * (1.8rem plus its .2rem of margin), .8rem for the margin and padding of the logo cell
+   * itself, and 10.3rem of controls — 2rem per icon for the palette toggle and the
+   * magnifier, 6.3rem for the version selector with a title such as "1.7.0 (stable)",
+   * its .6rem of margin included.
+   *
+   * The lockup's own width is `6.72 * imgH`, with no additive term: every part of it
+   * scales with --logo-img-h. Per unit of it, and with --logo-h = `0.6111 * imgH` (see
+   * .gemseo-bar in style.css): 3.57 for the wordmark, the 864x242 aspect ratio of the
+   * SVG; .2268 for the slash, whose glyph advances .3711em in Roboto 700, i.e.
+   * `0.3711 * 0.6111`; 2.1972 for the suffix, "gemseo" advancing 3.5957em in the same
+   * font; and .7211 for the two gaps, `2 * 0.59 * 0.6111`. Hence
+   * `(100vw - 13.5rem) / 6.72`, the .2rem on top of the 13.3rem leaving ~4px of slack,
+   * which tracks the viewport instead of stepping at hand-picked widths.
+   *
+   * Mixing rem and vw is safe here: this query stops at 76.23em, below which the root
+   * font size stays at material's 125%, so 1rem is 20px throughout the range.
+   *
+   * The 1.8rem ceiling is the desktop size, reached at ~512px, so nothing changes on
+   * the viewports that already fit. The .95rem floor stops the fluid height at ~398px,
+   * where the lockup still gets its full width: a 68x19px mark, in the region of the
+   * 1.2rem logo material itself shows below this breakpoint, with the suffix intact.
+   * Below that the floor caps the image height only — the widths keep yielding to
+   * flex-shrink, so both parts of the lockup degrade together (see .gemseo-bar in
+   * style.css): at 320px the suffix ellipsizes (14px shown of 42) and the image box
+   * narrows to 22px, which `object-fit: contain` letterboxes down to a ~22x6px painting.
+   * Smaller than the floor alone implies, and the price of the property that matters —
+   * every control stays reachable, nothing overflows at 320px.
+   *
+   * The divisor assumes a suffix about as wide as "gemseo"; a longer plugin name gets
+   * the same graceful degradation (checked with "calibration": nothing overflows, the
+   * suffix ellipsizes below ~534px), and can override --logo-img-h here.
+   */
+  .gemseo-bar {
+    --logo-img-h: clamp(0.95rem, calc((100vw - 13.5rem) / 6.72), 1.8rem);
+  }
+}
+
+/*
+ * mkdocs-material renders the header tab links at .7rem, .8rem below the top of
+ * their 2.4rem item — the latter being a leftover of tabs living in their own row,
+ * which leaves the labels a couple of pixels below the center of the header row.
+ * Match the main text size (.md-typeset is .8rem) and center the link in its item,
+ * so the tab labels land on the center line of the header row, together with the
+ * logo bar (see .gemseo-bar in style.css) and the icons.
+ */
+.md-header__tabs .md-tabs__link {
+  font-size: 0.8rem;
+  margin-top: 0;
+  height: 100%;
+  align-items: center;
+}
+
+/*
+ * Center the tab items on the page grid, not within the flex strip. The left (logo) and
+ * right (search/version) clusters have unequal widths, so the flex strip is off-center;
+ * absolutely position the list at the center of .md-header__inner, which carries
+ * material's .md-grid (see docs/overrides/partials/header.html) as the content column and
+ * the footer do, so the tabs share their center line.
+ */
+.md-header__inner {
+  position: relative;
+}
+
+.md-header__tabs .md-tabs__list {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  /* Out of the flex flow, the list grows symmetrically past the space the spacer
+     reserves and would silently overlap the logo/search clusters once enough
+     top-level sections are added. Cap it short of the widest cluster (~10rem per
+     side plus breathing room, relative to the 61rem grid) and scroll the excess. */
+  max-width: calc(100% - 24rem);
+  overflow-x: auto;
+}
+
+/*
+ * The right-hand controls (palette toggle, search, version selector)
+ * are grouped in .md-header__controls (see docs/overrides/partials/header.html) so
+ * the header row has exactly three cells: logo | tabs | controls. Icons center on
+ * the row at every screen size; margin-left:auto pins the group to the right edge
+ * even if the .md-header__tabs spacer ever stops growing (below the tabs
+ * breakpoint the spacer stays in flow — Material only hides the .md-tabs inside).
+ */
+.md-header__controls {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  margin-left: auto;
+}
+
+/*
+ * The mobile slide-out drawer repeats the branding (logo + "GEMSEO" text) that the
+ * header already carries — keep only the nav entries in the drawer. Scoped to
+ * [for="__drawer"] so nested section titles keep their labels.
+ */
+.md-nav__title[for="__drawer"] {
+  display: none;
+}
+
+/*
+ * mkdocs-material shows a wide inline search box on desktop (>= 60em). We want
+ * the magnifying-glass icon only there too, like on mobile; clicking it still
+ * expands the same search panel via the existing [data-md-toggle=search]:checked
+ * rules, which are untouched.
+ */
+@media screen and (min-width: 60em) {
+  .md-header__button[for="__search"] {
+    display: inline-block;
+  }
+
+  .md-header .md-search__inner {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    /* opacity:0 is Material's own technique below 60em: the collapsed input
+       stays focusable, so Tab and the keyboard shortcuts still open the panel. */
+    opacity: 0;
+  }
+
+  /* Restore the metrics Material gives the expanded panel. */
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__inner {
+    opacity: 1;
+    overflow: visible;
+    padding: 0.1rem 0;
+  }
+
+  /* Once the panel expands, its own icon is enough — hide the toggle button. */
+  [data-md-toggle="search"]:checked ~ .md-header .md-header__button[for="__search"] {
+    display: none;
+  }
+}
+
+/*
+ * Version selector slot (see docs/overrides/partials/header.html). Material's
+ * `.md-header__title` is `flex-grow: 1` and `.md-header__topic` is absolutely
+ * positioned (it normally overlays a sibling topic inside `.md-header__ellipsis`);
+ * here it must be a plain inline block at the end of the row.
+ */
+.md-header .md-header__title--version {
+  flex: 0 0 auto;
+  margin: 0 0.2rem 0 0.4rem;
+}
+
+.md-header__title--version .md-header__topic {
+  position: static;
+  max-width: none;
+}
+
+/*
+ * Anchor the dropdown to the selector. Material positions `.md-version__list` at
+ * `top: .15rem` of the nearest positioned ancestor, which it expects to be
+ * `.md-header__title`; with the topic static (above) and the title unpositioned, that
+ * ancestor is `.md-header__inner` (`position: relative`, see the tab list below), so the
+ * list opened over the header row itself, covering the icons. Positioning `.md-version`
+ * makes it the containing block; nothing clips it, since material's overflow lives on
+ * `.md-ellipsis`, not on the children of `.md-header__topic`.
+ */
+.md-header__title--version .md-version {
+  position: relative;
+}
+
+.md-header__title--version .md-version__list {
+  top: 100%;
+  left: auto;
+  right: 0;
+  /* Material's `.2rem .8rem` indents the list from the header title; here it would only
+     pull the (wide, legacy-augmented) list away from the button it belongs to. */
+  margin: 0.2rem 0;
+  min-width: 100%;
+}
+
+/*
+ * A select box opens on click, not on hover: undo material's `:hover`/`:focus-within`
+ * opening — including the `hoverfix` animation it adds on coarse pointers — and let
+ * assets/js/version-selector.js drive the state through `.md-version--open`.
+ */
+.md-version:hover .md-version__list,
+.md-version:focus-within .md-version__list {
+  max-height: 0;
+  opacity: 0;
+  animation: none;
+  transition:
+    max-height 0ms 0.25s,
+    opacity 0.25s;
+}
+
+/*
+ * The `:hover`/`:focus-within` variants are needed, not redundant: material's
+ * `.md-version:focus-within .md-version__list` matches three classes, one more than a
+ * bare `.md-version--open .md-version__list`, and the button holds the focus once
+ * clicked. `12rem` rather than material's `10rem` because the list carries the legacy
+ * Sphinx versions too (see assets/js/legacy-versions.js); past that it scrolls.
+ */
+.md-version--open .md-version__list,
+.md-version--open:hover .md-version__list,
+.md-version--open:focus-within .md-version__list {
+  max-height: 12rem;
+  opacity: 1;
+  transition:
+    max-height 0ms,
+    opacity 0.25s;
+}
+
+/* Point the chevron at the open list. */
+.md-version--open .md-version__current::after {
+  transform: rotate(180deg);
+}

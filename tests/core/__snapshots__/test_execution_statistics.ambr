@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_duration
+  'The execution statistics of the object named dummy are disabled.'
+# ---
+# name: test_n_calls
+  'The execution statistics of the object named dummy are disabled.'
+# ---
+# name: test_n_calls_linearize
+  'The execution statistics of the object named dummy are disabled.'
+# ---

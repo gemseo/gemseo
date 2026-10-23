@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_wrong_classifier_name
+  'Classifier must be one of these names: x1, x2 and x3.'
+# ---

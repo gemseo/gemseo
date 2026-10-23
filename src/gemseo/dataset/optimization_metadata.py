@@ -1,0 +1,62 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+"""Optimization metadata to be passed to an optimization dataset."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.optimization.constraint_tolerances import ConstraintTolerances
+
+
+@dataclass(frozen=True)
+class OptimizationMetadata:
+    """The optimization metadata to be passed to the [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]."""  # noqa: E501
+
+    objective_name: str
+    """The name of the objective."""
+
+    standardized_objective_name: str
+    """The name of the standardized objective."""
+
+    minimize_objective: bool
+    """Whether to minimize the objective."""
+
+    tolerances: ConstraintTolerances
+    """The equality and inequality constraint tolerances."""
+
+    output_name_to_constraint_names: Mapping[str, list[str]]
+    """The mapping from the output names to the constraint names."""
+
+    feasible_iterations: list[int]
+    """The iterations of the feasible points."""
+
+    optimum_iteration: int | None
+    """The iteration of the optimum solution.
+
+    `None` when the problem has no optimum solution,
+    e.g. when every feasible design has a `NaN` objective.
+    """
+
+    objective_output_names: tuple[str, ...] = ()
+    """The names of the outputs of the objective.
+
+    Empty when unknown.
+    """

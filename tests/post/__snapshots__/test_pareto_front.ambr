@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_pareto_incorrect_objective_list
+  'objective_labels shall have the same dimension as the number of objectives to plot.'
+# ---
+# name: test_pareto_incorrect_objective_names
+  "Cannot build Pareto front, Function fake_obj is neither among optimization problem functions: ['eq', 'ineq1', 'ineq2', 'pow2'] nor design variables: ['x']."
+# ---

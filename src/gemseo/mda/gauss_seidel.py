@@ -21,21 +21,18 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
-from gemseo.mda.base_mda import BaseProcessFlow
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.core.base import BaseProcessFlow
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -88,8 +85,7 @@ class MDAGaussSeidel(BaseMDASolver):
     This algorithm is a fixed point iteration method to solve systems of non-linear
     equations of the form,
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -98,31 +94,32 @@ class MDAGaussSeidel(BaseMDASolver):
                 F_n(x_1, x_2, \dots, x_n) = 0
             \end{matrix}
         \right.
+    $$
 
-    Beginning with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
-    performing **sequentially** the following :math:`n` steps.
+    Beginning with $x_1^{(0)}, \dots, x_n^{(0)}$, the iterates are obtained by
+    performing **sequentially** the following $n$ steps.
 
-    **Step 1:** knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
+    **Step 1:** knowing $x_2^{(i)}, \dots, x_n^{(i)}$, compute $x_1^{(i+1)}$
     by solving,
 
-    .. math::
-
+    $$
         r_1\left( x_1^{(i+1)} \right) =
             F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
+    $$
 
-    **Step** :math:`k \leq n`: knowing :math:`x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}` on
-    one hand, and :math:`x_{k+1}^{(i)}, \dots, x_n^{(i)}` on the other hand, compute
-    :math:`x_1^{(i+1)}` by solving,
+    **Step** $k \leq n$: knowing $x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}$ on
+    one hand, and $x_{k+1}^{(i)}, \dots, x_n^{(i)}$ on the other hand, compute
+    $x_1^{(i+1)}$ by solving,
 
-    .. math::
-
+    $$
         r_k\left( x_k^{(i+1)} \right) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
         x_k^{(i+1)}, x_{k+1}^{(i)}, \dots, x_n^{(i)}) = 0.
+    $$
 
-    These :math:`n` steps account for one iteration of the Gauss-Seidel method.
+    These $n$ steps account for one iteration of the Gauss-Seidel method.
     """
 
-    Settings: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings
+    settings_class: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings
     """The pydantic model for the settings."""
 
     settings: MDAGaussSeidel_Settings
@@ -133,14 +130,13 @@ class MDAGaussSeidel(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAGaussSeidel_Settings | None = None,
-        **settings: Any,
+        settings: MDAGaussSeidel_Settings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
         if self.settings.max_mda_iter == 0:
-            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.normalized_residual_norm_name]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
@@ -148,18 +144,23 @@ class MDAGaussSeidel(BaseMDASolver):
             self.io.input_grammar.update(
                 discipline.io.input_grammar,
                 excluded_names=self.io.output_grammar,
+                allow_namespace_nesting=True,
             )
-            self.io.output_grammar.update(discipline.io.output_grammar)
+            self.io.output_grammar.update(
+                discipline.io.output_grammar, allow_namespace_nesting=True
+            )
 
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        input_data = input_data or self.io.data
+    def _execute_disciplines_and_update_local_data(self) -> None:
+        out_data = self.io.output_data
+        merged = self.io.get_merged_data()
         for discipline in self._disciplines:
-            discipline.execute(input_data)
-            self.io.data.update(discipline.io.get_output_data())
+            output = discipline.execute(merged)
+            out_data |= output
+            merged.update(output)
 
-        self._compute_names_to_slices()
+        self.io.propagate_to_input(out_data)
+
+        self._compute_name_to_slice()
 
     def _pre_solve(self) -> bool:
         if not super()._pre_solve():
@@ -168,11 +169,11 @@ class MDAGaussSeidel(BaseMDASolver):
         return self.settings.max_mda_iter != 0
 
     def _iterate_once(self) -> bool:
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         updated_couplings = self._sequence_transformer.compute_transformed_iterate(

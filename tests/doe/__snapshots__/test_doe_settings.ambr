@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_doe_settings_preprocessors_and_vectorization
+  'Combining preprocessors and vectorization is not supported.'
+# ---
+# name: test_doe_settings_vectorize_in_parallel
+  'Vectorization in parallel is not supported.'
+# ---

@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_function_error
+  "The names ['foo'] are not names of constraints stored in the dataset."
+# ---
+# name: test_iteration_error
+  'The requested iteration 1000 is neither in (-6,...,-1,1,...,6) nor None.'
+# ---

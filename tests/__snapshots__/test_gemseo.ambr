@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_create_discipline
+  '''
+  Grammar Discipline_options: validation failed.
+  error: data.linearization_mode must be one of ['auto', 'direct', 'reverse', 'adjoint']
+  '''
+# ---
+# name: test_create_scenario_and_monitor
+  "Unknown scenario type: unknown, use one of : 'MDO' or 'DOE'."
+# ---
+# name: test_exec_algo
+  "Unknown algo type: unknown_algo, please use 'doe' or 'opt' !"
+# ---
+# name: test_execute_post_type_error
+  "Cannot post process type: <class 'int'>"
+# ---
+# name: test_get_algorithm_options_schema
+  'Algorithm named unknown is not available.'
+# ---
+# name: test_get_scenario_options_schema
+  'Unknown scenario type UnknownType'
+# ---

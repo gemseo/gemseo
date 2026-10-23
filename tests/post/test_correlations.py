@@ -19,131 +19,113 @@
 from __future__ import annotations
 
 import random
-import re
 from functools import partial
 from pathlib import Path
 
 import pytest
+from matplotlib import pyplot
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.optimization.factory import optimization_library_factory
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post.correlations import Correlations
-from gemseo.post.factory import PostFactory
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.correlations_settings import Correlations_Settings
+from gemseo.post.factory import post_factory
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.util.testing.helper import assert_exception
 
-PARENT_PATH = Path(__file__).parent
-POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
-MOD_SELLAR_HDF5_PATH = PARENT_PATH / "modified_sellar_opt_pb.h5"
-
-
-@pytest.fixture(scope="module")
-def factory():
-    return PostFactory()
+parent_path = Path(__file__).parent
+power_hdf5_path = parent_path / "power2_opt_pb.h5"
+mod_sellar_hdf5_path = parent_path / "modified_sellar_opt_pb.h5"
 
 
-def test_correlations(tmp_wd, factory) -> None:
+def test_correlations(tmp_wd, snapshot_matplotlib) -> None:
     """Test correlations with the Rosenbrock problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
+    optimization_library_factory.execute(problem, settings=L_BFGS_B_Settings())
 
-    post = factory.execute(
+    post = post_factory.execute(
         problem,
-        post_name="Correlations",
-        save=True,
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.95,
-        file_path="correlations_1",
+        Correlations_Settings(
+            save=True,
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.95,
+            file_path="correlations_1",
+        ),
     )
     assert len(post.output_file_paths) == 2
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
+    assert pyplot.gcf() == snapshot_matplotlib(tolerance=1.0)
 
-def test_correlations_import(tmp_wd, factory) -> None:
+
+def test_correlations_import(tmp_wd) -> None:
     """Test correlations with imported problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
-    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = factory.execute(
+    problem = OptimizationProblem.from_hdf(power_hdf5_path)
+    post = post_factory.execute(
         problem,
-        post_name="Correlations",
-        save=True,
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.999,
-        file_path="correlations_2",
+        Correlations_Settings(
+            save=True,
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.999,
+            file_path="correlations_2",
+        ),
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
-def test_correlations_func_name_error(factory) -> None:
-    """Test ValueError for non-existent function.
-
-    Args:
-        factory: Fixture that returns a post-processing factory.
-    """
+def test_correlations_func_name_error(snapshot) -> None:
+    """Test ValueError for non-existent function."""
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
+    optimization_library_factory.execute(problem, settings=L_BFGS_B_Settings())
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following elements are not functions: ['toto']; "
-            "available ones are: ['rosen']."
-        ),
-    ):
-        factory.execute(
-            problem,
-            post_name="Correlations",
-            save=False,
-            show=False,
-            func_names=["toto"],
+    with assert_exception(ValueError, snapshot):
+        post_factory.execute(
+            problem, Correlations_Settings(save=False, show=False, func_names=["toto"])
         )
 
 
 @pytest.mark.parametrize(
-    ("func_names", "baseline_images"),
-    [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
+    ("func_names"),
+    [["pow2", "ineq1"], []],
 )
-@image_comparison(None)
-def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -> None:
+def test_correlations_func_names(func_names, snapshot_matplotlib) -> None:
     """Test func_names filter.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
-        baseline_images: The reference images to be compared.
         func_names: The function names subset for which the correlations
             are computed. If None, all functions are considered.
     """
-    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    factory.execute(
+    problem = OptimizationProblem.from_hdf(power_hdf5_path)
+    post_factory.execute(
         problem,
-        post_name="Correlations",
-        func_names=func_names,
-        save=False,
-        file_extension="png",
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.99,
-        file_path="correlations",
+        Correlations_Settings(
+            func_names=func_names,
+            save=False,
+            file_extension="png",
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.99,
+            file_path="correlations",
+        ),
     )
 
 
-@image_comparison(["modified_sellar"])
-def test_func_name_sorting(tmp_wd, factory) -> None:
+def test_func_name_sorting(snapshot_matplotlib) -> None:
     """Test that the function names sorting.
 
     Use a database from a modified Sellar problem
@@ -153,19 +135,19 @@ def test_func_name_sorting(tmp_wd, factory) -> None:
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
-    problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
-    factory.execute(
+    problem = OptimizationProblem.from_hdf(mod_sellar_hdf5_path)
+    post_factory.execute(
         problem,
-        post_name="Correlations",
-        func_names=["obj", "c_1", "obj_constr"],
-        save=False,
-        file_extension="png",
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.99,
-        file_path="correlations",
+        Correlations_Settings(
+            func_names=["obj", "c_1", "obj_constr"],
+            save=False,
+            file_extension="png",
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.99,
+            file_path="correlations",
+        ),
     )
 
 
@@ -258,34 +240,24 @@ def test_func_order() -> None:
     assert variables == variables_expected
 
 
-TEST_PARAMETERS = {
-    "standardized": (
-        True,
-        ["Correlations_standardized_0", "Correlations_standardized_1"],
-    ),
-    "unstandardized": (
-        False,
-        ["Correlations_unstandardized_0", "Correlations_unstandardized_1"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
     use_standardized_objective,
-    baseline_images,
     common_problem,
+    snapshot_matplotlib,
 ) -> None:
     """Check Correlations with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = Correlations(common_problem)
-    maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
-    opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
-    opt.execute(func_names=["obj", "eq", "neg", "pos"], save=False)
-    opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient
+    maximum_correlation_coefficient = opt.maximum_correlation_coefficient
+    opt.maximum_correlation_coefficient = 1.0
+    opt.execute(
+        Correlations_Settings(
+            func_names=["obj", "eq", "neg", "pos"],
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
+    opt.maximum_correlation_coefficient = maximum_correlation_coefficient

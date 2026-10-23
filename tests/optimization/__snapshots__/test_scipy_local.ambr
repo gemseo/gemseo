@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_cannot_handle_inequality_constraints
+  'The algorithm TNC is not adapted to the problem because it does not handle inequality constraints.'
+# ---

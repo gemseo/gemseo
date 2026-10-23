@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_plot_residuals_checks
+  "Residuals history is empty. Consider setting the 'store' attribute to `True`."
+# ---
+# name: test_residuals_checks
+  'No right-hand side available to compute residual.'
+# ---
+# name: test_residuals_checks.1
+  'Neither solution or current iterate available to compute residual.'
+# ---
+# name: test_size_checks[lhs0-rhs0]
+  'Incompatible dimensions in linear system Ax=b. A shape is (2, 2) and b shape is (1,)'
+# ---
+# name: test_size_checks[lhs1-rhs1]
+  'Incompatible dimensions in linear system Ax=b. A shape is (1,) and b shape is (2,)'
+# ---
+# name: test_size_checks[lhs2-rhs2]
+  'Incompatible dimensions in linear system Ax=b. A shape is (2, 2) and b shape is (2, 2)'
+# ---

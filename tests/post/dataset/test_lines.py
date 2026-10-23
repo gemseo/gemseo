@@ -19,16 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-from pathlib import Path
-
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.dataset.lines_settings import Lines_Settings
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -38,15 +36,15 @@ def dataset():
     sample2 = [0.75, 0.0, 0.5, 1.0]
     sample3 = [1.0, 1.0, 0.75, 0.0]
     data_array = array([sample1, sample2, sample3])
-    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
     return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
-        variable_names_to_n_components=variable_names_to_n_components,
+        variable_name_to_n_components=variable_name_to_n_components,
     )
 
 
-TEST_PARAMETERS = {
+test_parameters = {
     "default": ({}, {}, ["Lines"]),
     "xticks": ({"set_xticks_from_data": True}, {}, ["Lines_xticks"]),
     "markers": ({"add_markers": True}, {}, ["Lines_markers"]),
@@ -94,70 +92,79 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [v[:2] for v in test_parameters.values()],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
 def test_plot_matplotlib(
-    kwargs, properties, baseline_images, dataset, fig_and_ax
+    kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib
 ) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
-    plot = Lines(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
-
+    settings = Lines_Settings(**kwargs, **properties)
+    plot = Lines(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [v[:2] for v in test_parameters.values()],
+    ids=test_parameters.keys(),
 )
-def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
+def test_plot_plotly(kwargs, properties, snapshot, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""
     pytest.importorskip("plotly")
-    plot = Lines(dataset, **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
-
-    figure = plot.execute(save=False, show=False, file_format="html")[0]
-    ref = (
-        Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
-    ).read_text()
-    assert figure.to_json() == ref.strip()
+    settings = Lines_Settings(**kwargs, **properties)
+    plot = Lines(dataset, settings)
+    figure = plot.execute(save=False, file_format="html")[0]
+    assert figure.to_json() == snapshot
 
 
-def test_pass_existing_figure(dataset):
+def test_pass_existing_figure(dataset, snapshot):
     """Check that an existing figure can be modified."""
-    figure = Lines(dataset, variables="y", abscissa_variable="x").execute(
-        save=False, show=False, file_name="existing", file_format="html"
+    settings = Lines_Settings(variables=["y"], abscissa_variable="x")
+    figure = Lines(dataset, settings).execute(
+        save=False, file_name="existing", file_format="html"
     )[0]
-    figure = Lines(
-        dataset, variables="z", abscissa_variable="x", add_markers=True
-    ).execute(
-        save=False, show=False, file_name="final", fig=figure, file_format="html"
+    settings = Lines_Settings(variables=["z"], abscissa_variable="x", add_markers=True)
+    figure = Lines(dataset, settings).execute(
+        save=False, file_name="final", fig=figure, file_format="html"
     )[0]
-    ref = (
-        Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
-    ).read_text()
-    assert figure.to_json() == ref.strip()
+    assert figure.to_json() == snapshot
 
 
-def test_not_implemented(dataset):
+def test_not_implemented(dataset, snapshot):
     """Check that the option use_integer_xticks is not implemented with plotly."""
-    lines = Lines(
-        dataset, variables="y", abscissa_variable="x", use_integer_xticks=True
+    settings = Lines_Settings(
+        variables=["y"], abscissa_variable="x", use_integer_xticks=True
     )
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "The use_integer_xticks option of plotly-based Lines is not implemented."
-        ),
-    ):
+    lines = Lines(dataset, settings)
+    with assert_exception(NotImplementedError, snapshot):
         lines.execute(save=False, file_format="html")
+
+
+def test_matplotlib_labels(snapshot_matplotlib):
+    """Check that a line can be labelled."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    settings = Lines_Settings(
+        variables=("x1", "x2"), abscissa_variable="x1", labels={"x2": "my_label"}
+    )
+    plot = Lines(dataset, settings)
+    plot.execute(save=False)
+
+
+def test_plotly_labels(snapshot):
+    """Check that a line can be labelled."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    settings = Lines_Settings(
+        variables=("x1", "x2"), abscissa_variable="x1", labels={"x2": "my_label"}
+    )
+    plot = Lines(dataset, settings)
+    graph = plot.execute(save=False, file_format="html")[0]
+    assert graph.to_json() == snapshot

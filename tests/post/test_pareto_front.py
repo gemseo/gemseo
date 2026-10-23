@@ -20,60 +20,40 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.post.factory import PostFactory
-from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
-from gemseo.problems.optimization.power_2 import Power2
-from gemseo.utils.testing.helpers import image_comparison
-
-# - the kwargs to be passed to ParetoFront._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, ["ParetoFront"]),
-}
-
-
-TEST_PARAMETERS_BINHKORN = {
-    "show_non_feasible_True": (
-        {"show_non_feasible": True},
-        ["ParetoFront_BinhKorn_NonFeasible_True"],
-    ),
-    "show_non_feasible_False": (
-        {"show_non_feasible": False},
-        ["ParetoFront_BinhKorn_NonFeasible_False"],
-    ),
-}
+from gemseo.doe.factory import doe_library_factory
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.post.factory import post_factory
+from gemseo.post.pareto_front_settings import ParetoFront_Settings
+from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.util.testing.helper import assert_exception
 
 pytestmark = pytest.mark.skipif(
-    not PostFactory().is_available("ScatterPlotMatrix"),
+    not post_factory.is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix plot is not available.",
 )
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+    ],
 )
-@image_comparison(None)
-def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
+def test_pareto(kwargs, snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
         kwargs: The parametrized keyword arguments.
-        baseline_images: The reference images to be compared.
     """
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
-    PostFactory().execute(
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    post_factory.execute(
         problem,
-        post_name="ParetoFront",
-        save=False,
-        file_path="power",
-        objectives=problem.function_names,
-        **kwargs,
+        ParetoFront_Settings(
+            save=False, file_path="power", objectives=problem.function_names, **kwargs
+        ),
     )
 
 
@@ -87,102 +67,91 @@ def test_pareto_minimize(
     """
     problem = Power2()
     problem.minimize_objective = False
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
-    PostFactory().execute(
-        problem,
-        post_name="ParetoFront",
-        file_path="power",
-        objectives=["pow2", "ineq1"],
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    post_factory.execute(
+        problem, ParetoFront_Settings(file_path="power", objectives=["pow2", "ineq1"])
     )
 
 
-def test_pareto_incorrect_objective_list() -> None:
+def test_pareto_incorrect_objective_list(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
-    msg = (
-        "objective_labels shall have the same dimension as the number of objectives "
-        "to plot."
-    )
-    with pytest.raises(ValueError, match=msg):
-        PostFactory().execute(
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    with assert_exception(ValueError, snapshot):
+        post_factory.execute(
             problem,
-            post_name="ParetoFront",
-            save=False,
-            objectives=problem.function_names,
-            objectives_labels=["fake_label"],
-            file_path="power",
+            ParetoFront_Settings(
+                save=False,
+                objectives=problem.function_names,
+                objectives_labels=["fake_label"],
+                file_path="power",
+            ),
         )
 
 
-def test_pareto_incorrect_objective_names() -> None:
+def test_pareto_incorrect_objective_names(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
-    msg = (
-        "Cannot build Pareto front, Function \\w* is neither among"
-        " optimization problem functions:.*\\.$"
-    )
-    with pytest.raises(ValueError, match=msg):
-        PostFactory().execute(
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    with assert_exception(ValueError, snapshot):
+        post_factory.execute(
             problem,
-            post_name="ParetoFront",
-            save=False,
-            objectives=["fake_obj"],
-            file_path="power",
+            ParetoFront_Settings(
+                save=False, objectives=["fake_obj"], file_path="power"
+            ),
         )
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TEST_PARAMETERS_BINHKORN.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS_BINHKORN.keys(),
+    "kwargs",
+    [
+        {"show_non_feasible": True},
+        {"show_non_feasible": False},
+    ],
 )
-@image_comparison(None)
-def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
+def test_pareto_binhkorn(tmp_wd, kwargs, snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
         kwargs: The parametrized keyword arguments.
-        baseline_images: The reference images to be compared.
     """
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
-    PostFactory().execute(
+    doe_library_factory.execute(
+        problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
+    )
+    post_factory.execute(
         problem,
-        post_name="ParetoFront",
-        save=False,
-        file_path="binh_korn",
-        objectives=["compute_binhkorn"],
-        **kwargs,
+        ParetoFront_Settings(
+            save=False, file_path="binh_korn", objectives=["compute_binhkorn"], **kwargs
+        ),
     )
 
 
-@image_comparison(["binh_korn_design_variable"])
-def test_pareto_binhkorn_design_variable() -> None:
+def test_pareto_binhkorn_design_variable(snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
-    PostFactory().execute(
+    doe_library_factory.execute(
+        problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
+    )
+    post_factory.execute(
         problem,
-        post_name="ParetoFront",
-        save=False,
-        file_path="binh_korn_design_variable",
-        objectives=["x", "compute_binhkorn"],
-        objectives_labels=["xx", "compute_binhkorn1", "compute_binhkorn2"],
+        ParetoFront_Settings(
+            save=False,
+            file_path="binh_korn_design_variable",
+            objectives=["x", "compute_binhkorn"],
+            objectives_labels=["xx", "compute_binhkorn1", "compute_binhkorn2"],
+        ),
     )
 
 
-@image_comparison(["binh_korn_no_obj"])
-def test_pareto_binhkorn_no_obj() -> None:
+def test_pareto_binhkorn_no_obj(snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
-    PostFactory().execute(
+    doe_library_factory.execute(
+        problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
+    )
+    post_factory.execute(
         problem,
-        post_name="ParetoFront",
-        save=False,
-        file_path="binh_korn_no_obj",
+        ParetoFront_Settings(save=False, file_path="binh_korn_no_obj"),
     )

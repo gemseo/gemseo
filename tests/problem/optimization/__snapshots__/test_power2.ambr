@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_exception_error
+  'pow2() has already been called three times.'
+# ---

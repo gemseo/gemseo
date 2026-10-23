@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_with_discipline_wo_default_values[False]
+  'Some input variables of the original discipline have no default values.'
+# ---
+# name: test_with_discipline_wo_default_values[True]
+  'Some input variables of the original discipline have no default values.'
+# ---

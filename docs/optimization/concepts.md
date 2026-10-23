@@ -1,0 +1,38 @@
+---
+status: draft
+description: ""
+tags: ['reference']
+search:
+  boost: 1
+---
+
+<!--
+ Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+ International License. To view a copy of this license, visit
+ http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+ Commons, PO Box 1866, Mountain View, CA 94042, USA.
+-->
+
+<!--
+Contributors:
+         :author: Matthias De Lozzo
+-->
+
+# The GEMSEO concepts
+
+GEMSEO-based optimization relies on three main concepts:
+the design space, the optimization problem and the driver.
+
+## Design space
+
+See [the API documentation][gemseo.space.design.DesignSpace] and [the examples][design-space-examples].
+
+## Optimization problem
+
+See [the API documentation][gemseo.optimization.problem.OptimizationProblem].
+
+## Driver
+
+See [the API documentation][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary] and the examples using problems and scenarios.

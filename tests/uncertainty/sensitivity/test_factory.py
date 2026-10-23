@@ -21,8 +21,11 @@ from __future__ import annotations
 
 from numpy import pi
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
 
@@ -37,10 +40,10 @@ def test_create() -> None:
         {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
     )
 
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in ["x1", "x2", "x3"]:
-        space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+        space.add_variable(
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
     factory = SensitivityAnalysisFactory()
     analysis = factory.create("MorrisAnalysis")

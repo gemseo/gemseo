@@ -24,9 +24,9 @@ from __future__ import annotations
 import pytest
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 
 
 @pytest.fixture(scope="module")
@@ -43,31 +43,20 @@ def dataset():
     dataset = Dataset.from_array(
         data_array,
         variable_names=["output"],
-        variable_names_to_n_components={"output": 4},
+        variable_name_to_n_components={"output": 4},
     )
     dataset.misc["mesh"] = array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
     return dataset
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to Surfaces._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "without_option": ({}, ["Surfaces_0", "Surfaces_1"]),
-    "with_subsamples": ({"samples": [1]}, ["Surfaces_with_subsamples"]),
-    "with_addpoint": (
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"samples": [1]},
         {"add_points": True},
-        ["Surfaces_with_addpoints_0", "Surfaces_with_addpoints_1"],
-    ),
-    "with_isolines": (
         {"fill": False},
-        ["Surfaces_with_isolines_0", "Surfaces_with_isolines_1"],
-    ),
-    "with_levels": (
         {"levels": 2},
-        ["Surfaces_with_levels_0", "Surfaces_with_levels_1"],
-    ),
-    "with_properties": (
         {
             "properties": {
                 "xlabel": "The xlabel",
@@ -75,30 +64,20 @@ TEST_PARAMETERS = {
                 "title": "The title",
             }
         },
-        ["Surfaces_properties_0", "Surfaces_properties_1"],
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ],
 )
-@image_comparison(None)
-def test_plot(kwargs, baseline_images, dataset) -> None:
+def test_plot(kwargs, dataset, snapshot_matplotlib) -> None:
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", {})
-    plot = Surfaces(dataset, mesh="mesh", variable="output", **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = Surfaces_Settings(mesh="mesh", variable="output", **kwargs, **properties)
+    plot = Surfaces(dataset, settings)
     plot.execute(save=False)
 
 
 def test_save_multiple_files(dataset, tmp_wd) -> None:
     """Check that the generation of multiple files is OK."""
-    surfaces = Surfaces(dataset, mesh="mesh", variable="output")
+    settings = Surfaces_Settings(mesh="mesh", variable="output")
+    surfaces = Surfaces(dataset, settings)
     surfaces.execute()
     file_paths = [tmp_wd / "surfaces_0.png", tmp_wd / "surfaces_1.png"]
     for file_path in file_paths:

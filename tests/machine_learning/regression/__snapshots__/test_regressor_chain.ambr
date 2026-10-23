@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_no_regressors
+  'The regressor chain contains no regressor; please add regressors using the add_regressor method.'
+# ---

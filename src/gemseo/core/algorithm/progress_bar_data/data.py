@@ -1,0 +1,107 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Progress bar data of an optimization problem."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Final
+
+from numpy import ndarray
+
+from gemseo.core.algorithm.progress_bar_data.base import BaseProgressBarData
+
+if TYPE_CHECKING:
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.util.hashable_ndarray import HashableNdarray
+    from gemseo.util.typing import StrKeyMapping
+
+_not_evaluated_message: Final[str] = "Not evaluated"
+"""The message to be logged instead of a value that was not evaluated.
+
+It replaces the objective value when this value is missing,
+and the feasibility when a constraint value is missing.
+"""
+
+
+class ProgressBarData(BaseProgressBarData):
+    """The data of an optimization problem to be displayed in the progress bar."""
+
+    __change_objective_sign: bool
+    """Whether to change the sign of the objective value before logging it."""
+
+    __obj_key: Final[str] = "obj"
+    """The key of the progress bar data corresponding to the objective."""
+
+    __feas_key: Final[str] = "feas"
+    """The key of the progress bar data corresponding to the feasibility."""
+
+    def __init__(self, problem: OptimizationProblem) -> None:  # noqa: D107
+        super().__init__(problem)
+        self.__change_objective_sign = not (
+            problem.minimize_objective or problem.use_standardized_objective
+        )
+
+    def __get_objective_value(
+        self, input_value: HashableNdarray
+    ) -> ndarray | float | str:
+        """Return the objective value.
+
+        Args:
+            input_value: The input value related to this objective value.
+
+        Returns:
+            The objective value.
+        """
+        obj = self._problem.database.get_function_value(
+            self._problem.objective.name, input_value
+        )
+        if obj is None:
+            return _not_evaluated_message
+
+        if self.__change_objective_sign:
+            obj = -obj
+
+        if isinstance(obj, ndarray) and len(obj) == 1:
+            obj = obj[0]
+
+        return obj
+
+    def __get_feasibility_value(self, input_value: HashableNdarray) -> str:
+        """Return the feasibility value.
+
+        Args:
+            input_value: The input value related to this feasibility value.
+
+        Returns:
+            The feasibility value.
+        """
+        output_name_to_value = self._problem.database.get(input_value, {})
+        constraints = self._problem.constraints
+        if any(
+            constraint.name not in output_name_to_value for constraint in constraints
+        ):
+            return _not_evaluated_message
+
+        return str(constraints.is_point_feasible(output_name_to_value))
+
+    def get(self, input_value: HashableNdarray | None) -> StrKeyMapping:  # noqa: D102
+        if input_value is None or not self._problem.database:
+            return {}
+
+        return {
+            self.__obj_key: self.__get_objective_value(input_value),
+            self.__feas_key: self.__get_feasibility_value(input_value),
+        }

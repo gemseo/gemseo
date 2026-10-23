@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_function_error
+  'Cannot build constraints history plot, foo is not a constraint name.'
+# ---

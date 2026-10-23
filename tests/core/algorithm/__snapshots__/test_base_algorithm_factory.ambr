@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_ko
+  'No algorithm named idontexist is available; available algorithms are Augmented_Lagrangian_Order_0, Augmented_Lagrangian_Order_1, COBYLA, COBYQA, DIFFERENTIAL_EVOLUTION, DUAL_ANNEALING, DUAL_SIMPLEX, INTERIOR_POINT, L_BFGS_B, MILP, MNBI, MultiStart, NELDER_MEAD, NLOPT_BFGS, NLOPT_BOBYQA, NLOPT_COBYLA, NLOPT_MMA, NLOPT_NEWUOA, NLOPT_SLSQP, SHGO, SLSQP and TNC.'
+# ---

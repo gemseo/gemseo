@@ -21,15 +21,15 @@
 from __future__ import annotations
 
 import logging
-import queue
-import sys
-import threading as th
 import time
-import traceback
 from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import as_completed
 from multiprocessing import get_context
-from multiprocessing import get_start_method
-from multiprocessing import parent_process
+from os import getpid
+from pathlib import Path
+from threading import get_native_id
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -37,21 +37,22 @@ from typing import Generic
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from strenum import StrEnum
 
-from gemseo.utils.constants import N_CPUS
-from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.util._worker_context import tag_process_worker
+from gemseo.util._worker_context import tag_thread_worker
+from gemseo.util.constant import _enable_parallel_execution
+from gemseo.util.constant import n_cpus
+from gemseo.util.multiprocessing import start_method
+from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
+from gemseo.util.platform import platform_is_windows
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-    from multiprocessing.context import ForkProcess
-    from multiprocessing.context import ForkServerProcess
-    from multiprocessing.context import SpawnProcess
-    from multiprocessing.managers import ListProxy
+    from concurrent.futures import Executor
+    from concurrent.futures import Future
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 CallbackType = Callable[[int, Any], None]
@@ -61,36 +62,6 @@ ArgT = TypeVar("ArgT")
 ReturnT = TypeVar("ReturnT")
 
 CallableType = Callable[[ArgT], ReturnT]
-
-_QueueOutItem2 = BaseException | ReturnT
-
-_QueueInType = queue.Queue[tuple[int, ArgT] | None]
-_QueueOutType = queue.Queue[tuple[int, _QueueOutItem2[ReturnT]]]
-
-
-def _execute_workers(
-    task_callables: _TaskCallables[ArgT, ReturnT],
-    queue_in: _QueueInType[ArgT],
-    queue_out: _QueueOutType[ReturnT],
-) -> None:
-    """Call the task callables for args that are left in the queue_in.
-
-    Args:
-        task_callables: The task callables.
-        queue_in: The queue with the task index to execute.
-        queue_out: The queue object where the outputs of the workers are saved.
-    """
-    for task_index, input_ in iter(queue_in.get, None):
-        try:
-            sys.stdout.flush()
-            output = task_callables(task_index, input_)
-        except BaseException as err:  # noqa: BLE001
-            traceback.print_exc()
-            queue_out.put((task_index, err))
-            queue_in.task_done()
-            continue
-        queue_out.put((task_index, output))
-        queue_in.task_done()
 
 
 class _TaskCallables(Generic[ArgT, ReturnT]):
@@ -121,6 +92,7 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
 
         Args:
             task_index: The index of the callable to call.
+            input_: The input to pass to the callable.
 
         Returns:
             The output of callable.
@@ -131,41 +103,134 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
         return self.callables[index](input_)
 
 
+def _uninitialized_worker_task_callables(task_index: int, input_: Any) -> Any:
+    """Sentinel raised when ``_init_worker`` did not run in the worker."""
+    del task_index, input_
+    msg = (
+        "The worker task callables are not initialized; "
+        "_init_worker did not run in this worker."
+    )
+    raise RuntimeError(msg)
+
+
+_worker_task_callables: Callable[[int, Any], Any] = _uninitialized_worker_task_callables
+"""The task callables stashed in the worker on pool initialization.
+
+This module global is per worker process: each
+[ProcessPoolExecutor][concurrent.futures.ProcessPoolExecutor] worker has its own
+copy, set by ``_init_worker`` during pool startup. The parent process never sets
+it (the thread-pool path dispatches through ``task_callables`` directly to keep
+parent state untouched and avoid clobbering by a nested process pool's workers
+inside the same interpreter).
+
+Stashing the callables once per worker lets every
+[executor.submit][concurrent.futures.Executor.submit] ship only the task index and
+the input through the dispatch queue, instead of re-pickling the workers and
+preprocessors for every task.
+
+With the [`fork`][multiprocessing.get_context] start method this also preserves the
+parent's shared-memory references (e.g. [Synchronized][multiprocessing.Value]
+counters), because the initializer arguments are inherited through ``fork`` without
+going through pickle.
+"""
+
+
+def _init_worker(task_callables: _TaskCallables[Any, Any]) -> None:
+    """Stash the task callables into a worker module global."""
+    global _worker_task_callables
+    _worker_task_callables = task_callables
+
+
+def _init_process_worker(
+    task_callables: _TaskCallables[Any, Any],
+    parent_id: int,
+    parent_path: Path,
+) -> None:
+    """Initialize a process-pool worker.
+
+    Stash the task callables into a worker module global via ``_init_worker`` and
+    tag the worker process with its parent metadata. The metadata is read in the
+    worker by the directory manager and the workflow observers, via
+    [current_process][multiprocessing.current_process], to resolve the working
+    directory of the worker and to rebuild the parent-child execution tree.
+
+    Args:
+        task_callables: The task callables to stash in the worker.
+        parent_id: The process id of the parent process.
+        parent_path: The working directory of the parent at submission time.
+    """
+    _init_worker(task_callables)
+    tag_process_worker(parent_id, parent_path)
+
+
+def _init_thread_worker(parent_id: int, parent_path: Path) -> None:
+    """Initialize a thread-pool worker.
+
+    Tag the worker thread with its parent metadata. The metadata is read in the
+    worker by the directory manager and the workflow observers, via
+    [current_thread][threading.current_thread], to resolve the working directory
+    of the worker and to rebuild the parent-child execution tree. The thread-pool
+    path does not stash the task callables in a worker global (it dispatches
+    through ``task_callables`` directly), so this initializer only sets metadata.
+
+    Args:
+        parent_id: The native id of the parent thread.
+        parent_path: The working directory of the parent at submission time.
+    """
+    tag_thread_worker(parent_id, parent_path)
+
+
+def _run_task(task_index: int, input_: Any) -> Any:
+    """Run a task from the worker module global."""
+    return _worker_task_callables(task_index, input_)
+
+
 class CallableParallelExecution(
-    Generic[ArgT, ReturnT], metaclass=GoogleDocstringInheritanceMeta
+    Generic[ArgT, ReturnT],
+    metaclass=GoogleDocstringInheritanceMeta,
 ):
     """Perform a parallel execution of callables.
 
     The inputs must be independent objects.
     """
 
-    class MultiProcessingStartMethod(StrEnum):
-        """The multiprocessing start method."""
+    MultiProcessingStartMethod = MultiProcessingStartMethod
+    """An alias of
+    [MultiProcessingStartMethod][gemseo.util.multiprocessing.start_method.MultiProcessingStartMethod]."""
 
-        FORK = "fork"
-        SPAWN = "spawn"
-        FORKSERVER = "forkserver"
-
-    # TODO: remove since it should be done globally with set_start_method().
-    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
-        get_start_method()
-    )  # noqa: E501
+    multi_processing_start_method: ClassVar[MultiProcessingStartMethod] = (
+        start_method.multi_processing_start_method
+    )
     """The start method used for multiprocessing."""
+
+    enable_parallel_execution: ClassVar[bool] = _enable_parallel_execution
+    """Whether to parallelize the execution by default.
+
+    When `False`,
+    an instance created without `n_processes` uses a single process.
+    This class attribute is shared by all the subclasses that do not override it
+    and is set by the `enable_parallel_execution` option of the global configuration.
+    """
 
     workers: Sequence[CallableType[ArgT, ReturnT]]
     """The objects that perform the tasks."""
 
     n_processes: int
-    """The maximum simultaneous number of threads or processes."""
+    """The maximum simultaneous number of threads or processes.
+
+    When 1,
+    the tasks are run one after another in the calling process,
+    without any executor.
+    """
 
     use_threading: bool
     """Whether to use threads instead of processes to parallelize the execution."""
 
     wait_time_between_fork: float
-    """The time to wait between two forks of the process/thread."""
+    """The time to wait between two forks of the process/thread.
 
-    inputs: list[Any]
-    """The inputs to be passed to the workers."""
+    Ignored when `n_processes` is 1, as nothing is forked.
+    """
 
     __exceptions_to_re_raise: tuple[type[Exception], ...]
     """The exception from a worker to be raised."""
@@ -173,7 +238,7 @@ class CallableParallelExecution(
     def __init__(
         self,
         workers: Sequence[CallableType[ArgT, ReturnT]],
-        n_processes: int = N_CPUS,
+        n_processes: int | None = None,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
@@ -185,8 +250,13 @@ class CallableParallelExecution(
                 Or, when using multithreading or different workers, pass one worker
                 per input data.
             n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
+                if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
+                If `None`,
+                use the number of CPUs when `enable_parallel_execution` is `True`
+                and 1 otherwise.
+                When 1,
+                the tasks are run one after another in the calling process.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution.
                 Multiprocessing will copy (serialize) all the disciplines,
@@ -196,20 +266,30 @@ class CallableParallelExecution(
                 multiprocessing.
             wait_time_between_fork: The time to wait between two forks of the
                 process/thread.
+                Ignored when `n_processes` is 1, as nothing is forked.
             exceptions_to_re_raise: The exceptions that should be raised again
-                when caught inside a worker. If ``None``, all exceptions coming from
+                when caught inside a worker. If `None`, all exceptions coming from
                 workers are caught and the execution is allowed to continue.
 
         Raises:
-            ValueError: If there are duplicated workers in ``workers`` when
+            ValueError: If there are duplicated workers in `workers` when
                 using multithreading.
         """  # noqa: D205, D212, D415
         self.workers = workers
+        if n_processes is None:
+            n_processes = n_cpus if self.enable_parallel_execution else 1
+
         self.n_processes = n_processes
         self.use_threading = use_threading
         self.wait_time_between_fork = wait_time_between_fork
         self.__exceptions_to_re_raise = tuple(exceptions_to_re_raise)
         self._check_unicity(workers)
+        self.__check_multiprocessing_start_method()
+
+    @property
+    def _is_serial(self) -> bool:
+        """Whether the tasks are run one after another in the calling process."""
+        return self.n_processes == 1
 
     def _check_unicity(self, objects: Any) -> None:
         """Check that the objects are unique.
@@ -225,11 +305,10 @@ class CallableParallelExecution(
                 )
                 raise ValueError(msg)
 
-    # TODO: API: let exec_callback always be iterable and renamed to callbacks.
     def execute(
         self,
         inputs: Sequence[ArgT],
-        exec_callback: CallbackType | Iterable[CallbackType] = (),
+        exec_callbacks: Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
         preprocessors: Iterable[Callable[[int], None]] = (),
     ) -> list[ReturnT | None]:
@@ -237,13 +316,13 @@ class CallableParallelExecution(
 
         Args:
             inputs: The input values.
-            exec_callback: Callback functions called with the
+            exec_callbacks: Callback functions called with the
                 pair (index, outputs) as arguments when an item is retrieved
                 from the processing. Index is the associated index
                 in inputs of the input used to compute the outputs.
                 If empty, no function is called.
             task_submitted_callback: A callback function called when all the
-                tasks are submitted, but not done yet. If ``None``, no function
+                tasks are submitted, but not done yet. If `None`, no function
                 is called.
             preprocessors: The functions called before the execution,
                 whose unique argument is the task index.
@@ -251,113 +330,163 @@ class CallableParallelExecution(
         Returns:
             The computed outputs.
 
-        Warnings:
+        Warning:
             This class relies on multiprocessing features, it is therefore
-            necessary to protect its execution with an ``if __name__ == '__main__':``
+            necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
         """
-        if callable(exec_callback):
-            exec_callback = [exec_callback]
-
         n_tasks = len(inputs)
-
-        tasks: list[int] | ListProxy[int] = list(range(n_tasks))[::-1]
-
-        queue_in: _QueueInType[ArgT]
-        queue_out: _QueueOutType[ReturnT]
-        processor: type[th.Thread | ForkProcess | SpawnProcess | ForkServerProcess]
-
-        # TODO: API: use subclass instead of if?
-        # Queue for workers.
-        if self.use_threading:
-            queue_in = queue.Queue()
-            queue_out = queue.Queue()
-            processor = th.Thread
-        else:
-            manager = get_multi_processing_manager()
-            queue_in = manager.Queue()
-            queue_out = manager.Queue()
-            tasks = manager.list(tasks)
-            self.__check_multiprocessing_start_method()
-            processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process  # type: ignore[attr-defined]
-
-        task_callables = _TaskCallables(self.workers, preprocessors)
-
-        processes = []
-        for _ in range(min(n_tasks, self.n_processes)):
-            process = processor(
-                target=_execute_workers,
-                args=(task_callables, queue_in, queue_out),
-            )
-            process.daemon = True
-            process.start()
-            processes.append(process)
-
-        if not self.use_threading and parent_process() is not None:
-            # The child processes do nothing here.
+        if n_tasks == 0:
             return []
 
-        # Fill the input queue.
-        while tasks:
-            task_index = tasks.pop()
-            # Delay the next processes execution after the first one.
-            if self.wait_time_between_fork > 0 and task_index > 0:
-                time.sleep(self.wait_time_between_fork)
-            queue_in.put((task_index, inputs[task_index]))
+        task_callables = _TaskCallables(self.workers, preprocessors)
+        if self._is_serial:
+            return self.__execute_in_calling_process(
+                inputs, task_callables, exec_callbacks, task_submitted_callback
+            )
+
+        ordered_outputs: list[ReturnT | None] = [None] * n_tasks
+        re_raise: Exception | None = None
+
+        with self._build_executor(task_callables, n_tasks) as executor:
+            futures: dict[Future[ReturnT], int] = {}
+            # For threading, dispatch through ``task_callables`` directly so that
+            # concurrently-running parallel pools in the same process do not
+            # clobber each other through the worker module global.
+            fn = task_callables if self.use_threading else _run_task
+            for task_index, input_ in enumerate(inputs):
+                # Delay the next processes execution after the first one.
+                if self.wait_time_between_fork > 0 and task_index > 0:
+                    time.sleep(self.wait_time_between_fork)
+                future = executor.submit(fn, task_index, input_)
+                futures[future] = task_index
+
+            if task_submitted_callback is not None:
+                task_submitted_callback()
+
+            for future in as_completed(futures):
+                index = futures[future]
+                try:
+                    output = future.result()
+                except Exception as err:
+                    logger.exception("Failed to execute task indexed %s", index)
+                    # Stop the execution only for required exceptions.
+                    # Otherwise, keep retrieving the remaining outputs.
+                    if isinstance(err, self.__exceptions_to_re_raise):
+                        re_raise = err
+                        for pending in futures:
+                            pending.cancel()
+                        break
+                else:
+                    ordered_outputs[index] = output
+                    for callback in exec_callbacks:
+                        callback(index, output)
+
+        if re_raise is not None:
+            raise re_raise
+
+        return ordered_outputs
+
+    def __execute_in_calling_process(
+        self,
+        inputs: Sequence[ArgT],
+        task_callables: _TaskCallables[ArgT, ReturnT],
+        exec_callbacks: Iterable[CallbackType],
+        task_submitted_callback: Callable[[], None] | None,
+    ) -> list[ReturnT | None]:
+        """Run the tasks one after another in the calling process.
+
+        No executor is built,
+        so the workers are neither serialized nor run in a child process or thread;
+        this is what asking for a single process means.
+        For the same reason,
+        `wait_time_between_fork` is ignored,
+        as nothing is forked.
+
+        Args:
+            inputs: The input values.
+            task_callables: The callables performing the tasks.
+            exec_callbacks: The functions called with the pair (index, outputs)
+                once a task is done.
+            task_submitted_callback: The function called before running the tasks,
+                if any.
+
+        Returns:
+            The computed outputs.
+
+        Raises:
+            Exception: When a task raises one of the exceptions to be re-raised.
+        """
+        ordered_outputs: list[ReturnT | None] = [None] * len(inputs)
 
         if task_submitted_callback is not None:
             task_submitted_callback()
 
-        # Sort the outputs with the same order as functions.
-        ordered_outputs: list[ReturnT | None] = [None] * n_tasks
-        n_outputs = 0
-        # Retrieve outputs on the fly to call the callbacks, typically
-        # iterates progress bar and stores the data in database or cache.
-        stop = False
-
-        # TODO: simplify with for loop and build ordered_outputs incrementally.
-        while n_outputs != n_tasks and not stop:
-            index, output = queue_out.get()
-            if isinstance(output, BaseException):
-                LOGGER.error("Failed to execute task indexed %s", index)
-                LOGGER.error(output)
-                # Condition to stop the execution only for required exceptions.
-                # Otherwise, keep getting outputs from the queue.
-                if isinstance(output, self.__exceptions_to_re_raise):
-                    stop = True
+        for task_index, input_ in enumerate(inputs):
+            try:
+                output = task_callables(task_index, input_)
+            except Exception as err:
+                logger.exception("Failed to execute task indexed %s", task_index)
+                # Stop the execution only for required exceptions.
+                # Otherwise, keep running the remaining tasks.
+                if isinstance(err, self.__exceptions_to_re_raise):
+                    raise
             else:
-                ordered_outputs[index] = output
-                for callback in exec_callback:
-                    callback(index, output)
-            n_outputs += 1
-
-        # Terminate the threads or processes.
-        for _ in processes:
-            queue_in.put(None)
-
-        for process in processes:
-            process.join()
-
-        if isinstance(output, self.__exceptions_to_re_raise):
-            raise output
+                ordered_outputs[task_index] = output
+                for callback in exec_callbacks:
+                    callback(task_index, output)
 
         return ordered_outputs
+
+    def _build_executor(
+        self, task_callables: _TaskCallables[ArgT, ReturnT], n_tasks: int
+    ) -> Executor:
+        """Return the executor used to dispatch the tasks.
+
+        Args:
+            task_callables: The task callables stashed in the worker on initialization.
+            n_tasks: The number of tasks to dispatch.
+
+        Returns:
+            The configured executor.
+        """
+        # Never spawn more workers than tasks: extra workers cost a process
+        # creation and a pickling of ``task_callables`` (via ``initargs``) for no work.
+        max_workers = min(n_tasks, self.n_processes)
+        # Capture the parent metadata in the parent context; the pool initializer
+        # sets it on each worker, where it is read by the directory manager and
+        # the workflow observers (via current_thread()/current_process()) to
+        # resolve per-worker working directories and rebuild the execution tree.
+        parent_path = Path.cwd()
+        if self.use_threading:
+            return ThreadPoolExecutor(
+                max_workers=max_workers,
+                initializer=_init_thread_worker,
+                initargs=(get_native_id(), parent_path),
+            )
+        return ProcessPoolExecutor(
+            max_workers=max_workers,
+            mp_context=get_context(method=self.multi_processing_start_method),
+            initializer=_init_process_worker,
+            initargs=(task_callables, getpid(), parent_path),
+        )
 
     def __check_multiprocessing_start_method(self) -> None:
         """Check the multiprocessing start method with respect to the platform.
 
         Raises:
-            ValueError: If the start method is different from ``spawn`` on
+            ValueError: If the start method is different from `spawn` on
                 Windows platform.
         """
         if (
-            PLATFORM_IS_WINDOWS
-            and self.MULTI_PROCESSING_START_METHOD
+            not self.use_threading
+            and platform_is_windows
+            and self.multi_processing_start_method
             != self.MultiProcessingStartMethod.SPAWN
         ):  # pragma: win32 cover
             msg = (
                 f"The multiprocessing start method "
-                f"{self.MULTI_PROCESSING_START_METHOD.value} "
+                f"{self.multi_processing_start_method.value} "
                 f"cannot be used on the Windows platform. "
                 f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
             )

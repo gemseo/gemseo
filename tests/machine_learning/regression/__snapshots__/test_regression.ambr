@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_predict_jacobian_failure[x_1]
+  "The Jacobian of regression models cannot be computed when the transformed quantities are variables; please transform the whole group 'inputs' or 'outputs' or do not use data transformation."
+# ---
+# name: test_predict_jacobian_failure[y_1]
+  "The Jacobian of regression models cannot be computed when the transformed quantities are variables; please transform the whole group 'inputs' or 'outputs' or do not use data transformation."
+# ---

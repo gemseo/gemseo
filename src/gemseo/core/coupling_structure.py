@@ -32,8 +32,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.utils.discipline import check_disciplines_consistency
-from gemseo.utils.n2d3.n2_html import N2HTML
+from gemseo.util.discipline import check_disciplines_consistency
+from gemseo.util.n2d3.n2_html import N2HTML
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -43,8 +43,9 @@ if TYPE_CHECKING:
     from matplotlib.text import Text
 
     from gemseo.core.dependency_graph import ExecutionSequence
-    from gemseo.core.discipline import Discipline
-    from gemseo.utils.matplotlib_figure import FigSizeType
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.util.matplotlib_figure import FigSizeType
+    from gemseo.util.typing import StrPath
 
 NodeType = tuple[list[str], list[str]]
 EdgesType = dict[int, dict[int, list[str]]]
@@ -58,7 +59,7 @@ class CouplingStructure:
     The methods of this class include the computation of weak, strong or all couplings.
     """
 
-    disciplines: Sequence[Discipline]
+    disciplines: Sequence[BaseDiscipline]
     """The disciplines."""
 
     graph: DependencyGraph
@@ -67,15 +68,15 @@ class CouplingStructure:
     sequence: ExecutionSequence
     """The sequence of execution of the disciplines."""
 
-    _strongly_coupled_disc: list[Discipline] | None
-    _weakly_coupled_disc: list[Discipline] | None
+    _strongly_coupled_disc: list[BaseDiscipline] | None
+    _weakly_coupled_disc: list[BaseDiscipline] | None
     _all_couplings: list[str] | None
     _weak_couplings: list[str] | None
     _strong_couplings: list[str] | None
 
     def __init__(
         self,
-        disciplines: Sequence[Discipline],
+        disciplines: Sequence[BaseDiscipline],
     ) -> None:
         """
         Args:
@@ -94,7 +95,7 @@ class CouplingStructure:
 
     @staticmethod
     def is_self_coupled(
-        discipline: Discipline,
+        discipline: BaseDiscipline,
     ) -> bool:
         """Test if the discipline is self-coupled.
 
@@ -116,7 +117,7 @@ class CouplingStructure:
         return len(self_c_vars) > 0
 
     @property
-    def strongly_coupled_disciplines(self) -> list[Discipline]:
+    def strongly_coupled_disciplines(self) -> list[BaseDiscipline]:
         """The disciplines that are strongly coupled.
 
         The disciplines that lie in cycles in the coupling graphs.
@@ -130,28 +131,28 @@ class CouplingStructure:
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[False] = ...,
-    ) -> list[Discipline]: ...
+    ) -> list[BaseDiscipline]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[True] = ...,
-    ) -> list[tuple[Discipline, ...]]: ...
+    ) -> list[tuple[BaseDiscipline, ...]]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: bool = ...,
-    ) -> list[Discipline] | list[tuple[Discipline, ...]]: ...
+    ) -> list[BaseDiscipline] | list[tuple[BaseDiscipline, ...]]: ...
 
     # TODO: API: this method is rarely used, remove the kwargs and fix the overloads.
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = True,
         by_group: bool = False,
-    ) -> list[Discipline] | list[tuple[Discipline, ...]]:
+    ) -> list[BaseDiscipline] | list[tuple[BaseDiscipline, ...]]:
         """Determines the strongly coupled disciplines.
 
         That is the disciplines that occur in (possibly different) MDAs.
@@ -159,16 +160,16 @@ class CouplingStructure:
         Args:
             add_self_coupled: Whether to add the disciplines that are self-coupled
                 to the list of strongly coupled disciplines.
-            by_group: If ``True``,
+            by_group: If `True`,
                 returns a list of lists of strongly coupled disciplines
                 where the sublist contains the groups of disciplines that
                 are strongly coupled together.
-                If ``False``, returns a single list.
+                If `False`, returns a single list.
 
         Returns:
             The coupled disciplines.
         """
-        strong_disciplines: list[tuple[Discipline, ...]] | list[Discipline] = []
+        strong_disciplines: list[tuple[BaseDiscipline, ...]] | list[BaseDiscipline] = []
         if by_group:
             strong_disc_update = strong_disciplines.append
         else:
@@ -187,7 +188,7 @@ class CouplingStructure:
         return strong_disciplines
 
     @property
-    def weakly_coupled_disciplines(self) -> list[Discipline]:
+    def weakly_coupled_disciplines(self) -> list[BaseDiscipline]:
         """The disciplines that do not appear in cycles in the coupling graph."""
         if self._weakly_coupled_disc is None:
             self._compute_weakly_coupled()
@@ -279,7 +280,7 @@ class CouplingStructure:
 
     def get_output_couplings(
         self,
-        discipline: Discipline,
+        discipline: BaseDiscipline,
         strong: bool = True,
     ) -> list[str]:
         """Return the names of the output coupling variables.
@@ -298,14 +299,14 @@ class CouplingStructure:
 
     def get_input_couplings(
         self,
-        discipline: Discipline,
+        discipline: BaseDiscipline,
         strong: bool = True,
     ) -> list[str]:
         """Compute all the input coupling variables of a discipline.
 
         Args:
             discipline: The discipline.
-            strong: If ``True``,
+            strong: If `True`,
                 consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
@@ -318,7 +319,7 @@ class CouplingStructure:
     def find_discipline(
         self,
         output: str,
-    ) -> Discipline:
+    ) -> BaseDiscipline:
         """Find which discipline produces a given output.
 
         Args:
@@ -339,7 +340,7 @@ class CouplingStructure:
 
     def __draw_n2_chart(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         show_data_names: bool,
         save: bool,
         show: bool,
@@ -416,7 +417,7 @@ class CouplingStructure:
 
     def plot_n2_chart(
         self,
-        file_path: str | Path = "n2.pdf",
+        file_path: StrPath = "n2.pdf",
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
@@ -426,8 +427,8 @@ class CouplingStructure:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
 
         A static N2 chart is a figure generated with the matplotlib library
-        that can be saved to ``file_path``, displayed on screen or both;
-        the extension of ``file_path`` must be recognized by matplotlib.
+        that can be saved to `file_path`, displayed on screen or both;
+        the extension of `file_path` must be recognized by matplotlib.
 
         A dynamic N2 chart is an HTML file with interactive features such as
         reordering the disciplines,
@@ -504,7 +505,7 @@ class CouplingStructure:
 
     def __add_couplings(
         self,
-        couplings: Sequence[tuple[Discipline, Discipline, list[str]]],
+        couplings: Sequence[tuple[BaseDiscipline, BaseDiscipline, list[str]]],
         show_data_names: bool,
         n_disciplines: int,
         fig: Figure,
@@ -514,13 +515,13 @@ class CouplingStructure:
 
         Args:
             couplings: The discipline couplings.
-            show_data_names: If ``True``, show the names of the coupling data ;
+            show_data_names: If `True`, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.
             n_disciplines: The number of disciplines being considered.
             fig: The figure on which to plot.
-            ax: The :class:`~matplotlib.axes.Axes` object associated with ``fig``
+            ax: The [Axes][matplotlib.axes.Axes`] object associated with `fig`
                 on which to plot.
         """
         max_coupling_size = max(len(variables) for _, _, variables in couplings)

@@ -1,0 +1,50 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""The secant acceleration method."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from gemseo.mda.sequence_transformer.sequence_transformer import SequenceTransformer
+
+if TYPE_CHECKING:
+    from typing import ClassVar
+
+    from gemseo.util.typing import NumberArray
+
+
+class Secant(SequenceTransformer):
+    """The secant acceleration method.
+
+    The method corresponds to the equation (45) of Ramière and Helfer (2015).
+    """
+
+    _minimum_number_of_iterates: ClassVar[int] = 2
+    _minimum_number_of_residuals: ClassVar[int] = 2
+
+    def _compute_transformed_iterate(self) -> NumberArray:
+        dxn_1, dxn = self._residuals
+        gxn_1, gxn = self._iterates
+
+        d2xn = dxn - dxn_1
+        dgxn = gxn - gxn_1
+
+        return gxn - (d2xn.T @ dxn) / (d2xn.T @ d2xn) * dgxn

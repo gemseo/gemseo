@@ -17,16 +17,17 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import PositiveInt
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.util.typing import StrKeyMapping
 
 
 class TopologyView_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "TopologyView"
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
     n_x: PositiveInt = Field(
         ...,
         description="The number of elements in the horizontal direction.",
@@ -38,13 +39,10 @@ class TopologyView_Settings(BasePostSettings):  # noqa: D101, N801
     observable: str = Field(
         default="",
         description="The name of the observable to be plotted. It should be of size "
-        "``n_x*n_y``.",
+        "`n_x*n_y`.",
     )
     iterations: int | Sequence[int] = Field(
         default=(),
         description="The iterations of the optimization history. If empty, "
         "the last iteration is taken.",
     )
-
-
-update_field(TopologyView_Settings, "fig_size", default=(6.4, 4.8))

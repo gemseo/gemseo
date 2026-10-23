@@ -1,0 +1,24 @@
+# serializer version: 1
+# name: test_morris_doe_step_too_large[0.5]
+  '''
+  1 validation error for MorrisDOE_Settings
+  step
+    Input should be less than 0.5 [type=less_than, input_value=0.5, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than
+  '''
+# ---
+# name: test_morris_doe_step_too_large[0.6]
+  '''
+  1 validation error for MorrisDOE_Settings
+  step
+    Input should be less than 0.5 [type=less_than, input_value=0.6, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than
+  '''
+# ---
+# name: test_settings_error
+  '''
+  1 validation error for MorrisDOE_Settings
+    Value error, When n_samples > 0, doe_algo_settings must have an n_samples field. [type=value_error, input_value={'n_samples': 3, 'doe_alg...mments='#', skiprows=0)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

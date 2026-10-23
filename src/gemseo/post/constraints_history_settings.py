@@ -20,11 +20,10 @@ from collections.abc import Sequence
 
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import BasePostSettings
 
 
 class ConstraintsHistory_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "ConstraintsHistory"
     constraint_names: Sequence[str] = Field(
         ...,
         description="The names of the constraints.",
@@ -32,7 +31,7 @@ class ConstraintsHistory_Settings(BasePostSettings):  # noqa: D101, N801
     )
     line_style: str = Field(
         default="--",
-        description='The style of the line, e.g. ``"-"`` or ``"--"``. ""If ``""``, '
+        description='The style of the line, e.g. `"-"` or `"--"`. ""If `""`, '
         "do not plot the line.",
     )
     add_points: bool = Field(

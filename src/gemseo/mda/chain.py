@@ -1,0 +1,412 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Charlie Vanaret
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#        :author: Jean-Christophe Giret
+"""An advanced MDA splitting algorithm based on graphs."""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
+from typing import ClassVar
+
+from numpy import array
+
+from gemseo.core._process_flow.execution_sequence.sequential import (
+    SequentialExecSequence,
+)
+from gemseo.discipline.chain.chain import DisciplineChain
+from gemseo.discipline.chain.initialization_chain import InitializationDisciplineChain
+from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.core.base import BaseMDA
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.factory import mda_factory
+from gemseo.util.constant import read_only_empty_dict
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+    from typing import Self
+
+    from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.core.discipline.discipline import Discipline
+    from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.mda.core.base import BaseProcessFlow
+    from gemseo.mda.core.base_settings import BaseMDASettings
+    from gemseo.mda.core.base_solver import BaseMDASolver
+    from gemseo.util.matplotlib_figure import FigSizeType
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
+
+logger = logging.getLogger(__name__)
+
+
+class _ProcessFlow(_BaseMDAProcessFlow):
+    """The process data and execution flow."""
+
+    _node: MDAChain
+
+    def get_data_flow(  # noqa:D102
+        self,
+    ) -> list[tuple[Discipline, Discipline, list[str]]]:
+        return self._node.discipline_chain.get_process_flow().get_data_flow()
+
+    def get_execution_flow(self) -> SequentialExecSequence:  # noqa:D102
+        exec_s = SequentialExecSequence()
+        exec_s.extend(
+            self._node.discipline_chain.get_process_flow().get_execution_flow()
+        )
+        return exec_s
+
+    def get_disciplines_in_data_flow(self) -> list[Discipline]:  # noqa: D102
+        return self._node.discipline_chain.get_process_flow().get_disciplines_in_data_flow()  # noqa: E501
+
+
+class MDAChain(BaseMDA):
+    """A chain of MDAs.
+
+    The execution sequence is provided
+    by the [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
+    """
+
+    settings_class: ClassVar[type[MDAChain_Settings]] = MDAChain_Settings
+    """The pydantic model for the settings."""
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    inner_mdas: list[BaseMDASolver]
+    """The ordered MDAs."""
+
+    discipline_chain: DisciplineChain
+    """The chain of MDAs."""
+
+    settings: MDAChain_Settings
+    """The settings of the MDA"""
+
+    __inner_mda_class: type[BaseMDASolver]
+    """The inner MDA class."""
+
+    def __init__(  # noqa: D107
+        self,
+        disciplines: Sequence[Discipline],
+        settings: MDAChain_Settings | None = None,
+    ) -> None:
+        self.discipline_chain = None
+        super().__init__(disciplines, settings=settings)
+
+        if (
+            not self.coupling_structure.all_couplings
+            and not self.settings.chain_linearize
+        ):
+            if len(disciplines) > 1:
+                logger.warning("No coupling in MDA, switching chain_linearize to True.")
+            self.settings.chain_linearize = True
+
+        self.inner_mdas = []
+        self.__inner_mda_class = mda_factory.get_class(
+            self.settings.inner_mda_settings.target_class_name
+        )
+        self.discipline_chain = self._create_discipline_chain()
+
+        self._initialize_grammars()
+        self._check_consistency()
+        self._compute_input_coupling_names()
+
+    @BaseMDA.scaling.setter
+    def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
+        self._scaling = scaling
+        for mda in self.inner_mdas:
+            mda.scaling = scaling
+
+    def set_bounds(  # noqa: D102
+        self,
+        variable_name_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        for inner_mda in self.inner_mdas:
+            inner_mda.set_bounds(variable_name_to_bounds)
+
+    def _create_discipline_chain(self) -> DisciplineChain:
+        """Create an discipline chain from the execution sequence of the disciplines."""
+        if not self.settings.sub_coupling_structures:
+            sub_coupling_structures = _AlwaysNone()
+        else:
+            sub_coupling_structures = self.settings.sub_coupling_structures
+
+        sub_coupling_structures_iterator = iter(sub_coupling_structures)
+
+        chained_disciplines = []
+        for parallel_tasks in self.coupling_structure.sequence:
+            process = self.__create_process_from_disciplines(
+                parallel_tasks, sub_coupling_structures_iterator
+            )
+            chained_disciplines.append(process)
+
+        return DisciplineChain(chained_disciplines, name="MDA chain")
+
+    def __create_process_from_disciplines(
+        self,
+        parallel_tasks: list[tuple[Discipline, ...]],
+        sub_coupling_structures_iterator: Iterator[CouplingStructure | None],
+    ) -> Discipline:
+        """Create a process from disciplines.
+
+        This method creates a process that will be appended
+        to the main inner
+        [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
+        of the [MDAChain][gemseo.mda.chain.MDAChain].
+        Depending on the number and type of disciplines,
+        as well as the options provided by the user,
+        the process may be a sole discipline,
+        a [BaseMDA][gemseo.mda.core.base.BaseMDA],
+        an [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
+        or an
+        [ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain].
+
+        Args:
+            parallel_tasks: The parallel tasks to be processed.
+            sub_coupling_structures_iterator: An iterator over the coupling
+                structures of the inner MDAs.
+                If `None`, the coupling structure is created from the
+                disciplines of the MDA.
+
+        Returns:
+            A process.
+        """
+        parallel_disciplines = self.__compute_parallel_disciplines(
+            parallel_tasks, sub_coupling_structures_iterator
+        )
+
+        if len(parallel_disciplines) == 1:
+            return parallel_disciplines[0]
+
+        if self.settings.mdachain_parallelize_tasks:
+            return ParallelDisciplineChain(
+                parallel_disciplines,
+                **self.settings.mdachain_parallel_settings,
+            )
+        return DisciplineChain(parallel_disciplines)
+
+    def __compute_parallel_disciplines(
+        self,
+        parallel_tasks: list[tuple[Discipline, ...]],
+        sub_coupling_structures_iterator: Iterator[CouplingStructure | None],
+    ) -> Sequence[Discipline | BaseMDA]:
+        """Compute the parallel disciplines.
+
+        This method computes the parallel disciplines,
+        if any.
+        If there is any coupled disciplines in a parallel task,
+        a [BaseMDA][gemseo.mda.core.base.BaseMDA] is created,
+        based on the [BaseMDA][gemseo.mda.core.base.BaseMDA] options provided.
+
+        Args:
+            parallel_tasks: The parallel tasks.
+            sub_coupling_structures_iterator: An iterator over the coupling
+                structures of the inner MDAs.
+                If `None`, the coupling structure is created from the
+                disciplines of the MDA.
+
+        Returns:
+            The parallel disciplines.
+        """
+        parallel_disciplines = []
+        for coupled_disciplines in parallel_tasks:
+            if self.__requires_mda(coupled_disciplines):
+                ordered_disciplines = [
+                    discipline_
+                    for discipline_ in self._disciplines
+                    if discipline_ in coupled_disciplines
+                ]
+
+                settings_model = self.__create_inner_mda_settings()
+                settings_model.coupling_structure = next(
+                    sub_coupling_structures_iterator
+                )
+
+                discipline = self.__inner_mda_class(
+                    disciplines=ordered_disciplines, settings=settings_model
+                )
+
+                self.inner_mdas.append(discipline)
+            else:
+                discipline = coupled_disciplines[0]
+
+            parallel_disciplines.append(discipline)
+
+        self.settings._sub_mdas = self.inner_mdas
+        return parallel_disciplines
+
+    def __create_inner_mda_settings(self) -> BaseMDASettings:
+        """Create the inner MDA settings model."""
+        inner_mda_settings = self.settings.inner_mda_settings.model_copy()
+
+        for name, _ in inner_mda_settings:
+            if name in self.settings.model_fields_set:
+                if name in inner_mda_settings.model_fields_set:
+                    msg = (
+                        f"The {name!r} setting has been set for both the MDAChain "
+                        f"and the inner MDA. "
+                        f"The retained value is that of the MDAChain, "
+                        f"i.e. {getattr(self.settings, name)}."
+                    )
+
+                    logger.warning(msg)
+
+                setattr(inner_mda_settings, name, getattr(self.settings, name))
+
+        return inner_mda_settings
+
+    def __requires_mda(self, disciplines: tuple[Discipline, ...]) -> bool:
+        """Whether the disciplines require to be embed in an MDA.
+
+        Args:
+            disciplines: The disciplines to check.
+        """
+        return len(disciplines) > 1 or (
+            len(disciplines) == 1
+            and self.coupling_structure.is_self_coupled(disciplines[0])
+            and not isinstance(disciplines[0], BaseMDA)
+        )
+
+    def _initialize_grammars(self) -> None:
+        """Define all inputs and outputs of the chain."""
+        if self.discipline_chain is None:  # First call by super class must be ignored.
+            return
+        self.io.input_grammar = self.discipline_chain.io.input_grammar.copy()
+        self.io.output_grammar = self.discipline_chain.io.output_grammar.copy()
+
+    def _check_consistency(self) -> None:
+        """Check if there is no more than 1 equation per variable.
+
+        For instance if a strong coupling is not also a self coupling.
+        """
+        if self.discipline_chain is None:  # First call by super class must be ignored.
+            return
+        super()._check_consistency()
+
+    def execute(  # noqa:D102
+        self,
+        input_data: StrKeyMapping = read_only_empty_dict,
+    ) -> DisciplineData:
+        # The initialization is needed for MDA loops.
+        if (
+            self.settings.initialize_defaults
+            and len(self._disciplines) > 1
+            and len(self.coupling_structure.strong_couplings) > 0
+        ):
+            init_chain = InitializationDisciplineChain(
+                self._disciplines,
+                available_data_names=input_data,
+            )
+
+            self.io.input_grammar.defaults.update({
+                key: value
+                for key, value in init_chain.execute(input_data).items()
+                if key in self.io.input_grammar
+            })
+            self.settings.initialize_defaults = False
+        return super().execute(input_data=input_data)
+
+    def _solve(self) -> None:
+        output = self.discipline_chain.execute(self.io.get_merged_data())
+        self.io.output_data.update(output)
+        self.io.propagate_to_input(output)
+
+        res_sum = 0.0
+        for mda in self.inner_mdas:
+            res_local = mda.io.output_data.get(self.normalized_residual_norm_name)
+            if res_local is not None:
+                res_sum += res_local[-1] ** 2
+
+        self.io.update_output_data({
+            self.normalized_residual_norm_name: array([res_sum**0.5])
+        })
+
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        if self.settings.chain_linearize:
+            self.discipline_chain.add_differentiated_inputs(input_names)
+            self.discipline_chain.add_differentiated_outputs(output_names)
+            # the Jacobian of the MDA chain is the Jacobian of the discipline chain
+            self.discipline_chain.linearize(self.io.get_input_data())
+            self.jac = self.discipline_chain.jac
+        else:
+            super()._compute_jacobian(input_names, output_names)
+
+    def add_differentiated_inputs(  # noqa:D102
+        self,
+        input_names: Iterable[str] = (),
+    ) -> None:
+        BaseMDA.add_differentiated_inputs(self, input_names)
+        if self.settings.chain_linearize:
+            self.discipline_chain.add_differentiated_inputs(input_names)
+
+    def add_differentiated_outputs(  # noqa: D102
+        self,
+        output_names: Iterable[str] = (),
+    ) -> None:
+        BaseMDA.add_differentiated_outputs(self, output_names)
+        if self.settings.chain_linearize:
+            self.discipline_chain.add_differentiated_outputs(output_names)
+
+    @property
+    def normalized_residual_norm(self) -> float:
+        """The norm of the normalized residuals computed from the sub-MDAs residuals."""
+        return sum(mda.normalized_residual_norm**2 for mda in self.inner_mdas) ** 0.5
+
+    def plot_residual_history(  # noqa: D102
+        self,
+        show: bool = False,
+        save: bool = True,
+        n_iterations: int | None = None,
+        logscale: tuple[int, int] = (),
+        filename: StrPath = "",
+        fig_size: FigSizeType = (50.0, 10.0),
+    ) -> None:
+        if filename:
+            file_path = Path(filename)
+        for mda in self.inner_mdas:
+            if filename:
+                path = file_path.parent / f"{mda.__class__.__name__}_{file_path.name}"
+            else:
+                path = filename
+            mda.plot_residual_history(
+                show, save, n_iterations, logscale, path, fig_size
+            )
+
+
+class _AlwaysNone:
+    """An iterator that always return None."""
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> None:
+        return None

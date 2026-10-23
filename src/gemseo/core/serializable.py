@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The baseclass for serializable |g| objects."""
+"""The baseclass for serializable GEMSEO objects."""
 
 from __future__ import annotations
 
@@ -30,35 +30,35 @@ from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.utils.portable_path import to_os_specific
+from gemseo.util.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):
-    """Base class to handle serialization of |g| objects.
+    """Base class to handle serialization of GEMSEO objects.
 
-    The methods ``__setstate__`` and ``__getstate__`` used by pickle to serialize and
-    de-serialize objects are overloaded to handle ``Synchronized`` attributes. It is
+    The methods `__setstate__` and `__getstate__` used by pickle to serialize and
+    de-serialize objects are overloaded to handle `Synchronized` attributes. It is
     also possible to define the attributes that shall be ignored at serialization.
 
     For the attributes that are ignored at serialization, it is necessary to handle the
-    way they are retrieved and recreated by overloading ``__setstate__`` and/or
-    ``__getstate__`` from the subclasses.
+    way they are retrieved and recreated by overloading `__setstate__` and/or
+    `__getstate__` from the subclasses.
     """
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = set()
+    _attr_not_to_serialize: ClassVar[set[str]] = set()
     """The attributes that shall be skipped at serialization.
 
     Private attributes shall be written following name mangling conventions:
-    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
+    `_ClassName__attribute_name`. Subclasses must expand this class attribute if
     needed.
     """
 
     def __getstate__(self) -> dict[str, Any]:
         state = {}
-        for attribute_name in self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE:
+        for attribute_name in self.__dict__.keys() - self._attr_not_to_serialize:
             attribute_value = self.__dict__[attribute_name]
 
             if isinstance(attribute_value, Synchronized):
@@ -80,6 +80,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs_before()
+
         for attribute_name, attribute_value in state.items():
             if attribute_name not in self.__dict__:
                 self.__dict__[attribute_name] = attribute_value
@@ -91,18 +92,25 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
                 # Set the value of Synchronized attributes instead of deserializing the
                 # entire object.
                 self.__dict__[attribute_name].value = attribute_value
+
         self._init_shared_memory_attrs_after()
+
+        # The process observers are injected by decorating methods.
+        # This cannot be pickled, thus a new injection is done.
+        from gemseo.util._workflow_observer.injector import inject_observer
+
+        inject_observer(self.__class__)
 
     def _init_shared_memory_attrs_before(self) -> None:
         """Initialize the shared memory attributes before deserialization.
 
-        Subclasses shall overload this method to initialize all their ``Synchronized``
+        Subclasses shall overload this method to initialize all their `Synchronized`
         attributes. This is run before any attribute is recovered from deserialization.
         """
 
     def _init_shared_memory_attrs_after(self) -> None:
         """Initialize the shared memory attributes after deserialization.
 
-        Subclasses shall overload this method to initialize all their ``Synchronized``
+        Subclasses shall overload this method to initialize all their `Synchronized`
         attributes. This is run before any attribute is recovered from deserialization.
         """

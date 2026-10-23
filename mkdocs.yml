@@ -1,0 +1,59 @@
+INHERIT: mkdocs-fast.yml
+
+strict: true
+
+plugins:
+  minify:
+    minify_html: true
+    minify_js: true
+    minify_css: true
+    htmlmin_opts:
+        remove_comments: true
+        remove_empty_space: true
+        remove_all_empty_space: true
+  mkdocstrings:
+    handlers:
+      python:
+        paths: [src]
+        inventories:
+        - https://docs.python.org/3/objects.inv
+        - https://matplotlib.org/stable/objects.inv
+        - https://numpy.org/doc/stable/objects.inv
+        - https://docs.scipy.org/doc/scipy/objects.inv
+        - https://openturns.github.io/openturns/latest/objects.inv
+        - https://scikit-learn.org/stable/objects.inv
+        - https://pandas.pydata.org/docs/objects.inv
+        - https://docs.pydantic.dev/latest/objects.inv
+        - https://matplotlib.org/stable/objects.inv
+        - https://ptable.readthedocs.io/en/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-matlab/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-calibration/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-mma/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-umdo/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-bilevel-outer-approximation/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-mlearning/latest/objects.inv
+        options:
+          extensions:
+          - griffe_inherited_docstrings
+          - docstring_inheritance.griffe
+          - griffe_fieldz: {include_inherited: true}
+          - docs/_scripts/griffe_lazy_exports.py
+          filters:
+          - "!^_"
+          docstring_options:
+            # ignore_init_summary: true
+            returns_multiple_items: False
+          docstring_section_style: list
+          # heading_level: 1
+          inherited_members: true
+          # preload_modules:
+          # - gemseo
+          merge_init_into_class: true
+          separate_signature: true
+          show_root_heading: true
+          show_root_full_path: false
+          show_signature_annotations: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          show_category_heading: true
+          signature_crossrefs: true

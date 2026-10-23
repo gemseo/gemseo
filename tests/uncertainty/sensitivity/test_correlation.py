@@ -25,20 +25,24 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
 
 
 @pytest.fixture(scope="module")
 def correlation() -> CorrelationAnalysis:
     """A correlation analysis."""
     discipline = create_discipline(
-        "AnalyticDiscipline", expressions={"y1": "x1+2*x2", "y2": "x1-2*x2"}
+        "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     )
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ["x1", "x2"]:
-        space.add_random_variable(name, "OTNormalDistribution")
+        space.add_variable(name, OTNormalDistribution_Settings())
     analysis = CorrelationAnalysis()
     analysis.compute_samples([discipline], space, 100)
     return analysis
@@ -52,7 +56,7 @@ def test_indices(correlation) -> None:
     assert indices is correlation.indices
 
     # Check the methods for which the indices have been computed.
-    all_methods = {method.name.lower() for method in correlation.Method}
+    all_methods = {method.name.lower() for method in CorrelationAnalysisMethod}
     available_methods = {field.name for field in fields(indices)}
     assert available_methods == all_methods
 
@@ -70,21 +74,17 @@ def test_indices(correlation) -> None:
         assert pearson["y1"][0][input_name].shape == (1,)
 
 
-@pytest.mark.parametrize("baseline_images", [["plot"]])
 @pytest.mark.parametrize("output", ["y1", ("y1", 0)])
-@image_comparison(None)
-def test_plot(correlation, baseline_images, output) -> None:
+def test_plot(correlation, output, snapshot_matplotlib) -> None:
     """Check the method plot()."""
     correlation.compute_indices()
-    correlation.plot(output, save=False, show=False)
+    correlation.plot(output, save=False)
 
 
-@pytest.mark.parametrize("baseline_images", [(["plot_radar"])])
-@image_comparison(None)
-def test_plot_radar(correlation, baseline_images) -> None:
+def test_plot_radar(correlation, snapshot_matplotlib) -> None:
     """Check the method plot_radar()."""
     correlation.compute_indices()
-    correlation.plot_radar("y1", save=False, show=False)
+    correlation.plot_radar("y1", save=False)
 
 
 def test_sort_input_variables(correlation) -> None:
@@ -128,11 +128,25 @@ def test_from_samples(correlation, tmp_wd):
     assert new_correlation.indices == correlation.indices
 
 
+def test_compute_samples_with_design_space() -> None:
+    """Check that a plain design space can be used to compute the samples."""
+    discipline = create_discipline(
+        "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
+    )
+    space = DesignSpace()
+    space.add_real_variable("x1", lower_bound=-1.0, upper_bound=1.0)
+    space.add_real_variable("x2", lower_bound=-1.0, upper_bound=1.0)
+    analysis = CorrelationAnalysis()
+    analysis.compute_samples([discipline], space, 100)
+    indices = analysis.compute_indices()
+    assert list(indices.pearson["y1"][0]) == ["x1", "x2"]
+
+
 def test_constant_output(discipline_with_constant_output_and_space):
     """Check that CorrelationAnalysis supports constant outputs."""
-    discipline, uncertain_space = discipline_with_constant_output_and_space
+    discipline, random_space = discipline_with_constant_output_and_space
     analysis = CorrelationAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 100)
+    analysis.compute_samples([discipline], random_space, 100)
     indices = analysis.compute_indices()
     assert indices.kendall["constant"][0] is None
     assert indices.kendall["varying"][0] is not None

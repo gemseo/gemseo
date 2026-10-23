@@ -18,19 +18,21 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
-class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "OptHistoryView"
+class OptHistoryView_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     variable_names: Sequence[str] = Field(
         default=(),
         description="The names of the variables to display. "
@@ -45,14 +47,14 @@ class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
         default=None,
         description="The lower limit of the *y*-axis on which the objective is "
         "plotted. This limit must be less than or equal to the minimum "
-        "value of the objective history. If ``None``, use the minimum "
+        "value of the objective history. If `None`, use the minimum "
         "value of the objective history.",
     )
     obj_max: float | None = Field(
         default=None,
         description="The upper limit of the *y*-axis on which the objective is "
         "plotted. This limit must be greater than or equal to the maximum "
-        "value of the objective history. If ``None``, use the maximum "
+        "value of the objective history. If `None`, use the maximum "
         "value of the objective history.",
     )
 
@@ -70,6 +72,3 @@ class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
             )
             raise ValueError(msg)
         return self
-
-
-update_field(OptHistoryView_Settings, "fig_size", default=(11.0, 6.0))

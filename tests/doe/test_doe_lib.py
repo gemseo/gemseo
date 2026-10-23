@@ -1,0 +1,949 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+import logging
+import pickle
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import pytest
+from numpy import array
+from numpy import inf
+from numpy import ndarray
+from numpy.testing import assert_allclose
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_equal
+from numpy.testing import assert_equal
+
+from gemseo import create_discipline
+from gemseo import create_scenario
+from gemseo import execute_algo
+from gemseo.core.discipline import Discipline
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.problem.database import Database
+from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
+from gemseo.doe.factory import doe_library_factory
+from gemseo.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.doe.scipy.scipy_doe import SciPyDOE
+from gemseo.doe.scipy.settings.mc import MC_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.scenario import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.multiprocessing import start_method
+from gemseo.util.multiprocessing.manager import get_multi_processing_manager
+from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
+from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.util.typing import StrKeyMapping
+
+
+@pytest.fixture(scope="module")
+def lhs():
+    """A PyDOE-based LHS."""
+    return PyDOELibrary("PYDOE_LHS")
+
+
+@pytest.fixture(scope="module")
+def fullfact():
+    """A PyDOE-based full-factorial DOE."""
+    return PyDOELibrary("PYDOE_FULLFACT")
+
+
+@pytest.fixture(scope="module")
+def mc():
+    """A SciPyDOE-based Monte Carlo DOE."""
+    return SciPyDOE("MC")
+
+
+@pytest.fixture(scope="module")
+def custom_doe():
+    """A custom DOE."""
+    return CustomDOE()
+
+
+def test_fail_sample(lhs) -> None:
+    problem = Power2(exception_error=True)
+    lhs.execute(problem, settings=PYDOE_LHS_Settings(n_samples=4))
+
+
+def test_evaluate_samples(fullfact) -> None:
+    problem = Power2()
+    fullfact.execute(
+        problem,
+        settings=PYDOE_FULLFACT_Settings(n_samples=2, wait_time_between_samples=1),
+    )
+
+
+def test_evaluate_samples_multiproc(fullfact) -> None:
+    problem = Power2()
+    n_samples = 8
+    fullfact.execute(
+        problem,
+        settings=PYDOE_FULLFACT_Settings(
+            n_samples=n_samples,
+            n_processes=2,
+            wait_time_between_samples=0.01,
+            eval_jac=True,
+        ),
+    )
+    new_pb = Power2()
+    x_history = problem.database.get_x_vect_history()
+    assert len(x_history) == n_samples
+    for sample in x_history:
+        val_ref = new_pb.objective.evaluate(sample)
+        val_sample = problem.database.get_function_value("pow2", sample)
+        assert val_ref == val_sample
+
+        grad_ref = new_pb.objective.jac(sample)
+        grad_sample = problem.database.get_function_value("@pow2", sample)
+        assert (grad_ref == grad_sample).all()
+
+
+def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
+    """Compute the objective and observable variables.
+
+    Args:
+         x: The input x value.
+
+    Returns:
+        obj: The objective value.
+        obs: The observable value.
+    """
+    obj = x
+    obs = x + 1.0
+    return obj, obs
+
+
+def test_evaluate_samples_multiproc_with_observables(
+    enable_discipline_statistics,
+) -> None:
+    """Evaluate a DoE in // with multiprocessing and with observables."""
+    disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
+    disc.cache = None
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=3.0, value=2.0)
+
+    scenario = create_scenario(
+        [disc],
+        "obj",
+        design_space,
+        formulation_name="DisciplinaryOpt",
+    )
+
+    samples = array([[float(i)] for i in range(4)])
+    scenario.add_observable("obs")
+    scenario.execute(CustomDOE_Settings(n_processes=2, samples=samples))
+
+    database = scenario.formulation.problem.database
+    for i, (x, data) in enumerate(database.items()):
+        assert x.wrapped_array[0] == pytest.approx(float(i))
+        assert data["obj"] == float(i)
+        assert data["obs"] == float(i + 1)
+
+    # In multiprocessing mode,
+    # the disciplinary calls are only made on the worker processes
+    # With fork, the counters are updated from the subprocesses counters,
+    # otherwise the discipline counters on the main process are not updated.
+    # Without leveraging the cache mechanism,
+    # the discipline shall be called 8 times.
+    # The start method is the one actually used by GEMSEO,
+    # not the interpreter default,
+    # which is forkserver since Python 3.14 on Linux.
+    if start_method.multi_processing_start_method == MultiProcessingStartMethod.FORK:
+        assert disc.execution_statistics.n_executions == 8
+    else:
+        assert disc.execution_statistics.n_executions == 0
+
+
+@pytest.fixture(scope="module")
+def variables_space():
+    """A mock design space."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=2.0, value=1.0)
+    design_space.add_real_variable("y", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    return design_space
+
+
+def test_compute_doe_from_space(fullfact, variables_space) -> None:
+    """Check the computation of a DOE in a variables space."""
+    points = fullfact.sample_space(
+        variables_space, PYDOE_FULLFACT_Settings(n_samples=4)
+    )
+    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
+
+
+samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
+
+
+def test_sample_unit_hypercube(custom_doe):
+    """Check BaseDOELibrary.sample_unit_hypercube."""
+    assert_equal(
+        custom_doe.sample_unit_hypercube(3, CustomDOE_Settings(samples=samples)),
+        samples,
+    )
+
+
+@pytest.fixture(scope="module")
+def doe_database(request) -> Database:
+    """The DOE-based database with either deterministic or random variables."""
+    if request.param:
+        # A random space is only sampled, never optimized.
+        space = RandomSpace()
+        space.add_variable("var", SPNormalDistribution_Settings())
+        problem = EvaluationProblem(space)
+        problem.add_observable(ArrayFunction(lambda x: x, name="func"))
+    else:
+        space = DesignSpace()
+        space.add_real_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
+        problem = OptimizationProblem(space)
+        problem.objective = ArrayFunction(lambda x: x, name="func")
+
+    execute_algo(
+        problem,
+        algo_name="CustomDOE",
+        samples=array([[-2.0], [0.0], [1.0]]),
+        algo_type="doe",
+    )
+    return problem.database
+
+
+@pytest.mark.parametrize("doe_database", [True, False], indirect=["doe_database"])
+@pytest.mark.parametrize("var", [-2.0, 0.0, 1.0])
+def test_transformation(doe_database, var) -> None:
+    """Check that the transformation of variables works correctly.
+
+    For the deterministic variables, the transformation is affine, based on the bounds
+    of the variables.
+
+    For the uncertain variables, the transformation is probabilistic, based on inverse
+    transformation sampling.
+    """
+    # We test with a certain tolerance
+    # due to the sensitivity of probabilistic normalization
+    # in the case var=-2 when updating openturns to v1.24
+    assert_almost_equal(
+        doe_database.get_function_value("func", array([var]), tolerance=1e-15),
+        array([var]),
+        decimal=15,
+    )
+
+
+def test_pre_run_debug(lhs, caplog) -> None:
+    """Check a DEBUG message logged just after sampling the input unit hypercube."""
+    caplog.set_level("DEBUG", logger="gemseo")
+    problem = Power2()
+    lhs.execute(problem, settings=PYDOE_LHS_Settings(n_samples=2))
+    message = (
+        "The DOE algorithm PYDOE_LHS of PyDOELibrary has generated 2 samples "
+        "in the input unit hypercube of dimension 3."
+    )
+    message_is_logged = False
+    for _, log_level, log_message in caplog.record_tuples:
+        if message in log_message:
+            message_is_logged = True
+            assert log_level == logging.DEBUG
+            break
+
+    assert message_is_logged
+
+
+@pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "PYDOE_LHS"])
+def test_seed(algo_name) -> None:
+    """Check the use of the seed at the BaseDOELibrary level."""
+    problem = Power2()
+    library = doe_library_factory.create(algo_name)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
+
+    # The BaseDOELibrary has a seed and increments it
+    # at the beginning of each execution.
+    assert library.seed == 0
+    library.execute(problem, settings=settings)
+    assert library.seed == 1
+    assert len(problem.database) == 2
+
+    # We execute a second time, still with the seed of the BaseDOELibrary.
+    # For that,
+    # we need to reset the current iteration because max_iter is reached
+    # (for BaseDOELibrary, max_iter == n_samples).
+    problem.reset(database=False, input_space=False, function_calls=False)
+    library.execute(problem, settings=settings)
+    assert library.seed == 2
+    assert len(problem.database) == 4
+
+    # We execute a third time,
+    # with a seed passed as an option of the BaseDOELibrary
+    # and equal to the previous one.
+    # By doing so,
+    # the input samples will be the same and the functions won't be evaluated.
+    problem.reset(database=False, input_space=False, function_calls=False)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2, seed=2)
+    library.execute(problem, settings=settings)
+
+    assert library.seed == 3
+    # There is no new evaluation in the database:
+    assert len(problem.database) == 4
+
+    # Lastly, we check that the BaseDOELibrary uses its own seed again.
+    problem.reset(database=False, input_space=False, function_calls=False)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
+    library.execute(problem, settings=settings)
+    assert library.seed == 4
+    # There are new evaluations in the database:
+    assert len(problem.database) == 6
+
+
+@pytest.mark.parametrize(
+    ("var_type1", "var_type2"),
+    [
+        ("integer", "integer"),
+        ("integer", "real"),
+        ("real", "real"),
+    ],
+)
+def test_variable_types(var_type1, var_type2) -> None:
+    """Verify that input data provided to a discipline match the design space types.
+
+    The integer variables are not relaxed,
+    so that the discipline receives them with the type the space declares.
+    """
+    design_variable_type_to_python_type = DesignSpace.variable_types_to_dtypes
+
+    class Disc(DummyDiscipline):
+        def __init__(self) -> None:
+            super().__init__("foo")
+            self.io.input_grammar.update_from_names(("x", "y"))
+            self.io.output_grammar.update_from_names(("z",))
+
+        def execute(self, input_data):
+            assert (
+                input_data["x"].dtype == design_variable_type_to_python_type[var_type1]
+            )
+            assert (
+                input_data["y"].dtype == design_variable_type_to_python_type[var_type2]
+            )
+            return {"z": 0.0}
+
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", lower_bound=0, upper_bound=1, value=0, type_=var_type1
+    )
+    design_space.add_variable(
+        "y", lower_bound=0, upper_bound=1, value=0, type_=var_type2
+    )
+
+    scenario = create_scenario(
+        [Disc()],
+        "z",
+        design_space,
+        formulation_name="DisciplinaryOpt",
+    )
+
+    scenario.execute(
+        PYDOE_LHS_Settings(
+            n_samples=1, relax_integer_variables=False, relax_discrete_variables=False
+        )
+    )
+
+
+def test_full_factorial_on_an_integer_variable_records_integral_samples() -> None:
+    """Check that a DOE over an integer variable stores integers by default.
+
+    A DOE handles integer variables,
+    so `relax_integer_variables`, on by default, relaxes none of them.
+    """
+    design_space = DesignSpace()
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, name="f")
+
+    execute_algo(problem, algo_name="PYDOE_FULLFACT", algo_type="doe", n_samples=4)
+
+    samples = array(problem.database.get_x_vect_history())[:, 0]
+    assert all(int(sample) == sample for sample in samples)
+
+
+@pytest.mark.parametrize("value", [None, 5])
+def test_doe_scenario_on_an_integer_variable_declared_by_the_discipline(
+    value,
+) -> None:
+    """Check that a DOE scenario runs when a discipline declares an integer input.
+
+    A DOE handles integer variables,
+    so the driver leaves `x` as declared,
+    and the discipline receives an integer,
+    consistent with its grammar,
+    instead of the `InvalidDataError` a relaxed float would raise,
+    whether or not `x` has a current value.
+    """
+
+    class _IntegerDisc(Discipline):
+        def __init__(self) -> None:
+            super().__init__()
+            self.input_grammar.update_from_types({"x": int})
+            self.output_grammar.update_from_names(("y",))
+
+        def _run(self, input_data: StrKeyMapping):
+            return {"y": array([float(input_data["x"])])}
+
+    design_space = DesignSpace()
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=value)
+
+    scenario = create_scenario(
+        [_IntegerDisc()],
+        "y",
+        design_space,
+        formulation_name="DisciplinaryOpt",
+        scenario_type="DOE",
+    )
+
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=4))
+
+
+@pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
+def test_uunormalized_components(mc, l_b, u_b, snapshot) -> None:
+    """Check that an error is raised when the design space is unbounded."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", 2, lower_bound=1.0, upper_bound=3.0)
+    design_space.add_real_variable("y", 3, lower_bound=l_b, upper_bound=u_b)
+    design_space.add_real_variable("z", lower_bound=0.0, upper_bound=1.0)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(sum, name="f")
+
+    with assert_exception(ValueError, snapshot):
+        mc.sample_space(design_space, MC_Settings(n_samples=3))
+
+    with assert_exception(ValueError, snapshot):
+        mc.execute(problem, settings=MC_Settings(n_samples=3))
+
+
+def test_unbounded_random_space(mc) -> None:
+    """Check that an unbounded random space can be sampled."""
+    random_space = RandomSpace()
+    random_space.add_variable("x", SPNormalDistribution_Settings())
+
+    problem = EvaluationProblem(random_space)
+    problem.add_observable(ArrayFunction(sum, name="f"))
+
+    mc.sample_space(random_space, MC_Settings(n_samples=3))
+    mc.execute(problem, settings=MC_Settings(n_samples=3))
+
+
+def f(x):
+    return 2 * x
+
+
+class Counter:
+    def __init__(self):
+        self.total = 0
+
+    def callback(self, index, data):
+        self.total += data[0]["f"]
+
+
+@pytest.fixture
+def problem():
+    """A problem."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x")
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(f, name="f")
+    return problem
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_callback(custom_doe, n_processes, problem):
+    """Check the use of callbacks."""
+
+    counter = Counter()
+    custom_doe.execute(
+        problem,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0], [2.0]]),
+            n_processes=n_processes,
+            callbacks=(counter.callback,),
+        ),
+    )
+    assert counter.total == 6
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("use_database", [False, True])
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+def test_use_database(
+    custom_doe, n_processes, problem, use_database, enable_progress_bar, caplog
+):
+    """Check the option use_database."""
+    custom_doe.execute(
+        problem,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0], [2.0]]),
+            n_processes=n_processes,
+            use_database=use_database,
+            enable_progress_bar=enable_progress_bar,
+        ),
+    )
+    assert ("100%" in caplog.text) is enable_progress_bar
+    assert bool(problem.database) is use_database
+
+
+def test_parallel_samples_are_recorded_in_the_declared_coordinates(custom_doe):
+    """Check the points a parallel DOE records when the space is normalized.
+
+    A parallel DOE stored its samples
+    under the coordinates the algorithm works on,
+    while every other writer keys the database
+    on the coordinates the user declared.
+    """
+    x_histories = []
+    for n_processes in (1, 2):
+        design_space = DesignSpace()
+        # A range straddling neither 0 nor 1,
+        # so that a normalized point differs from the declared one.
+        design_space.add_real_variable(
+            "x", lower_bound=10.0, upper_bound=20.0, value=12.0
+        )
+        problem = OptimizationProblem(design_space)
+        problem.objective = ArrayFunction(f, name="f")
+        custom_doe.execute(
+            problem,
+            settings=CustomDOE_Settings(
+                # The samples of a normalized run are unit-hypercube points.
+                samples=array([[0.1], [0.3], [0.9]]),
+                n_processes=n_processes,
+                normalize_design_space=True,
+            ),
+        )
+        x_histories.append(problem.database.get_x_vect_history())
+
+    assert_almost_equal(x_histories[0], [array([11.0]), array([13.0]), array([19.0])])
+    assert_almost_equal(x_histories[1], x_histories[0])
+
+
+def f_squared(x):
+    return x**2
+
+
+def f_squared_jac(x):
+    return 2 * x
+
+
+def test_parallel_jacobians_are_recorded_in_the_declared_coordinates(custom_doe):
+    """Check the Jacobians a parallel DOE records when the space is normalized.
+
+    The worker evaluates the functions attached to the working problem,
+    so it returns Jacobians with respect to the working coordinates,
+    while every writer, serial or parallel,
+    keys the database on, and stores Jacobians with respect to,
+    the coordinates the user declared.
+    """
+    gradient_histories = []
+    for n_processes in (1, 2):
+        design_space = DesignSpace()
+        # A range of width 10,
+        # so that a normalized point differs from the declared one,
+        # and the Jacobian is scaled by 10 between the two spaces.
+        design_space.add_real_variable(
+            "x", lower_bound=0.0, upper_bound=10.0, value=1.0
+        )
+        problem = OptimizationProblem(design_space)
+        problem.objective = ArrayFunction(f_squared, jac=f_squared_jac, name="f")
+        custom_doe.execute(
+            problem,
+            settings=CustomDOE_Settings(
+                # The samples of a normalized run are unit-hypercube points,
+                # i.e. x = 1.0, 3.0, 9.0 for this design space.
+                samples=array([[0.1], [0.3], [0.9]]),
+                n_processes=n_processes,
+                normalize_design_space=True,
+                eval_jac=True,
+            ),
+        )
+        gradient_history, x_history = problem.database.get_gradient_history(
+            "f", with_x_vect=True
+        )
+        gradient_histories.append((x_history, gradient_history))
+
+    for x_history, gradient_history in gradient_histories:
+        assert_almost_equal(gradient_history.ravel(), 2 * x_history.ravel())
+
+    assert_almost_equal(gradient_histories[0][1], gradient_histories[1][1])
+
+
+def test_serialize(custom_doe, tmp_wd):
+    """Verify that BaseDOELibrary is serializable."""
+    output_path = Path("out.pk")
+    with open(output_path, "wb") as outf:
+        pickle.dump(custom_doe, outf)
+
+    with open(output_path, "rb") as outf:
+        pickle.load(outf)
+
+
+class _DummyDisc(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:
+        super().__init__("foo")
+        self.io.input_grammar.update_from_names("x")
+        self.io.output_grammar.update_from_names(("z", "t"))
+        self.io.output_grammar.update_from_types({
+            "s1": float,
+            "s2": float,
+            "z": ndarray,
+            "t": ndarray,
+        })
+
+    def _run(self, input_data: StrKeyMapping):
+        x = input_data["x"]
+        return {
+            "z": array([sum(x)]),
+            "t": 2 * x + 3,
+            "s1": x[0],
+            "s2": x[1],
+        }
+
+
+def test_parallel_doe_db(tmp_wd):
+    """Verify the backup database in parallel with vector and scalar outputs."""
+
+    def _create_scn() -> MDOScenario:
+        design_space = DesignSpace()
+        design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, size=2)
+
+        scenario = create_scenario(
+            [_DummyDisc()],
+            "z",
+            design_space,
+            formulation_name="DisciplinaryOpt",
+        )
+        scenario.add_constraint("t")
+        scenario.add_constraint("s1")
+        scenario.add_constraint("s2")
+        return scenario
+
+    scenario_ser = _create_scn()
+    bk_file_ser = Path("ser_out.h5")
+    scenario_ser.set_backup_settings(
+        bk_file_ser, at_each_function_call=True, at_each_iteration=True
+    )
+    scenario_ser.execute(PYDOE_FULLFACT_Settings(n_samples=4, n_processes=1))
+
+    scenario_par = _create_scn()
+    bk_file_par = Path("par_out.h5")
+    scenario_par.set_backup_settings(
+        bk_file_par, at_each_function_call=True, at_each_iteration=True
+    )
+    scenario_par.execute(PYDOE_FULLFACT_Settings(n_samples=4, n_processes=2))
+
+    db_ser = Database.from_hdf(bk_file_ser)
+    db_par = Database.from_hdf(bk_file_par)
+
+    assert len(db_ser) == len(db_par)
+    for func in ["z", "t", "s1", "s2"]:
+        f_s = db_ser.get_function_history(func, with_x_vect=False)
+        f_p = db_par.get_function_history(func, with_x_vect=False)
+        assert_array_equal(f_p, f_s, strict=True)
+
+
+@pytest.mark.parametrize("eval_func", [False, True])
+@pytest.mark.parametrize("eval_jac", [False, True])
+def test_eval_func_and_eval_jac(eval_func, eval_jac):
+    """Check eval_func and eval_jac."""
+    problem = Power2()
+    SciPyDOE("MC").execute(
+        problem,
+        settings=MC_Settings(n_samples=1, eval_jac=eval_jac, eval_func=eval_func),
+    )
+    database = problem.database
+    last_item = database.last_item
+    name = "pow2"
+    assert (name in last_item) is eval_func
+    assert (database.get_gradient_name(name) in last_item) is eval_jac
+
+
+class _DummyDiscValueError(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:
+        super().__init__("foo")
+        self.input_grammar.update_from_names("x")
+        self.output_grammar.update_from_names(("z", "t"))
+        self.output_grammar.update_from_types({
+            "z": ndarray,
+            "t": ndarray,
+        })
+
+    def _run(self, input_data: StrKeyMapping):
+        x = input_data["x"]
+        if x < 0:
+            msg = "The sample is undefined for x < 0."
+            raise ValueError(msg)
+        return {"z": array([sum(x)]), "t": 2 * x + 3}
+
+
+@pytest.mark.parametrize("formulation", ["MDF", "DisciplinaryOpt", "IDF"])
+def test_value_error_filtering(formulation, caplog):
+    """Test that the DOELibrary can skip a sample that raises a `ValueError`."""
+    caplog.set_level("ERROR")
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
+
+    scenario = create_scenario(
+        [_DummyDiscValueError()],
+        "z",
+        design_space,
+        formulation_name=formulation,
+    )
+    custom_doe_settings = CustomDOE_Settings(samples=array([[1.0], [-1.0], [0.0]]))
+    scenario.execute(custom_doe_settings)
+    assert len(scenario.formulation.problem.database) == 2
+    driver_message = (
+        "The evaluation of the functions at point [-1.] raised a ValueError; "
+        "skipping to the next point."
+    )
+    assert driver_message in caplog.text
+    discipline_message = "The sample is undefined for x < 0."
+    assert discipline_message in caplog.text
+
+
+class Preprocessor:
+    """A function called before each sample generation."""
+
+    def __init__(self, database: Database, parallelize: bool) -> None:
+        """
+        Args:
+            database: The database attached to a problem.
+        """
+        self.database = database
+        if parallelize:
+            self.tuples = get_multi_processing_manager().list()
+        else:
+            self.tuples = []
+
+    def __call__(self, index: int) -> None:
+        """Store (index, n_entries_with_output_values) at index.
+
+        Args:
+            index: The sample index.
+        """
+        self.tuples.insert(
+            index, (index, sum(bool(value) for value in self.database.values()))
+        )
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("add_pre_processors", [False, True])
+def test_preprocessors(custom_doe, n_processes, add_pre_processors):
+    """Test the option preprocessors."""
+    problem = Power2()
+    if add_pre_processors:
+        preprocessor = Preprocessor(problem.database, n_processes > 1)
+        preprocessors = (preprocessor,)
+    else:
+        preprocessors = ()
+    custom_doe.execute(
+        problem,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0, 1.0, 1.0]]),
+            preprocessors=preprocessors,
+            n_processes=n_processes,
+        ),
+    )
+    assert len(problem.database) == 1
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 0)]
+    custom_doe.execute(
+        problem,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]),
+            preprocessors=preprocessors,
+        ),
+    )
+    assert len(problem.database) == 3
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 1), (1, 1), (2, 2), (0, 0)]
+
+
+density = {"steel": 7.8, "aluminium": 2.7, "titanium": 4.5}
+"""The density of the materials."""
+
+
+class MaterialDiscipline(Discipline):
+    """A discipline computing `y = density[material] * x` from a material label."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_types({"material": str, "x": ndarray})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {"material": "steel", "x": array([1.0])}
+        self.labels = []
+
+    def _run(self, input_data: StrKeyMapping):
+        material = input_data["material"]
+        self.labels.append(material)
+        return {"y": density[material] * input_data["x"]}
+
+
+class VectorizedMaterialDiscipline(Discipline):
+    """A discipline computing `y = density[material] * x` from material labels."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_types({"material": ndarray, "x": ndarray})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = {
+            "material": array(["steel"]),
+            "x": array([1.0]),
+        }
+        self.labels = []
+
+    def _run(self, input_data: StrKeyMapping):
+        material = input_data["material"]
+        self.labels.extend(material)
+        return {"y": array([density[label] for label in material]) * input_data["x"]}
+
+
+@pytest.fixture
+def material_design_space() -> DesignSpace:
+    """A design space with a categorical variable and a real one."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=1.0)
+    return design_space
+
+
+def test_full_factorial_on_a_categorical_variable(material_design_space) -> None:
+    """Check that a full-factorial DOE samples a categorical variable."""
+    discipline = MaterialDiscipline()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3, 2]))
+
+    # The discipline reads labels.
+    assert sorted(set(discipline.labels)) == sorted(density)
+    assert len(discipline.labels) == 6
+    # The database stores the positions.
+    database = scenario.formulation.problem.database
+    inputs = array([x.wrapped_array for x in database])
+    assert_array_equal(inputs, [[i, x] for x in (0.0, 1.0) for i in range(3)])
+    labels = list(density)
+    for x, data in database.items():
+        position, real = x.wrapped_array
+        assert_allclose(data["y"], [density[labels[int(position)]] * real])
+
+    # The dataset shows the labels.
+    dataset = scenario.to_dataset(opt_naming=False)
+    assert list(dataset.get_view(variable_names="material").to_numpy().ravel()) == [
+        labels[i] for _ in range(2) for i in range(3)
+    ]
+
+
+class DifferentiableMaterialDiscipline(MaterialDiscipline):
+    """A material discipline with an analytic Jacobian with respect to `x`."""
+
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+        self._init_jacobian(input_names, output_names)
+        self.jac["y"]["x"] = array([[density[self.io.input_data["material"]]]])
+
+
+def test_full_factorial_on_a_categorical_variable_with_jacobian(
+    material_design_space,
+) -> None:
+    """Check that the gradient stores zeros at the categorical coordinates."""
+    scenario = MDOScenario([DifferentiableMaterialDiscipline()], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3, 2], eval_jac=True))
+
+    labels = list(density)
+    database = scenario.formulation.problem.database
+    assert len(database) == 6
+    for x, data in database.items():
+        position = int(x.wrapped_array[0])
+        assert_almost_equal(data["@y"], [0.0, density[labels[position]]])
+
+
+def test_full_factorial_on_categorical_variables_only_with_jacobian() -> None:
+    """Check that a DOE can evaluate the Jacobian with categorical variables only."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    scenario = MDOScenario([MaterialDiscipline()], design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3], eval_jac=True))
+
+    database = scenario.formulation.problem.database
+    assert len(database) == 3
+    for data in database.values():
+        assert_equal(data["@y"], [0.0])
+
+
+def test_full_factorial_on_categorical_variables_only_with_jacobian_vectorized() -> (
+    None
+):
+    """Check the vectorized Jacobian evaluation with categorical variables only."""
+    design_space = DesignSpace()
+    design_space.add_categorical_variable(
+        "material", ("steel", "aluminium", "titanium")
+    )
+    discipline = VectorizedMaterialDiscipline()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_FULLFACT_Settings(levels=[3], eval_jac=True, vectorize=True))
+
+    database = scenario.formulation.problem.database
+    assert len(database) == 3
+    for data in database.values():
+        # The vectorized evaluation records the (output, input) Jacobian block.
+        assert_equal(data["@y"], [[0.0]])
+
+
+@pytest.mark.parametrize("vectorize", [False, True])
+def test_lhs_on_a_categorical_variable(material_design_space, vectorize) -> None:
+    """Check that an LHS samples every category, also when vectorized."""
+    discipline = (VectorizedMaterialDiscipline if vectorize else MaterialDiscipline)()
+    discipline.cache = None
+    scenario = MDOScenario([discipline], material_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_LHS_Settings(n_samples=30, vectorize=vectorize))
+
+    database = scenario.formulation.problem.database
+    positions = {int(x.wrapped_array[0]) for x in database}
+    assert positions == {0, 1, 2}
+    assert set(discipline.labels) == set(density)

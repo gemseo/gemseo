@@ -22,43 +22,34 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.post.factory import post_factory
+from gemseo.post.som_settings import SOM_Settings
 
 pytestmark = pytest.mark.skipif(
-    not PostFactory().is_available("SOM"),
+    not post_factory.is_available("SOM"),
     reason="SOM plot is not available.",
 )
 
-POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
-SELLAR_PATH = Path(__file__).parent / "modified_sellar_opt_pb.h5"
-SOBIESKI_PATH = Path(__file__).parent / "sobieski_all_gradients.h5"
-
-TEST_PARAMETERS = {
-    "SOM_Power2_annotated": (True, POWER2_PATH, ["SOM_Power2_annotated"]),
-    "SOM_Power2_not_annotated": (False, POWER2_PATH, ["SOM_Power2_not_annotated"]),
-    "SOM_Sellar_annotated": (True, SELLAR_PATH, ["SOM_Sellar_annotated"]),
-    "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
-    "SOM_Sobieski_annotated": (True, SOBIESKI_PATH, ["SOM_Sobieski_annotated"]),
-    "SOM_Sobieski_not_annotated": (
-        False,
-        SOBIESKI_PATH,
-        ["SOM_Sobieski_not_annotated"],
-    ),
-}
+power2_path = Path(__file__).parent / "power2_opt_pb.h5"
+sellar_path = Path(__file__).parent / "modified_sellar_opt_pb.h5"
+sobieski_path = Path(__file__).parent / "sobieski_all_gradients.h5"
 
 
 @pytest.mark.parametrize(
-    ("is_annotated", "h5_path", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("is_annotated", "h5_path"),
+    [
+        (True, power2_path),
+        (False, power2_path),
+        (True, sellar_path),
+        (False, sellar_path),
+        (True, sobieski_path),
+        (False, sobieski_path),
+    ],
 )
-@image_comparison(None)
-def test_som(is_annotated, h5_path, baseline_images) -> None:
+def test_som(is_annotated, h5_path, snapshot_matplotlib) -> None:
     """Test the SOM post-processing."""
     problem = OptimizationProblem.from_hdf(h5_path)
-    PostFactory().execute(
-        problem, post_name="SOM", n_x=4, n_y=3, save=False, annotate=is_annotated
+    post_factory.execute(
+        problem, SOM_Settings(n_x=4, n_y=3, save=False, annotate=is_annotated)
     )

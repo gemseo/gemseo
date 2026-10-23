@@ -1,0 +1,25 @@
+# serializer version: 1
+# name: test_dual_annealing_rejects_integer_variables_without_relaxation
+  '''
+  Algorithm DUAL_ANNEALING is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_scipy_global_rejects_discrete_variables_without_relaxation[DIFFERENTIAL_EVOLUTION]
+  '''
+  Algorithm DIFFERENTIAL_EVOLUTION is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_scipy_global_rejects_discrete_variables_without_relaxation[DUAL_ANNEALING]
+  '''
+  Algorithm DUAL_ANNEALING is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_scipy_global_rejects_discrete_variables_without_relaxation[SHGO]
+  '''
+  Algorithm SHGO is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---

@@ -24,32 +24,38 @@ from unittest.mock import patch
 import matplotlib.pyplot as plt
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.datasets.optimization_metadata import OptimizationMetadata
-from gemseo.post.base_post import BasePost
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.dataset.optimization_dataset import OptimizationDataset
+from gemseo.dataset.optimization_metadata import OptimizationMetadata
+from gemseo.optimization.factory import optimization_library_factory
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post.core.base_post import BasePost
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OptimizationLibraryFactory().execute(rosenbrock, algo_name="L-BFGS-B")
+    optimization_library_factory.execute(rosenbrock, settings=L_BFGS_B_Settings())
     return rosenbrock
 
 
 class NewBasePost(BasePost[BasePostSettings]):
     """A new optimization post processor returning an empty figure."""
 
-    Settings = BasePostSettings
+    settings_class = BasePostSettings
 
     def _plot(self, settings: BasePostSettings) -> None:
         self._add_figure(plt.Figure(), "my_figure")
+
+
+class NewBasePost_Settings(BasePostSettings):  # noqa: N801
+    """The settings of NewBasePost."""
 
 
 class NewBasePostWithoutOptionsGrammar(BasePost):
@@ -59,22 +65,15 @@ class NewBasePostWithoutOptionsGrammar(BasePost):
 def test_fig_size(problem) -> None:
     """Check the effect of fig_size."""
     post = NewBasePost(problem)
-    figure = post.execute(save=False)["my_figure"]
+    figure = post.execute(NewBasePost_Settings(save=False))["my_figure"]
     assert figure.get_figwidth() == 11.0
     assert figure.get_figheight() == 11.0
 
-    figure = post.execute(save=False, fig_size=(10, 20))["my_figure"]
+    figure = post.execute(NewBasePost_Settings(save=False, fig_size=(10, 20)))[
+        "my_figure"
+    ]
     assert figure.get_figwidth() == 10
     assert figure.get_figheight() == 20
-
-
-def test_settings_as_pydantic_model(problem):
-    """Check that settings can be passed as a Pydantic model."""
-    post = NewBasePost(problem)
-    settings = BasePostSettings(save=False, fig_size=(10, 20))
-    figure = post.execute(settings_model=settings)["my_figure"]
-    assert figure.get_figwidth() == 10.0
-    assert figure.get_figheight() == 20.0
 
 
 @pytest.mark.parametrize("save", [True, False])
@@ -83,11 +82,11 @@ def test_show_close(problem, save, show) -> None:
     """Check the use of show and close."""
     post = NewBasePost(problem)
     with (
-        patch("gemseo.utils.matplotlib_figure.plt.show") as show_,
-        patch("gemseo.utils.matplotlib_figure.plt.close") as close_,
-        patch("gemseo.post.base_post.save_show_figure") as save_show_figure,
+        patch("gemseo.util.matplotlib_figure.plt.show") as show_,
+        patch("gemseo.util.matplotlib_figure.plt.close") as close_,
+        patch("gemseo.post.core.base_post.save_show_figure") as save_show_figure,
     ):
-        post.execute(save=save, show=show)
+        post.execute(NewBasePost_Settings(save=save, show=show))
 
     save_show_figure.assert_called_once()
     assert save_show_figure.call_args.args[1] is False
@@ -113,21 +112,16 @@ def test_dataset_as_input_for_post(problem):
     assert post.database is None
 
 
-def test_execute_error_with_no_dataset():
+def test_execute_error_with_no_dataset(snapshot):
     """Tests that an error is raised when executing a post without a dataset."""
 
     problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, "f")
-    with pytest.raises(
-        ValueError,
-        match=r"The post-processor NewBasePost cannot"
-        r" be created because there is no dataset "
-        r"to plot.",
-    ):
+    problem.objective = ArrayFunction(lambda x: x, name="f")
+    with assert_exception(ValueError, snapshot):
         NewBasePost(problem)
 
 
-def test_execute_error_with_empty_dataset():
+def test_execute_error_with_empty_dataset(snapshot):
     """Tests that an error is raised when executing a post with an empty dataset."""
     dataset = OptimizationDataset()
     dataset.misc["optimization_metadata"] = OptimizationMetadata(**{
@@ -135,10 +129,5 @@ def test_execute_error_with_empty_dataset():
     })
     post = NewBasePost(dataset)
 
-    with pytest.raises(
-        ValueError,
-        match=r"The post-processor NewBasePost cannot "
-        r"be solved because the optimization problem "
-        r"was not solved.",
-    ):
-        post.execute()
+    with assert_exception(ValueError, snapshot):
+        post.execute(NewBasePost_Settings())

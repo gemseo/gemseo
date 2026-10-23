@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_f_returning_expression
+  "The function must return one or more variables, e.g. 'return x' or 'return x, y',but no expression like 'return a+b' or 'return a+b, y'."
+# ---
+# name: test_fail_wrongly_formatted_function
+  "Two return statements use different variable names; ['y', 'x'] and ['y']."
+# ---
+# name: test_jacobian_shape_mismatch
+  'The shape (3, 1) of the Jacobian matrix of the discipline obj provided by py_jac does not match (output_size, input_size)=(1, 3).'
+# ---
+# name: test_missing_jacobian
+  'The analytic Jacobian is missing.'
+# ---

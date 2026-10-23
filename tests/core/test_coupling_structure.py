@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from os.path import exists
 from random import shuffle
 from typing import TYPE_CHECKING
@@ -31,48 +30,47 @@ from gemseo import create_discipline
 from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.variables import C_1
-from gemseo.problems.mdo.sellar.variables import C_2
-from gemseo.problems.mdo.sellar.variables import OBJ
-from gemseo.problems.mdo.sellar.variables import Y_1
-from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
-from gemseo.utils.testing.helpers import image_comparison
+from gemseo.core.discipline.base_discipline import BaseDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.post._graph_view import GraphView
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.variable import c_1
+from gemseo.problem.mdo.sellar.variable import c_2
+from gemseo.problem.mdo.sellar.variable import obj
+from gemseo.problem.mdo.sellar.variable import y_1
+from gemseo.problem.mdo.sellar.variable import y_2
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.util.testing.helper import assert_exception
 
-from .test_dependency_graph import DISC_DESCRIPTIONS
+from .test_dependency_graph import disc_descriptions
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
-def test_couplings_sellar() -> None:
+def test_couplings_sellar(snapshot) -> None:
     """Verify the strong/weak/total couplings of Sellar pb."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     coupling_structure = CouplingStructure(disciplines)
 
     strong_couplings = coupling_structure.strong_couplings
     weak_couplings = coupling_structure.weak_couplings
-    assert strong_couplings == [Y_1, Y_2]
-    assert weak_couplings == [C_1, C_2, OBJ]
+    assert strong_couplings == [y_1, y_2]
+    assert weak_couplings == [c_1, c_2, obj]
 
     input_coupl = coupling_structure.get_input_couplings(disciplines[1])
-    assert input_coupl == [Y_1]
+    assert input_coupl == [y_1]
     input_coupl = coupling_structure.get_input_couplings(disciplines[2])
-    assert input_coupl == [Y_1, Y_2]
+    assert input_coupl == [y_1, y_2]
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("There is no discipline with an output variable named 'foo'."),
-    ):
+    with assert_exception(ValueError, snapshot):
         coupling_structure.find_discipline("foo")
 
 
@@ -85,7 +83,7 @@ def test_strong_weak_coupling() -> None:
     assert s1_o_weak == ["y_14"]
 
 
-def test_n2(tmp_wd) -> None:
+def test_n2(tmp_wd, snapshot) -> None:
     """Verify the strong/weak/total couplings of Sellar pb."""
     disciplines = [
         SobieskiStructure(),
@@ -100,7 +98,7 @@ def test_n2(tmp_wd) -> None:
     coupling_structure.plot_n2_chart("n2_2.png")
     assert exists("n2_2.png")
 
-    disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
+    disc_shuff = list(disc_descriptions["16"].items())
     shuffle(disc_shuff)
     disc_shuff = dict(disc_shuff)
     disciplines = create_disciplines_from_desc(disc_shuff)
@@ -111,9 +109,7 @@ def test_n2(tmp_wd) -> None:
     assert exists(fname)
 
     coupling_structure = CouplingStructure([disciplines[0]])
-    with pytest.raises(
-        ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
-    ):
+    with assert_exception(ValueError, snapshot):
         coupling_structure.plot_n2_chart("n2_3.png", False)
 
 
@@ -149,7 +145,7 @@ class SelfCoupledDisc(Discipline):
         self.io.input_grammar.defaults["y"] = array([0.2])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["y"] = 1.0 - self.io.data["y"]
+        self.io.output_data["y"] = 1.0 - input_data["y"]
 
 
 def get_strong_couplings(analytic_expressions):
@@ -190,44 +186,39 @@ def test_strong_couplings_self_coupled() -> None:
 
 
 @pytest.mark.parametrize(
-    ("show_data_names", "descriptions", "baseline_images"),
+    ("show_data_names", "descriptions"),
     [
         (
             False,
             ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}),
-            ["n_2_no_coupling"],
         ),
-        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}), ["n_2_no_coupling"]),
-        (
-            False,
-            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
-            ["n_2_coupling_no_names"],
-        ),
+        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"})),
+        (False, ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"})),
         (
             True,
             ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
-            ["n_2_coupling_names"],
         ),
         (
             False,
             ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
-            ["n_2_self_coupled_no_names"],
         ),
         (
             True,
             ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
-            ["n_2_self_coupled"],
         ),
     ],
 )
-@image_comparison(None)
-def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) -> None:
+def test_n2_no_coupling(
+    tmp_wd,
+    show_data_names,
+    descriptions,
+    snapshot_matplotlib,
+) -> None:
     """Test that an N2 plot is generated correctly when there are no couplings.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
-        baseline_images: The reference images to be compared.
-        show_data_names: If ``True``, show the names of the coupling data ;
+        show_data_names: If `True`, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.
@@ -239,7 +230,7 @@ def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) 
     ]
 
     CouplingStructure(disciplines).plot_n2_chart(
-        f"{baseline_images[0]}.png", show_data_names
+        show_data_names=show_data_names, save=False
     )
 
 
@@ -277,3 +268,43 @@ def test_check_disciplines_consistency() -> None:
         CouplingStructure(disciplines)
 
     assert func.call_args.args == (disciplines, True, False)
+
+
+class D1(BaseDiscipline):
+    def __init__(self):
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a"])
+        self.io.output_grammar.update_from_names(["b"])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"b": input_data["a"]}
+
+
+class D2(BaseDiscipline):
+    def __init__(self):
+        super().__init__()
+        self.io.input_grammar.update_from_names(["b"])
+        self.io.output_grammar.update_from_names(["c"])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"c": input_data["b"]}
+
+
+def test_from_base_discipline():
+    """Verify that a CouplingStructure can be created from BaseDiscipline objects,
+    and not only from Discipline objects.
+    """
+    coupling_structure = CouplingStructure((D1(), D2()))
+    graph_view = coupling_structure.graph.render_full_graph("")
+    assert isinstance(graph_view, GraphView)
+    expected = """digraph {
+	D1 -> D2 [label=b color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
+
+b, b, b" penwidth=1.0]
+	D2 -> _D2 [label=c color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2'
+
+c, c" penwidth=1.0]
+	_D2 [style=invis]
+}
+"""  # noqa: E501
+    assert str(graph_view) == expected

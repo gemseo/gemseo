@@ -17,10 +17,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a scatter plot from a :class:`.Dataset`.
+r"""Draw a scatter plot from a [Dataset][gemseo.dataset.dataset.Dataset].
 
-A :class:`.Scatter` plot represents a set of points
-:math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
+A [Scatter][gemseo.post.dataset.scatter.Scatter] plot represents a set of points
+$\{x_i,y_i\}_{1\leq i \leq n}$ as markers on a classical plot
 where the color of points can be heterogeneous.
 """
 
@@ -28,48 +28,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.string_tools import get_name_and_component
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset._trend import TrendFunctionCreator
-    from gemseo.typing import RealArray
-    from gemseo.utils.string_tools import VariableType
-
-from gemseo.post.dataset._trend import Trend as _Trend
+    from gemseo.util.typing import RealArray
 
 
-class Scatter(DatasetPlot):
+class Scatter(BaseDatasetPlot[Scatter_Settings]):
     """Plot curve y versus x."""
 
-    Trend = _Trend
-    """The type of trend."""
-
-    def __init__(
-        self,
-        dataset: Dataset,
-        x: VariableType,
-        y: VariableType,
-        trend: Trend | TrendFunctionCreator = Trend.NONE,
-    ) -> None:
-        """
-        Args:
-            x: The name of the variable on the x-axis,
-                with its optional component if not ``0``,
-                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
-            y: The name of the variable on the y-axis,
-                with its optional component if not ``0``,
-                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
-            trend: The trend function to be added on the scatter plots
-                or a function creating a trend function from a set of *xy*-points.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            x=get_name_and_component(x),
-            y=get_name_and_component(y),
-            trend=trend,
-        )
+    settings_class = Scatter_Settings
 
     def _create_specific_data_from_dataset(
         self,
@@ -79,19 +48,21 @@ class Scatter(DatasetPlot):
             The values of the points on the x-axis,
             the values of the points on the y-axis.
         """  # noqa: D205, D212, D415
-        x, x_comp = self._specific_settings.x
-        y, y_comp = self._specific_settings.y
-        self.color = self.color or "blue"
+        x, x_comp = self.settings.x
+        y, y_comp = self.settings.y
+        self.settings.set_colors(self.settings.color or "blue")
         x_values = self.dataset.get_view(variable_names=x, components=x_comp).to_numpy()
         y_values = self.dataset.get_view(variable_names=y, components=y_comp).to_numpy()
-        if self.dataset.variable_names_to_n_components[x] == 1:
-            self.xlabel = self.xlabel or x
-        else:
-            self.xlabel = self.xlabel or f"{x}({x_comp})"
+        if "xlabel" not in self.settings.model_fields_set:
+            if self.dataset.variable_name_to_n_components[x] == 1:
+                self.settings.xlabel = x
+            else:
+                self.settings.xlabel = f"{x}({x_comp})"
 
-        if self.dataset.variable_names_to_n_components[y] == 1:
-            self.ylabel = self.ylabel or y
-        else:
-            self.ylabel = self.ylabel or f"{y}({y_comp})"
+        if "ylabel" not in self.settings.model_fields_set:
+            if self.dataset.variable_name_to_n_components[y] == 1:
+                self.settings.ylabel = y
+            else:
+                self.settings.ylabel = f"{y}({y_comp})"
 
         return x_values, y_values

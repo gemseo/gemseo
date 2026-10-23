@@ -16,23 +16,25 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NegativeInt
 from pydantic import PositiveInt
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
-class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "GradientSensitivity"
-
+class GradientSensitivity_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     iteration: NegativeInt | PositiveInt | None = Field(
         default=None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "
-        "e.g. ``5`` for the 5-th iteration or ``-2`` for the penultimate one. "
-        "If ``None``, use the iteration of the optimum.",
+        "e.g. `5` for the 5-th iteration or `-2` for the penultimate one. "
+        "If `None`, use the iteration of the optimum.",
     )
     scale_gradients: bool = Field(
         default=False,
@@ -42,14 +44,13 @@ class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
         default=False,
         description="Whether to compute the gradients at the selected iteration "
         "if they were not computed by the algorithm."
-        "\\n\\n.. warning::\\n"
+        "\\n\\nWarning:\\n"
         "Activating this option may add considerable computation time depending "
         "on the cost of the gradient evaluation. "
         "This option will not compute the gradients if the "
-        ":class:`.OptimizationProblem` instance was imported from an HDF5 "
-        "file. This option requires an :class:`.OptimizationProblem` with a "
-        "gradient-based algorithm.",
+        "[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]"
+        " instance was imported from an HDF5 "
+        "file. This option requires an "
+        "[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]"
+        " with a gradient-based algorithm.",
     )
-
-
-update_field(GradientSensitivity_Settings, "fig_size", default=(10.0, 10.0))

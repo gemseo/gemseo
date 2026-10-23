@@ -1,0 +1,33 @@
+# serializer version: 1
+# name: test_custom_anchor_points_error
+  'The number of custom anchor points must be the same as the number of objectives 2; got 1.'
+# ---
+# name: test_custom_anchor_points_error.1
+  'The custom anchor points must be of dimension 2; got [2, 3]'
+# ---
+# name: test_custom_phi_betas_error
+  'The custom phi_beta values must be of dimension 2; got [2, 3]'
+# ---
+# name: test_exclusive_settings_error
+  'The custom_anchor_points and custom_phi_betas settings cannot be set at the same time.'
+# ---
+# name: test_min_n_sub_optim
+  'The number of sub-optimization problems must be strictly greater than the number of objectives 3; got 3.'
+# ---
+# name: test_mono_objective_error
+  'MNBI optimizer is not suitable for mono-objective problems.'
+# ---
+# name: test_normalize_exception
+  '''
+  1 validation error for MNBI_Settings
+  normalize_design_space
+    Value error, The mNBI algo does not allow to normalize the design space at the top level, only the sub-optimizations accept design space normalization. To do this, pass the setting `normalize_design_space` to `sub_optim_algo_settings`. [type=value_error, input_value=True, input_type=bool]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_protected_const
+  'The constraint name beta_sub_optim_constraint is protected when using MNBI optimizer.'
+# ---
+# name: test_unfeasible_solution
+  'No feasible optimum found for the 0-th objective function.'
+# ---

@@ -1,0 +1,28 @@
+# serializer version: 1
+# name: test_nan_input_stops_even_without_database
+  'Found a NaN in the input array [ 1. nan].'
+# ---
+# name: test_nan_input_stops_the_jacobian
+  'Found a NaN in the input array [ 1. nan].'
+# ---
+# name: test_nan_input_stops_the_output
+  'Found a NaN in the input array [ 1. nan].'
+# ---
+# name: test_nan_output_is_recorded_before_stopping
+  'Found a NaN in the output data of the function f evaluated at the input array [1. 2.].'
+# ---
+# name: test_vectorized_densified_legacy_sparse_nan_jacobian_stops_the_run
+  'Found a NaN in the output data of the function f evaluated at the input array [3. 4.].'
+# ---
+# name: test_vectorized_nan_jacobian_stops_the_run[False]
+  'Found a NaN in the output data of the function f evaluated at the input array [3. 4.].'
+# ---
+# name: test_vectorized_nan_jacobian_stops_the_run[True]
+  'Found a NaN in the output data of the function f evaluated at the input array [3. 4.].'
+# ---
+# name: test_vectorized_nan_jacobian_stops_the_run_without_database
+  'Found a NaN in the output data of the function f evaluated at the input array [3. 4.].'
+# ---
+# name: test_vectorized_nan_jacobian_stops_the_run_without_input_space
+  'Found a NaN in the output data of the function f evaluated at the input array [3. 4.].'
+# ---

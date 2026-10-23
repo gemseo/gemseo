@@ -34,15 +34,15 @@ from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
-from gemseo.post.core.hessians import SR1Approx
+from gemseo.post._engine.colormap import parula
+from gemseo.post._engine.hessian import SR1Approx
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.quad_approx_settings import QuadApprox_Settings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class QuadApprox(BasePost[QuadApprox_Settings]):
@@ -53,9 +53,9 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
     The function index can be passed as option.
     """
 
-    Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
+    settings_class: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: QuadApprox_Settings) -> None:
         function = settings.function
@@ -68,14 +68,14 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
             )
             if not (
                 optimization_metadata.minimize_objective
-                or optimization_metadata.use_standardized_objective
+                or settings.use_standardized_objective
             ):
                 grad_opt *= -1
                 b_mat *= -1
                 function = optimization_metadata.standardized_objective_name
         else:
-            if function in optimization_metadata.output_names_to_constraint_names:
-                function = optimization_metadata.output_names_to_constraint_names[
+            if function in optimization_metadata.output_name_to_constraint_names:
+                function = optimization_metadata.output_name_to_constraint_names[
                     function
                 ][0]
 
@@ -101,7 +101,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
             function: The function name to build the quadratic approximation.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
+                If `None` and if the output is multidimensional, an error is raised.
 
         Returns:
              The approximation.
@@ -138,7 +138,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
         # SymLog is a symmetric log scale adapted to negative values
         img = ax.imshow(
             hessian,
-            cmap=PARULA,
+            cmap=parula,
             interpolation="nearest",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold),
         )

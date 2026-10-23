@@ -36,19 +36,19 @@ from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ones_like
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
-from gemseo.post.core.hessians import SR1Approx
+from gemseo.core.problem.database import Database
+from gemseo.post._engine.colormap import parula
+from gemseo.post._engine.hessian import SR1Approx
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.hessian_history_settings import HessianHistory_Settings
 
 
 class HessianHistory(BasePost):
     """Plot the history of the diagonal of the Hessian matrix."""
 
-    Settings: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
+    settings_class: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: HessianHistory_Settings) -> None:
         obj_grad_name = Database.get_gradient_name(
@@ -77,7 +77,7 @@ class HessianHistory(BasePost):
 
         # Add first iteration blank
         diag = array([ones_like(diag[0]), *diag]).T
-        if self._change_obj:
+        if self._change_objective(settings.use_standardized_objective):
             diag = -diag
 
         variable_names = settings.variable_names
@@ -103,7 +103,7 @@ class HessianHistory(BasePost):
 
         img = ax.imshow(
             diag.real,
-            cmap=PARULA,
+            cmap=parula,
             interpolation="nearest",
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),

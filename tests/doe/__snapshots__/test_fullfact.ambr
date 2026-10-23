@@ -1,0 +1,35 @@
+# serializer version: 1
+# name: test_fullfact_error[options0-ValueError-OpenTURNS-OT_FULLFACT]
+  "Either 'n_samples' or 'levels' is required as an input parameter for the full-factorial DOE."
+# ---
+# name: test_fullfact_error[options0-ValueError-PyDOELibrary-PYDOE_FULLFACT]
+  "Either 'n_samples' or 'levels' is required as an input parameter for the full-factorial DOE."
+# ---
+# name: test_fullfact_error[options1-ValueError-OpenTURNS-OT_FULLFACT]
+  "Only one input parameter among 'n_samples' and 'levels' must be given for the full-factorial DOE."
+# ---
+# name: test_fullfact_error[options1-ValueError-PyDOELibrary-PYDOE_FULLFACT]
+  "Only one input parameter among 'n_samples' and 'levels' must be given for the full-factorial DOE."
+# ---
+# name: test_fullfact_error[options2-ValidationError-OpenTURNS-OT_FULLFACT]
+  '''
+  2 validation errors for OT_FULLFACT_Settings
+  levels.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  levels.json-or-python[json=list[constrained-int],python=chain[is-instance[Sequence],function-wrap[sequence_validator()]]]
+    Input should be an instance of Sequence [type=is_instance_of, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  '''
+# ---
+# name: test_fullfact_error[options2-ValidationError-PyDOELibrary-PYDOE_FULLFACT]
+  '''
+  2 validation errors for PYDOE_FULLFACT_Settings
+  levels.json-or-python[json=list[constrained-int],python=chain[is-instance[Sequence],function-wrap[sequence_validator()]]]
+    Input should be an instance of Sequence [type=is_instance_of, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  levels.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---

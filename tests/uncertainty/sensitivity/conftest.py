@@ -16,17 +16,20 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 
 
 @pytest.fixture(scope="module")
 def discipline_with_constant_output_and_space() -> tuple[
-    AnalyticDiscipline, ParameterSpace
+    AnalyticDiscipline, RandomSpace
 ]:
-    """A discipline with a constant output and its uncertain space."""
+    """A discipline with a constant output and its random space."""
     discipline = AnalyticDiscipline({"varying": "x1+x2", "constant": "1"})
-    uncertain_space = ParameterSpace()
-    uncertain_space.add_random_variable("x1", "OTNormalDistribution")
-    uncertain_space.add_random_variable("x2", "OTNormalDistribution")
-    return discipline, uncertain_space
+    random_space = RandomSpace()
+    random_space.add_variable("x1", OTNormalDistribution_Settings())
+    random_space.add_variable("x2", OTNormalDistribution_Settings())
+    return discipline, random_space

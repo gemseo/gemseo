@@ -19,12 +19,16 @@ from __future__ import annotations
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Final
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from graphviz import Digraph
 
-from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.util.file_path_manager import FilePathManager
+
+if TYPE_CHECKING:
+    from gemseo.util.typing import StrPath
 
 
 class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
@@ -62,13 +66,13 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         penwidth: str = "1.0"
         """The default line thickness color."""
 
-    __HIDDEN_NODE_STYLE: Final[str] = "invis"
+    __hidden_node_style: Final[str] = "invis"
     """The style of the hidden nodes."""
 
-    __FORWARD: Final[str] = "forward"
-    __NONE: Final[str] = "none"
-    __DOT_SUFFIX: Final[str] = ".dot"
-    __DIR: Final[str] = "dir"
+    __forward: Final[str] = "forward"
+    __none: Final[str] = "none"
+    __dot_suffix: Final[str] = ".dot"
+    __dir: Final[str] = "dir"
 
     def __init__(self, is_directed: bool = True) -> None:
         """
@@ -76,7 +80,7 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
             is_directed: Whether to use directed edges by default.
         """  # noqa: D205, D212, D415
         super().__init__()
-        self.__dir = self.__FORWARD if is_directed else self.__NONE
+        self.__edge_dir = self.__forward if is_directed else self.__none
 
     def node(  # noqa:D102
         self, name: str, label: str | None = None, attributes=None, **attrs: str
@@ -95,7 +99,7 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         new_attrs = asdict(self.DefaultEdgeAttributeValues())
         new_attrs.update(attrs)
-        new_attrs.setdefault(self.__DIR, self.__dir)
+        new_attrs.setdefault(self.__dir, self.__edge_dir)
         super().edge(
             tail_name, head_name, label=label, _attributes=attributes, **new_attrs
         )
@@ -106,12 +110,12 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         Args:
             name: The name of the node.
         """
-        super().node(name, style=self.__HIDDEN_NODE_STYLE)
+        super().node(name, style=self.__hidden_node_style)
 
     def visualize(
         self,
         show: bool = True,
-        file_path: str | Path = "",
+        file_path: StrPath = "",
         clean_up: bool = True,
     ) -> None:
         """Create the visualization and save it on the disk.
@@ -120,14 +124,14 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
             show: Whether to display the graph
                 with the default application associated to the file extension.
             file_path: The file path with extension to save the graph.
-                If ``""``, use the class name with PNG format.
+                If `""`, use the class name with PNG format.
             clean_up: Whether to remove the source files.
         """
         file_path = Path(
             file_path or f"{FilePathManager.to_snake_case(self.__class__.__name__)}.png"
         )
         self.render(
-            file_path.with_suffix(self.__DOT_SUFFIX),
+            file_path.with_suffix(self.__dot_suffix),
             format=file_path.suffix[1:],
             outfile=file_path,
             view=show,

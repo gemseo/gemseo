@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_delitem
+  "'dummy'"
+# ---
+# name: test_getitem
+  "'dummy'"
+# ---
+# name: test_init_error
+  '"The name \'bad-name\' is not in the grammar."'
+# ---
+# name: test_setitem
+  '"The name \'dummy\' is not in the grammar."'
+# ---

@@ -35,7 +35,7 @@ from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import hstack
 
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.correlations_settings import Correlations_Settings
 
 if TYPE_CHECKING:
@@ -43,10 +43,10 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Correlations(BasePost[Correlations_Settings]):
@@ -56,15 +56,15 @@ class Correlations(BasePost[Correlations_Settings]):
     post-processor considers all the correlations greater than a threshold.
     """
 
-    MAXIMUM_CORRELATION_COEFFICIENT: ClassVar[float] = 1.0 - 1e-9
+    maximum_correlation_coefficient: ClassVar[float] = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
-    Settings: ClassVar[type[Correlations_Settings]] = Correlations_Settings
+    settings_class: ClassVar[type[Correlations_Settings]] = Correlations_Settings
 
     def _plot(self, settings: Correlations_Settings) -> None:
         """
         Raises:
-            ValueError: If an element of ``func_names`` is unknown.
+            ValueError: If an element of `func_names` is unknown.
         """  # noqa: D205, D212, D415
         func_names = settings.func_names
         coeff_limit = settings.coeff_limit
@@ -81,7 +81,7 @@ class Correlations(BasePost[Correlations_Settings]):
         if not func_names:
             func_names = all_func_names
 
-        dict_ = optimization_metadata.output_names_to_constraint_names
+        dict_ = optimization_metadata.output_name_to_constraint_names
         func_names = [
             names
             for func_name in func_names
@@ -109,7 +109,7 @@ class Correlations(BasePost[Correlations_Settings]):
         x_history = dataset.design_dataset.to_numpy()
         variable_history = hstack((variable_history, x_history))
         x_names = dataset.get_columns(
-            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+            dataset.get_variable_names(group_name=dataset.design_group)
         )
         variable_names = dataset.get_columns(func_names)
         variable_names.extend(x_names)
@@ -117,7 +117,7 @@ class Correlations(BasePost[Correlations_Settings]):
 
         if (
             optimization_metadata.standardized_objective_name in variable_names
-            and self._change_obj
+            and self._change_objective(settings.use_standardized_objective)
         ):
             obj_index = variable_names.index(
                 optimization_metadata.standardized_objective_name
@@ -128,9 +128,9 @@ class Correlations(BasePost[Correlations_Settings]):
         correlation_coefficients = self.__compute_correlations(variable_history)
         i_corr, j_corr = (
             (np.abs(correlation_coefficients) > coeff_limit)
-            & (np.abs(correlation_coefficients) < self.MAXIMUM_CORRELATION_COEFFICIENT)
+            & (np.abs(correlation_coefficients) < self.maximum_correlation_coefficient)
         ).nonzero()
-        LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
+        logger.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
 
         if i_corr.size <= 16:
             n_plots_x = n_plots_y = 4

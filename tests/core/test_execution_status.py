@@ -19,9 +19,10 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.utils.pickle import from_pickle
-from gemseo.utils.pickle import to_pickle
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,7 +41,7 @@ def test_initial_status(execution_status: ExecutionStatus):
     assert execution_status.value == Status.DONE
 
 
-INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
+initial_to_new_statuses_with_errors = {
     Status.LINEARIZING: {Status.RUNNING, Status.LINEARIZING},
     Status.FAILED: {Status.RUNNING, Status.LINEARIZING},
     Status.RUNNING: {Status.RUNNING, Status.LINEARIZING},
@@ -54,15 +55,15 @@ INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
         (Status.DONE, Status),
         (
             Status.LINEARIZING,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.LINEARIZING],
+            set(Status) - initial_to_new_statuses_with_errors[Status.LINEARIZING],
         ),
         (
             Status.FAILED,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.FAILED],
+            set(Status) - initial_to_new_statuses_with_errors[Status.FAILED],
         ),
         (
             Status.RUNNING,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.RUNNING],
+            set(Status) - initial_to_new_statuses_with_errors[Status.RUNNING],
         ),
     ],
 )
@@ -77,24 +78,22 @@ def test_value_getter_setter(initial_status: Status, new_statuses: Iterable[Stat
 
 
 @pytest.mark.parametrize(
-    ("initial_status", "new_statuses"), INITIAL_TO_NEW_STATUSES_WITH_ERRORS.items()
+    ("initial_status", "new_statuses"), initial_to_new_statuses_with_errors.items()
 )
-def test_value_setter_errors(initial_status: Status, new_statuses: Iterable[Status]):
+def test_value_setter_errors(
+    initial_status: Status, new_statuses: Iterable[Status], snapshot
+):
     """Verify the setter with errors."""
-    for new_status in new_statuses:
+    for new_status in sorted(new_statuses):
         execution_status = ExecutionStatus("")
         execution_status.value = initial_status
-        match = (
-            f" cannot be set to status {new_status} while in status {initial_status}"
-        )
-        with pytest.raises(ValueError, match=match):
+        with assert_exception(ValueError, snapshot):
             execution_status.value = new_status
 
 
-def test_value_setter_error_without_enum(execution_status: ExecutionStatus):
+def test_value_setter_error_without_enum(execution_status: ExecutionStatus, snapshot):
     """Verify the setter error alien status."""
-    match = "'bad' is not a valid ExecutionStatus.Status"
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         execution_status.value = "bad"
 
 
@@ -111,6 +110,7 @@ def test_handle_failure(
     execution_status: ExecutionStatus,
     status: Status,
     enable_discipline_status: bool,
+    snapshot,
 ):
     """Verify the handle method on failure."""
     execution_status.value = Status.DONE
@@ -118,7 +118,7 @@ def test_handle_failure(
     def _raise(msg: str) -> None:
         raise ValueError(msg)
 
-    with pytest.raises(ValueError, match="message"):
+    with assert_exception(ValueError, snapshot):
         execution_status.handle(status, _raise, "message")
     assert execution_status.value == Status.FAILED
 
@@ -128,11 +128,11 @@ def test_handle_bad_initial_status(
     execution_status: ExecutionStatus,
     status: Status,
     enable_discipline_status: bool,
+    snapshot,
 ):
     """Verify the handle method on bad initial status."""
     execution_status.value = Status.LINEARIZING
-    match = f" cannot be set to status {status} while in status LINEARIZING"
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         execution_status.handle(status, lambda: None)
     assert execution_status.value == Status.LINEARIZING
 

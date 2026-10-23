@@ -1,0 +1,129 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#      :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+import pytest
+from numpy import array
+from numpy.testing import assert_equal
+
+from gemseo.doe.factory import doe_library_factory
+from gemseo.space import DesignSpace
+from gemseo.util.testing.helper import assert_exception
+
+from .utils import check_problem_execution
+from .utils import execute_problem
+
+doe_lib_name = "DiagonalDOE"
+
+
+def test_init() -> None:
+    """Check the creation of the library."""
+    if doe_library_factory.is_available(doe_lib_name):
+        doe_library_factory.create(doe_lib_name)
+
+
+def test_invalid_algo(snapshot) -> None:
+    """Check the request of an invalid algorithm."""
+    with assert_exception(ValueError, snapshot):
+        execute_problem("invalid_algo", n_samples=100)
+
+
+def test_diagonal_doe() -> None:
+    """Check the computation of a diagonal DOE."""
+    dim = 3
+    n_samples = 10
+    doe_library = execute_problem("DiagonalDOE", dim=dim, n_samples=n_samples)
+    samples = doe_library.unit_samples
+    assert samples.shape == (n_samples, dim)
+    assert samples[4, 0] == pytest.approx(0.4, rel=0.0, abs=0.1)
+
+
+@pytest.mark.parametrize("dimension", [1, 5])
+def test_diagonal_doe_on_rosenbrock(dimension) -> None:
+    """Check the diagonal DOE on the Rosenbrock problem."""
+    assert (
+        check_problem_execution(
+            dimension,
+            doe_lib_name,
+            lambda algo, dim, n_samples: n_samples,
+            {"n_samples": 13},
+        )
+        is None
+    )
+
+
+@pytest.fixture(scope="module")
+def variables_space():
+    """A design space."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_real_variable("y", lower_bound=0.0, upper_bound=1.0)
+    return design_space
+
+
+def test_compute_doe(variables_space) -> None:
+    """Check the computation of a DOE out of a variables space."""
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(n_samples=3)
+    doe = library.sample_unit_hypercube(variables_space.dimension, settings=settings)
+    assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
+
+
+@pytest.mark.parametrize(
+    ("reverse", "samples"),
+    [
+        (["x"], array([[1.0, 0.0], array([0.5, 0.5]), array([0.0, 1.0])])),
+        (["1"], array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),
+    ],
+)
+def test_reverse(variables_space, reverse, samples) -> None:
+    """Check the sampling of variables in reverse order."""
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
+        n_samples=3, reverse=reverse
+    )
+    doe = library.sample_space(
+        variables_space, settings=settings, use_unit_samples=True
+    )
+    assert_equal(doe, samples)
+
+
+@pytest.mark.parametrize("reverse", [["x"], ["y"]])
+def test_reverse_by_name_when_sampling_by_dimension(reverse) -> None:
+    """Check that a variable name does not reverse a hypercube sampled by dimension.
+
+    The unit hypercube has no variable name,
+    so a name can match neither a component nor the variable spanning it.
+    """
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
+        n_samples=3, reverse=reverse
+    )
+    doe = library.sample_unit_hypercube(2, settings=settings)
+    assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
+
+
+def test_reverse_by_index_when_sampling_by_dimension() -> None:
+    """Check that a component index still reverses a hypercube sampled by dimension."""
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
+        n_samples=3, reverse=["1"]
+    )
+    doe = library.sample_unit_hypercube(2, settings=settings)
+    assert_equal(doe, array([[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]]))

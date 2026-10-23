@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_safely_raises_for_arguments_not_matching_the_signature
+  "_method() missing a required argument: 'x'"
+# ---

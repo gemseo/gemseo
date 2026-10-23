@@ -27,26 +27,27 @@ from typing import ClassVar
 import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 from numpy import array
 from numpy import hstack
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post._engine.colormap import parula
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
     """Parallel coordinates plot."""
 
-    Settings: ClassVar[type[ParallelCoordinates_Settings]] = (
+    settings_class: ClassVar[type[ParallelCoordinates_Settings]] = (
         ParallelCoordinates_Settings
     )
 
@@ -67,16 +68,15 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
         variable_history = hstack((variable_history, x_history))
         variable_names = dataset.get_columns(all_function_names)
         x_names = dataset.get_columns(
-            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+            dataset.get_variable_names(group_name=dataset.design_group)
         )
         # x_names should be the actual names of the designs.
         x_names = [f"x_{i + 1}" for i in range(len(x_names))]
         variable_names.extend(x_names)
-        names_to_sizes = input_space.variable_sizes
         design_names = [
-            repr_variable(name, i, names_to_sizes[name])
-            for name in input_space.variable_names
-            for i in range(names_to_sizes[name])
+            repr_variable(name, i, variable.size)
+            for name, variable in input_space.variables.items()
+            for i in range(variable.size)
         ]
         output_dimension = variable_history.shape[1] - len(design_names)
         design_history = input_space.normalize_vect(
@@ -87,7 +87,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
             optimization_metadata.standardized_objective_name
         )
         objective_history = variable_history[:, objective_index]
-        if self._change_obj:
+        if self._change_objective(settings.use_standardized_objective):
             objective_history = -objective_history
             variable_history[:, objective_index] = objective_history
             function_names[objective_index] = optimization_metadata.objective_name
@@ -145,15 +145,15 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
         ax = plt.gca()
         c_min, c_max = color_criteria.min(), color_criteria.max()
         s_m = matplotlib.cm.ScalarMappable(
-            cmap=PARULA, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
+            cmap=parula, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
         )
         s_m.set_array([])
         color_criteria = (color_criteria - c_min) / (c_max - c_min)
         for i, y_values in enumerate(y_data):
-            ax.plot(x_values, y_values, c=array(PARULA(color_criteria[i])))
+            ax.plot(x_values, y_values, c=array(parula(color_criteria[i])))
 
         for x_value in x_values:
-            ax.axvline(x_value, linewidth=1, color="black")
+            ax.axvline(x_value, linewidth=1, color=rcParams["axes.edgecolor"])
 
         ax.set_xticks(x_values)
         ax.set_xticklabels(x_names, rotation=90)
