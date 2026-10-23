@@ -23,7 +23,16 @@ There is also a page per major version to migrate your code, starting with
 
 ## Version 7.0.0rc0 (2026-10-21)
 
-GEMSEO 7 is a major release: the random variables have their own space, `RandomSpace`, the objects are configured with Pydantic settings instead of keyword arguments, the packages are reorganized by domain with singular names and their public names can be imported from the packages themselves, and new features include the directory manager, reliability analysis and the discrete, categorical and catalog design variables. Most renames keep working with a `DeprecationWarning` for one deprecation cycle and can be migrated with [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo); see also [Upgrading GEMSEO][upgrading-gemseo].
+GEMSEO 7 is a major release:
+
+- the random variables have their own space, `RandomSpace`;
+- the objects are configured with Pydantic settings instead of keyword arguments;
+- the packages are reorganized by domain with singular names,
+  and their public names can be imported from the packages themselves;
+- new features include the directory manager, reliability analysis
+  and the discrete, categorical and catalog design variables.
+
+Most renames keep working with a `DeprecationWarning` for one deprecation cycle and can be migrated with [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo); see also [Upgrading GEMSEO][upgrading-gemseo].
 
 ### Packaging and imports
 
