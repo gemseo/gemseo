@@ -76,20 +76,18 @@ Each settings class declares its fields with their types, default values and des
 which IDEs use for autocompletion and inline documentation.
 
 ```python
-from pydantic import ValidationError
-
 from gemseo.optimization import SLSQP_Settings
 
-try:
-    SLSQP_Settings(max_itre=100)
-except ValidationError as error:
-    print(error)
+SLSQP_Settings(max_itre=100)
+# ValidationError: 1 validation error for SLSQP_Settings
+# max_itre
+#   Extra inputs are not permitted [type=extra_forbidden, input_value=100, input_type=int]
 
 settings = SLSQP_Settings(max_iter=100)
-try:
-    settings.max_iter = "many"
-except ValidationError as error:
-    print("Rejected on assignment.")
+settings.max_iter = "many"
+# ValidationError: 1 validation error for SLSQP_Settings
+# max_iter
+#   Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='many', input_type=str]
 ```
 
 Settings are hierarchical.
