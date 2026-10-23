@@ -612,7 +612,7 @@ PairPlot(dataset, PairPlot_Settings(variable_names=("x", "y"), use_ranks=True)).
 
 ![Pair plot of two dependent normal random variables, with their ranks in the upper part](../assets/images/whats_new_7/pair_plot_copula.png){ width="400" }
 
-### Probability distributions
+### Probability distributions { #whats-new-7-probability-distributions }
 
 Discrete random variables have dedicated distributions:
 [OTFiniteDiscreteDistribution][gemseo.uncertainty.distribution.openturns.finite_discrete.OTFiniteDiscreteDistribution]
