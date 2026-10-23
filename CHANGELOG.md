@@ -100,7 +100,13 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - `gemseo.utils.derivatives.error_estimators` → `gemseo.util.derivative.error_estimator`
     - `gemseo.post.dataset.bars` → `gemseo.post.dataset.bar_plot` (matching the `BarPlot` class)
 
-    Exceptions keeping their plural form: modules named after a plural class or concept, e.g. `lagrange_multipliers` (`LagrangeMultipliers`), `constraint_tolerances` (`ConstraintTolerances`), `termination_criteria`, `curves` (`Curves`), `properties` (`GrammarProperties`).
+    Exceptions keeping their plural form: modules named after a plural class or concept, e.g.:
+
+    - `lagrange_multipliers` (`LagrangeMultipliers`)
+    - `constraint_tolerances` (`ConstraintTolerances`)
+    - `termination_criteria`
+    - `curves` (`Curves`)
+    - `properties` (`GrammarProperties`)
 
 - **Breaking change** The `gemseo.algos` package was split by domain:
     - `gemseo.algos.opt` → `gemseo.optimization`, a top-level package which also hosts the optimization problem definition:
@@ -108,7 +114,11 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
         - `gemseo.algos.optimization_result` → `gemseo.optimization.result`
         - `gemseo.algos.optimization_history` → `gemseo.optimization.history`
         - `gemseo.algos.multiobjective_optimization_result` → `gemseo.optimization.multiobjective_result`
-        - `gemseo.algos.lagrange_multipliers`, `gemseo.algos.post_optimal_analysis`, `gemseo.algos.constraint_tolerances`, `gemseo.algos.aggregation` and `gemseo.algos.pareto` moved to `gemseo.optimization` accordingly.
+        - `gemseo.algos.lagrange_multipliers` → `gemseo.optimization.lagrange_multipliers`
+        - `gemseo.algos.post_optimal_analysis` → `gemseo.optimization.post_optimal_analysis`
+        - `gemseo.algos.constraint_tolerances` → `gemseo.optimization.constraint_tolerances`
+        - `gemseo.algos.aggregation` → `gemseo.optimization.aggregation`
+        - `gemseo.algos.pareto` → `gemseo.optimization.pareto`
     - `gemseo.algos.doe` → `gemseo.doe`, a top-level package.
     - `gemseo.algos.linear_solvers` → `gemseo.linear`, a top-level package:
         - `gemseo.algos.linear_solvers.linear_problem` → `gemseo.linear.problem`
@@ -125,11 +135,39 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
         - `gemseo.algos.database` → `gemseo.core.problem.database`
         - `gemseo.algos.evaluation_problem` → `gemseo.core.problem.evaluation`
         - `gemseo.algos.evaluation_counter` → `gemseo.core.problem.counter`
-    - The generic termination criteria of `gemseo.algos.stop_criteria` (`TerminationCriterion`, `FunctionIsNan`, `DesvarIsNan`, `MaxIterReachedException`, `MaxTimeReached`, `FtolReached` and `XtolReached`) are now in `gemseo.core.problem.termination_criterion`; the optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
+    - The generic termination criteria of `gemseo.algos.stop_criteria` are now in `gemseo.core.problem.termination_criterion`:
+        - `TerminationCriterion`
+        - `FunctionIsNan`
+        - `DesvarIsNan`
+        - `MaxIterReachedException`
+        - `MaxTimeReached`
+        - `FtolReached`
+        - `XtolReached`
+    - The optimization-specific residue (`KKTReached` and the tolerance testers) stays in `gemseo.optimization.termination_criteria`.
     - `gemseo.algos.hashable_ndarray` → `gemseo.util.hashable_ndarray`
     - `gemseo.algos.sequence_transformer` → `gemseo.mda.sequence_transformer`
 
-- **Breaking change** The base classes and settings extenders of each algorithm family were gathered into a domain `core` package: `gemseo.doe.core`, `gemseo.linear.core`, `gemseo.ode.core`, `gemseo.optimization.core`, `gemseo.mda.core`, `gemseo.formulation.core`, `gemseo.post.core`, `gemseo.uncertainty.distribution.core`, `gemseo.uncertainty.sensitivity.core`, `gemseo.uncertainty.statistic.core`, and, in `gemseo.machine_learning`, the `core`, `regression.core`, `classification.core`, `clustering.core`, `linear_model_fitting.core`, `transformer.core` and `resampling.core` packages. [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
+- **Breaking change** The base classes and settings extenders of each algorithm family were gathered into a domain `core` package:
+    - `gemseo.doe.core`
+    - `gemseo.linear.core`
+    - `gemseo.ode.core`
+    - `gemseo.optimization.core`
+    - `gemseo.mda.core`
+    - `gemseo.formulation.core`
+    - `gemseo.post.core`
+    - `gemseo.uncertainty.distribution.core`
+    - `gemseo.uncertainty.sensitivity.core`
+    - `gemseo.uncertainty.statistic.core`
+    - in `gemseo.machine_learning`:
+        - `core`
+        - `regression.core`
+        - `classification.core`
+        - `clustering.core`
+        - `linear_model_fitting.core`
+        - `transformer.core`
+        - `resampling.core`
+
+    [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
 - **Breaking change** The protected (`_`-prefixed) ALL_CAPS class attributes are now named in lower snake case too, e.g.:
     - `_ATTR_NOT_TO_SERIALIZE` → `_attr_not_to_serialize`
@@ -139,7 +177,14 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
     Subclasses overriding these attributes should be updated to use the new names.
 
-- **Breaking change** The old ALL_CAPS names keep working with a `DeprecationWarning`, except when assigned on the class itself, e.g. `SomeClass.OLD_NAME = value`, which silently has no effect; assign the new name instead, in particular for `OTGaussianProcessRegressor.max_size_for_lapack`, `hmatrix_assembly_epsilon` and `hmatrix_recompression_epsilon`, `BaseGrammar.data_converter_class`, `Correlations.maximum_correlation_coefficient`, `BaseDatasetPlot.default_plot_engine`, `SobieskiProblem.use_original_design_variables_order`, `BaseDiscipline.grammar_directory` and `CallableParallelExecution.multi_processing_start_method`.
+- **Breaking change** The old ALL_CAPS names keep working with a `DeprecationWarning`, except when assigned on the class itself, e.g. `SomeClass.OLD_NAME = value`, which silently has no effect; assign the new name instead, in particular for:
+    - `OTGaussianProcessRegressor.max_size_for_lapack`, `hmatrix_assembly_epsilon` and `hmatrix_recompression_epsilon`
+    - `BaseGrammar.data_converter_class`
+    - `Correlations.maximum_correlation_coefficient`
+    - `BaseDatasetPlot.default_plot_engine`
+    - `SobieskiProblem.use_original_design_variables_order`
+    - `BaseDiscipline.grammar_directory`
+    - `CallableParallelExecution.multi_processing_start_method`
 
 - **Removed** Snippets have been removed from docstrings. Use the examples in the documentation instead. [#1700](https://gitlab.com/gemseo/dev/gemseo/-/issues/1700)
 
@@ -150,11 +195,34 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 - **Removed** The `strenum` dependency was removed; the enumerations derive from `enum.StrEnum`, with the same member names and values. `enum.StrEnum` is not a subclass of `strenum.StrEnum`, so code that is type-annotated with `strenum.StrEnum` must use `enum.StrEnum`.
 
 - **Removed** The following names were removed with no replacement; importing one raises an error saying so:
-    - the type aliases `MNBIOptionsType` of `gemseo.algos.opt.mnbi.mnbi`, `DisciplineIOMapping` of `gemseo.core.derivatives.chain_rule`, `Operand1T` and `Operand2T` of `gemseo.core.derivatives.jacobian_operator`, `OperatorType` of `gemseo.core.mdo_functions.mdo_function`, `DOEAlgorithmName` of `gemseo.mlearning.regression.algos.ot_gpr_settings`, `SavedObjectType` of `gemseo.mlearning.regression.algos.rbf`, `ScatterMatrixOption` of `gemseo.post.dataset.scatter_plot_matrix`, `DatasetPlotOption` of `gemseo.post.mlearning.ml_regressor_quality_viewer`, `ScenarioInputDataType` of `gemseo.scenarios.base_scenario`, and `ParametersType` and `StandardParametersType` of `gemseo.uncertainty.distributions.base_distribution` and `gemseo.uncertainty.distributions.scalar_distribution_mixin`;
-    - the helper `copy_field_opt` of `gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings`, `gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings`, `gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings` and `gemseo.formulations.bilevel_bcd_settings`;
-    - the version flags `OT_1_23`, `PEARSON_METHOD_NAME` and the function `create_trend_basis` of `gemseo.utils.compatibility.openturns`, and `SCIPY_GREATER_THAN_1_14`, `SCIPY_LOWER_THAN_1_12` and `TOL_OPTION` of `gemseo.utils.compatibility.scipy`;
+    - the type aliases:
+        - `MNBIOptionsType` of `gemseo.algos.opt.mnbi.mnbi`
+        - `DisciplineIOMapping` of `gemseo.core.derivatives.chain_rule`
+        - `Operand1T` and `Operand2T` of `gemseo.core.derivatives.jacobian_operator`
+        - `OperatorType` of `gemseo.core.mdo_functions.mdo_function`
+        - `DOEAlgorithmName` of `gemseo.mlearning.regression.algos.ot_gpr_settings`
+        - `SavedObjectType` of `gemseo.mlearning.regression.algos.rbf`
+        - `ScatterMatrixOption` of `gemseo.post.dataset.scatter_plot_matrix`
+        - `DatasetPlotOption` of `gemseo.post.mlearning.ml_regressor_quality_viewer`
+        - `ScenarioInputDataType` of `gemseo.scenarios.base_scenario`
+        - `ParametersType` and `StandardParametersType` of `gemseo.uncertainty.distributions.base_distribution` and `gemseo.uncertainty.distributions.scalar_distribution_mixin`
+    - the helper `copy_field_opt` of:
+        - `gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings`
+        - `gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings`
+        - `gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings`
+        - `gemseo.formulations.bilevel_bcd_settings`
+    - the version flags and compatibility helpers:
+        - `OT_1_23`, `PEARSON_METHOD_NAME` and the function `create_trend_basis` of `gemseo.utils.compatibility.openturns`
+        - `SCIPY_GREATER_THAN_1_14`, `SCIPY_LOWER_THAN_1_12` and `TOL_OPTION` of `gemseo.utils.compatibility.scipy`
     - `DummyBaseDiscipline` of `gemseo.utils.discipline` and `synchronized_hashes` of `gemseo.utils.locks`;
-    - the pytest helpers `baseline_images`, `disable_fault_handler`, `import_or_skip_xlwings`, `is_xlwings_usable`, `original_image_directories`, `skip_if_xlwings_is_not_usable` and `skip_if_xlwings_is_usable` of `gemseo.utils.testing.pytest_conftest`.
+    - the pytest helpers of `gemseo.utils.testing.pytest_conftest`:
+        - `baseline_images`
+        - `disable_fault_handler`
+        - `import_or_skip_xlwings`
+        - `is_xlwings_usable`
+        - `original_image_directories`
+        - `skip_if_xlwings_is_not_usable`
+        - `skip_if_xlwings_is_usable`
 
 - **Added** The public classes of a package can now be imported directly from it, instead of from the module defining them:
     - the MDA solver classes from `gemseo.mda`, e.g. `from gemseo.mda import MDAJacobi`,
@@ -169,7 +237,22 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - the machine learning models and quality measures from their subpackages, e.g. `from gemseo.machine_learning.regression.model import PCERegressor` and `from gemseo.machine_learning.regression.quality import R2Measure`,
     - the problem class of an algorithm family from its package: `from gemseo.optimization import OptimizationProblem`, `from gemseo.doe import EvaluationProblem`, `from gemseo.linear import LinearProblem` and `from gemseo.ode import ODEProblem`.
 
-- **Added** The factory singleton of a subpackage can be imported directly from it: `mda_factory` (`gemseo.mda`), `post_factory` (`gemseo.post`), `dataset_plot_factory` (`gemseo.post.dataset`), `scenario_factory` (`gemseo.scenario`), `discipline_factory` (`gemseo.discipline`), `design_space_factory` and `random_space_factory` (`gemseo.space`), `sensitivity_analysis_factory` (`gemseo.uncertainty.sensitivity`), `distribution_factory` (`gemseo.uncertainty.distribution`), `reliability_algorithm_factory` (`gemseo.uncertainty.reliability`), `regressor_factory` (`gemseo.machine_learning.regression.model`), `regressor_quality_factory` (`gemseo.machine_learning.regression.quality`), `clusterer_factory` (`gemseo.machine_learning.clustering.model`), `clusterer_quality_factory` (`gemseo.machine_learning.clustering.quality`), `classifier_factory` (`gemseo.machine_learning.classification.model`) and `classifier_quality_factory` (`gemseo.machine_learning.classification.quality`); e.g. `from gemseo.mda import mda_factory`.
+- **Added** The factory singleton of a subpackage can be imported directly from it, e.g. `from gemseo.mda import mda_factory`:
+    - `mda_factory` (`gemseo.mda`)
+    - `post_factory` (`gemseo.post`)
+    - `dataset_plot_factory` (`gemseo.post.dataset`)
+    - `scenario_factory` (`gemseo.scenario`)
+    - `discipline_factory` (`gemseo.discipline`)
+    - `design_space_factory` and `random_space_factory` (`gemseo.space`)
+    - `sensitivity_analysis_factory` (`gemseo.uncertainty.sensitivity`)
+    - `distribution_factory` (`gemseo.uncertainty.distribution`)
+    - `reliability_algorithm_factory` (`gemseo.uncertainty.reliability`)
+    - `regressor_factory` (`gemseo.machine_learning.regression.model`)
+    - `regressor_quality_factory` (`gemseo.machine_learning.regression.quality`)
+    - `clusterer_factory` (`gemseo.machine_learning.clustering.model`)
+    - `clusterer_quality_factory` (`gemseo.machine_learning.clustering.quality`)
+    - `classifier_factory` (`gemseo.machine_learning.classification.model`)
+    - `classifier_quality_factory` (`gemseo.machine_learning.classification.quality`)
 
 - **Added** The public classes and functions of an example problem can be imported directly from its package, using the pattern `from gemseo.problem.<type>.<example_name> import <object>`, e.g. `from gemseo.problem.mdo.sobieski import SobieskiDesignSpace`, `from gemseo.problem.optimization.rosenbrock import Rosenbrock` and `from gemseo.problem.uncertainty.ishigami import IshigamiFunction`.
 
@@ -196,7 +279,29 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - `XLSStudyParser.DISCIPLINES` → `disciplines_key`
     - `JobSchedulerDiscipline.TEMPLATES_DIR_PATH` → `job_templates_dir_path`
 
-- **Changed** The minimum versions of several dependencies were raised: `fastjsonschema` 2.16.2, `h5py` 3.8.0, `jinja2` 3.1.2, `matplotlib` 3.10.1, `minisom` 2.3.6, `networkx` 3.0, `nlopt` 2.7.1, `numpy` 1.24, `openpyxl` 3.1, `openturns` 1.27, `packaging` 23.2, `pandas` 2.2, `plotly` 6.0.0, `prettytable` 3.5.0, `pydantic` 2.12, `pydantic-settings` 2.9.0, `requests` 2.28.2, `scikit-learn` 1.5, `scipy` 1.15, `sympy` 1.12, `tqdm` 4.64.1 and `xxhash` 3.2.0.
+- **Changed** The minimum versions of several dependencies were raised:
+    - `fastjsonschema` 2.16.2
+    - `h5py` 3.8.0
+    - `jinja2` 3.1.2
+    - `matplotlib` 3.10.1
+    - `minisom` 2.3.6
+    - `networkx` 3.0
+    - `nlopt` 2.7.1
+    - `numpy` 1.24
+    - `openpyxl` 3.1
+    - `openturns` 1.27
+    - `packaging` 23.2
+    - `pandas` 2.2
+    - `plotly` 6.0.0
+    - `prettytable` 3.5.0
+    - `pydantic` 2.12
+    - `pydantic-settings` 2.9.0
+    - `requests` 2.28.2
+    - `scikit-learn` 1.5
+    - `scipy` 1.15
+    - `sympy` 1.12
+    - `tqdm` 4.64.1
+    - `xxhash` 3.2.0
   `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
 
 ### Configuration and logging
@@ -509,7 +614,14 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Added** `gemseo.util.derivative.derivatives_approx.compare_jacobian_matrices()` compares two Jacobian matrices using absolute and relative tolerance parameters.
 
-- **Added** The `gemseo.util.derivative.approximator` subpackage groups all gradient approximator classes: `BaseGradientApproximator`, `CenteredDifferences`, `ComplexStep`, `ForwardDifferences` (formerly `FirstOrderFD`) and `GradientApproximatorFactory`. [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
+- **Added** The `gemseo.util.derivative.approximator` subpackage groups all gradient approximator classes:
+    - `BaseGradientApproximator`
+    - `CenteredDifferences`
+    - `ComplexStep`
+    - `ForwardDifferences` (formerly `FirstOrderFD`)
+    - `GradientApproximatorFactory`
+
+    [#747](https://gitlab.com/gemseo/dev/gemseo/-/issues/747)
 
 - **Added** `DisciplineChain` now supports the forward chain rule (tangent sweep, `ChainDerivationMode.FORWARD`) in addition to the reverse chain rule (`ChainDerivationMode.REVERSE`). `ChainDerivationMode.AUTO` selects the mode based on the total input vs output sizes. [#1815](https://gitlab.com/gemseo/dev/gemseo/-/issues/1815)
 
@@ -778,13 +890,32 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Removed** `ParameterSpace.evaluate_cdf` was removed (`ParameterSpace` is now `RandomSpace`) because it did not implement the CDF and its inverse, but the Rosenblatt transformation for internal use. Use `RandomSpace.variables[name].distribution` to get the distribution of a random variable of a random space (and then, its methods `compute_cdf` and `compute_inverse_cdf`). [#1717](https://gitlab.com/gemseo/dev/gemseo/-/issues/1717)
 
-- **Removed** The shortcuts of `DesignSpace` to its variables were removed, as they duplicated `DesignSpace.variables`: use `list(space.variables)` instead of `variable_names`, `space.variables.name_to_indices`, a read-only mapping, instead of `names_to_indices`, `space.variables[name].size`, `.type`, `.lower_bound` and `.upper_bound` instead of `get_size(name)`, `get_type(name)`, `get_lower_bound(name)` and `get_upper_bound(name)`, the items of `space.variables` instead of `variable_sizes` and `variable_types`, and `space.variables.has_variables_of_type(VariableType.INTEGER)` instead of `has_integer_variables`. [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
+- **Removed** The shortcuts of `DesignSpace` to its variables were removed, as they duplicated `DesignSpace.variables`:
+    - `variable_names` → `list(space.variables)`
+    - `names_to_indices` → `space.variables.name_to_indices`, a read-only mapping
+    - `get_size(name)` → `space.variables[name].size`
+    - `get_type(name)` → `space.variables[name].type`
+    - `get_lower_bound(name)` → `space.variables[name].lower_bound`
+    - `get_upper_bound(name)` → `space.variables[name].upper_bound`
+    - `variable_sizes` and `variable_types` → the items of `space.variables`
+    - `has_integer_variables` → `space.variables.has_variables_of_type(VariableType.INTEGER)`
+
+    [#1797](https://gitlab.com/gemseo/dev/gemseo/-/issues/1797)
 
 - **Removed** The class attributes of `DesignSpace` holding the field names of the HDF5 and CSV serialization
-  were removed without a public replacement, namely `DESIGN_SPACE_GROUP`, `NAME_GROUP`,
-  `NAMES_GROUP`, `LB_GROUP`, `UB_GROUP`, `VAR_TYPE_GROUP`, `VALUE_GROUP`, `SIZE_GROUP`,
-  `MINIMAL_FIELDS` and `TABLE_NAMES`; they were implementation details of `to_hdf`, `from_hdf`,
-  `to_csv`, `from_csv` and `get_pretty_table`. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
+  were removed without a public replacement:
+    - `DESIGN_SPACE_GROUP`
+    - `NAME_GROUP`
+    - `NAMES_GROUP`
+    - `LB_GROUP`
+    - `UB_GROUP`
+    - `VAR_TYPE_GROUP`
+    - `VALUE_GROUP`
+    - `SIZE_GROUP`
+    - `MINIMAL_FIELDS`
+    - `TABLE_NAMES`
+
+    They were implementation details of `to_hdf`, `from_hdf`, `to_csv`, `from_csv` and `get_pretty_table`. [#1801](https://gitlab.com/gemseo/dev/gemseo/-/issues/1801)
 
 - **Removed** The class attribute `DesignSpace.DesignVariableType` is removed; use `gemseo.enum.VariableType` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
 
@@ -798,7 +929,15 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Removed** The `add_uncertain_variables` argument of `ScalableDesignSpace` was removed, as a design space no longer holds uncertain variables.
 
-- **Removed** A random space is no longer serializable: `to_file`, `from_file`, `to_hdf`, `from_hdf`, `to_csv` and `from_csv` belong to `DesignSpace` only, where a `ParameterSpace` inherited them (without ever storing the probabilistic information). Rebuild a `RandomSpace` from the settings of its marginal probability distributions instead.
+- **Removed** A random space is no longer serializable; these methods belong to `DesignSpace` only, where a `ParameterSpace` inherited them (without ever storing the probabilistic information):
+    - `to_file`
+    - `from_file`
+    - `to_hdf`
+    - `from_hdf`
+    - `to_csv`
+    - `from_csv`
+
+    Rebuild a `RandomSpace` from the settings of its marginal probability distributions instead.
 
 - **Removed** The `simplify` argument of `DesignSpace.get_pretty_table` was removed, together with the `ParameterSpace` implementation honoring it, which dropped the bound, value and type columns from the tabular view of a space of uncertain variables only; the tabular view of a `RandomSpace` has a name column and a distribution column, so there is nothing left to simplify.
 
@@ -1228,7 +1367,13 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 ### Formulations
 
 - **Breaking change** The arguments of `BaseFormulation` are now `problem` (an `EvaluationProblem`), `disciplines` and `settings`,
-  instead of `disciplines`, `objective_name`, `design_space`, `settings_model`, `minimize_objective` and `**settings`.
+  instead of:
+    - `disciplines`
+    - `objective_name`
+    - `design_space`
+    - `settings_model`
+    - `minimize_objective`
+    - `**settings`
 
 - **Breaking change** The attribute `optimization_problem` of `BaseFormulation` has been renamed `problem`
   since it can be either an `EvaluationProblem` or an `OptimizationProblem`.
@@ -1448,7 +1593,28 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The keyword arguments of the `BaseDatasetPlot` class and its subclasses have been replaced by the `settings: BaseDatasetPlotSettings | None = None` keyword argument. If `None`, the default settings are used, if any.
 
-- **Breaking change** The following arguments and attributes of `BaseDatasetPlot` (formerly `DatasetPlot`) have been moved to `BaseDatasetPlotSettings` or to one of its subclasses, namely `BaseCartesianDatasetPlotSettings` and `BasePolarDatasetPlotSettings`: `color`, `colormap`, `font_size`, `legend_location`, `linestyle`, `marker`, `title`, `xtick_rotation`, `rmin`, `rmax`, `xmin`, `xmax`, `ymin`, `ymax`, `zmin`, `zmax`, `xlabel`, `ylabel`, `zlabel`, `grid` and `labels`.
+- **Breaking change** The following arguments and attributes of `BaseDatasetPlot` (formerly `DatasetPlot`) have been moved to `BaseDatasetPlotSettings` or to one of its subclasses, namely `BaseCartesianDatasetPlotSettings` and `BasePolarDatasetPlotSettings`:
+    - `color`
+    - `colormap`
+    - `font_size`
+    - `legend_location`
+    - `linestyle`
+    - `marker`
+    - `title`
+    - `xtick_rotation`
+    - `rmin`
+    - `rmax`
+    - `xmin`
+    - `xmax`
+    - `ymin`
+    - `ymax`
+    - `zmin`
+    - `zmax`
+    - `xlabel`
+    - `ylabel`
+    - `zlabel`
+    - `grid`
+    - `labels`
 
 - **Breaking change** The `fig_size_x` and `fig_size_y` attributes of `BaseDatasetPlot` have been removed; use `BaseDatasetPlotSettings.fig_size` instead.
 
@@ -1481,7 +1647,13 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
   Use the setting `use_vertical_bars` to set the orientation.
   Use the matplotlib option `tick_labels` instead of `labels`.
 
-- **Removed** The `CMAPS`, `MAGMA_DATA`, `INFERNO_DATA`, `PLASMA_DATA`, `VIRIDIS_DATA` and `PARULA_DATA` constants of `gemseo.post.core.colormaps` were removed; they have no public replacement.
+- **Removed** The following constants of `gemseo.post.core.colormaps` were removed; they have no public replacement:
+    - `CMAPS`
+    - `MAGMA_DATA`
+    - `INFERNO_DATA`
+    - `PLASMA_DATA`
+    - `VIRIDIS_DATA`
+    - `PARULA_DATA`
 
 - **Removed** The `use_standardized_objective` field of `OptimizationMetadata` was removed; use the `use_standardized_objective` field of the post-processor settings (via `UseStandardizedObjectiveMixin`).
 
@@ -1540,11 +1712,23 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 ### Datasets
 
-- **Breaking change** `Dataset.group_names`, `Dataset.variable_names`, `Dataset.variable_identifiers`, `Dataset.get_group_names` and `Dataset.get_variable_names` no longer return sorted values; they now preserve insertion order.
+- **Breaking change** The following properties and methods of `Dataset` no longer return sorted values; they now preserve insertion order:
+    - `Dataset.group_names`
+    - `Dataset.variable_names`
+    - `Dataset.variable_identifiers`
+    - `Dataset.get_group_names`
+    - `Dataset.get_variable_names`
 
 - **Breaking change** For the same reason, `IODataset.input_names` and `IODataset.output_names` no longer return sorted values.
 
-- **Breaking change** For the same reason, `OptimizationDataset.design_variable_names`, `OptimizationDataset.equality_constraint_names`, `OptimizationDataset.inequality_constraint_names`, `OptimizationDataset.objective_names` and `OptimizationDataset.observable_names` no longer return sorted values. [#1411](https://gitlab.com/gemseo/dev/gemseo/-/issues/1411)
+- **Breaking change** For the same reason, the following properties of `OptimizationDataset` no longer return sorted values:
+    - `OptimizationDataset.design_variable_names`
+    - `OptimizationDataset.equality_constraint_names`
+    - `OptimizationDataset.inequality_constraint_names`
+    - `OptimizationDataset.objective_names`
+    - `OptimizationDataset.observable_names`
+
+    [#1411](https://gitlab.com/gemseo/dev/gemseo/-/issues/1411)
 
 - **Removed** The `OptimizationDataset.FUNCTION_GROUP` class attribute was removed; use `objective_group`, `equality_constraint_group`, `inequality_constraint_group`, or `observable_group` instead.
 
