@@ -17,13 +17,13 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 # What's new in GEMSEO 7
 
-GEMSEO 7 is the biggest release in the history of the library.
-We went through every corner of the API with one question in mind:
-*what would make your next study faster to write, safer to run and easier to share?*
-The answer is a GEMSEO that catches your mistakes before the computation starts,
-speaks the language of uncertainty as fluently as the language of optimization,
-lets you design with real-world choices such as materials and catalog parts,
-and runs some workflows up to twenty times faster.
+GEMSEO 7 is a major release that revises the public API as a whole.
+Its changes address four objectives:
+validate the configuration of a study before the first evaluation,
+model uncertainties with the same tools as design variables,
+optimize over discrete, categorical and catalog variables,
+and reduce the overhead of the library,
+by a factor of up to 20 on cache-intensive workflows.
 
 ```shell
 pip install --upgrade gemseo[all]
@@ -31,50 +31,49 @@ pip install --upgrade gemseo[all]
 
 <div class="grid cards" markdown>
 
--   :material-shield-check:{ .lg .middle } **Mistakes caught at once**
+-   :material-shield-check:{ .lg .middle } **Validated settings**
 
     ---
 
-    Every algorithm, MDA, formulation and post-processor is configured
-    with a typed settings object, checked as soon as you write it.
+    Algorithms, MDAs, formulations and post-processors are configured
+    with typed settings objects, validated at instantiation and at assignment.
 
--   :material-dice-multiple:{ .lg .middle } **Uncertainty, first-class**
+-   :material-dice-multiple:{ .lg .middle } **Uncertainty quantification**
 
     ---
 
     A dedicated random space, dependent variables through copulas,
     reliability analysis and new sensitivity analyses.
 
--   :material-shape:{ .lg .middle } **Design with real choices**
+-   :material-shape:{ .lg .middle } **Mixed-variable design**
 
     ---
 
-    Discrete values, categorical labels and catalog parts
-    join the real and integer design variables.
+    Discrete, categorical and catalog variables
+    in addition to real and integer ones.
 
--   :material-rocket-launch:{ .lg .middle } **Faster**
+-   :material-rocket-launch:{ .lg .middle } **Performance**
 
     ---
 
-    A DOE filling an HDF5 cache now takes 4 seconds instead of 78,
-    and databases no longer slow down as they grow.
+    A DOE filling an HDF5 cache: 4 s instead of 78 s.
+    Database access time independent of the history length.
 
 </div>
 
-## Your settings are checked before your computation starts
+## Settings validated before execution
 
-Long studies used to fail in the worst possible way:
-a misspelled option such as `max_itre` was silently ignored,
-and you found out hours later that your optimizer had stopped after its default number of iterations.
+In GEMSEO 6, an unknown option, such as a misspelled `max_itre`, was ignored without notice:
+the optimizer ran with its default number of iterations,
+and the error appeared only once the study was over.
 
 In GEMSEO 7, the algorithms, the MDAs, the MDO formulations, the post-processors,
 the dataset plots, the probability distributions and the machine learning models
-are all configured with a [Pydantic](https://docs.pydantic.dev) settings object.
-A typo or a value of the wrong type is rejected the moment you write it,
-and again whenever you modify a setting afterwards.
-Because each settings class lists its fields with their types, defaults and descriptions,
-your IDE completes them for you and shows their documentation as you type:
-no more back-and-forth with the documentation to remember an option name.
+are configured with [Pydantic](https://docs.pydantic.dev) settings objects.
+An unknown field or a value of a wrong type raises a `ValidationError`
+when the settings object is created and whenever one of its fields is modified.
+Each settings class declares its fields with their types, default values and descriptions,
+which IDEs use for autocompletion and inline documentation.
 
 ```python
 from pydantic import ValidationError
@@ -93,23 +92,24 @@ except ValidationError as error:
     print("Rejected on assignment.")
 ```
 
-Settings also nest naturally.
-Instead of naming an MDA with a string and passing its options in a dictionary,
-you give the formulation the settings of its MDA,
-which carry the settings of their linear solver, and so on:
-the whole configuration of a process is visible, and checked, in one place.
+Settings are hierarchical.
+Instead of an MDA name passed as a string and options passed as a dictionary,
+the formulation receives the settings of its MDA,
+which contain the settings of its linear solver, and so on.
+The configuration of a process is thus defined, and validated, as a single object.
 
-## Scenarios that read like your problem
+## A more explicit scenario API
 
-Building a scenario is now a sentence:
-*take these disciplines, this design space and this formulation;
-minimize this, subject to that;
-run this algorithm.*
-The objective is no longer frozen in the constructor:
+A scenario is now built in three steps:
+the disciplines, the design space and the formulation at construction;
+the objective, the constraints and the observables through dedicated methods;
+the algorithm settings at execution.
+The objective is no longer a constructor argument:
 `add_objective` declares it like the constraints and observables,
-and can maximize it or combine a group of objectives.
-`execute` hands you back the result of the algorithm,
-so the optimum is one variable away instead of a lookup in the optimization problem.
+and supports maximization and groups of objectives.
+`execute` returns the result of the algorithm,
+which gives direct access to the optimum
+without querying the optimization problem.
 
 === "GEMSEO 6"
 
@@ -156,9 +156,9 @@ so the optimum is one variable away instead of a lookup in the optimization prob
     scenario.post_process(OptHistoryView_Settings(save=False, show=False))
     ```
 
-One scenario class now does the job of two.
-Optimization or design of experiments, an `MDOScenario` simply runs the algorithm you give it,
-so switching from a DOE to an optimizer is a one-line change:
+`MDOScenario` now covers both optimization and design of experiments:
+it runs the algorithm corresponding to the settings passed to `execute`.
+Replacing a DOE by an optimizer only changes this argument:
 
 === "GEMSEO 6"
 
@@ -196,9 +196,9 @@ so switching from a DOE to an optimizer is a one-line change:
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
     ```
 
-And when you only want to explore,
-the new `EvaluationScenario` samples your disciplines without asking for an objective;
-`observe_all_outputs` records everything they compute:
+For exploration studies,
+the new `EvaluationScenario` samples the disciplines without requiring an objective;
+`observe_all_outputs` records all their outputs:
 
 ```python
 from gemseo.discipline import AnalyticDiscipline
@@ -217,35 +217,33 @@ scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
 dataset = scenario.to_dataset()
 ```
 
-Scenarios also travel further.
-`wrap_scenario_in_job_scheduler` sends a whole scenario to an HPC cluster in one call,
-and bi-level studies gain flexibility:
-plug in your own MDAs, use plain disciplines as sub-scenarios,
-and retrieve the full history of a sub-scenario across all its executions as a single dataset.
+`wrap_scenario_in_job_scheduler` submits a whole scenario to an HPC cluster in one call.
+The bi-level formulations accept user-defined MDAs and plain disciplines as sub-scenarios,
+and the history of a sub-scenario over all its executions can be retrieved as a single dataset.
 
-## Know where every file goes
+## Traceable working directories
 
-Simulations that wrap executables leave files behind,
-and finding the ones of iteration 42 among thousands of folders used to be an archaeology job.
-[The directory manager][the-directory-manager] organizes them for you
-into a tree that mirrors your workflow:
+Disciplines wrapping executables write files at each execution,
+and locating those of a given iteration among thousands of directories was tedious.
+[The directory manager][the-directory-manager] organizes them
+into a tree that mirrors the process:
 one directory per scenario, per iteration or sample, per MDA iteration and per discipline execution,
-each with a trace of what ran there.
-Turn it on with a single line, `configuration.directory_manager.enable = True`,
-and debugging a failed evaluation becomes a matter of opening the right folder.
+each with a trace of the executions it contains.
+Once enabled with `configuration.directory_manager.enable = True`,
+the files of a failed evaluation are located from its position in the process.
 
-## Uncertainty is now a first-class citizen
+## Uncertainty quantification
 
-### A space made for random variables
+### A dedicated random space
 
 GEMSEO 6 described random variables with a `ParameterSpace`,
-a design space with probability distributions bolted on,
-where bounds, current values and normalization made little sense.
-GEMSEO 7 gives them a [RandomSpace][concept-random-space] of their own,
-defined by probability distributions and nothing else.
-Design spaces and random spaces share a common parent,
+i.e. a design space extended with probability distributions,
+whose bounds, current values and normalization have no meaning for random variables.
+GEMSEO 7 introduces the [RandomSpace][concept-random-space],
+defined by probability distributions only.
+Design spaces and random spaces derive from a common base class,
 so the DOE algorithms, the scenarios, the formulations and the sensitivity analyses
-accept either one without any conversion.
+accept both without conversion.
 
 === "GEMSEO 6"
 
@@ -282,17 +280,17 @@ accept either one without any conversion.
     dataset = scenario.to_dataset()
     ```
 
-### Dependent variables, at last
+### Dependent random variables
 
-Real-world uncertainties are rarely independent:
-the yield strength and the Young's modulus of a material,
-the temperature and the pressure of a flow, move together.
-Ignoring that dependence can make a design look safer than it is.
-With GEMSEO 7, you describe it with a copula,
-and every sample drawn from the space,
-for a DOE as for a sensitivity analysis, respects it.
-The pair plot can even display the ranks of your data,
-so you can see the dependence you are modeling.
+Uncertain quantities are often statistically dependent,
+e.g. the yield strength and the Young's modulus of a material,
+or the temperature and the pressure of a flow.
+Assuming independence can underestimate the probability of failure of a design.
+GEMSEO 7 models this dependence with a copula,
+and the samples drawn from the random space,
+for a DOE as for a sensitivity analysis, follow the resulting joint distribution.
+The pair plot can display the ranks of the data
+to visualize the dependence structure.
 
 ```python
 from openturns import CorrelationMatrix, NormalCopula
@@ -318,34 +316,35 @@ dataset = scenario.to_dataset()
 print(dataset.get_view(variable_names=["x", "y"]).corr())
 ```
 
-### How likely is it to fail?
+### Reliability analysis
 
-Knowing the mean and the variance of an output is not enough
-when what matters is the probability of exceeding a threshold.
-The new reliability analysis package answers exactly that question.
-Define a failure event from thresholds on the outputs of your disciplines,
-and estimate its probability with the methods of OpenTURNS:
-FORM and SORM when the evaluations are expensive,
-Monte Carlo, quasi Monte Carlo, subset, importance or directional sampling when the event is rare.
+The mean and the variance of an output do not quantify
+the probability of exceeding a threshold.
+The new reliability analysis package estimates this probability.
+A failure event is defined from thresholds on the outputs of the disciplines,
+and its probability is estimated with the methods of OpenTURNS:
+FORM and SORM, approximation methods requiring few evaluations;
+Monte Carlo and quasi Monte Carlo sampling;
+subset, importance and directional sampling, which target rare events.
 
-Sensitivity analysis follows the same path.
-`ROSobolAnalysis` tells which inputs drive a [rare event][concept-rosobol-analysis],
-`FORMAnalysis` turns the importance factors of FORM into sensitivity indices,
-and `SobolAnalysis` can now estimate its first-order indices
+New sensitivity analyses complete this set.
+`ROSobolAnalysis` identifies the inputs driving a [rare event][concept-rosobol-analysis],
+`FORMAnalysis` derives sensitivity indices from the importance factors of FORM,
+`SobolAnalysis` can estimate its first-order indices
 [from independent and identically distributed samples][concept-sobol-estimators],
-while `plot_second_order` reveals the interactions between inputs as a heat map.
+and `plot_second_order` displays the second-order indices as a heat map.
 
-## Design with real-world choices
+## Mixed-variable design spaces
 
-Engineers do not only choose numbers in an interval.
-They pick a diameter from a list of standard sizes,
+Engineering design variables are not all continuous:
+a diameter is selected from a list of standard sizes,
 a material among steel, aluminium and titanium,
 a motor from a supplier's catalog.
-GEMSEO 7 lets you say exactly that.
-[Discrete variables][concept-discrete-variables] take their values in a finite list of numbers,
-categorical variables take a label, and the disciplines receive the label itself,
-and [catalog variables][concept-catalog-variables] pick a row in a table of alternatives.
-Each kind has its own method, whose name tells what you declare and whose arguments are checked on the spot:
+GEMSEO 7 supports these variables natively.
+[Discrete variables][concept-discrete-variables] take their values in a finite set of numbers,
+categorical variables take a label, passed as such to the disciplines,
+and [catalog variables][concept-catalog-variables] select a row in a table of alternatives.
+Each type of variable has its own method, whose arguments are validated at call time:
 
 ```python
 from gemseo.space import DesignSpace
@@ -357,35 +356,34 @@ space.add_discrete_variable("diameter", (1.0, 4.0, 6.0, 9.0))
 space.add_categorical_variable("material", ("steel", "aluminium", "titanium"))
 ```
 
-GEMSEO 7 is also honest about what an algorithm can do with them.
-An optimizer that only handles real numbers no longer rounds your integer variables behind your back:
-it tells you so, and you decide whether to
+The variable types are checked against the capabilities of the algorithm.
+An optimizer restricted to real variables no longer rounds integer variables implicitly:
+it raises an error, unless the user chooses to
 [relax them into real variables][concept-integer-relaxation].
-The result even reports the optimum projected back onto the domain you declared,
+The result then also reports the optimum projected onto the declared domain,
 with its objective value and its feasibility.
 
-## Faster where it hurts
+## Performance
 
-Some workflows got dramatically faster:
+The following workflows run faster:
 
-- **Caches.** Filling a cache that stores every evaluation used to cost more with every new entry.
-  It now finds an entry directly from its hash:
+- **Caches.** The cost of storing an evaluation in a full cache used to grow with the number of entries.
+  An entry is now retrieved directly from its hash:
   on a DOE of 20 samples of the SSBJ problem,
-  4 seconds instead of 78 with an `HDF5Cache`, and 13 instead of 25 with a `MemoryFullCache`.
+  4 s instead of 78 s with an `HDF5Cache`, and 13 s instead of 25 s with a `MemoryFullCache`.
 - **Databases.** Exporting the history of an optimization to a dataset,
-  or reading its last iterations, no longer slows down as the history grows.
-- **Sensitivity analysis.** `HSICAnalysis` skips its permutation tests by default,
-  which used to dominate its computation time.
-- **Start-up.** Importing a package no longer imports everything it contains:
-  the modules are loaded when you first use them.
-- **Fast mode.** One call, `configuration.enable_fast_mode()`,
-  switches off the checks and statistics that cost time at every evaluation;
+  or reading its last iterations, no longer depends on the length of the history.
+- **Sensitivity analysis.** `HSICAnalysis` skips its permutation tests by default;
+  they dominated its computation time.
+- **Start-up.** Importing a package no longer imports all its modules:
+  each module is loaded at its first use.
+- **Fast mode.** `configuration.enable_fast_mode()`
+  disables the checks and statistics computed at every evaluation;
   see [fast mode][global-configuration-fast].
 
-## Results you can trust
+## Correctness fixes
 
-A library for engineering decisions must be right before being fast.
-GEMSEO 7 fixes several issues that could silently change your results.
+GEMSEO 7 fixes several issues that could alter results without any error or warning.
 Disciplines no longer receive input values truncated to the size of their default values.
 Jacobians are now correct in edge cases of discipline chains
 and when the input sizes differ from the default ones.
@@ -393,19 +391,19 @@ A constraint evaluated to NaN is no longer counted as satisfied,
 and an infinite constraint value can no longer make the optimizer stop at an infeasible point.
 The Morris sensitivity indices use all the replicates and the right estimators.
 
-Checking your own gradients is easier too:
+For derivative verification,
 `gemseo.check_jacobian()` compares the derivatives of a discipline
-with a numerical approximation in one call,
-and discipline chains can now propagate derivatives forward as well as backward,
-choosing the cheaper direction automatically.
+with a numerical approximation in one call.
+Discipline chains can now propagate derivatives in forward or reverse mode,
+and select the less expensive one automatically.
 
-## Everything where you expect it
+## Package structure
 
-GEMSEO 7 reorganizes its packages by domain,
+GEMSEO 7 organizes its packages by domain:
 `gemseo.optimization`, `gemseo.doe`, `gemseo.mda`, `gemseo.formulation`, `gemseo.scenario`,
-`gemseo.space` and so on,
-and every package offers its public classes, settings and factories directly.
-You no longer need to know which module defines a class to import it:
+`gemseo.space`, etc.
+Each package exposes its public classes, settings and factories at its top level,
+so importing a class no longer requires knowing the module that defines it:
 
 === "GEMSEO 6"
 
@@ -425,10 +423,10 @@ You no longer need to know which module defines a class to import it:
     from gemseo.space import DesignSpace
     ```
 
-Names follow the same rules everywhere, so you can often guess them:
+Naming follows uniform rules across the library:
 `MDOFunction` becomes `ArrayFunction`, the chains of disciplines become `DisciplineChain`,
-enumeration members are in upper case and the mappings are named `key_to_value`.
-The machine learning models follow the same settings-based pattern as the rest of the library:
+enumeration members are in upper case and mappings are named `key_to_value`.
+The machine learning models use settings objects, like the rest of the library:
 
 === "GEMSEO 6"
 
@@ -457,23 +455,24 @@ The machine learning models follow the same settings-based pattern as the rest o
     regressor.learn()
     ```
 
-## Upgrading is easier than it looks
+## Upgrading
 
-A release of this size changes many names, and we made sure you do not pay for it.
-Almost every renamed module, class, function and attribute keeps working under its old name
-for a full deprecation cycle, with a `DeprecationWarning` that gives its replacement,
-so a name that escapes the migration does not break your code.
-[bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) rewrites most of your code automatically,
+Three mechanisms support the migration.
+Almost every renamed module, class, function and attribute remains available under its old name
+for a full deprecation cycle, with a `DeprecationWarning` giving its replacement,
+so a name missed by the migration does not break the code.
+[bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) rewrites most of the code automatically,
 including the calls whose arguments changed, which old names alone cannot keep working.
-The guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) covers the rest, case by case,
-and explains [what the old names cover](upgrading/6_to_7/index.md#compatibility-layer).
+The guide [From GEMSEO 6 to GEMSEO 7](upgrading/6_to_7/index.md) covers the remaining cases one by one,
+and details [the scope of the old names](upgrading/6_to_7/index.md#compatibility-layer).
 
 GEMSEO 7 requires Python 3.11 or later
 and raises the minimum versions of several dependencies,
 including OpenTURNS 1.27, Pydantic 2.12, SciPy 1.15 and pandas 2.2.
 The [changelog](../changelog.md) lists every change of the release.
 
-Ready? Upgrade, run your scripts with the warnings on, and enjoy GEMSEO 7:
+To upgrade, install GEMSEO 7
+and run your scripts with the deprecation warnings enabled:
 
 ```shell
 pip install --upgrade gemseo[all]
