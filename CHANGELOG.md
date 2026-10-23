@@ -1139,9 +1139,10 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** A driver checks that the algorithm handles the discrete variables (new `DriverDescription.handle_discrete_variables`); among the SciPy global algorithms, only `DIFFERENTIAL_EVOLUTION` handles integer variables, through the `integrality` option of SciPy, and `DUAL_ANNEALING` and `SHGO` require `relax_integer_variables=True`. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
-- **Breaking change** The `**settings` arguments of `BaseAlgoFactory.execute` (renamed `BaseAlgorithmFactory`) were removed and the `settings_model` argument renamed to `settings` is now mandatory.
-
-- **Breaking change** The `**settings` arguments of `BaseAlgorithmLibrary.execute` were removed and the `settings_model` argument renamed to `settings` is still optional.
+- **Breaking change** The `settings_model` argument of the `execute` methods was renamed to `settings`:
+    - `BaseAlgorithmFactory.execute` (formerly `BaseAlgoFactory.execute`): the `**settings` arguments were removed and `settings` is now mandatory
+    - `BaseAlgorithmLibrary.execute`: the `**settings` arguments were removed and `settings` is still optional
+    - `BaseDriverLibrary.execute`: `settings` is still optional
 
 - **Breaking change** The `eval_obs_jac` argument of `BaseDriverLibrary.execute` was removed
   and replaced by the `evaluate_observable_jacobian` field of `BaseDriverSettings`.
@@ -1152,8 +1153,6 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 - **Breaking change** The `skip_int_check` argument of `BaseDriverLibrary.execute` was removed
   without replacement; see the `relax_integer_variables` field of `BaseDriverSettings`,
   which relaxes the integer variables instead of rounding them at every evaluation.
-
-- **Breaking change** The `settings_model` argument of `BaseDriverLibrary.execute` was renamed to `settings` and is still optional.
 
 - **Breaking change** The settings of every DOE algorithm with a `n_samples` field have a default value for this field; by default, this default value is 1.
 
@@ -1301,25 +1300,17 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The `BaseParallelMDASolver` class was renamed to `BaseMDAParallelSolver`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Breaking change** The `settings_model` of `BaseMDA` was renamed to `settings: BaseMDASettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-
-- **Breaking change** The `settings_model` of `BaseParallelMDASolver`, renamed `BaseMDAParallelSolver`, was renamed to `settings: BaseMDAParallelSolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-
-- **Breaking change** The `settings_model` of `BaseMDASolver` was renamed to `settings: BaseMDASolverSettings | None = None` and `**settings` were removed; if `None`, the class will use default settings.
-
-- **Breaking change** The `settings_model` of `MDAChain` was renamed to `settings: MDAChain_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAChain_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDAGaussSeidel` was renamed to `settings: MDAGaussSeidel_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidel_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDAGSNewton`, renamed `MDAGaussSeidelNewtonRaphson`, was renamed to `settings: MDAGaussSeidelNewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAGaussSeidelNewtonRaphson_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDAJacobi` was renamed to `settings: MDAJacobi_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAJacobi_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDANewtonRaphson` was renamed to `settings: MDANewtonRaphson_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDANewtonRaphson_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDAQuasiNewton` was renamed to `settings: MDAQuasiNewton_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDAQuasiNewton_Settings()`.
-
-- **Breaking change** The `settings_model` of `MDASequential` was renamed to `settings: MDASequential_Settings | None = None` and `**settings` were removed; if `None`, the class will use `MDASequential_Settings()`.
+- **Breaking change** The `settings_model` argument of the MDA classes was renamed to `settings`, of type `<settings class> | None = None`, and their `**settings` arguments were removed; if `None`, the class uses its default settings, i.e. `<settings class>()` for a concrete class:
+    - `BaseMDA`: `BaseMDASettings`
+    - `BaseMDAParallelSolver` (formerly `BaseParallelMDASolver`): `BaseMDAParallelSolverSettings`
+    - `BaseMDASolver`: `BaseMDASolverSettings`
+    - `MDAChain`: `MDAChain_Settings`
+    - `MDAGaussSeidel`: `MDAGaussSeidel_Settings`
+    - `MDAGaussSeidelNewtonRaphson` (formerly `MDAGSNewton`): `MDAGaussSeidelNewtonRaphson_Settings`
+    - `MDAJacobi`: `MDAJacobi_Settings`
+    - `MDANewtonRaphson`: `MDANewtonRaphson_Settings`
+    - `MDAQuasiNewton`: `MDAQuasiNewton_Settings`
+    - `MDASequential`: `MDASequential_Settings`
 
 - **Breaking change** `BaseParallelMDASettings` was renamed to `BaseMDAParallelSolverSettings`.
 
@@ -1577,11 +1568,10 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 ### Post-processing
 
-- **Breaking change** The `**settings` arguments of `BasePost.execute` were removed and the `settings_model` argument renamed to `settings` is now mandatory.
-
-- **Breaking change** The `**settings` arguments of `PostFactory.execute`, which included the post-processor name (`post_name`), were removed and the `settings_model` argument renamed to `settings`, of type `BasePostSettings`, is now mandatory.
-
-- **Breaking change** The `**settings` arguments of `BaseScenario.post_process`, now only available as `MDOScenario.post_process`, were removed and the `settings_model` argument renamed to `settings` is now mandatory. [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
+- **Breaking change** The `**settings` arguments of the methods running a post-processing were removed and their `settings_model` argument, renamed to `settings`, is now mandatory:
+    - `BasePost.execute`
+    - `PostFactory.execute`, whose `**settings` included the post-processor name (`post_name`); `settings` is of type `BasePostSettings`
+    - `BaseScenario.post_process`, now only available as `MDOScenario.post_process` [#1716](https://gitlab.com/gemseo/dev/gemseo/-/issues/1716)
 
 - **Breaking change** The `gemseo.post.dataset.dataset_plot` module was renamed to `gemseo.post.dataset.base`.
 
@@ -1784,9 +1774,7 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
 
 - **Breaking change** The attribute `SHORT_ALGO_NAME` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `short_name`.
 
-- **Breaking change** The argument `settings_model` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `settings`.
-
-- **Breaking change** The arguments `**settings` of `BaseMLModel` (formerly `BaseMLAlgo`) were removed; use `settings` instead,
+- **Breaking change** The argument `settings_model` of `BaseMLModel` (formerly `BaseMLAlgo`) was renamed to `settings` and its `**settings` arguments were removed; use `settings` instead,
   e.g. `regressor = LinearRegressor(data, settings=LinearRegressor_Settings(fit_intercept=False))`
   instead of `regressor = LinearRegressor(data, fit_intercept=False)`.
 
@@ -1842,12 +1830,10 @@ GEMSEO 7 is a major release: the random variables have their own space, `RandomS
     - The argument `calib_algo` of `MOERegressor.add_regressor_candidate` was removed and replaced by the optional `calibration_settings` argument with `BaseDriverSettings` type,
       e.g. `moe.add_regressor_candidate(LinearRegressor_Settings(fit_intercept=False), calibration_space=calibration_space, calibration_settings=NLOPT_COBYLA_Settings(max_iter=100))` instead of `moe.add_regressor_candidate("LinearRegressor", calib_space=calibration_space, calib_algo={"algo_name": "NLOPT_COBYLA", "max_iter": 100}, fit_intercept=False)`.
     - The method `add_algo` of `RegressorChain` was renamed to `add_regressor`.
-    - The argument `settings_model` of `BaseFCERegressor` was renamed to `settings`.
-    - The arguments `**settings` of `BaseFCERegressor` were removed; use `settings` instead.
-    - The argument `settings_model` of `FCERegressor` was renamed to `settings`.
-    - The arguments `**settings` of `FCERegressor` were removed; use `settings` instead.
-    - The argument `settings_model` of `PCERegressor` was renamed to `settings`.
-    - The arguments `**settings` of `PCERegressor` were removed; use `settings` instead.
+    - The argument `settings_model` was renamed to `settings` and the arguments `**settings` were removed (use `settings` instead) for:
+        - `BaseFCERegressor`
+        - `FCERegressor`
+        - `PCERegressor`
     - The arguments `name`, `transformer` and `**parameters` of `RegressorChain.add_regressor` were removed and replaced by the `settings` argument of type `BaseRegressorSettings`;
       e.g. `regressor_chain.add_regressor(LinearRegressor_Settings(fit_intercept=False, transformer={"inputs": "MinMaxScaler"}))` instead of `regressor_chain.add_regressor("LinearRegressor", transformer={"inputs": "MinMaxScaler"}, fit_intercept=False)`.
 
