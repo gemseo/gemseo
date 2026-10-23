@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import filecmp
 import operator
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -56,6 +57,10 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     example while a virtual environment is being reinstalled, the system fonts are
     used instead and all the image comparisons fail.
 
+    The contents of the fonts are compared rather than their paths: the cache can
+    point to an identical copy of the bundled font from another environment, e.g. in
+    the uv cache, which renders the same images.
+
     Args:
         session: The pytest session.
     """
@@ -65,10 +70,10 @@ def pytest_sessionstart(session: pytest.Session) -> None:
             fallback_to_default=False,
         )
     )
-    # The paths are resolved because matplotlib can be imported through a symbolic
-    # link, e.g. lib64 -> lib in a virtual environment whose platlibdir is lib64.
-    data_path = Path(matplotlib.get_data_path()).resolve()
-    if not font_path.resolve().is_relative_to(data_path):
+    bundled_font_path = Path(
+        matplotlib.get_data_path(), "fonts", "ttf", "DejaVuSans.ttf"
+    )
+    if not filecmp.cmp(font_path, bundled_font_path, shallow=False):
         cache_path = Path(
             matplotlib.get_cachedir(),
             f"fontlist-v{font_manager.FontManager.__version__}.json",
