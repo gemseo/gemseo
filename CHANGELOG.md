@@ -311,7 +311,8 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `sympy` 1.12
     - `tqdm` 4.64.1
     - `xxhash` 3.2.0
-  `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
+
+    `openturns` 1.27 is needed because version 1.26 does not provide `FiniteDiscreteDistribution`.
 
 ### Configuration and logging
 
@@ -462,8 +463,8 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 - **Deprecated** `Discipline.local_data` and `IO.data` are deprecated:
     - `Discipline.local_data` → `Discipline.input_data` and `Discipline.output_data`
     - `IO.data` → `IO.input_data` and `IO.output_data`
-    - the new helper `IO.get(name)` reads from `IO.output_data` first, falling back to `IO.input_data`, matching the output-overrides-input semantics of `IO.get_merged_data()`.
 
+    A new helper `IO.get(name)` reads from `IO.output_data` first, falling back to `IO.input_data`, matching the output-overrides-input semantics of `IO.get_merged_data()`.
     The deprecated attributes still work — they return a fresh union of the two stores — but emit a `DeprecationWarning`. Removal version: TBD. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
 
 - **Added** `IO.get_merged_data()` returns a fresh union of the input and output stores (output overrides input on overlap); `as_dict=False` returns a `DisciplineData` instead of a plain `dict`. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
@@ -604,9 +605,9 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** `MDOChain.LinearizationMode.REVERSE`, renamed `DisciplineChain`, no longer exists; the chain rule accumulation modes are gathered in the new `ChainDerivationMode` enumeration, which defines `FORWARD`, `REVERSE` and `AUTO` and is available as `DisciplineChain.ChainDerivationMode`.
 
-- **Breaking change** `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`:
-    - `DIRECT`/`ADJOINT` denote the MDA resolution modes; their subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`);
-    - `FORWARD`/`REVERSE` denote the chain-rule accumulation modes; their subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`).
+- **Breaking change** `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`; `DIRECT`/`ADJOINT` denote the MDA resolution modes and `FORWARD`/`REVERSE` the chain-rule accumulation modes:
+    - the MDA-specific subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`);
+    - the chain-specific subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`).
 
     Both are importable from `gemseo.enum`.
 
@@ -1077,7 +1078,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - every variable derives from `BaseVariable`, is immutable and hands out read-only arrays;
     - `RealVariable` and `IntegerVariable` derive from `BaseIntervalVariable`;
     - `DiscreteVariable` derives its size and bounds from its choices;
-    - the `RandomVariable` of a `RandomSpace` derives them from the settings of its probability distributions.
+    - the `RandomVariable` of a `RandomSpace` derives its size and bounds from the settings of its probability distributions.
 
 - **Added** The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its variable
   type. A random variable is built from the settings of its probability distributions, not from a variable type, and so
@@ -1316,7 +1317,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `MDAChain.mdo_chain` attribute was renamed to `MDAChain.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 
-- **Breaking change** The iteration callbacks of `BaseMDASolver` were renamed:
+- **Breaking change** The methods of `BaseMDASolver` managing the iteration callbacks, and one of their arguments, were renamed:
     - method `add_iteration_callback` → `add_iteration_listener`
     - method `clear_iteration_callbacks` → `clear_iteration_listeners`
     - argument `iteration_callback` of `add_iteration_callback` → `iteration_listener`
@@ -1673,7 +1674,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `ScatterMatrix` class was renamed to `PairPlot`. [#1780](https://gitlab.com/gemseo/dev/gemseo/-/issues/1780)
 
-- **Breaking change** Two modules of `gemseo.post.dataset` were renamed:
+- **Breaking change** A package and a module of `gemseo.post.dataset` were renamed:
     - `gemseo.post.dataset.plots` → `gemseo.post.dataset.plot`
     - `gemseo.post.dataset.dataset_plot` → `gemseo.post.dataset.base`
 
@@ -1956,7 +1957,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
     - `unsupervised_settings` → `base_unsupervised_settings`
     - `base_ml_algo_quality` → `base_ml_model_quality`
     - `thin_plate_spline` → `tps` (matching the `TPSRegressor` class)
-    - `thin_plate_spline_settings` → `tps_settings`
+    - `thin_plate_spline_settings` → `tps_settings` (matching the `TPSRegressor` class)
 
     `MLAlgoCalibration` (now `MLModelCalibration`) and `MLAlgoSelection` (now `MLModelSelection`) moved from `gemseo.mlearning.core` to the `gemseo.machine_learning` package root (modules `calibration` and `selection`). [#1846](https://gitlab.com/gemseo/dev/gemseo/-/issues/1846)
 
@@ -2148,7 +2149,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Added** `SobolAnalysis` has a rank-based estimation algorithm, `SobolAnalysis.Algorithm.RANK`, estimating the first-order indices from independent and identically distributed samples, for which it is the default; see [Sobol' estimators][concept-sobol-estimators]. The `seed` argument of `compute_indices` also seeds the bootstrap of the confidence intervals. [#1202](https://gitlab.com/gemseo/dev/gemseo/-/issues/1202)
 
-- **Added** `gemseo.uncertainty.reliability.openturns` contains OpenTURNS algorithms
+- **Added** `gemseo.uncertainty.reliability.openturns` contains many OpenTURNS algorithms
   based on the first-order reliability method (FORM) and the second-order reliability method (SORM),
   with specific classes to store their results:
     - FORM and SORM, whose results are stored by `FORMResult`;
@@ -2294,7 +2295,7 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `gemseo.problems.mdo.sobieski.process.mdo_chain` module was renamed to `gemseo.problem.mdo.sobieski.process.discipline_chain`. [#1268](https://gitlab.com/gemseo/dev/gemseo/-/issues/1268)
 
-- **Breaking change** Two `core` modules of the benchmark problems were renamed `standalone`:
+- **Breaking change** Two `core` packages of the benchmark problems were renamed `standalone`:
     - `gemseo.problems.mdo.sobieski.core` → `gemseo.problem.mdo.sobieski.standalone`
     - `gemseo.problems.mdo.scalable.parametric.core` → `gemseo.problem.mdo.scalable.parametric.standalone`
 
