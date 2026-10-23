@@ -1,4 +1,5 @@
 ---
+status: new
 description: "Migrating datasets from GEMSEO 6.3 to GEMSEO 7: what bump-gemseo does not migrate."
 search:
   boost: 1

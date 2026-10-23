@@ -1,4 +1,5 @@
 ---
+status: new
 description: "Migrate your code from GEMSEO 6 to GEMSEO 7: run bump-gemseo, migrate what it leaves, check the silent changes."
 search:
   boost: 2

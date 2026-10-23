@@ -1,4 +1,5 @@
 ---
+status: new
 description: "Install and run bump-gemseo, the tool that migrates your code from GEMSEO 6.3 to GEMSEO 7, read its report and know its limits."
 search:
   boost: 2
