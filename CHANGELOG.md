@@ -370,7 +370,9 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The `BaseSettings` class was moved from `gemseo.settings.base_settings` to `gemseo.util.pydantic`. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Breaking change** The settings models (`BaseSettings` and its subclasses, for the algorithms, formulations, MDAs and post-processors) validate a field when it is assigned after their creation, not only at creation time: assigning a value of a wrong type raises a `ValidationError`, and a `model_validator(mode="after")` that assigns a field calls itself again through that assignment, recursing without end; such a validator must bypass the validation, e.g. `self.__dict__["field"] = value`.
+- **Breaking change** The settings models (`BaseSettings` and its subclasses, for the algorithms, formulations, MDAs and post-processors) validate a field when it is assigned after their creation, not only at creation time:
+    - assigning a value of a wrong type raises a `ValidationError`;
+    - a `model_validator(mode="after")` that assigns a field calls itself again through that assignment, recursing without end; such a validator must bypass the validation, e.g. `self.__dict__["field"] = value`.
 
 - **Removed** `BaseAlgorithmSettings` was removed; use `BaseSettings` instead. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
@@ -457,7 +459,12 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Removed** `gemseo.disciplines.utils` was removed; use `gemseo.util.discipline` instead.
 
-- **Deprecated** `Discipline.local_data` and `IO.data` are deprecated; use `Discipline.input_data` and `Discipline.output_data` (or `IO.input_data` and `IO.output_data`) instead. A new helper `IO.get(name)` reads from `IO.output_data` first, falling back to `IO.input_data`, matching the output-overrides-input semantics of `IO.get_merged_data()`. The deprecated attributes still work — they return a fresh union of the two stores — but emit a `DeprecationWarning`. Removal version: TBD. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
+- **Deprecated** `Discipline.local_data` and `IO.data` are deprecated:
+    - `Discipline.local_data` → `Discipline.input_data` and `Discipline.output_data`
+    - `IO.data` → `IO.input_data` and `IO.output_data`
+    - the new helper `IO.get(name)` reads from `IO.output_data` first, falling back to `IO.input_data`, matching the output-overrides-input semantics of `IO.get_merged_data()`.
+
+    The deprecated attributes still work — they return a fresh union of the two stores — but emit a `DeprecationWarning`. Removal version: TBD. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
 
 - **Added** `IO.get_merged_data()` returns a fresh union of the input and output stores (output overrides input on overlap); `as_dict=False` returns a `DisciplineData` instead of a plain `dict`. [#1269](https://gitlab.com/gemseo/dev/gemseo/-/issues/1269)
 
@@ -597,7 +604,11 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** `MDOChain.LinearizationMode.REVERSE`, renamed `DisciplineChain`, no longer exists; the chain rule accumulation modes are gathered in the new `ChainDerivationMode` enumeration, which defines `FORWARD`, `REVERSE` and `AUTO` and is available as `DisciplineChain.ChainDerivationMode`.
 
-- **Breaking change** `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`; `DIRECT`/`ADJOINT` denote the MDA resolution modes and `FORWARD`/`REVERSE` the chain-rule accumulation modes. The MDA-specific subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`) and the chain-specific subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`); both are importable from `gemseo.enum`.
+- **Breaking change** `DerivationMode` now also defines `FORWARD` in addition to `DIRECT`, `ADJOINT`, `REVERSE` and `AUTO`:
+    - `DIRECT`/`ADJOINT` denote the MDA resolution modes; their subset is the new `MDADerivationMode` (in `gemseo.mda.jacobian_assembly`);
+    - `FORWARD`/`REVERSE` denote the chain-rule accumulation modes; their subset is the new `ChainDerivationMode` (in `gemseo.discipline.chain.chain`).
+
+    Both are importable from `gemseo.enum`.
 
 - **Breaking change** `Discipline.LinearizationMode` no longer exposes the `DerivationMode` members (`DIRECT`, `ADJOINT`, `REVERSE`); a discipline either computes its analytical Jacobian (`AUTO`) or approximates it. It now holds only `AUTO`, the approximation modes and the hybrid ones. [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 
@@ -754,7 +765,12 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Added** `OptimizationResult` has the new fields `x_opt_projected`, `x_opt_projected_as_dict`, `f_opt_projected` and `is_feasible_projected`: the optimum projected onto the domain the user declared, the objective evaluated there and its feasibility.
 
-- **Added** `Database.store_batch()` stores the values of a matrix of samples, one entry per sample; `Database.relaxed_variable_names` is the set of the input variables a run relaxed to float ones; `Database.merge_function_histories(database, function_names)` stores the history of some functions recorded in another database, e.g. the one of a sub-optimization. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
+- **Added** New `Database` features:
+    - `Database.store_batch()` stores the values of a matrix of samples, one entry per sample;
+    - `Database.relaxed_variable_names` is the set of the input variables a run relaxed to float ones;
+    - `Database.merge_function_histories(database, function_names)` stores the history of some functions recorded in another database, e.g. the one of a sub-optimization.
+
+    [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
 - **Added** The argument `name` of `MDOFunction`, renamed `ArrayFunction`, is now optional; if not provided, the name will be that of the callable passed as first argument. [#1714](https://gitlab.com/gemseo/dev/gemseo/-/issues/1714)
 
@@ -784,7 +800,13 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Fixed** `OptimizationHistory.check_design_point_is_feasible` considers a design point missing a constraint value as infeasible, instead of ignoring this constraint and the next ones. [#1739](https://gitlab.com/gemseo/dev/gemseo/-/issues/1739)
 
-- **Fixed** The cost of `Database.to_dataset`, of `Database.get_last_n_x_vect` and `Database.get_x_vect` with a negative iteration, and of `OptimizationHistory.get_data_by_names` with `filter_non_feasible=True` no longer increases quadratically with the size of the database; `Database.store` no longer copies an input value that is already a key. [#1851](https://gitlab.com/gemseo/dev/gemseo/-/issues/1851)
+- **Fixed** The cost of the following methods no longer increases quadratically with the size of the database:
+    - `Database.to_dataset`
+    - `Database.get_last_n_x_vect`
+    - `Database.get_x_vect` with a negative iteration
+    - `OptimizationHistory.get_data_by_names` with `filter_non_feasible=True`
+
+    `Database.store` no longer copies an input value that is already a key. [#1851](https://gitlab.com/gemseo/dev/gemseo/-/issues/1851)
 
 - **Fixed** `OptimizationProblem.is_mono_objective` now raises the documented `ValueError` when the problem has no objective yet; an `AttributeError` was raised instead. [#1888](https://gitlab.com/gemseo/dev/gemseo/-/issues/1888)
 
@@ -836,11 +858,13 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
   `isinstance(..., dict)` or on `dict`-specific methods (e.g. `.copy()`) on this mapping must be
   adapted.
 
-- **Breaking change** The concatenated design-vector argument is uniformly named `x_vect`; it was named `x_vec` in
-  `DesignSpace.get_active_bounds`, `x_c` in `DesignSpace.project_into_bounds`, `vector` in
-  `DesignSpace.transform_vect` and `DesignSpace.untransform_vect` (and their `RandomSpace`
-  counterparts, `ParameterSpace` being replaced by `RandomSpace`) and `x_array` in `DesignSpace.convert_array_to_dict`; calls passing these arguments by
-  keyword must be updated.
+- **Breaking change** The concatenated design-vector argument is uniformly named `x_vect`:
+    - `DesignSpace.get_active_bounds`: `x_vec` → `x_vect`
+    - `DesignSpace.project_into_bounds`: `x_c` → `x_vect`
+    - `DesignSpace.transform_vect` and `DesignSpace.untransform_vect`, and their `RandomSpace` counterparts (`ParameterSpace` being replaced by `RandomSpace`): `vector` → `x_vect`
+    - `DesignSpace.convert_array_to_dict`: `x_array` → `x_vect`
+
+    Calls passing these arguments by keyword must be updated.
 
 - **Breaking change** `DesignSpace.project_into_bounds` no longer preserves the dtype of its `x_vect` argument: an
   integer input is now promoted to float whenever the bounds are float (any infinite bound, or a mix
@@ -867,7 +891,13 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** An integer variable rejects a non-integer scalar bound instead of truncating it, and the finite bounds of a variable are stored with the NumPy type of its components. [#1845](https://gitlab.com/gemseo/dev/gemseo/-/issues/1845)
 
-- **Breaking change** The type of a real design variable is named `"real"` instead of `"float"`; a design space file using `"float"` and `DesignSpace.add_variable(..., type_="float")` still work, with a `DeprecationWarning`, but comparing a variable type to `"float"` is now `False`, `DesignSpace.variable_types_to_dtypes["float"]` raises a `KeyError` and a file written by this release cannot be read by an earlier one. [#1931](https://gitlab.com/gemseo/dev/gemseo/-/issues/1931)
+- **Breaking change** The type of a real design variable is named `"real"` instead of `"float"`:
+    - a design space file using `"float"` and `DesignSpace.add_variable(..., type_="float")` still work, with a `DeprecationWarning`;
+    - comparing a variable type to `"float"` is now `False`;
+    - `DesignSpace.variable_types_to_dtypes["float"]` raises a `KeyError`;
+    - a file written by this release cannot be read by an earlier one.
+
+    [#1931](https://gitlab.com/gemseo/dev/gemseo/-/issues/1931)
 
 - **Breaking change** The uncertain variables of a `ParameterSpace` were of type `"float"`, whereas the random variables of a `RandomSpace` are of type `VariableType.RANDOM`, so a test such as `space.variables[name].type == VariableType.REAL`, migrated from `space.get_type(name) == "float"`, is `False` for a random variable; compare to `VariableType.RANDOM` instead. [#2008](https://gitlab.com/gemseo/dev/gemseo/-/issues/2008)
 
@@ -1043,7 +1073,11 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
   `RandomSpace`, the random variable is rebuilt from the settings of the marginal probability distributions of the kept
   components and the copula covering it, if any, is removed, so that the random variables it covered become independent.
 
-- **Added** The hierarchy of the variables of a space is public, in the `gemseo.space.variable` package: every variable derives from `BaseVariable`, is immutable and hands out read-only arrays; `RealVariable` and `IntegerVariable` derive from `BaseIntervalVariable`, `DiscreteVariable` derives its size and bounds from its choices and the `RandomVariable` of a `RandomSpace` from the settings of its probability distributions.
+- **Added** The hierarchy of the variables of a space is public, in the `gemseo.space.variable` package:
+    - every variable derives from `BaseVariable`, is immutable and hands out read-only arrays;
+    - `RealVariable` and `IntegerVariable` derive from `BaseIntervalVariable`;
+    - `DiscreteVariable` derives its size and bounds from its choices;
+    - the `RandomVariable` of a `RandomSpace` derives them from the settings of its probability distributions.
 
 - **Added** The `gemseo.space.variable.factory.deterministic_variable_factory` builds a deterministic variable from its variable
   type. A random variable is built from the settings of its probability distributions, not from a variable type, and so
@@ -1144,9 +1178,17 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Breaking change** The augmented Lagrangian algorithms and `MultiStart` ignore `normalize_design_space` at the top level and leave the normalization to their sub-algorithms; passing `normalize_design_space=True` explicitly logs a warning. An augmented Lagrangian run with its default settings can therefore return a different optimum, its finite-difference steps being now absolute.
 
-- **Breaking change** The driver setting `round_ints` and the argument `skip_int_check` of `BaseDriverLibrary.execute()` are replaced by the driver settings `relax_integer_variables` and `relax_discrete_variables`, `False` by default: an algorithm that does not handle integer or discrete variables raises a `ValueError` on them unless they are relaxed to float variables, and nothing rounds the point at every evaluation any more; see [integer relaxation][concept-integer-relaxation] and [evaluation problem][concept-evaluation-problem].
+- **Breaking change** The driver setting `round_ints` and the argument `skip_int_check` of `BaseDriverLibrary.execute()` are replaced by the driver settings `relax_integer_variables` and `relax_discrete_variables`, `False` by default:
+    - an algorithm that does not handle integer or discrete variables raises a `ValueError` on them unless they are relaxed to float variables;
+    - nothing rounds the point at every evaluation any more.
 
-- **Breaking change** A driver checks that the algorithm handles the discrete variables (new `DriverDescription.handle_discrete_variables`); among the SciPy global algorithms, only `DIFFERENTIAL_EVOLUTION` handles integer variables, through the `integrality` option of SciPy, and `DUAL_ANNEALING` and `SHGO` require `relax_integer_variables=True`. [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
+    See [integer relaxation][concept-integer-relaxation] and [evaluation problem][concept-evaluation-problem].
+
+- **Breaking change** A driver checks that the algorithm handles the discrete variables (new `DriverDescription.handle_discrete_variables`); among the SciPy global algorithms:
+    - only `DIFFERENTIAL_EVOLUTION` handles integer variables, through the `integrality` option of SciPy;
+    - `DUAL_ANNEALING` and `SHGO` require `relax_integer_variables=True`.
+
+    [#1528](https://gitlab.com/gemseo/dev/gemseo/-/issues/1528)
 
 - **Breaking change** The `settings_model` argument of the `execute` methods was renamed to `settings`:
     - `BaseAlgorithmFactory.execute` (formerly `BaseAlgoFactory.execute`): the `**settings` arguments were removed and `settings` is now mandatory
@@ -1355,7 +1397,12 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Removed** The `norm0` attribute of `BaseMDA` was removed because it was deprecated. [#1673](https://gitlab.com/gemseo/dev/gemseo/-/issues/1673)
 
-- **Removed** The `LinearSolver` enumerations of `gemseo.mda.base_mda_settings` (now `gemseo.mda.core.base_settings`), `gemseo.mda.base_mda_solver_settings` (now `gemseo.mda.core.base_solver_settings`) and `gemseo.mda.newton_raphson_settings` were removed; the linear solver of an MDA is selected via its `linear_solver_settings` field (`newton_linear_solver_settings` for the Newton-Raphson MDA). [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
+- **Removed** The `LinearSolver` enumerations of the following modules were removed:
+    - `gemseo.mda.base_mda_settings` (now `gemseo.mda.core.base_settings`)
+    - `gemseo.mda.base_mda_solver_settings` (now `gemseo.mda.core.base_solver_settings`)
+    - `gemseo.mda.newton_raphson_settings`
+
+    The linear solver of an MDA is selected via its `linear_solver_settings` field (`newton_linear_solver_settings` for the Newton-Raphson MDA). [#1812](https://gitlab.com/gemseo/dev/gemseo/-/issues/1812)
 
 - **Changed** `BaseMDAParallelSolverSettings.set_default_n_processes` (`BaseMDAParallelSolverSettings` was `BaseParallelMDASettings`)
     now sets the default number of threads/processes
@@ -1384,13 +1431,10 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
   `BaseFormulation` is no longer responsible for attaching the objective function to the optimization problem,
   this is done by the `MDOScenario`.
 
-- **Breaking change** `BaseFormulation` has a method `create_constraint` to create a constraint function from output names;
-  this method replaces the method `add_constraint`;
-  `BaseFormulation` is no longer responsible for attaching the constraint function to the optimization problem,
-  this is done by the `MDOScenario`;
-  `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level`
-  instead of the argument `levels` used by `add_constraint` which was a list of literals;
-  these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method.
+- **Breaking change** `BaseFormulation.create_constraint` replaces `BaseFormulation.add_constraint`:
+    - it creates a constraint function from output names;
+    - `BaseFormulation` is no longer responsible for attaching the constraint function to the optimization problem, this is done by the `MDOScenario`;
+    - `BiLevel.create_constraint` uses the boolean arguments `apply_to_system_level` and `apply_to_sub_level` instead of the argument `levels` used by `add_constraint`, which was a list of literals; these arguments can be passed as keyword arguments to the `MDOScenario.add_constraint` method.
 
 - **Breaking change** `gemseo.formulations.base_formulation` was renamed to `gemseo.formulation.core.base`.
 
@@ -1458,10 +1502,8 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
   system-level space.
 
 - **Added** Two settings of `IDF` require more than a mere space of variables and raise a `ValueError` otherwise:
-  `normalize_constraints=True` scales the consistency constraints by the bound range of the target coupling variables,
-  which must be finite, e.g. a random variable following a normal distribution has no finite range, and
-  `start_at_equilibrium=True` stores the equilibrium as the current value of the space, so the input space must be
-  a `DesignSpace`.
+    - `normalize_constraints=True` scales the consistency constraints by the bound range of the target coupling variables, which must be finite, e.g. a random variable following a normal distribution has no finite range;
+    - `start_at_equilibrium=True` stores the equilibrium as the current value of the space, so the input space must be a `DesignSpace`.
 
 - **Changed** The method `BaseFormulation._update_design_space` is renamed `_update_input_space` and is now abstract: a custom formulation must implement `_update_input_space`; an implementation still named `_update_design_space` is remapped to the new name with a `DeprecationWarning`.
 
@@ -2106,17 +2148,24 @@ Most renames keep working with a `DeprecationWarning` for one deprecation cycle 
 
 - **Added** `SobolAnalysis` has a rank-based estimation algorithm, `SobolAnalysis.Algorithm.RANK`, estimating the first-order indices from independent and identically distributed samples, for which it is the default; see [Sobol' estimators][concept-sobol-estimators]. The `seed` argument of `compute_indices` also seeds the bootstrap of the confidence intervals. [#1202](https://gitlab.com/gemseo/dev/gemseo/-/issues/1202)
 
-- **Added** `gemseo.uncertainty.reliability.openturns` contains many OpenTURNS algorithms
-    based on the first-order reliability method (FORM) and the second-order reliability method (SORM),
-    namely FORM, SORM, MultiFORM and SystemFORM.
-    These reliability analysis algorithms have specific classes to store the results,
-    namely `FORMResult` stores FORM and SORM and `MultiFORMResult` for MultiFORM and SystemFORM. [#1650](https://gitlab.com/gemseo/dev/gemseo/-/issues/1650)
+- **Added** `gemseo.uncertainty.reliability.openturns` contains OpenTURNS algorithms
+  based on the first-order reliability method (FORM) and the second-order reliability method (SORM),
+  with specific classes to store their results:
+    - FORM and SORM, whose results are stored by `FORMResult`;
+    - MultiFORM and SystemFORM, whose results are stored by `MultiFORMResult`.
+
+    [#1650](https://gitlab.com/gemseo/dev/gemseo/-/issues/1650)
 
 - **Added** `gemseo.uncertainty.reliability.openturns` contains many OpenTURNS algorithms
     based on sampling methods,
     namely crude and quasi Monte Carlo, subset sampling, importance sampling and directional sampling. [#1651](https://gitlab.com/gemseo/dev/gemseo/-/issues/1651)
 
-- **Added** `gemseo.uncertainty.reliability` is a new package dedicated to reliability analysis, with classes to define events from thresholds (`ThresholdComparator`, `ElementaryEvent` and `Event`), to define and solve a problem (`ReliabilityProblem`, `ReliabilityScenario` and `BaseReliabilityAlgorithm`) and to store its result (`ReliabilityResult`). [#1653](https://gitlab.com/gemseo/dev/gemseo/-/issues/1653)
+- **Added** `gemseo.uncertainty.reliability` is a new package dedicated to reliability analysis, with classes:
+    - to define events from thresholds: `ThresholdComparator`, `ElementaryEvent` and `Event`;
+    - to define and solve a problem: `ReliabilityProblem`, `ReliabilityScenario` and `BaseReliabilityAlgorithm`;
+    - to store its result: `ReliabilityResult`.
+
+    [#1653](https://gitlab.com/gemseo/dev/gemseo/-/issues/1653)
 
 - **Added** `BaseOTDistributionSettings` is the base class for the settings of an OpenTURNS-based probability distribution.
 
