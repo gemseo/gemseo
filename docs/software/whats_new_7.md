@@ -311,6 +311,10 @@ the files of a failed evaluation are located from its position in the process.
 
 ## Uncertainty quantification
 
+The copulas and the reliability analysis presented below
+rely heavily on [OpenTURNS](https://openturns.github.io/www/),
+which provides their probabilistic models and algorithms.
+
 ### A dedicated random space
 
 GEMSEO 6 described random variables with a `ParameterSpace`,
@@ -366,7 +370,8 @@ Assuming independence can underestimate the probability of failure of a design.
 GEMSEO 7 models this dependence with a copula,
 and the samples drawn from the random space,
 for a DOE as for a sensitivity analysis, follow the resulting joint distribution.
-The pair plot can display the ranks of the data
+[PairPlot][gemseo.post.dataset.pair_plot.PairPlot] can display the ranks of the data,
+i.e. the empirical copula, in its upper part
 to visualize the dependence structure.
 
 ```python
@@ -374,6 +379,8 @@ from openturns import CorrelationMatrix, NormalCopula
 
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_LHS_Settings
+from gemseo.post.dataset import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.scenario import EvaluationScenario
 from gemseo.space import RandomSpace
 from gemseo.uncertainty.distribution import OTNormalDistribution_Settings
@@ -391,6 +398,9 @@ scenario.add_observable("z")
 scenario.execute(PYDOE_LHS_Settings(n_samples=100))
 dataset = scenario.to_dataset()
 print(dataset.get_view(variable_names=["x", "y"]).corr())
+PairPlot(dataset, PairPlot_Settings(variable_names=("x", "y"), use_ranks=True)).execute(
+    save=False, show=True
+)
 ```
 
 ### Reliability analysis
