@@ -18,10 +18,11 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 # What's new in GEMSEO 7
 
 GEMSEO 7 is a major release that revises the public API as a whole.
-Its changes address four objectives:
+Its main changes
 validate the configuration of a study before the first evaluation,
+simplify the definition of scenarios and disciplines,
 model uncertainties with the same tools as design variables,
-optimize over discrete, categorical and catalog variables,
+extend the design variables to discrete, categorical and catalog ones,
 and reduce the overhead of the library,
 by a factor of up to 20 on cache-intensive workflows.
 
@@ -52,6 +53,13 @@ pip install --upgrade gemseo[all]
     One scenario class for optimization and DOE,
     multi-objective problems and scenarios used as disciplines.
 
+-   :material-cube-outline:{ .lg .middle } **Disciplines**
+
+    ---
+
+    Grammars deduced from a Pydantic model,
+    namespaces propagated over a group of disciplines.
+
 -   :material-shape:{ .lg .middle } **Mixed-variable design**
 
     ---
@@ -64,14 +72,15 @@ pip install --upgrade gemseo[all]
     ---
 
     A dedicated random space, dependent variables through copulas,
+    discrete and joint distributions,
     reliability analysis and new sensitivity analyses.
 
 -   :material-function-variant:{ .lg .middle } **Derivatives**
 
     ---
 
-    Jacobian verification in one call,
-    forward and reverse modes in discipline chains.
+    Jacobian checkers for functions, disciplines and MDAs,
+    forward, reverse and automatic modes in discipline chains.
 
 -   :material-chart-scatter-plot:{ .lg .middle } **Visualization**
 
@@ -84,8 +93,9 @@ pip install --upgrade gemseo[all]
 
     ---
 
-    The files of each execution in a directory tree
-    mirroring the process.
+    The files of each execution in a directory tree mirroring the process,
+    a detailed assessment of the constraints
+    and the evaluations in the coordinates of the algorithm.
 
 -   :material-rocket-launch:{ .lg .middle } **Performance**
 
@@ -396,6 +406,66 @@ and plain disciplines as sub-scenarios.
 The history of a sub-scenario over all its executions
 can be retrieved as a single dataset.
 
+## Disciplines
+
+### Grammars deduced from a Pydantic model
+
+A [BaseModelDiscipline][gemseo.discipline.base_model_discipline.BaseModelDiscipline]
+reads its inputs from and writes its outputs to a Pydantic model,
+instead of dictionaries.
+Its input and output grammars are deduced from the fields it reads and writes,
+so they need not be declared,
+and several disciplines can share the same model:
+
+```python
+from pydantic import BaseModel
+
+from gemseo.discipline.base_model_discipline import BaseModelDiscipline
+
+
+class Beam(BaseModel):
+    length: float = 1.0
+    width: float = 0.1
+    height: float = 0.2
+    density: float = 7800.0
+    mass: float = 0.0
+
+
+class BeamMass(BaseModelDiscipline):
+    def _run_from_model(self, model: Beam) -> None:
+        model.mass = model.density * model.length * model.width * model.height
+
+
+discipline = BeamMass(Beam())
+discipline.io.input_grammar.names  # density, height, length, width
+discipline.io.output_grammar.names  # mass
+discipline.execute({"length": 2.0})["mass"]  # 312.0
+```
+
+See [how to create a discipline from a Pydantic model](../generated/examples/howtos/disciplines/types/plot_howto_model_discipline.md)
+for the rules that the method `_run_from_model` must follow.
+
+### Namespaces propagated over a group of disciplines
+
+Duplicating a group of coupled disciplines,
+e.g. to evaluate a process at two operating points,
+requires namespacing the variables of the copy
+that must not be shared with the original group.
+[propagate_namespace()][gemseo.discipline.namespace.propagate_namespace]
+applies a namespace from seed variables
+and propagates it forward along the coupling graph,
+so that the couplings inside the group are preserved;
+see [namespace propagation][concept-namespace-propagation].
+
+### Undeclared outputs
+
+By default,
+a discipline ignores the outputs that its `_run` method returns
+and that its output grammar does not declare.
+Setting [forbid_extra_output_names][gemseo.core.discipline.base_discipline.BaseDiscipline.forbid_extra_output_names]
+to `True` raises an `InvalidDataError` instead,
+to detect an output misspelled in the code of the discipline.
+
 ## Mixed-variable design spaces
 
 Engineering design variables are not all continuous:
@@ -423,7 +493,10 @@ An optimizer restricted to real variables no longer rounds integer variables imp
 it raises an error, unless the user chooses to
 [relax them into real variables][concept-integer-relaxation].
 The result then also reports the optimum projected onto the declared domain,
-with its objective value and its feasibility.
+with its objective value and its feasibility:
+[x_opt_projected][gemseo.optimization.result.OptimizationResult.x_opt_projected],
+[f_opt_projected][gemseo.optimization.result.OptimizationResult.f_opt_projected]
+and [is_feasible_projected][gemseo.optimization.result.OptimizationResult.is_feasible_projected].
 
 ## Uncertainty quantification
 
@@ -519,6 +592,25 @@ PairPlot(dataset, PairPlot_Settings(variable_names=("x", "y"), use_ranks=True)).
 )
 ```
 
+### Probability distributions
+
+Discrete random variables have dedicated distributions:
+[OTFiniteDiscreteDistribution][gemseo.uncertainty.distribution.openturns.finite_discrete.OTFiniteDiscreteDistribution]
+defined by values and weights,
+and [OTBernoulliDistribution][gemseo.uncertainty.distribution.openturns.bernoulli.OTBernoulliDistribution]
+and [SPBernoulliDistribution][gemseo.uncertainty.distribution.scipy.bernoulli.SPBernoulliDistribution]
+defined by the probability of a binary event.
+
+Joint distributions are configured with settings objects,
+[OTJointDistribution_Settings][gemseo.uncertainty.distribution.openturns.joint_settings.OTJointDistribution_Settings]
+and [SPJointDistribution_Settings][gemseo.uncertainty.distribution.scipy.joint_settings.SPJointDistribution_Settings],
+like the marginal ones.
+Their methods [map_to_uniform()][gemseo.uncertainty.distribution.openturns.joint.OTJointDistribution.map_to_uniform]
+and [map_from_uniform()][gemseo.uncertainty.distribution.openturns.joint.OTJointDistribution.map_from_uniform]
+apply the Rosenblatt transformation,
+which maps the random vector to the unit hypercube and back
+taking into account the dependencies between its components.
+
 ### Reliability analysis
 
 The mean and the variance of an output do not quantify
@@ -530,7 +622,10 @@ FORM and SORM, approximation methods requiring few evaluations;
 Monte Carlo and quasi Monte Carlo sampling;
 subset, importance and directional sampling, which target rare events.
 
-New sensitivity analyses complete this set.
+### Sensitivity analysis
+
+The sensitivity analyses accept a random space,
+which they sample through its iso-probabilistic mapping.
 [ROSobolAnalysis][gemseo.uncertainty.sensitivity.ro_sobol.ROSobolAnalysis] identifies the inputs driving a [rare event][concept-rosobol-analysis],
 [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis] derives sensitivity indices from the importance factors of FORM,
 [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis] can estimate its first-order indices
@@ -539,11 +634,29 @@ and [plot_second_order()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plo
 
 ## Derivatives
 
-For derivative verification,
+### Jacobian verification
+
 [gemseo.check_jacobian()][gemseo.check_jacobian] compares the derivatives of a discipline
 with a numerical approximation in one call.
-Discipline chains can now propagate derivatives in forward or reverse mode,
-and select the less expensive one automatically.
+It relies on dedicated checkers,
+also usable directly:
+[FunctionJacobianChecker][gemseo.util.derivative.check.function.FunctionJacobianChecker]
+for an `ArrayFunction`,
+[DisciplineJacobianChecker][gemseo.util.derivative.check.discipline.DisciplineJacobianChecker]
+for a discipline
+and [MDAJacobianChecker][gemseo.util.derivative.check.mda.MDAJacobianChecker]
+for an MDA.
+
+### Forward and reverse modes in discipline chains
+
+A [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
+computes its Jacobian by applying the chain rule to those of its disciplines.
+In addition to the reverse mode,
+it now supports the forward mode,
+which is less expensive when the chain has fewer inputs than outputs.
+The default mode,
+[ChainDerivationMode.AUTO][gemseo.discipline.chain.chain.ChainDerivationMode],
+selects the mode from the total sizes of the inputs and outputs.
 
 ## Visualization
 
@@ -599,6 +712,26 @@ one directory per scenario, per iteration or sample, per MDA iteration and per d
 each with a trace of the executions it contains.
 Once enabled with `configuration.directory_manager.enable = True`,
 the files of a failed evaluation are located from its position in the process.
+
+### Constraint assessment
+
+[Constraints.assess()][gemseo.optimization.core.constraints.Constraints.assess]
+tells why a point is infeasible.
+Its [ConstraintsAssessment][gemseo.optimization.core.constraints_assessment.ConstraintsAssessment]
+gives, for each constraint,
+its status (satisfied, violated or missing),
+its squared and maximum violations
+and its number of violated components;
+see [how to assess the constraints at a point](../generated/examples/howtos/optimizers/plot_howto_assess_constraints.md).
+
+### Working database
+
+An algorithm may work in coordinates different from those of the design space,
+e.g. normalized or relaxed ones.
+When the global configuration setting `enable_working_database` is `True`,
+the evaluations are also recorded in these coordinates,
+in the [working_database][gemseo.core.problem.evaluation.EvaluationProblem.working_database] of the problem,
+to analyze the run as the algorithm sees it.
 
 ## Performance
 
