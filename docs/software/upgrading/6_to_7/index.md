@@ -22,7 +22,9 @@ mechanical: a module moved, a class or an argument was renamed, keyword argument
 model. A tool written by the GEMSEO developers, bump-gemseo, makes these changes in your code for you.
 
 This guide takes you through the migration in four steps, then documents, domain by domain, the
-changes that bump-gemseo cannot make on its own, each with the code before and after.
+changes that bump-gemseo cannot make on its own, each with the code before and after. A coding agent
+can do most of the work that bump-gemseo leaves to you, see
+[Let a coding agent do the manual work](#coding-agent).
 
 !!! info "How much bump-gemseo does on its own"
 
@@ -91,6 +93,8 @@ GEMSEO 6.3 code that relies on any of the following fails with GEMSEO 7, even wi
     - the silent changes ([Step 4](#step-4-check-the-silent-changes));
     - the old names that bump-gemseo did not see. They still work with a warning; rename them before
       the layer drops them ([Step 3](#step-3-switch-to-gemseo-7-and-run-your-code)).
+- **A coding agent** can do most of your part, see
+  [Let a coding agent do the manual work](#coding-agent).
 
 ### Limits
 
@@ -186,6 +190,33 @@ concern your code, and compare your results with those of GEMSEO 6.3:
 - [Utilities](util.md#silent-changes):
     - `epsilon` is a builtin `float` and no longer upcasts `float32` arrays
     - `get_sub_disciplines` replaces any object with a `disciplines` attribute by its disciplines
+
+## Let a coding agent do the manual work { #coding-agent }
+
+The changes that bump-gemseo leaves to you, steps 2 and 3, are a good job for a coding agent. The
+GEMSEO developers tested coding agents on programs written for GEMSEO 6.3 that cover the breaking
+changes of GEMSEO 7, and compared the values that the migrated programs compute with those of
+GEMSEO 6.3. Claude Opus 5.5, Claude Sonnet 5.5 and the open-weight models GLM 5.3 and Qwen 3.8 27B
+all migrated these programs successfully: each reproduced more than 99 % of the checked behaviours of
+GEMSEO 6.3. An open-weight model such as Qwen 3.8 27B can run on your own infrastructure, which helps
+when your code must not leave it.
+
+In these tests, the agent had nothing that you do not have: bump-gemseo, the GEMSEO 7 changelog and
+a GEMSEO 6.3 environment to run the original programs. To migrate your code with an agent:
+
+1. Run bump-gemseo yourself ([Step 1](#step-1-run-bump-gemseo)) and commit its result, so that you
+   review the changes of the agent on their own.
+2. Give the agent GEMSEO 7, the GEMSEO 6.3 environment where your tests pass (see
+   [Before you start](#before-you-start)) and your tests: it can then run the original code and the
+   migrated code, and compare their results.
+3. Point it to this guide and to the [changelog](../../../changelog/index.md). Ask it to resolve the
+   `# TODO(bump-gemseo)` comments, make your tests pass with GEMSEO 7, and leave no
+   `DeprecationWarning` (see [the compatibility layer](#compatibility-layer)).
+4. Review its changes with `git diff`, as you would review those of a colleague.
+
+No model handles reliably the silent changes of [Step 4](#step-4-check-the-silent-changes), which
+raise no error and get no comment, or the few changes that need a design decision, such as the
+methods that a custom formulation overrides. Check these yourself.
 
 ## The guide, domain by domain
 
