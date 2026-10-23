@@ -211,6 +211,9 @@ pareto_front = result.pareto_front
 scenario.post_process(ParetoFront_Settings(save=False, show=True))
 ```
 
+[OptHistoryView][gemseo.post.opt_history_view.OptHistoryView] also supports these problems:
+its objective plot draws one curve per objective, named in a legend.
+
 ### One scenario class for optimization and DOE
 
 [MDOScenario][gemseo.scenario.mdo.MDOScenario] now covers both optimization and design of experiments:
@@ -449,6 +452,48 @@ it raises an error, unless the user chooses to
 [relax them into real variables][concept-integer-relaxation].
 The result then also reports the optimum projected onto the declared domain,
 with its objective value and its feasibility.
+
+## Visualization
+
+[PairPlot][gemseo.post.dataset.pair_plot.PairPlot], formerly `ScatterMatrix`,
+can replace its scatter plots by density contours (`use_scatter=False`).
+With a `classifier`,
+the histograms or the densities of its diagonal are superimposed by category:
+
+```python
+from gemseo.post.dataset import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
+from gemseo.problem.dataset.iris import create_iris_dataset
+
+dataset = create_iris_dataset()
+settings = PairPlot_Settings(
+    variable_names=("sepal_length", "sepal_width", "petal_width", "specy"),
+    classifier="specy",
+    use_scatter=False,
+    use_kde=True,
+)
+PairPlot(dataset, settings).execute(save=False, show=True)
+```
+
+[Heatmap][gemseo.post.dataset.heatmap.Heatmap], formerly `ColorEvolution`,
+represents the variables of a dataset with a color scale.
+In addition to matplotlib,
+it now has a plotly backend, used for an HTML output (`file_format="html"`).
+
+The optimization post-processors accept the `use_best_iteration_history` setting.
+At each iteration,
+they then plot the best design found up to this iteration,
+feasible if any,
+instead of the design evaluated at this iteration.
+
+The figures follow the matplotlib style, including a dark one.
+[ConstraintsHistory][gemseo.post.constraints_history.ConstraintsHistory],
+[ParallelCoordinates][gemseo.post.parallel_coordinates.ParallelCoordinates],
+[VariableInfluence][gemseo.post.variable_influence.VariableInfluence]
+and [Boxplot][gemseo.post.dataset.boxplot.Boxplot]
+take the colors of their reference lines and grids from the matplotlib settings
+(`axes.edgecolor` and `grid.color`) instead of fixed black and grey,
+and the marks of `OptHistoryView` are readable on light and dark backgrounds.
 
 ## Performance
 
