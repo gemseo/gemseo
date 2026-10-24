@@ -47,6 +47,7 @@ plugins:
     scripts:
       - docs/gen_ref_nav.py
       - docs/_scripts/credits.py
+      - docs/_scripts/changelog.py
       - docs/_scripts/learning_paths.py
       - docs/_scripts/global_configuration.py
   include-markdown: { }
@@ -101,7 +102,9 @@ nav:
           - Tutorial - Solving an ODE with GEMSEO: generated/examples/tutorials/advanced/ode/plot_tutorial_harmonic_oscillator.md
           - Tutorial - Solving a system of coupled ODEs: generated/examples/tutorials/advanced/ode/plot_tutorial_springs_discipline.md
           - Tutorial - Solving an ODE with ODEProblem: generated/examples/tutorials/advanced/ode/plot_tutorial_van_der_pol.md
-      - Changelog: changelog.md
+      - What's new in GEMSEO 7: software/whats_new_7.md
+      - Changelog: changelog/
+      - Upgrading: software/upgrading/
       - Licenses: software/licenses.md
       - Credits: credits.md
 
@@ -211,7 +214,6 @@ nav:
       - Uncertainty: generated/examples/howtos/uncertainty
       - Ordinary differential equations: generated/examples/howtos/ode
       - Global configuration: generated/examples/howtos/configuration
-      - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/
 
@@ -262,7 +264,7 @@ extra_css:
 
 extra_javascript:
   # The home page panel is rendered by home.js, so it comes first: behind
-  # xdsmjs.js it waited for 70 kB of a library the home page never uses.
+  # xdsmjs.js it waited for 110 kB of a library the home page never uses.
   - assets/js/home.js
   - assets/js/legacy-versions.js
   - assets/js/version-selector.js

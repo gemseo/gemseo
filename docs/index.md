@@ -25,7 +25,10 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
   <div>
     <img class="gh-logo" src="assets/images/gemseo/gemseo_logo_transparent.svg" alt="GEMSEO" />
     <p class="gh-intro__text">GEMSEO is an open-source Python library designed for use in multidisciplinary studies. It stands for Generic Engine for Multidisciplinary Scenarios, Exploration and Optimization. This documentation contains <a href="documentation_structure/">tutorials, explanations, how-to guides, and references</a>. Looking for plugins, blog posts and advice on contributing? You will find those on <a href="https://gemseo.org" target="_blank" rel="noopener">gemseo.org</a>.</p>
-    <a class="gh-intro__btn" href="changelog/">Changelog</a>
+    <div class="gh-intro__btns">
+      <a class="gh-intro__btn" href="software/whats_new_7/">What's new in 7</a>
+      <a class="gh-intro__btn" href="changelog/">Changelog</a>
+    </div>
   </div>
   <div class="gh-card">
     <div class="gh-card__head">

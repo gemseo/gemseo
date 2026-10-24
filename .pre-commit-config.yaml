@@ -73,7 +73,8 @@ repos:
     rev: v0.3.0
     hooks:
       - id: rumdl-fmt
-        exclude: ^\.gitlab
+        # The changelog template is Jinja, rendered into Markdown by towncrier.
+        exclude: ^(\.gitlab|changelog/template\.md$)
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.6

@@ -161,6 +161,19 @@ starving the left half.
     color 0.15s ease;
 }
 
+/* Several buttons side by side, wrapping on narrow screens. */
+.gh-intro__btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.gh-intro__btns .gh-intro__btn {
+  margin: 0;
+}
+
 /* `.gemseo-home` prefix outranks the global `.gemseo-home a:hover` underline. */
 .gemseo-home .gh-intro__btn:hover {
   color: var(--gh-accent-strong);
