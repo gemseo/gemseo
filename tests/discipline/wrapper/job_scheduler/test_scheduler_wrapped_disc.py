@@ -269,6 +269,10 @@ def test_api_fail(tmp_wd, snapshot) -> None:
 def test_run_or_compute_jacobian(discipline_diff_mocked_js):
     """Verify the use_template= False option."""
     discipline_diff_mocked_js._use_template = False
+    # A python command without arguments never ends on Windows from Python 3.13:
+    # the null device given as standard input starts its new REPL, which loops
+    # forever when stdout is a pipe.
+    discipline_diff_mocked_js._scheduler_run_command = "python -c pass"
     with pytest.raises(
         FileNotFoundError,
         match="The serialized outputs file of the discipline does not exist",
