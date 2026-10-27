@@ -28,6 +28,8 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.remapping import RemappingDiscipline
+from gemseo.mda import MDAGaussSeidel
+from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
@@ -443,3 +445,29 @@ def test_linearize_executes_original_once(square_remapping) -> None:
     ) as run:
         square_remapping.linearize({"x": array([1.0])}, compute_all_jacobians=True)
     assert run.call_count == 1
+
+
+def test_linearize_mda_with_cache_tolerance() -> None:
+    """Check that an MDA linearizing within the cache tolerance does not execute."""
+    original_disciplines = [
+        AnalyticDiscipline({"a": "0.5*b + x"}),
+        AnalyticDiscipline({"c": "0.3*d + 1"}),
+    ]
+    mda = MDAGaussSeidel(
+        [
+            RemappingDiscipline(
+                original_disciplines[0], {"y2": "b", "x": "x"}, {"y1": "a"}
+            ),
+            RemappingDiscipline(original_disciplines[1], {"y1": "d"}, {"y2": "c"}),
+        ],
+        settings=MDAGaussSeidel_Settings(tolerance=1e-10),
+    )
+    mda.lin_cache_tol_fact = 1e3
+    mda.execute({"x": array([1.0])})
+    runs = [
+        patch.object(discipline, "_run", wraps=discipline._run)
+        for discipline in original_disciplines
+    ]
+    with runs[0] as run_0, runs[1] as run_1:
+        mda.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert run_0.call_count == run_1.call_count == 0
