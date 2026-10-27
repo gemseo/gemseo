@@ -333,3 +333,56 @@ def test_linearize():
     )
     assert_equal(old_jac["old_a"]["old_b"], new_jac["new_a"]["new_b"])
     assert_equal(old_jac["old_a"]["old_c"], new_jac["new_a"]["new_c"])
+
+
+@pytest.fixture
+def sum_discipline() -> AnalyticDiscipline:
+    """The discipline computing `z = a + b` with default values."""
+    discipline = AnalyticDiscipline({"z": "a + b"})
+    discipline.io.input_grammar.defaults.update({
+        "a": array([1.0]),
+        "b": array([100.0]),
+    })
+    return discipline
+
+
+def test_unmapped_input(sum_discipline) -> None:
+    """Check that an input that is not mapped keeps its default value."""
+    discipline = RemappingDiscipline(sum_discipline, input_mapping={"x": "a"})
+    discipline.execute({"x": array([2.0])})
+    assert_equal(sum_discipline.io.input_data["b"], array([100.0]))
+    assert_equal(discipline.io.output_data["z"], array([102.0]))
+
+
+def test_partially_mapped_input() -> None:
+    """Check that the components of an input that are not mapped keep their defaults."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"x": ("in_2", 0)})
+    discipline.execute({"x": array([5.0])})
+    assert_equal(original_discipline.io.input_data["in_2"], array([5.0, 3.0]))
+    assert_equal(original_discipline.io.input_grammar.defaults["in_2"], [2.0, 3.0])
+
+
+def test_input_data_not_shared(sum_discipline) -> None:
+    """Check that an execution does not modify the input data of a previous one."""
+    discipline = RemappingDiscipline(sum_discipline, {"x": "a", "y": "b"})
+    discipline.execute({"x": array([1.0]), "y": array([2.0])})
+    first_input_data = sum_discipline.io.input_data
+    discipline.execute({"x": array([50.0]), "y": array([2.0])})
+    assert_equal(first_input_data["a"], array([1.0]))
+
+
+def test_complex_step(sum_discipline) -> None:
+    """Check the complex step approximation of the derivatives."""
+    discipline = RemappingDiscipline(sum_discipline, {"x": "a", "y": "b"})
+    discipline.set_jacobian_approximation("complex_step")
+    jacobian = discipline.linearize(compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[1.0]]))
+    assert_equal(jacobian["z"]["y"], array([[1.0]]))
+
+
+def test_list_value(sum_discipline) -> None:
+    """Check that a value can be a list."""
+    discipline = RemappingDiscipline(sum_discipline, input_mapping={"x": "a"})
+    discipline.execute({"x": [2.0]})
+    assert_equal(discipline.io.output_data["z"], array([102.0]))
