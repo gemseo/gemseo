@@ -329,6 +329,22 @@ def test_backup_new_outputs_at_existing_points(tmp_wd) -> None:
         assert backup_database[x_vect.wrapped_array].keys() == outputs.keys()
 
 
+def test_backup_empty_database(tmp_wd) -> None:
+    """Check that no backup file is created when the run evaluates no point."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([AnalyticDiscipline({"y": "2*x"})], design_space)
+    scenario.add_objective("y")
+    file_path = Path("backup.h5")
+    scenario.set_backup_settings(
+        file_path, at_each_iteration=True, at_each_function_call=False
+    )
+    with patch.object(scenario, "_execute"):
+        scenario.execute(CustomDOE_Settings(samples=array([[0.1]])))
+
+    assert not file_path.exists()
+
+
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
     [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON],
