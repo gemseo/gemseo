@@ -447,19 +447,31 @@ def test_linearize_executes_original_once(square_remapping) -> None:
     assert run.call_count == 1
 
 
-def test_linearize_mda_with_cache_tolerance() -> None:
-    """Check that an MDA linearizing within the cache tolerance does not execute."""
+@pytest.mark.parametrize(
+    "cache_type",
+    [RemappingDiscipline.default_cache_type, RemappingDiscipline.CacheType.NONE],
+    ids=["default_cache", "no_cache"],
+)
+def test_linearize_mda_with_cache_tolerance(cache_type) -> None:
+    """Check that an MDA linearizing within the cache tolerance does not execute.
+
+    This also holds without cache.
+    """
     original_disciplines = [
         AnalyticDiscipline({"a": "0.5*b + x"}),
         AnalyticDiscipline({"c": "0.3*d + 1"}),
     ]
+    remapping_disciplines = [
+        RemappingDiscipline(
+            original_disciplines[0], {"y2": "b", "x": "x"}, {"y1": "a"}
+        ),
+        RemappingDiscipline(original_disciplines[1], {"y1": "d"}, {"y2": "c"}),
+    ]
+    for discipline in remapping_disciplines:
+        discipline.set_cache(cache_type)
+
     mda = MDAGaussSeidel(
-        [
-            RemappingDiscipline(
-                original_disciplines[0], {"y2": "b", "x": "x"}, {"y1": "a"}
-            ),
-            RemappingDiscipline(original_disciplines[1], {"y1": "d"}, {"y2": "c"}),
-        ],
+        remapping_disciplines,
         settings=MDAGaussSeidel_Settings(tolerance=1e-10),
     )
     mda.lin_cache_tol_fact = 1e3
@@ -471,3 +483,18 @@ def test_linearize_mda_with_cache_tolerance() -> None:
     with runs[0] as run_0, runs[1] as run_1:
         mda.linearize({"x": array([1.0])}, compute_all_jacobians=True)
     assert run_0.call_count == run_1.call_count == 0
+
+
+def test_linearize_after_direct_execution() -> None:
+    """Check the Jacobian after an execution of the original discipline.
+
+    The execution is at other unmapped inputs.
+    """
+    original_discipline = AnalyticDiscipline({"z": "a*b"})
+    original_discipline.io.input_grammar.defaults["b"] = array([1.0])
+    discipline = RemappingDiscipline(original_discipline, {"x": "a"})
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
+    discipline.execute({"x": array([1.0])})
+    original_discipline.execute({"a": array([1.0]), "b": array([5.0])})
+    jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[1.0]]))

@@ -177,18 +177,25 @@ class RemappingDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        original_input_data = self.__convert_to_origin(self.io.get_input_data())
-        last_original_input_data = self._discipline.io.input_data
-        if not compare_dict_of_arrays(
-            original_input_data,
-            {name: last_original_input_data.get(name) for name in original_input_data},
-            tolerance=0.0 if self.cache is None else self.cache.tolerance,
-        ):
-            # The output data of this discipline come from its cache,
-            # so the original discipline was last executed at other input data.
+        if self.cache is not None:
+            # The output data of this discipline may come from its cache,
+            # in which case the original discipline was not executed
+            # and can have been last executed at other input data.
             # The tolerance of the cache is used,
-            # as by the MDA linearizing without executing.
-            self._discipline.execute(original_input_data)
+            # as by an MDA linearizing without executing.
+            original_input_data = self._discipline.io.prepare_input_data(
+                self.__convert_to_origin(self.io.get_input_data())
+            )
+            last_original_input_data = self._discipline.io.input_data
+            if not compare_dict_of_arrays(
+                original_input_data,
+                {
+                    name: last_original_input_data.get(name)
+                    for name in original_input_data
+                },
+                tolerance=self.cache.tolerance,
+            ):
+                self._discipline.execute(original_input_data)
 
         input_mapping = self._input_mapping
         original_input_names = {input_mapping[n][0] for n in input_names}
