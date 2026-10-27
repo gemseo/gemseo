@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.function.array_function import ArrayFunction
     from gemseo.core.grammar.properties import GrammarProperties
+    from gemseo.util.typing import StrKeyMapping
 
 input_vector = array([1.0, 1.0])
 
@@ -392,3 +393,31 @@ def test_jacobian_wrt_categorical_inputs_only() -> None:
     assert function.differentiated_input_names_substitute == []
     assert_allclose(function.evaluate(array([1.0])), array([2.7]))
     assert function.jac(array([1.0])).shape == (0,)
+
+
+class IntegerDiscipline(Discipline):
+    """A discipline whose grammar declares a Python integer input."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": int})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.n = None
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.n = input_data["n"]
+        return {"y": input_data["x"] * self.n}
+
+
+def test_integer_input_declared_as_python_integer() -> None:
+    """Check that an integer input declared as a Python integer is given as such."""
+    discipline = IntegerDiscipline()
+    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 1})
+    # As a DOE records the type of the variables of a mixed space.
+    x_vect = array([2.0, 3.0])
+    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
+    assert_allclose(function.evaluate(x_vect), array([6.0]))
+    assert discipline.n == 3
+    assert type(discipline.n) is int

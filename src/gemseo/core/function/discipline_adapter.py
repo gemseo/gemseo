@@ -531,7 +531,13 @@ class DisciplineAdapter(ArrayFunction):
             # Restore the proper data types as declared in the design space.
             for name, type_ in variable_types.items():
                 if name not in self.__name_to_categorical_variable:
-                    input_data[name] = input_data[name].astype(type_, copy=False)
+                    value = input_data[name]
+                    if isinstance(value, ndarray):
+                        input_data[name] = value.astype(type_, copy=False)
+                    else:
+                        # The grammar declares a non-array type, e.g. int,
+                        # so the value is a Python scalar and shall remain one.
+                        input_data[name] = array(value).astype(type_).item()
 
         self.__decode_labels(input_data, x_vect)
 
