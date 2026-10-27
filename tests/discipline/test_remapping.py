@@ -21,6 +21,7 @@ from unittest.mock import patch
 
 import pytest
 from numpy import array
+from numpy import nan
 from numpy import zeros
 from numpy.testing import assert_equal
 
@@ -485,16 +486,15 @@ def test_linearize_mda_with_cache_tolerance(cache_type) -> None:
     assert run_0.call_count == run_1.call_count == 0
 
 
-def test_linearize_after_direct_execution() -> None:
-    """Check the Jacobian after an execution of the original discipline.
-
-    The execution is at other unmapped inputs.
-    """
-    original_discipline = AnalyticDiscipline({"z": "a*b"})
-    original_discipline.io.input_grammar.defaults["b"] = array([1.0])
+def test_linearize_with_nan_input() -> None:
+    """Check that an input equal to NaN does not trigger an extra execution."""
+    original_discipline = AnalyticDiscipline({"z": "a**2"})
+    original_discipline.io.input_grammar.update_from_names(["b"])
+    original_discipline.io.input_grammar.defaults["b"] = array([nan])
     discipline = RemappingDiscipline(original_discipline, {"x": "a"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
-    discipline.execute({"x": array([1.0])})
-    original_discipline.execute({"a": array([1.0]), "b": array([5.0])})
-    jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
-    assert_equal(jacobian["z"]["x"], array([[1.0]]))
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert run.call_count == 1
