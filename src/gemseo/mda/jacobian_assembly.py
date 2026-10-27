@@ -743,7 +743,7 @@ class JacobianAssembly:
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
             dfun_dx[fun] = self.assemble_jacobian([fun], variables)
-            dfun_dy[fun] = self.assemble_jacobian([fun], couplings_and_res)
+            dfun_dy[fun] = self.assemble_jacobian([fun], couplings_and_states)
 
         mode = self._get_derivation_mode(mode, n_variables, n_functions)
 

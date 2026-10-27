@@ -40,13 +40,19 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.mda import MDAChain
+from gemseo.mda import MDAChain_Settings
+from gemseo.mda import MDANewtonRaphson_Settings
 from gemseo.mda.jacobian_assembly import JacobianAssembly
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from collections.abc import Iterable
 
-    from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrKeyMapping
+    from numpy import ndarray
 
 
 def disc_1_expr(
@@ -221,3 +227,60 @@ def test_adjoint(res_disciplines, mode, matrix_type) -> None:
     mda.linearization_mode = mode
     mda.matrix_type = matrix_type
     assert MDAJacobianChecker(mda).check(inputs=["x"], outputs=["obj"])
+
+
+class ImplicitDiscipline(Discipline):
+    """An implicit discipline with a state `w` and a residual `r = 2w - a`."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a", "w"])
+        self.io.output_grammar.update_from_names(["w", "r"])
+        self.io.input_grammar.defaults = {"a": array([1.0]), "w": array([0.0])}
+        self.io.residual_to_state_variable = {"r": "w"}
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        w = input_data["w"]
+        return {"w": w, "r": 2 * w - input_data["a"]}
+
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        self._init_jacobian(input_names, output_names, fill_missing_keys=True)
+        self.jac["r"]["w"] = array([[2.0]])
+        self.jac["r"]["a"] = array([[-1.0]])
+        self.jac["w"]["w"] = array([[1.0]])
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        JacobianAssembly.MDADerivationMode.ADJOINT,
+        JacobianAssembly.MDADerivationMode.DIRECT,
+    ],
+)
+@pytest.mark.parametrize(
+    ("expression", "expected"), [("a", 4 / 3), ("w", 2 / 3), ("3*w+a", 10 / 3)]
+)
+def test_function_of_state(mode, expression, expected) -> None:
+    """Check the total derivative of a function of a state variable.
+
+    With `a = x + w/2` and `2w = a`, `w = 2x/3` and `a = 4x/3`.
+    """
+    mda = MDAChain(
+        [
+            AnalyticDiscipline({"a": "x+0.5*w"}),
+            ImplicitDiscipline(),
+            AnalyticDiscipline({"f": expression}),
+        ],
+        settings=MDAChain_Settings(
+            inner_mda_settings=MDANewtonRaphson_Settings(tolerance=1e-12)
+        ),
+    )
+    mda.linearization_mode = mode
+    mda.add_differentiated_inputs(["x"])
+    mda.add_differentiated_outputs(["f"])
+    jacobian = mda.linearize({"x": array([1.0])})
+    assert jacobian["f"]["x"][0, 0] == pytest.approx(expected)
