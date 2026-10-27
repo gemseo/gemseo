@@ -448,6 +448,18 @@ def test_linearize_executes_original_once(square_remapping) -> None:
     assert run.call_count == 1
 
 
+def test_linearize_after_execute(square_remapping) -> None:
+    """Check that linearizing at the last execution point does not execute again."""
+    original_discipline = square_remapping.original_discipline
+    original_discipline.cache = None
+    square_remapping.execute({"x": array([1.0])})
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        square_remapping.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert run.call_count == 0
+
+
 @pytest.mark.parametrize(
     "cache_type",
     [RemappingDiscipline.default_cache_type, RemappingDiscipline.CacheType.NONE],
