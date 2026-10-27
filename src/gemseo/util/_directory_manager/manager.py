@@ -237,6 +237,7 @@ class DirectoryManager(metaclass=BaseMultiton):
             raise ValueError(msg)
 
         directory_path = parent_path / filename
+        suffixed_name_prefix = filename + self.__suffix_separator
 
         # Go reverse since a potential homonymic directory could be the last one.
         # Iterate on a copy because we could modify the data structure during iteration.
@@ -278,13 +279,13 @@ class DirectoryManager(metaclass=BaseMultiton):
                     if sub_observer is not None:
                         self.__path_to_observer[new_sub_folder_path] = sub_observer
             elif (
-                # Is it a homonymic directory that has been suffixed?
-                str(path).startswith(str(directory_path))
-                # Yes, then is it suffixed with the separator and an index?
+                # Is it a homonymic directory suffixed with the separator and an index?
+                # A subdirectory of such a directory must not match.
+                path.parent == directory_path.parent
+                and path.name.startswith(suffixed_name_prefix)
                 and (
-                    previous_suffix := path.name.rsplit(self.__suffix_separator, 1)[-1]
-                )
-                != path.name
+                    previous_suffix := path.name[len(suffixed_name_prefix) :]
+                ).isdigit()
             ):
                 previous_suffix = int(previous_suffix)
             else:

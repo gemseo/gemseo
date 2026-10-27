@@ -700,6 +700,22 @@ def test_discipline_files_with_untracked_subdirectory(dm_settings):
     assert (root_path / "DisciplineWithFiles_execution#1").exists()
 
 
+def test_homonym_with_suffixed_subdirectories(dm_settings):
+    """Check the suffix of a directory whose suffixed homonyms have subdirectories.
+
+    Each linearization directory contains suffixed execution directories,
+    whose suffixes must not be taken for the one of a linearization directory.
+    """
+    root_path = dm_settings.execution_root_path
+    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
+    discipline.set_jacobian_approximation()
+    for _ in range(4):
+        discipline.linearize(compute_all_jacobians=True)
+
+    names = {path.name for path in root_path.iterdir() if path.is_dir()}
+    assert {f"AnalyticDiscipline_linearization#{i}" for i in range(4)} <= names
+
+
 def test_scenario_discipline_with_files(dm_settings):
     """Test the execution of a scenario with a discipline that writes files."""
     discipline = DisciplineWithFiles()
