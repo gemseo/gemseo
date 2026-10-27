@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 from numpy import array
@@ -410,3 +411,35 @@ def test_complex_value_after_real_one() -> None:
     )
     discipline.execute({"x": array([1.0]), "y": array([2.0 + 1j])})
     assert_equal(original_discipline.io.input_data["a"], array([1.0, 2.0 + 1j]))
+
+
+@pytest.fixture
+def square_remapping() -> RemappingDiscipline:
+    """A remapping of `z = a**2` with a cache storing all the evaluations."""
+    discipline = RemappingDiscipline(AnalyticDiscipline({"z": "a**2"}), {"x": "a"})
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
+    return discipline
+
+
+def test_linearize_after_cache_hit(square_remapping) -> None:
+    """Check the Jacobian at a point whose output data come from the cache."""
+    square_remapping.execute({"x": array([1.0])})
+    square_remapping.execute({"x": array([3.0])})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+def test_linearize_executes_original_once(square_remapping) -> None:
+    """Check that linearizing at a new point executes the original discipline once.
+
+    The execution of the remapping discipline executes the original one,
+    which shall not be executed again to compute the Jacobian.
+    """
+    original_discipline = square_remapping.original_discipline
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        square_remapping.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert run.call_count == 1

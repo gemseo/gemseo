@@ -28,6 +28,7 @@ from numpy import iscomplexobj
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
+from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
@@ -176,6 +177,16 @@ class RemappingDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
+        original_input_data = self.__convert_to_origin(self.io.get_input_data())
+        last_original_input_data = self._discipline.io.input_data
+        if not compare_dict_of_arrays(
+            original_input_data,
+            {name: last_original_input_data.get(name) for name in original_input_data},
+        ):
+            # The output data of this discipline come from its cache,
+            # so the original discipline was last executed at other input data.
+            self._discipline.execute(original_input_data)
+
         input_mapping = self._input_mapping
         original_input_names = {input_mapping[n][0] for n in input_names}
         output_mapping = self._output_mapping
