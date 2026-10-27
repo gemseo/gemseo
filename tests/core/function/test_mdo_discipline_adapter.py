@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import operator
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -29,7 +30,9 @@ from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
+from pandas import Series
 
+from gemseo.core.data_converter.base import BaseDataConverter
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
@@ -421,3 +424,37 @@ def test_integer_input_declared_as_python_integer() -> None:
     assert_allclose(function.evaluate(x_vect), array([6.0]))
     assert discipline.n == 3
     assert type(discipline.n) is int
+
+
+class SeriesDiscipline(Discipline):
+    """A discipline whose input is a pandas Series."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": Series})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.n = None
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.n = input_data["n"]
+        return {"y": input_data["x"] * self.n.sum()}
+
+
+def test_integer_input_converted_by_user(monkeypatch) -> None:
+    """Check that a typed input converted by a user converter keeps its own type."""
+    monkeypatch.setattr(
+        BaseDataConverter, "value_to_array_converters", {"n": Series.to_numpy}
+    )
+    monkeypatch.setattr(BaseDataConverter, "array_to_value_converters", {"n": Series})
+    monkeypatch.setattr(
+        BaseDataConverter, "value_size_getters", {"n": operator.attrgetter("size")}
+    )
+    discipline = SeriesDiscipline()
+    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 2})
+    x_vect = array([2.0, 3.0, 4.0])
+    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
+    assert_allclose(function.evaluate(x_vect), array([14.0]))
+    assert isinstance(discipline.n, Series)
+    assert discipline.n.dtype == int64
