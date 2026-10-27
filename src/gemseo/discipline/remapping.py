@@ -228,16 +228,17 @@ class RemappingDiscipline(Discipline):
         original_input_data = {}
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
-            if original_name not in original_input_data:
-                # Start from a copy of the default value
-                # to keep the components that are not mapped.
-                default_value = original_defaults[original_name]
-                dtype = default_value.dtype
-                if iscomplexobj(value):
-                    # E.g. the complex step approximation of the derivatives.
-                    dtype = result_type(dtype, complex128)
-                original_input_data[original_name] = default_value.astype(dtype)
-            original_input_data[original_name][args] = value
+            original_value = original_input_data.get(original_name)
+            if original_value is None:
+                # Copy the default value to keep the components that are not mapped.
+                original_value = original_defaults[original_name].copy()
+            if iscomplexobj(value) and not iscomplexobj(original_value):
+                # E.g. the complex step approximation of the derivatives.
+                original_value = original_value.astype(
+                    result_type(original_value, complex128)
+                )
+            original_value[args] = value
+            original_input_data[original_name] = original_value
         return original_input_data
 
     @staticmethod

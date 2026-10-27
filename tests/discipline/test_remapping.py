@@ -108,6 +108,20 @@ class NewDiscipline(Discipline):
         }
 
 
+class VectorDiscipline(Discipline):
+    """A discipline computing `z = a[0] + 2 * a[1]`."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        default_input_data = {"a": array([1.0, 2.0])}
+        self.io.input_grammar.update_from_data(default_input_data)
+        self.io.output_grammar.update_from_data({"z": array([0.0])})
+        self.io.input_grammar.defaults = default_input_data
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"z": array([input_data["a"] @ array([1.0, 2.0])])}
+
+
 input_mapping = {
     "new_in_1": "in_1",
     "new_in_2": ("in_2", 0),
@@ -386,3 +400,13 @@ def test_list_value(sum_discipline) -> None:
     discipline = RemappingDiscipline(sum_discipline, input_mapping={"x": "a"})
     discipline.execute({"x": [2.0]})
     assert_equal(discipline.io.output_data["z"], array([102.0]))
+
+
+def test_complex_value_after_real_one() -> None:
+    """Check a complex component of a variable whose first component is real."""
+    original_discipline = VectorDiscipline()
+    discipline = RemappingDiscipline(
+        original_discipline, {"x": ("a", 0), "y": ("a", 1)}
+    )
+    discipline.execute({"x": array([1.0]), "y": array([2.0 + 1j])})
+    assert_equal(original_discipline.io.input_data["a"], array([1.0, 2.0 + 1j]))
