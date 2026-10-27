@@ -28,6 +28,7 @@ from numpy import iscomplexobj
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
+from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
@@ -60,8 +61,12 @@ class RemappingDiscipline(Discipline):
     """Whether the original discipline was not executed at the current input data.
 
     This is the case when the output data of this discipline were loaded from its
-    cache.
+    cache at input data other than the ones of the last execution of the original
+    discipline.
     """
+
+    __last_input_data: StrKeyMapping | None = None
+    """The input data of the last execution of the original discipline, if any."""
 
     def __init__(
         self,
@@ -175,6 +180,7 @@ class RemappingDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
+        self.__last_input_data = dict(input_data)
         self.__original_discipline_is_outdated = False
         return self.__convert_from_origin(
             self._discipline.io.get_output_data(), self._output_mapping
@@ -184,7 +190,14 @@ class RemappingDiscipline(Discipline):
         self, input_data: StrKeyMapping, cache_entry: CacheEntry
     ) -> None:
         super()._set_data_from_cache(input_data, cache_entry)
-        self.__original_discipline_is_outdated = True
+        # The original discipline is up to date
+        # if this cache entry was stored by its last execution.
+        self.__original_discipline_is_outdated = (
+            self.__last_input_data is None
+            or not compare_dict_of_arrays(
+                input_data, self.__last_input_data, nan_are_equal=True
+            )
+        )
 
     def _compute_jacobian(
         self,
