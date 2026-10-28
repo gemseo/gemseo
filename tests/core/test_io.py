@@ -194,6 +194,20 @@ def test_get_extra_output_names_namespace(io: IO):
     assert not io.get_extra_output_names({"output": 0, "n:output": 0})
 
 
+def test_finalize_removes_extra_output_data(io: IO):
+    """Check that finalize removes the output data that are not outputs."""
+    io.output_grammar.update_from_data({"o": 0})
+    io.output_data.update({"o": 1, "extra": 2})
+    io.finalize(False)
+    assert io.output_data == {"o": 1}
+
+    # With namespace.
+    io.output_grammar.add_namespace("o", "n")
+    io.output_data = DisciplineData({"n:o": 1, "extra": 2})
+    io.finalize(False)
+    assert io.output_data == {"n:o": 1}
+
+
 def test_update_output_data_no_mirror_for_auto_coupled():
     """Auto-coupled keys land in `_output_data` only after `update_output_data`."""
     io = IO(type, "io", GrammarType.SIMPLE)

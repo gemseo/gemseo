@@ -400,11 +400,16 @@ class IO:
         self.output_data = DisciplineData()
 
     def finalize(self, validate: bool) -> None:
-        """Validate the output data.
+        """Remove the output data that are not outputs and validate the others.
 
         Args:
             validate: Whether to validate the (eventually post-processed) cleaned data.
         """
+        output_data = self.output_data
+        output_grammar = self.output_grammar
+        for name in [name for name in output_data if name not in output_grammar]:
+            del output_data[name]
+
         if validate:
             self.output_grammar.validate(self.output_data)
 

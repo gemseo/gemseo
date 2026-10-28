@@ -1657,3 +1657,36 @@ def test_forbid_extra_output_names_status(monkeypatch):
     with pytest.raises(InvalidDataError):
         discipline.execute()
     assert discipline.execution_status.value == ExecutionStatus.Status.FAILED
+
+
+class _DisciplineWritingExtraOutput(Discipline):
+    """A discipline writing an output data that is not an output."""
+
+    def __init__(self, use_local_data: bool) -> None:
+        """
+        Args:
+            use_local_data: Whether to write the output data with the deprecated
+                `local_data` setter, otherwise in `io.output_data`.
+        """  # noqa: D205, D212
+        super().__init__()
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults = {"x": array([1.0])}
+        self.__use_local_data = use_local_data
+
+    def _run(self, input_data):
+        output_data = {"y": input_data["x"], "extra": array([3.0])}
+        if self.__use_local_data:
+            with pytest.warns(DeprecationWarning, match="local_data"):
+                self.local_data = {**input_data, **output_data}
+        else:
+            self.io.output_data.update(output_data)
+
+
+@pytest.mark.parametrize("use_local_data", [False, True])
+def test_extra_output_data_are_removed(use_local_data) -> None:
+    """Check that the output data that are not outputs are removed."""
+    discipline = _DisciplineWritingExtraOutput(use_local_data)
+    discipline.execute()
+    assert discipline.io.get_output_data().keys() == {"y"}
+    assert discipline.cache.last_entry.outputs.keys() == {"y"}
