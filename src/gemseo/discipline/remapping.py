@@ -21,8 +21,14 @@ from __future__ import annotations
 from collections.abc import Iterable
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
+from typing import Final
 from typing import NoReturn
 
+from numpy import array
+from numpy import array_equal
+from numpy import asarray
+from numpy import broadcast_to
+from numpy import can_cast
 from numpy import complex128
 from numpy import iscomplexobj
 from numpy import result_type
@@ -36,6 +42,9 @@ if TYPE_CHECKING:
 
 Indices = tuple[str, int | Iterable[int]]
 NameMapping = dict[str, str | Indices]
+
+_FULL_SLICE: Final[slice] = slice(None)
+"""The slice selecting all the components of a variable."""
 
 
 class RemappingDiscipline(Discipline):
@@ -223,11 +232,22 @@ class RemappingDiscipline(Discipline):
             mapping the original input names to the corresponding values.
             The original input variables that are not mapped are omitted,
             so that the original discipline uses its default values.
+
+        Raises:
+            ValueError: When a value mapped to some components of an original input
+                variable cannot be stored in it without loss of information,
+                e.g. a float in an integer variable or a string longer than the
+                strings of the variable.
         """
         original_defaults = self._discipline.io.input_grammar.defaults
         original_input_data = {}
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
+            if isinstance(args, slice) and args == _FULL_SLICE:
+                # A variable mapped as a whole is passed as is, without cast.
+                original_input_data[original_name] = array(value)
+                continue
+
             original_value = original_input_data.get(original_name)
             if original_value is None:
                 # Copy the default value to keep the components that are not mapped.
@@ -238,6 +258,25 @@ class RemappingDiscipline(Discipline):
                     result_type(original_value, complex128)
                 )
             original_value[args] = value
+            value = asarray(value)
+            dtype = original_value.dtype
+            if (
+                value.dtype != dtype
+                and not can_cast(value.dtype, dtype, "safe")
+                and not array_equal(
+                    stored_value := original_value[args],
+                    broadcast_to(value, stored_value.shape),
+                    equal_nan=value.dtype.kind in "fc" and dtype.kind in "fc",
+                )
+            ):
+                msg = (
+                    f"The value of {new_name!r} cannot be stored "
+                    f"in the variable {original_name!r} of the original discipline "
+                    f"without loss of information, as its dtype is "
+                    f"{original_value.dtype}."
+                )
+                raise ValueError(msg)
+
             original_input_data[original_name] = original_value
         return original_input_data
 

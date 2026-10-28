@@ -410,3 +410,54 @@ def test_complex_value_after_real_one() -> None:
     )
     discipline.execute({"x": array([1.0]), "y": array([2.0 + 1j])})
     assert_equal(original_discipline.io.input_data["a"], array([1.0, 2.0 + 1j]))
+
+
+class TypedDiscipline(Discipline):
+    """A discipline with an integer input `n` and a string input `s` of size 2."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_names(["n", "s"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults = {
+            "n": array([1, 2]),
+            "s": array(["ab", "cd"]),
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": array([0.0])}
+
+
+def test_whole_variable_not_cast() -> None:
+    """Check that a variable mapped as a whole is passed without cast."""
+    original_discipline = TypedDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"m": "n", "t": "s"})
+    discipline.execute({"m": array([2.5, 3.5]), "t": array(["three", "four"])})
+    assert_equal(original_discipline.io.input_data["n"], array([2.5, 3.5]))
+    assert_equal(original_discipline.io.input_data["s"], array(["three", "four"]))
+
+
+def test_component_lossless_cast() -> None:
+    """Check that a value mapped to a component can be cast without loss."""
+    original_discipline = TypedDiscipline()
+    discipline = RemappingDiscipline(
+        original_discipline, {"m": ("n", 0), "t": ("s", 1)}
+    )
+    discipline.execute({"m": array([3.0]), "t": array(["xy"])})
+    assert_equal(original_discipline.io.input_data["n"], array([3, 2]))
+    assert_equal(original_discipline.io.input_data["s"], array(["ab", "xy"]))
+
+
+@pytest.mark.parametrize(
+    "input_data",
+    [
+        {"m": array([2.5]), "t": array(["xy"])},
+        {"m": array([3]), "t": array(["xyz"])},
+        {"m": array([3]), "t": array([2.5])},
+    ],
+)
+def test_component_lossy_cast(input_data, snapshot) -> None:
+    """Check that a value mapped to a component cannot be stored with a loss."""
+    discipline = RemappingDiscipline(TypedDiscipline(), {"m": ("n", 0), "t": ("s", 1)})
+    with assert_exception(ValueError, snapshot):
+        discipline.execute(input_data)
