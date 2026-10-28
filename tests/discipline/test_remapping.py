@@ -21,7 +21,6 @@ from unittest.mock import patch
 
 import pytest
 from numpy import array
-from numpy import nan
 from numpy import zeros
 from numpy.testing import assert_equal
 
@@ -498,20 +497,6 @@ def test_linearize_mda_with_cache_tolerance(cache_type) -> None:
     assert run_0.call_count == run_1.call_count == 0
 
 
-def test_linearize_with_nan_input() -> None:
-    """Check that an input equal to NaN does not trigger an extra execution."""
-    original_discipline = AnalyticDiscipline({"z": "a**2"})
-    original_discipline.io.input_grammar.update_from_names(["b"])
-    original_discipline.io.input_grammar.defaults["b"] = array([nan])
-    discipline = RemappingDiscipline(original_discipline, {"x": "a"})
-    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
-    with patch.object(
-        original_discipline, "_run", wraps=original_discipline._run
-    ) as run:
-        discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
-    assert run.call_count == 1
-
-
 def test_linearize_after_successive_cache_hits(square_remapping) -> None:
     """Check the Jacobian after cache hits at the points of two executions."""
     for x in (1.0, 3.0, 1.0):
@@ -539,3 +524,32 @@ def test_linearize_after_in_place_modification(square_remapping) -> None:
         {"x": array([1.0])}, compute_all_jacobians=True, execute=False
     )
     assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+class ObjectInputDiscipline(Discipline):
+    """A discipline computing `z = a**2` with an input of objects."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a", "s"])
+        self.io.output_grammar.update_from_names(["z"])
+        self.io.input_grammar.defaults = {
+            "a": array([1.0]),
+            "s": array(["foo"], dtype=object),
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"z": input_data["a"] ** 2}
+
+
+def test_execute_twice_with_object_input() -> None:
+    """Check that a cache hit with an input of objects does not execute again."""
+    original_discipline = ObjectInputDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"x": "a", "t": "s"})
+    input_data = {"x": array([1.0]), "t": array(["foo"], dtype=object)}
+    discipline.execute(input_data)
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        discipline.execute(input_data)
+    assert run.call_count == 0
