@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import NoReturn
@@ -66,7 +67,10 @@ class RemappingDiscipline(Discipline):
     """
 
     __last_input_data: StrKeyMapping | None = None
-    """The input data of the last execution of the original discipline, if any."""
+    """The input data of this discipline at the last execution of the original one.
+
+    `None` if the original discipline has not been executed yet.
+    """
 
     def __init__(
         self,
@@ -179,9 +183,7 @@ class RemappingDiscipline(Discipline):
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
-        self.__last_input_data = dict(input_data)
-        self.__original_discipline_is_outdated = False
+        self.__execute_original_discipline()
         return self.__convert_from_origin(
             self._discipline.io.get_output_data(), self._output_mapping
         )
@@ -199,6 +201,13 @@ class RemappingDiscipline(Discipline):
             )
         )
 
+    def __execute_original_discipline(self) -> None:
+        """Execute the original discipline at the current input data."""
+        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
+        # A deep copy, because the caller can modify the input arrays in place.
+        self.__last_input_data = deepcopy(dict(self.io.input_data))
+        self.__original_discipline_is_outdated = False
+
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
@@ -207,8 +216,7 @@ class RemappingDiscipline(Discipline):
         if self.__original_discipline_is_outdated:
             # The output data of this discipline were loaded from its cache,
             # so the original discipline was last executed at other input data.
-            self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
-            self.__original_discipline_is_outdated = False
+            self.__execute_original_discipline()
 
         input_mapping = self._input_mapping
         original_input_names = {input_mapping[n][0] for n in input_names}
