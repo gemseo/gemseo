@@ -27,9 +27,9 @@ from typing import NoReturn
 from numpy import array
 from numpy import array_equal
 from numpy import asarray
-from numpy import broadcast_to
 from numpy import can_cast
 from numpy import complex128
+from numpy import empty
 from numpy import iscomplexobj
 from numpy import result_type
 
@@ -37,6 +37,9 @@ from gemseo.core.discipline import Discipline
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+    from numpy.typing import ArrayLike
+
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
@@ -258,17 +261,7 @@ class RemappingDiscipline(Discipline):
                     result_type(original_value, complex128)
                 )
             original_value[args] = value
-            value = asarray(value)
-            dtype = original_value.dtype
-            if (
-                value.dtype != dtype
-                and not can_cast(value.dtype, dtype, "safe")
-                and not array_equal(
-                    stored_value := original_value[args],
-                    broadcast_to(value, stored_value.shape),
-                    equal_nan=value.dtype.kind in "fc" and dtype.kind in "fc",
-                )
-            ):
+            if not self.__is_stored_without_loss(value, original_value, args):
                 msg = (
                     f"The value of {new_name!r} cannot be stored "
                     f"in the variable {original_name!r} of the original discipline "
@@ -279,6 +272,43 @@ class RemappingDiscipline(Discipline):
 
             original_input_data[original_name] = original_value
         return original_input_data
+
+    @staticmethod
+    def __is_stored_without_loss(
+        value: ArrayLike, original_value: ndarray, components: slice | Iterable[int]
+    ) -> bool:
+        """Whether a value stored in some components of a variable kept its information.
+
+        Rounding a float or complex value to a lower precision is not a loss,
+        but a float stored in an integer variable or a string longer than the
+        strings of the variable is.
+
+        Args:
+            value: The value written in the components.
+            original_value: The variable after this writing.
+            components: The components where the value was written.
+
+        Returns:
+            Whether the value was stored without loss of information.
+        """
+        value = asarray(value)
+        dtype = original_value.dtype
+        if (
+            value.dtype == dtype
+            or can_cast(value.dtype, dtype, "safe")
+            or (value.dtype.kind == dtype.kind and dtype.kind in "fc")
+        ):
+            return True
+
+        stored_value = original_value[components]
+        # Same broadcasting rules as the assignment of the value in the variable.
+        expected_value = empty(stored_value.shape, value.dtype)
+        expected_value[...] = value
+        return array_equal(
+            stored_value,
+            expected_value,
+            equal_nan=value.dtype.kind in "fc" and dtype.kind in "fc",
+        )
 
     @staticmethod
     def __get_new_data_names(

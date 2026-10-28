@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import float32
 from numpy import zeros
 from numpy.testing import assert_equal
 
@@ -461,3 +462,24 @@ def test_component_lossy_cast(input_data, snapshot) -> None:
     discipline = RemappingDiscipline(TypedDiscipline(), {"m": ("n", 0), "t": ("s", 1)})
     with assert_exception(ValueError, snapshot):
         discipline.execute(input_data)
+
+
+def test_component_float_precision() -> None:
+    """Check that a float stored in a variable of lower precision is rounded."""
+    original_discipline = TypedDiscipline()
+    original_discipline.io.input_grammar.defaults["n"] = array(
+        [1.0, 2.0], dtype=float32
+    )
+    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
+    discipline.execute({"m": array([0.1])})
+    assert_equal(
+        original_discipline.io.input_data["n"], array([0.1, 2.0], dtype=float32)
+    )
+
+
+def test_component_with_leading_unit_dimension() -> None:
+    """Check a value with a leading unit dimension stored in a component."""
+    original_discipline = TypedDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
+    discipline.execute({"m": array([[3.0]])})
+    assert_equal(original_discipline.io.input_data["n"], array([3, 2]))
