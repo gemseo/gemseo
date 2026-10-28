@@ -202,6 +202,9 @@ class RemappingDiscipline(Discipline):
 
     def __execute_original_discipline(self) -> None:
         """Execute the original discipline at the current input data."""
+        # Forget the last input data in case the execution fails,
+        # as the original discipline would then hold other input data.
+        self.__last_input_data = None
         self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
         # A deep copy, because the caller can modify the input arrays in place.
         self.__last_input_data = (

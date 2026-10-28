@@ -576,3 +576,19 @@ def test_linearize_with_shared_cache(square_remapping) -> None:
     discipline.original_discipline.execute({"a": array([3.0])})
     jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
     assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+def test_linearize_after_failed_execution(square_remapping) -> None:
+    """Check the Jacobian at a cached point after a failed execution."""
+    square_remapping.execute({"x": array([1.0])})
+    original_discipline = square_remapping.original_discipline
+    with (
+        patch.object(original_discipline, "_run", side_effect=ValueError),
+        pytest.raises(ValueError),
+    ):
+        square_remapping.execute({"x": array([3.0])})
+
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
