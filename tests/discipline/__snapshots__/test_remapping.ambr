@@ -1,4 +1,13 @@
 # serializer version: 1
+# name: test_component_lossy_cast[input_data0]
+  "The value of 'm' cannot be stored in the variable 'n' of the original discipline without loss of information, as its dtype is int64."
+# ---
+# name: test_component_lossy_cast[input_data1]
+  "The value of 't' cannot be stored in the variable 's' of the original discipline without loss of information, as its dtype is <U2."
+# ---
+# name: test_component_lossy_cast[input_data2]
+  "The value of 't' cannot be stored in the variable 's' of the original discipline without loss of information, as its dtype is <U2."
+# ---
 # name: test_with_discipline_wo_default_values[False]
   'Some input variables of the original discipline have no default values.'
 # ---
