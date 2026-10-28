@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import Final
@@ -31,13 +32,13 @@ from numpy import can_cast
 from numpy import complex128
 from numpy import empty
 from numpy import iscomplexobj
+from numpy import ndarray
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
-    from numpy import ndarray
     from numpy.typing import ArrayLike
 
     from gemseo.core.grammar.base import BaseGrammar
@@ -246,22 +247,30 @@ class RemappingDiscipline(Discipline):
         original_input_data = {}
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
+            default_value = original_defaults[original_name]
             if isinstance(args, slice) and args == _FULL_SLICE:
-                # A variable mapped as a whole is passed as is, without cast.
-                original_input_data[original_name] = array(value)
+                # A variable mapped as a whole is passed without cast,
+                # in a container of the type of its default value.
+                original_input_data[original_name] = (
+                    array(value)
+                    if isinstance(default_value, ndarray)
+                    else deepcopy(value)
+                )
                 continue
 
             original_value = original_input_data.get(original_name)
             if original_value is None:
                 # Copy the default value to keep the components that are not mapped.
-                original_value = original_defaults[original_name].copy()
+                original_value = default_value.copy()
             if iscomplexobj(value) and not iscomplexobj(original_value):
                 # E.g. the complex step approximation of the derivatives.
                 original_value = original_value.astype(
                     result_type(original_value, complex128)
                 )
             original_value[args] = value
-            if not self.__is_stored_without_loss(value, original_value, args):
+            if isinstance(
+                original_value, ndarray
+            ) and not self.__is_stored_without_loss(value, original_value, args):
                 msg = (
                     f"The value of {new_name!r} cannot be stored "
                     f"in the variable {original_name!r} of the original discipline "
@@ -304,11 +313,7 @@ class RemappingDiscipline(Discipline):
         # Same broadcasting rules as the assignment of the value in the variable.
         expected_value = empty(stored_value.shape, value.dtype)
         expected_value[...] = value
-        return array_equal(
-            stored_value,
-            expected_value,
-            equal_nan=value.dtype.kind in "fc" and dtype.kind in "fc",
-        )
+        return array_equal(stored_value, expected_value)
 
     @staticmethod
     def __get_new_data_names(

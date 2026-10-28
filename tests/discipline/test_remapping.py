@@ -498,3 +498,30 @@ def test_component_float_into_complex() -> None:
     assert_equal(
         original_discipline.io.input_data["n"], array([0.1, 2.0], dtype=complex64)
     )
+
+
+class ListDiscipline(Discipline):
+    """A discipline whose input `x` is a list."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": list})
+        self.io.output_grammar.update_from_types({"y": list})
+        self.io.input_grammar.defaults = {"x": [1, 2]}
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": input_data["x"]}
+
+
+@pytest.mark.parametrize(
+    ("mapping", "value", "expected"),
+    [("x", [3, 4], [3, 4]), (("x", 0), [3], [3, 2])],
+)
+def test_list_variable(mapping, value, expected) -> None:
+    """Check that a list variable remapped as a whole or by component stays a list."""
+    original_discipline = ListDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"a": mapping})
+    discipline.execute({"a": value})
+    assert original_discipline.io.input_data["x"] == expected
