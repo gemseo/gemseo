@@ -553,3 +553,26 @@ def test_execute_twice_with_object_input() -> None:
     ) as run:
         discipline.execute(input_data)
     assert run.call_count == 0
+
+
+def test_linearize_after_cache_toggled(square_remapping) -> None:
+    """Check the Jacobian after an execution without cache between two with it."""
+    cache = square_remapping.cache
+    square_remapping.execute({"x": array([1.0])})
+    square_remapping.cache = None
+    square_remapping.execute({"x": array([3.0])})
+    square_remapping.cache = cache
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+def test_linearize_with_shared_cache(square_remapping) -> None:
+    """Check the Jacobian after a cache hit in a cache filled by another discipline."""
+    square_remapping.execute({"x": array([1.0])})
+    discipline = RemappingDiscipline(AnalyticDiscipline({"z": "a**2"}), {"x": "a"})
+    discipline.cache = square_remapping.cache
+    discipline.original_discipline.execute({"a": array([3.0])})
+    jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
