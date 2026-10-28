@@ -510,3 +510,32 @@ def test_linearize_with_nan_input() -> None:
     ) as run:
         discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
     assert run.call_count == 1
+
+
+def test_linearize_after_successive_cache_hits(square_remapping) -> None:
+    """Check the Jacobian after cache hits at the points of two executions."""
+    for x in (1.0, 3.0, 1.0):
+        square_remapping.execute({"x": array([x])})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True, execute=False
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+    square_remapping.execute({"x": array([3.0])})
+    jacobian = square_remapping.linearize(
+        {"x": array([3.0])}, compute_all_jacobians=True, execute=False
+    )
+    assert_equal(jacobian["z"]["x"], array([[6.0]]))
+
+
+def test_linearize_after_in_place_modification(square_remapping) -> None:
+    """Check the Jacobian when the caller modifies the input array in place."""
+    x = array([1.0])
+    square_remapping.execute({"x": x})
+    x[0] = 3.0
+    square_remapping.execute({"x": x})
+    x[0] = 1.0
+    square_remapping.execute({"x": x})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True, execute=False
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
