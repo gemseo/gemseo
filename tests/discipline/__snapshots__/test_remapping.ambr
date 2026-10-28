@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_component_float_overflow
+  "The value of 'm' cannot be stored in the variable 'n' of the original discipline without loss of information, as its dtype is float32."
+# ---
 # name: test_component_lossy_cast[input_data0]
   "The value of 'm' cannot be stored in the variable 'n' of the original discipline without loss of information, as its dtype is int64."
 # ---
