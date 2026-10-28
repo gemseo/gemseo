@@ -296,7 +296,7 @@ class RemappingDiscipline(Discipline):
         if (
             value.dtype == dtype
             or can_cast(value.dtype, dtype, "safe")
-            or (value.dtype.kind == dtype.kind and dtype.kind in "fc")
+            or (value.dtype.kind in "fc" and dtype.kind in "fc")
         ):
             return True
 
