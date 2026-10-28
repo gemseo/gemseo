@@ -541,3 +541,28 @@ def test_component_float_overflow(snapshot) -> None:
     discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
     with assert_exception(ValueError, snapshot):
         discipline.execute({"m": array([1e300])})
+
+
+@pytest.mark.parametrize(
+    ("default", "value", "expected"),
+    [
+        (array([b"ab", b"cd"]), array(["xy"]), array([b"ab", b"xy"])),
+        (array(["ab", "cd"]), array([b"xy"]), array(["ab", "xy"])),
+    ],
+)
+def test_component_str_and_bytes(default, value, expected) -> None:
+    """Check that a str stored in a bytes variable and vice versa is accepted."""
+    original_discipline = TypedDiscipline()
+    original_discipline.io.input_grammar.defaults["s"] = default
+    discipline = RemappingDiscipline(original_discipline, {"t": ("s", 1)})
+    discipline.execute({"t": value})
+    assert_equal(original_discipline.io.input_data["s"], expected)
+
+
+def test_component_bytes_truncation(snapshot) -> None:
+    """Check that a str truncated in a bytes variable raises."""
+    original_discipline = TypedDiscipline()
+    original_discipline.io.input_grammar.defaults["s"] = array([b"ab", b"cd"])
+    discipline = RemappingDiscipline(original_discipline, {"t": ("s", 1)})
+    with assert_exception(ValueError, snapshot):
+        discipline.execute({"t": array(["xyz"])})

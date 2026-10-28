@@ -312,6 +312,10 @@ class RemappingDiscipline(Discipline):
             # A rounding is accepted, but not an overflow.
             return array_equal(isfinite(stored_value), isfinite(expected_value))
 
+        if value.dtype.kind in "SU" and dtype.kind in "SU":
+            # A str stored as bytes or vice versa is not a loss, but a truncation is.
+            stored_value = stored_value.astype(value.dtype)
+
         return array_equal(stored_value, expected_value)
 
     @staticmethod
