@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import Final
@@ -32,6 +31,7 @@ from numpy import can_cast
 from numpy import complex128
 from numpy import empty
 from numpy import iscomplexobj
+from numpy import isfinite
 from numpy import ndarray
 from numpy import result_type
 
@@ -248,14 +248,13 @@ class RemappingDiscipline(Discipline):
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
             default_value = original_defaults[original_name]
-            if isinstance(args, slice) and args == _FULL_SLICE:
-                # A variable mapped as a whole is passed without cast,
-                # in a container of the type of its default value.
-                original_input_data[original_name] = (
-                    array(value)
-                    if isinstance(default_value, ndarray)
-                    else deepcopy(value)
-                )
+            if (
+                isinstance(default_value, ndarray)
+                and isinstance(args, slice)
+                and args == _FULL_SLICE
+            ):
+                # An array variable mapped as a whole is passed without cast.
+                original_input_data[original_name] = array(value)
                 continue
 
             original_value = original_input_data.get(original_name)
@@ -289,8 +288,8 @@ class RemappingDiscipline(Discipline):
         """Whether a value stored in some components of a variable kept its information.
 
         Rounding a float or complex value to a lower precision is not a loss,
-        but a float stored in an integer variable or a string longer than the
-        strings of the variable is.
+        but its overflow, a float stored in an integer variable or a string longer
+        than the strings of the variable is.
 
         Args:
             value: The value written in the components.
@@ -302,17 +301,17 @@ class RemappingDiscipline(Discipline):
         """
         value = asarray(value)
         dtype = original_value.dtype
-        if (
-            value.dtype == dtype
-            or can_cast(value.dtype, dtype, "safe")
-            or (value.dtype.kind in "fc" and dtype.kind in "fc")
-        ):
+        if value.dtype == dtype or can_cast(value.dtype, dtype, "safe"):
             return True
 
         stored_value = original_value[components]
         # Same broadcasting rules as the assignment of the value in the variable.
         expected_value = empty(stored_value.shape, value.dtype)
         expected_value[...] = value
+        if value.dtype.kind in "fc" and dtype.kind in "fc":
+            # A rounding is accepted, but not an overflow.
+            return array_equal(isfinite(stored_value), isfinite(expected_value))
+
         return array_equal(stored_value, expected_value)
 
     @staticmethod

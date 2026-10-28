@@ -517,7 +517,12 @@ class ListDiscipline(Discipline):
 
 @pytest.mark.parametrize(
     ("mapping", "value", "expected"),
-    [("x", [3, 4], [3, 4]), (("x", 0), [3], [3, 2])],
+    [
+        ("x", [3, 4], [3, 4]),
+        ("x", array([3, 4]), [3, 4]),
+        ("x", (3, 4), [3, 4]),
+        (("x", 0), [3], [3, 2]),
+    ],
 )
 def test_list_variable(mapping, value, expected) -> None:
     """Check that a list variable remapped as a whole or by component stays a list."""
@@ -525,3 +530,14 @@ def test_list_variable(mapping, value, expected) -> None:
     discipline = RemappingDiscipline(original_discipline, {"a": mapping})
     discipline.execute({"a": value})
     assert original_discipline.io.input_data["x"] == expected
+
+
+def test_component_float_overflow(snapshot) -> None:
+    """Check that a float overflowing a variable of lower precision raises."""
+    original_discipline = TypedDiscipline()
+    original_discipline.io.input_grammar.defaults["n"] = array(
+        [1.0, 2.0], dtype=float32
+    )
+    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
+    with assert_exception(ValueError, snapshot):
+        discipline.execute({"m": array([1e300])})
