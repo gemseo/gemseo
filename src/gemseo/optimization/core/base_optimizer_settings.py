@@ -71,9 +71,9 @@ If `None`, do not scale the functions.""",  # noqa: E501
     )
 
     _redundant_settings: ClassVar[list[str]] = []
-    """The settings that has a GEMSEO counterpart.
+    """The settings that have a GEMSEO counterpart.
 
-If such a setting is passed to the library by the end-user, it will be removed.
+If such a setting is passed to the library by the end-user, an error is raised.
 The user should rather use the corresponding setting from GEMSEO."""
 
     @model_validator(mode="before")
@@ -84,8 +84,8 @@ The user should rather use the corresponding setting from GEMSEO."""
                 msg = (
                     f"The '{setting_name}' setting cannot be passed to the "
                     "optimization library since there exists a GEMSEO counterpart. "
-                    "Please use the corresponding GEMSEO setting instead, "
-                    f"among the fields of {cls.__name__}."
+                    "Use this counterpart instead, one of the settings that "
+                    f"{cls.__name__} inherits from BaseOptimizerSettings."
                 )
                 raise ValueError(msg)
 
