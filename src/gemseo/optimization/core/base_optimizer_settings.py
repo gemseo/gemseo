@@ -83,10 +83,9 @@ The user should rather use the corresponding setting from GEMSEO."""
             if setting_name in data:
                 msg = (
                     f"The '{setting_name}' setting cannot be passed to the "
-                    "optimization library since there exists a GEMSEO counterpart. \n"
-                    "Please consider using the corresponding GEMSEO setting (see "
-                    "https://gemseo.readthedocs.io/en/stable/algorithms/index.html) "
-                    "for more information."
+                    "optimization library since there exists a GEMSEO counterpart. "
+                    "Please use the corresponding GEMSEO setting instead, "
+                    f"among the fields of {cls.__name__}."
                 )
                 raise ValueError(msg)
 
