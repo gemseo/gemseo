@@ -115,7 +115,7 @@ typing = [
 
 [project.urls]
 Homepage = "https://gemseo.org"
-Documentation = "https://gemseo.readthedocs.io"
+Documentation = "https://gemseo.gitlab.io/dev/gemseo/"
 Source = "https://gitlab.com/gemseo/dev/gemseo"
 Issues = "https://gitlab.com/gemseo/dev/gemseo/-/issues"
 

@@ -14,21 +14,21 @@
 # name: test_removal_redundant_settings[DUAL_ANNEALING_Settings-maxfun]
   '''
   1 validation error for DUAL_ANNEALING_Settings
-    Value error, The 'maxfun' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Please use the corresponding GEMSEO setting instead, among the fields of DUAL_ANNEALING_Settings. [type=value_error, input_value={'maxfun': 'foo'}, input_type=dict]
+    Value error, The 'maxfun' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Use this counterpart instead, one of the settings that DUAL_ANNEALING_Settings inherits from BaseOptimizerSettings. [type=value_error, input_value={'maxfun': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_removal_redundant_settings[SLSQP_Settings-maxiter]
   '''
   1 validation error for SLSQP_Settings
-    Value error, The 'maxiter' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Please use the corresponding GEMSEO setting instead, among the fields of SLSQP_Settings. [type=value_error, input_value={'maxiter': 'foo'}, input_type=dict]
+    Value error, The 'maxiter' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Use this counterpart instead, one of the settings that SLSQP_Settings inherits from BaseOptimizerSettings. [type=value_error, input_value={'maxiter': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_removal_redundant_settings[TNC_Settings-eps]
   '''
   1 validation error for TNC_Settings
-    Value error, The 'eps' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Please use the corresponding GEMSEO setting instead, among the fields of TNC_Settings. [type=value_error, input_value={'eps': 'foo'}, input_type=dict]
+    Value error, The 'eps' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. Use this counterpart instead, one of the settings that TNC_Settings inherits from BaseOptimizerSettings. [type=value_error, input_value={'eps': 'foo'}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
