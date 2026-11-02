@@ -40,12 +40,12 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.post._graph_view import GraphView
+    from gemseo.post.graph_view import GraphView
     from gemseo.util.discipline import DisciplineVariableProperties
     from gemseo.util.typing import StrPath
 
 # graphviz is an optional dependency;
-# the gemseo.post._graph_view import happens lazily where GraphView is used
+# the gemseo.post.graph_view import happens lazily where GraphView is used
 # so that gemseo.core does not depend on gemseo.post at module level.
 graphviz_is_missing: Final[bool] = find_spec("graphviz") is None
 
@@ -312,7 +312,7 @@ class DependencyGraph:
             )
             return None
 
-        from gemseo.post._graph_view import GraphView
+        from gemseo.post.graph_view import GraphView
 
         graph_view = GraphView()
         get_node_name_from_discipline = self.__get_node_name_from_discipline
@@ -402,7 +402,7 @@ class DependencyGraph:
 
         if file_path:
             # 4. Write the dot and target files.
-            graph_view.visualize(show=False, file_path=file_path, clean_up=clean_up)
+            graph_view.visualize(file_path=file_path, clean_up=clean_up)
 
         return graph_view
 
