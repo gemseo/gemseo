@@ -500,7 +500,7 @@ def test_worker_count_mismatch_raises(snapshot) -> None:
 
 def test_check_method_in_init(monkeypatch, snapshot) -> None:
     """The Windows-only start-method check runs at construction time."""
-    from gemseo.core.parallel_execution import callable_parallel_execution as module
+    from gemseo.util.multiprocessing import process_pool as module
 
     monkeypatch.setattr(module, "platform_is_windows", True)
     monkeypatch.setattr(

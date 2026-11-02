@@ -34,3 +34,26 @@ class BaseSciPyGlobalSettings(BaseOptimizerSettings):
         "xtol_rel": 1e-9,
         "xtol_abs": 1e-9,
     }
+
+
+def _check_database_with_processes(use_database: bool, n_processes: int) -> None:
+    """Check that the database is used when there are several processes.
+
+    The worker processes send their evaluations back through the database;
+    without it, each point would be evaluated twice,
+    once in a worker and once in the main process.
+
+    Args:
+        use_database: Whether the database is used.
+        n_processes: The number of processes, -1 for all the CPUs.
+
+    Raises:
+        ValueError: When `use_database` is `False` and `n_processes` is not 1.
+    """
+    if not use_database and n_processes != 1:
+        names = "all the CPUs" if n_processes == -1 else f"{n_processes} workers"
+        msg = (
+            f"The workers cannot be used with {names} when use_database is False; "
+            "use 1 worker or set use_database to True."
+        )
+        raise ValueError(msg)

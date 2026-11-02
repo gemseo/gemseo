@@ -1,4 +1,32 @@
 # serializer version: 1
+# name: test_differential_evolution_immediate_updating_with_workers[_build_with_updating_and_all_cpus]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The updating strategy "immediate" cannot be used with all the CPUs; use "deferred" or None. [type=value_error, input_value={'updating': 'immediate', 'workers': -1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_differential_evolution_immediate_updating_with_workers[_build_with_updating_and_workers]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The updating strategy "immediate" cannot be used with 2 workers; use "deferred" or None. [type=value_error, input_value={'updating': 'immediate', 'workers': 2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_differential_evolution_immediate_updating_with_workers[_set_updating_after_workers]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The updating strategy "immediate" cannot be used with 2 workers; use "deferred" or None. [type=value_error, input_value=DIFFERENTIAL_EVOLUTION_Se...'immediate'>, workers=2), input_type=DIFFERENTIAL_EVOLUTION_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_differential_evolution_immediate_updating_with_workers[_set_workers_after_updating]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The updating strategy "immediate" cannot be used with 2 workers; use "deferred" or None. [type=value_error, input_value=DIFFERENTIAL_EVOLUTION_Se...'immediate'>, workers=2), input_type=DIFFERENTIAL_EVOLUTION_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_dual_annealing_rejects_integer_variables_without_relaxation
   '''
   Algorithm DUAL_ANNEALING is not adapted to the problem, it does not handle integer variables.
@@ -21,5 +49,105 @@
   '''
   Algorithm SHGO is not adapted to the problem, it does not handle discrete variables.
   Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_scipy_global_rejects_invalid_workers[DIFFERENTIAL_EVOLUTION-less_than_minus_one]
+  '''
+  2 validation errors for DIFFERENTIAL_EVOLUTION_Settings
+  workers.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=-2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  workers.literal[-1]
+    Input should be -1 [type=literal_error, input_value=-2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_scipy_global_rejects_invalid_workers[DIFFERENTIAL_EVOLUTION-zero]
+  '''
+  2 validation errors for DIFFERENTIAL_EVOLUTION_Settings
+  workers.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  workers.literal[-1]
+    Input should be -1 [type=literal_error, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_scipy_global_rejects_invalid_workers[SHGO-less_than_minus_one]
+  '''
+  2 validation errors for SHGO_Settings
+  workers.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=-2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  workers.literal[-1]
+    Input should be -1 [type=literal_error, input_value=-2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_scipy_global_rejects_invalid_workers[SHGO-zero]
+  '''
+  2 validation errors for SHGO_Settings
+  workers.constrained-int
+    Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  workers.literal[-1]
+    Input should be -1 [type=literal_error, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[DIFFERENTIAL_EVOLUTION-_build_without_database-all_the_cpus]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The workers cannot be used with all the CPUs when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value={'use_database': False, 'workers': -1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[DIFFERENTIAL_EVOLUTION-_build_without_database-two_workers]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The workers cannot be used with 2 workers when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value={'use_database': False, 'workers': 2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[DIFFERENTIAL_EVOLUTION-_set_no_database_after_workers-all_the_cpus]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The workers cannot be used with all the CPUs when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value=DIFFERENTIAL_EVOLUTION_Se...dating=None, workers=-1), input_type=DIFFERENTIAL_EVOLUTION_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[DIFFERENTIAL_EVOLUTION-_set_no_database_after_workers-two_workers]
+  '''
+  1 validation error for DIFFERENTIAL_EVOLUTION_Settings
+    Value error, The workers cannot be used with 2 workers when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value=DIFFERENTIAL_EVOLUTION_Se...pdating=None, workers=2), input_type=DIFFERENTIAL_EVOLUTION_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[SHGO-_build_without_database-all_the_cpus]
+  '''
+  1 validation error for SHGO_Settings
+    Value error, The workers cannot be used with all the CPUs when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value={'use_database': False, 'workers': -1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[SHGO-_build_without_database-two_workers]
+  '''
+  1 validation error for SHGO_Settings
+    Value error, The workers cannot be used with 2 workers when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value={'use_database': False, 'workers': 2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[SHGO-_set_no_database_after_workers-all_the_cpus]
+  '''
+  1 validation error for SHGO_Settings
+    Value error, The workers cannot be used with all the CPUs when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value=SHGO_Settings(enable_prog...simplicial', workers=-1), input_type=SHGO_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_global_workers_without_database[SHGO-_set_no_database_after_workers-two_workers]
+  '''
+  1 validation error for SHGO_Settings
+    Value error, The workers cannot be used with 2 workers when use_database is False; use 1 worker or set use_database to True. [type=value_error, input_value=SHGO_Settings(enable_prog...'simplicial', workers=2), input_type=SHGO_Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

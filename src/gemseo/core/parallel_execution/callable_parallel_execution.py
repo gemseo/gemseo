@@ -23,10 +23,8 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
-from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from multiprocessing import get_context
 from os import getpid
 from pathlib import Path
 from threading import get_native_id
@@ -43,8 +41,10 @@ from gemseo.util._worker_context import tag_thread_worker
 from gemseo.util.constant import _enable_parallel_execution
 from gemseo.util.constant import n_cpus
 from gemseo.util.multiprocessing import start_method
+from gemseo.util.multiprocessing.process_pool import check_start_method
+from gemseo.util.multiprocessing.process_pool import create_process_pool_executor
+from gemseo.util.multiprocessing.process_pool import get_number_of_processes
 from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
-from gemseo.util.platform import platform_is_windows
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -450,25 +450,25 @@ class CallableParallelExecution(
         Returns:
             The configured executor.
         """
-        # Never spawn more workers than tasks: extra workers cost a process
-        # creation and a pickling of ``task_callables`` (via ``initargs``) for no work.
-        max_workers = min(n_tasks, self.n_processes)
         # Capture the parent metadata in the parent context; the pool initializer
         # sets it on each worker, where it is read by the directory manager and
         # the workflow observers (via current_thread()/current_process()) to
         # resolve per-worker working directories and rebuild the execution tree.
         parent_path = Path.cwd()
         if self.use_threading:
+            # Never spawn more workers than tasks.
             return ThreadPoolExecutor(
-                max_workers=max_workers,
+                max_workers=min(n_tasks, self.n_processes),
                 initializer=_init_thread_worker,
                 initargs=(get_native_id(), parent_path),
             )
-        return ProcessPoolExecutor(
-            max_workers=max_workers,
-            mp_context=get_context(method=self.multi_processing_start_method),
-            initializer=_init_process_worker,
-            initargs=(task_callables, getpid(), parent_path),
+        # Never spawn more workers than tasks: extra workers cost a process
+        # creation and a pickling of ``task_callables`` (via ``initargs``) for no work.
+        return create_process_pool_executor(
+            get_number_of_processes(self.n_processes, n_tasks),
+            self.multi_processing_start_method,
+            _init_process_worker,
+            (task_callables, getpid(), parent_path),
         )
 
     def __check_multiprocessing_start_method(self) -> None:
@@ -478,16 +478,5 @@ class CallableParallelExecution(
             ValueError: If the start method is different from `spawn` on
                 Windows platform.
         """
-        if (
-            not self.use_threading
-            and platform_is_windows
-            and self.multi_processing_start_method
-            != self.MultiProcessingStartMethod.SPAWN
-        ):  # pragma: win32 cover
-            msg = (
-                f"The multiprocessing start method "
-                f"{self.multi_processing_start_method.value} "
-                f"cannot be used on the Windows platform. "
-                f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
-            )
-            raise ValueError(msg)
+        if not self.use_threading:
+            check_start_method(self.multi_processing_start_method)
