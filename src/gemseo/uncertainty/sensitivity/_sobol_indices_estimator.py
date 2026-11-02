@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
@@ -44,6 +45,7 @@ from openturns import RankSobolSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 
 from gemseo.dataset.dataset import Dataset
+from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.post.dataset.heatmap import Heatmap
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 from gemseo.uncertainty.sensitivity._ot_sobol_indices_estimator import (
@@ -51,6 +53,7 @@ from gemseo.uncertainty.sensitivity._ot_sobol_indices_estimator import (
 )
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
+from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
 from gemseo.util.string import repr_variable
@@ -63,10 +66,14 @@ if TYPE_CHECKING:
     from openturns import Sample
 
     from gemseo.dataset.io_dataset import IODataset
+    from gemseo.doe.core.base_doe_settings import BaseDOESettings
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
     from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import RealArray
+
+
+logger = logging.getLogger(__name__)
 
 
 class SobolAnalysisMethod(StrEnum):
@@ -237,6 +244,45 @@ class SobolIndicesEstimatorMixin:
         self._output_standard_deviations = {
             name: values**0.5 for name, values in output_variances.items()
         }
+
+    @staticmethod
+    def _check_doe_settings(
+        algo_settings: BaseDOESettings, compute_second_order: bool
+    ) -> tuple[bool, bool]:
+        """Check the DOE settings against the Sobol' analysis options.
+
+        A warning is logged
+        when the `eval_second_order` setting of the pick-and-freeze algorithm
+        is set explicitly and differs from `compute_second_order`,
+        which prevails,
+        and when the second-order indices are requested
+        from another DOE algorithm.
+
+        Args:
+            algo_settings: The settings of the DOE algorithm.
+            compute_second_order: Whether to compute the second-order indices.
+
+        Returns:
+            Whether the DOE algorithm is the pick-and-freeze one,
+            and whether the second-order indices can be computed.
+        """
+        if isinstance(algo_settings, OT_SOBOL_INDICES_Settings):
+            log_replaced_setting(
+                algo_settings,
+                "eval_second_order",
+                compute_second_order,
+                "the argument 'compute_second_order'",
+            )
+            return True, compute_second_order
+
+        if compute_second_order:
+            msg = (
+                "The second-order indices can only be computed "
+                "with the OT_SOBOL_INDICES algorithm."
+            )
+            logger.warning(msg)
+
+        return False, False
 
     def _select_sobol_algorithm(
         self, algo: Algorithm | None, use_pick_and_freeze: bool

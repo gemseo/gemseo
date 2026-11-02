@@ -1,4 +1,10 @@
 # serializer version: 1
+# name: test_boundary_of_unit_hypercube
+  "The DOE algorithm 'Sobol' has sampled the boundary of the unit hypercube, whose standard normal quantiles are infinite; use a randomized design, e.g. scrambled."
+# ---
+# name: test_doe_settings_without_n_samples
+  "The DOE algorithm 'PYDOE_CCDESIGN' has no 'n_samples' setting to receive the sampling budget of each event."
+# ---
 # name: test_inconsistent_algorithm
   "The rank-based Sobol' estimation algorithm expects Monte Carlo samples."
 # ---

@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
@@ -36,7 +35,6 @@ from openturns import Sample
 from pandas import Series
 
 from gemseo.doe.factory import doe_library_factory
-from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.uncertainty.sensitivity._cv_sobol_indices_estimator import (
     CVSobolIndicesEstimator,
 )
@@ -65,8 +63,6 @@ if TYPE_CHECKING:
     from gemseo.util.typing import MutableStrKeyMapping
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrPath
-
-logger = logging.getLogger(__name__)
 
 
 class SobolAnalysis(
@@ -180,6 +176,11 @@ class SobolAnalysis(
         Args:
             compute_second_order: Whether to compute the second-order indices.
 
+        Raises:
+            ValueError: When the DOE algorithm samples a face of the unit hypercube
+                mapped to infinite values
+                for random variables unbounded below or above.
+
         Notes:
              All the estimation techniques,
              except the rank-based one,
@@ -207,16 +208,12 @@ class SobolAnalysis(
         if algo_settings is None:
             algo_settings = doe_library_factory.create_settings(self.default_driver)
 
-        use_pick_and_freeze = isinstance(algo_settings, OT_SOBOL_INDICES_Settings)
+        use_pick_and_freeze, compute_second_order = self._check_doe_settings(
+            algo_settings, compute_second_order
+        )
         if use_pick_and_freeze:
+            algo_settings = algo_settings.model_copy()
             algo_settings.eval_second_order = compute_second_order
-        elif compute_second_order:
-            msg = (
-                "The second-order indices can only be computed "
-                "with the OT_SOBOL_INDICES algorithm."
-            )
-            logger.warning(msg)
-            compute_second_order = False
 
         super().compute_samples(
             disciplines,

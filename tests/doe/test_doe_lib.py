@@ -461,6 +461,17 @@ def test_unbounded_random_space(mc) -> None:
     mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 
+def test_unbounded_random_space_boundary(fullfact, snapshot) -> None:
+    """Check that a DOE sampling the boundary of the unit hypercube fails.
+
+    The boundary is mapped to infinite values for unbounded random variables.
+    """
+    random_space = RandomSpace()
+    random_space.add_variable("x", SPNormalDistribution_Settings())
+    with assert_exception(ValueError, snapshot):
+        fullfact.sample_space(random_space, PYDOE_FULLFACT_Settings(n_samples=2))
+
+
 def f(x):
     return 2 * x
 

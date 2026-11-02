@@ -951,3 +951,39 @@ def test_morris_sigma_of_signed_differences() -> None:
     assert not allclose(
         indices.sigma["y"][0]["x1"], absolute_differences.var(0, ddof=1) ** 0.5
     )
+
+
+def test_settings_unchanged(discipline, parameter_space) -> None:
+    """Check that compute_samples leaves the settings of the user unchanged."""
+    settings = PYDOE_LHS_Settings()
+    MorrisAnalysis().compute_samples(
+        [discipline], parameter_space, n_samples=0, algo_settings=settings
+    )
+    assert settings == PYDOE_LHS_Settings()
+
+
+@pytest.mark.parametrize(
+    ("settings", "n_samples", "is_logged"),
+    [
+        (PYDOE_LHS_Settings(n_samples=2), 0, True),
+        (PYDOE_LHS_Settings(), 0, False),
+        (PYDOE_LHS_Settings(), 20, False),
+    ],
+    ids=["explicit", "default", "n_samples"],
+)
+def test_n_samples_setting_replaced_warning(
+    discipline, parameter_space, caplog, settings, n_samples, is_logged
+) -> None:
+    """Check the warning about an explicit n_samples replaced by n_replicates.
+
+    With a positive n_samples,
+    n_replicates is not used and so does not replace the n_samples setting.
+    """
+    MorrisAnalysis().compute_samples(
+        [discipline],
+        parameter_space,
+        n_samples=n_samples,
+        algo_settings=settings,
+        n_replicates=3,
+    )
+    assert ("is replaced by" in caplog.text) is is_logged

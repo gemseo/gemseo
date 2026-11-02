@@ -243,6 +243,16 @@ and the total model evaluation budget `n_samples` is shared across them:
 once every design point has been located with FORM,
 the remaining budget is split equally between the events to draw their Sobol' samples.
 
+By default, the samples come from a pick-and-freeze design.
+A Monte Carlo, quasi-Monte Carlo or Latin hypercube sampling algorithm
+can be chosen instead through its settings,
+e.g. `OT_MONTE_CARLO_Settings()` for the i.i.d. samples
+expected by the RANK estimator and the importance sampling estimator of the event probability,
+the confidence intervals being approximate with the quasi-Monte Carlo and LHS algorithms;
+its number of samples is replaced by the budget of each event.
+As only the pick-and-freeze design gives the second-order indices,
+pass `compute_second_order=False` with these algorithms.
+
 !!! note "The indices are computed in the standard space"
     For independent marginals,
     the standard inputs map one-to-one to the physical inputs and share their names.

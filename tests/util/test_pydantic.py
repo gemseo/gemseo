@@ -14,11 +14,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import logging
+
 import pytest
 from pydantic import BaseModel
 from pydantic import ValidationError
 
 from gemseo.util.pydantic import create_model
+from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -53,3 +56,23 @@ def test_create_model_from_a_wrong_model(snapshot):
     """Test creation from a wrong model."""
     with assert_exception(ValueError, snapshot):
         create_model(Model, settings_model=WrongModel(a=1))
+
+
+@pytest.mark.parametrize(
+    ("model", "value", "is_logged"),
+    [
+        (Model(a=1), 2, True),
+        (Model(a=1), 1, False),
+        (Model.model_construct(_fields_set=set(), a=1), 2, False),
+    ],
+    ids=["explicit_replaced", "explicit_same", "default"],
+)
+def test_log_replaced_setting(caplog, model, value, is_logged):
+    """Check that only an explicit setting replaced by another value is logged."""
+    log_replaced_setting(model, "a", value, "the origin")
+    record = (
+        "gemseo.util.pydantic",
+        logging.WARNING,
+        "The setting 'a' of Model (1) is replaced by the origin (2).",
+    )
+    assert caplog.record_tuples == ([record] if is_logged else [])

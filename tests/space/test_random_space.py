@@ -23,8 +23,11 @@ from types import ModuleType
 import pytest
 from numpy import array
 from numpy import corrcoef
+from numpy import empty
 from numpy import inf
+from numpy import isfinite
 from numpy import isnan
+from numpy import nan
 from numpy import unique
 from numpy.random import default_rng
 from numpy.testing import assert_allclose
@@ -760,10 +763,28 @@ def test_transform_vect_2d(space) -> None:
     assert_allclose(space.transform_vect(values), unit_values)
 
 
-def test_untransform_vect_check(space, snapshot) -> None:
-    """Check the error raised when the components are not in [0,1]."""
+@pytest.mark.parametrize(
+    "unit_value",
+    [array([0.1, 0.5, 1.2]), array([[nan, 0.5, 1.2]])],
+    ids=["out_of_range", "nan_with_out_of_range"],
+)
+def test_untransform_vect_check(space, snapshot, unit_value) -> None:
+    """Check the error raised when a component is not in [0,1].
+
+    A NaN component does not disable the check of the others.
+    """
     with assert_exception(ValueError, snapshot):
-        space.untransform_vect(array([0.1, 0.5, 1.2]))
+        space.untransform_vect(unit_value)
+
+
+def test_untransform_vect_nan_in_range(space) -> None:
+    """Check that a NaN component alone is not reported as outside [0,1]."""
+    assert isnan(space.untransform_vect(array([nan, 0.5, 0.5]))[0])
+
+
+def test_untransform_vect_empty(space) -> None:
+    """Check that an empty array of points is mapped to an empty array."""
+    assert space.untransform_vect(empty((0, 3))).shape == (0, 3)
 
 
 def test_untransform_vect_no_check(space) -> None:
@@ -775,10 +796,119 @@ def test_untransform_vect_no_check(space) -> None:
     )
 
 
-def test_untransform_vect_wrong_size(space, snapshot) -> None:
+@pytest.mark.parametrize("no_check", [False, True], ids=["check", "no_check"])
+@pytest.mark.parametrize("unit_value", [0.0, 1.0])
+def test_untransform_vect_infinite(scalar_space, snapshot, unit_value, no_check):
+    """Check the error raised when a point is mapped to an infinite value."""
+    with assert_exception(ValueError, snapshot):
+        scalar_space.untransform_vect(array([0.5, unit_value]), no_check=no_check)
+
+
+def test_untransform_vect_bounded_boundary(scalar_space) -> None:
+    """Check that a bounded random variable maps the boundary to finite values."""
+    assert_allclose(scalar_space.untransform_vect(array([0.0, 0.5]))[0], 0.0)
+
+
+def _create_dependent_copula() -> NormalCopula:
+    """Create a copula making two components dependent.
+
+    Returns:
+        The copula.
+    """
+    return NormalCopula(CorrelationMatrix(2, [1.0, 0.5, 0.5, 1.0]))
+
+
+def test_untransform_vect_boundary_with_copula(scalar_space, snapshot) -> None:
+    """Check that a copula rejects the boundary as soon as a variable is unbounded.
+
+    With a copula, a component is not related to a single random variable,
+    so the component 0 of the bounded variable is also rejected.
+    """
+    scalar_space.add_copula(["x", "y"], _create_dependent_copula())
+    with assert_exception(ValueError, snapshot):
+        scalar_space.untransform_vect(array([0.0, 0.5]))
+
+
+def test_untransform_vect_boundary_with_copula_and_unbounded_variable(
+    scalar_space, snapshot
+) -> None:
+    """Check the error naming both an unbounded variable and a copula one.
+
+    The unbounded variable at the boundary is not repeated for the copula.
+    """
+    scalar_space.add_copula(["x", "y"], _create_dependent_copula())
+    with assert_exception(ValueError, snapshot):
+        scalar_space.untransform_vect(array([0.0, 1.0]))
+
+
+def test_untransform_vect_boundary_after_unbounded_with_copula() -> None:
+    """Check that a copula accepts a boundary component after the unbounded ones.
+
+    The components of a block are mapped sequentially,
+    so the component 0 of a bounded random variable
+    coming after the unbounded ones does not alter their quantiles.
+    """
+    space = RandomSpace()
+    space.add_variable("x", OT_NORMAL)
+    space.add_variable("y", OT_UNIFORM)
+    space.add_copula(["x", "y"], _create_dependent_copula())
+    value = space.untransform_vect(array([0.5, 0.0]))
+    assert isfinite(value).all()
+
+
+def test_untransform_vect_boundary_with_bounded_copula() -> None:
+    """Check that a copula of bounded random variables accepts the boundary.
+
+    No component of the block can be mapped to an infinite value.
+    """
+    space = RandomSpace()
+    space.add_variable("x", OT_UNIFORM)
+    space.add_variable("y", OT_UNIFORM)
+    space.add_copula(["x", "y"], _create_dependent_copula())
+    assert isfinite(space.untransform_vect(array([0.0, 1.0]))).all()
+
+
+def test_untransform_vect_boundary_outside_copula(scalar_space) -> None:
+    """Check that a copula does not reject the boundary of the other variables."""
+    scalar_space.add_variable("z", OT_NORMAL)
+    scalar_space.add_copula(["y", "z"], _create_dependent_copula())
+    assert_allclose(scalar_space.untransform_vect(array([0.0, 0.5, 0.5]))[0], 0.0)
+
+
+def test_untransform_vect_boundary_with_independent_copula(scalar_space) -> None:
+    """Check that an independent copula does not reject the boundary.
+
+    The independent copula maps the components one by one,
+    so the component 0 of the bounded variable is mapped to a finite value.
+    """
+    scalar_space.add_copula(["x", "y"], NormalCopula(2))
+    assert_allclose(scalar_space.untransform_vect(array([0.0, 0.5]))[0], 0.0)
+
+
+def test_untransform_vect_boundary_several_points(scalar_space, snapshot) -> None:
+    """Check that the error names the random variables mapped to infinite values."""
+    scalar_space.add_variable("z", OT_NORMAL)
+    with assert_exception(ValueError, snapshot):
+        scalar_space.untransform_vect(array([[0.0, 0.5, 1.0], [0.5, 0.0, 0.5]]))
+
+
+def test_untransform_vect_outside_no_check() -> None:
+    """Check that the boundary check ignores the components outside [0,1].
+
+    With `no_check=True`,
+    such components are left to the probability distribution,
+    here a SciPy one mapping them to NaN.
+    """
+    space = RandomSpace()
+    space.add_variable("x", SP_NORMAL)
+    assert isnan(space.untransform_vect(array([-0.1]), no_check=True)).all()
+
+
+@pytest.mark.parametrize("no_check", [False, True], ids=["check", "no_check"])
+def test_untransform_vect_wrong_size(space, snapshot, no_check) -> None:
     """Check the error raised when the point does not have the right dimension."""
     with assert_exception(ValueError, snapshot):
-        space.untransform_vect(array([0.1, 0.5]))
+        space.untransform_vect(array([0.1, 0.5]), no_check=no_check)
 
 
 def test_transform_vect_3d(space) -> None:
