@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11, <3.15"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -367,7 +367,7 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 dependencies = [
-    { name = "numpy", marker = "python_full_version < '3.12'" },
+    { name = "numpy" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/58/01/1253e6698a07380cd31a736d248a3f2a50a7c88779a1813da27503cadc2a/contourpy-1.3.3.tar.gz", hash = "sha256:083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880", size = 13466174, upload-time = "2025-07-26T12:03:12.549Z" }
 wheels = [
@@ -452,7 +452,7 @@ resolution-markers = [
     "python_full_version >= '3.12'",
 ]
 dependencies = [
-    { name = "numpy", marker = "python_full_version >= '3.12'" },
+    { name = "numpy" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/5a/a55177dd22553a277388e8a1b3220e92de91bacb28356cdc73caa240121d/contourpy-1.4.0.tar.gz", hash = "sha256:20156f5a1ac4f8ce02656e39a61e82164a3d359796dc8026f75b062783d500e1", size = 13323726, upload-time = "2026-09-11T19:05:05.808Z" }
 wheels = [
@@ -870,7 +870,7 @@ requires-dist = [
     { name = "prettytable", specifier = ">=3.5.0,<=3.18.0" },
     { name = "pydantic", specifier = ">=2.12,<=2.14.1" },
     { name = "pydantic-settings", specifier = ">=2.9.0,<=2.15.0" },
-    { name = "pydoe", marker = "extra == 'all'", specifier = ">=1.0.0,<=1.5.0" },
+    { name = "pydoe", marker = "extra == 'all'", specifier = ">=1.0.0,<=1.6.0" },
     { name = "pyxdsm", specifier = ">=2.2.1,<=2.3.2" },
     { name = "pyyaml", specifier = ">=6.0,<=6.0.3" },
     { name = "requests", specifier = ">=2.28.2,<3" },
@@ -2521,15 +2521,15 @@ wheels = [
 
 [[package]]
 name = "pydoe"
-version = "1.5.0"
+version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/b0/ec2a0a8fc6430e2eeceac8ff5a3758b7d4dd3f04ae23485a9e56b0189193/pydoe-1.5.0.tar.gz", hash = "sha256:b1a90b8f1da9aa4f9a0202177a0d60e37451568027828c8b3772452da86a20cb", size = 1945418, upload-time = "2026-08-20T09:33:06.978Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/18/c46d2f1a44eef31b6c1cd63f12b653172cbeb3504335221012f46a9e2346/pydoe-1.6.0.tar.gz", hash = "sha256:f08dac190923892f7419744986fdbab28057998128ad4f01061f5dcde81ec7c3", size = 1948832, upload-time = "2026-10-21T17:33:06.802Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/7d/ec480e4b71300a5b2fbae8426ef23bfc1309396fa4d48a00d31e464c02d7/pydoe-1.5.0-py3-none-any.whl", hash = "sha256:9326105ae47452b59a721a8a9159a89a58c30ac231edbc2b92745d6ecfd50f5b", size = 129219, upload-time = "2026-08-20T09:33:05.343Z" },
+    { url = "https://files.pythonhosted.org/packages/73/1b/09a05798a4c1a1c0bd8ebdd0b3c83429ea5af33dff5ab70aa5c194d184ff/pydoe-1.6.0-py3-none-any.whl", hash = "sha256:5050cd6925db5c83fb3f6a6318b8f7b59250fa2e6f36e27309db8be128fb71ec", size = 131897, upload-time = "2026-10-21T17:33:05.111Z" },
 ]
 
 [[package]]
