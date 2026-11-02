@@ -51,6 +51,7 @@ from gemseo.linear.scipy_linalg.settings.cgs import CGS_Settings
 from gemseo.linear.scipy_linalg.settings.gcrot import GCROT_Settings
 from gemseo.linear.scipy_linalg.settings.gmres import GMRES_Settings
 from gemseo.linear.scipy_linalg.settings.lgmres import LGMRES_Settings
+from gemseo.linear.scipy_linalg.settings.tfqmr import TFQMR_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -156,7 +157,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
             description="Transpose-Free Quasi-Minimal Residual",
             internal_algorithm_name="tfqmr",
             website=f"{__doc}generated/scipy.sparse.linalg.tfqmr.html",
-            settings_class=BaseSciPyLinalgSettingsBase,
+            settings_class=TFQMR_Settings,
         ),
     }
 

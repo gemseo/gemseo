@@ -212,5 +212,12 @@ def test_check_info_error(algo, snapshot):
         algo._check_solver_info(-1, {"a": 2})
 
 
+@pytest.mark.parametrize("algo_name", ScipyLinalgAlgos.ALGORITHM_INFOS)
+def test_settings_class(algo_name) -> None:
+    """Check that each algorithm is described with its own settings."""
+    settings_class = ScipyLinalgAlgos.ALGORITHM_INFOS[algo_name].settings_class
+    assert settings_class.__name__ == f"{algo_name}_Settings"
+
+
 def test_factory() -> None:
     assert "ScipyLinalgAlgos" in LinearSolverLibraryFactory().linear_solvers
