@@ -10,6 +10,7 @@ theme:
     - navigation.tabs.sticky
     - navigation.instant
     - navigation.path
+    - navigation.prune
   logo: assets/images/gemseo/gemseo_logo_transparent.svg
   name: material
   palette:
