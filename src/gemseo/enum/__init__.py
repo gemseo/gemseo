@@ -82,6 +82,9 @@ if TYPE_CHECKING:
     from gemseo.mda.jacobian_assembly import MDADerivationMode  # noqa: F401
     from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod  # noqa: F401
     from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod  # noqa: F401
+    from gemseo.optimization.scipy_global.settings.differential_evolution import (
+        DifferentialEvolutionUpdating,  # noqa: F401
+    )
     from gemseo.post._engine.robustness_quantifier import (
         RobustnessQuantifier as _RobustnessQuantifier,
     )
@@ -250,6 +253,10 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "DatasetTrend": "gemseo.post.dataset.trend:Trend",
     "DatasetType": "gemseo.problem.dataset:DatasetType",
     "DerivationMode": "gemseo.core.derivative.derivation_mode:DerivationMode",
+    "DifferentialEvolutionUpdating": (
+        "gemseo.optimization.scipy_global.settings.differential_evolution"
+        ":DifferentialEvolutionUpdating"
+    ),
     "DifferentiationMethod": (
         "gemseo.core.problem.evaluation:EvaluationProblem.DifferentiationMethod"
     ),
