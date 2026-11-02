@@ -30,16 +30,11 @@ from numpy import isnan
 from numpy import newaxis
 from numpy import vstack
 from numpy import zeros
-from openturns import CorrelationMatrix
-from openturns import Normal
-from openturns import Point
 from scipy.stats import norm
 
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.factory import doe_library_factory
-from gemseo.doe.openturns._algorithm.ot_sobol_doe import OTSobolDOE
-from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
@@ -52,7 +47,8 @@ from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
     SobolIndicesEstimatorMixin,
 )
 from gemseo.uncertainty.sensitivity.base_ro import BaseROSensitivityAnalysis
-from gemseo.util.seeder import seed
+from gemseo.util.pydantic import log_replaced_setting
+from gemseo.util.seeder import seed as default_seed
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -139,7 +135,7 @@ class ROSobolAnalysis(
         form_settings: OT_FORM_Settings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
         compute_second_order: bool = True,
-        seed: int = seed,
+        seed: int | None = None,
     ) -> IODataset:
         r"""
         Args:
@@ -157,7 +153,16 @@ class ROSobolAnalysis(
                 Once every design point has been located,
                 the budget left is split equally between the events
                 to draw their Sobol' samples.
-            algo_settings: The settings of the DOE algorithm.
+            algo_settings: The settings of the DOE algorithm
+                sampling the unit hypercube,
+                whose samples are mapped to the IS auxiliary density,
+                either `OT_SOBOL_INDICES_Settings` for the pick-and-freeze strategy
+                or the settings of a Monte Carlo, quasi-Monte Carlo
+                or Latin hypercube sampling algorithm,
+                e.g. `OT_MONTE_CARLO_Settings`, `OT_SOBOL_Settings`
+                or `OT_LHS_Settings`.
+                Its `n_samples` is replaced by the per-event sampling budget;
+                see `seed` for its seed.
                 If `None`, use the pick-and-freeze strategy.
             form_settings: The settings
                 of the first-order or second-order reliability method (FORM/SORM)
@@ -167,7 +172,24 @@ class ROSobolAnalysis(
                 If `None`, use the default settings of the MDF formulation.
             compute_second_order: Whether to compute the second-order indices.
                 Only available with a pick-and-freeze design.
-            seed: The seed of the OpenTURNS random generator.
+            seed: The seed used to sample the unit hypercube.
+                If `None`,
+                use the default seed of gemseo (`gemseo.util.seeder.seed`),
+                so that repeated calls with the same arguments
+                draw the same samples.
+                The seed setting of `algo_settings` prevails
+                when it is not `None`:
+                an integer is used instead of `seed`,
+                with a warning when `seed` is set to another value,
+                and a NumPy random generator is used as is,
+                so that `seed` has no effect on the samples.
+
+        Raises:
+            ValueError: When `n_samples` is too small
+                to draw a sample for each event after the FORM evaluations
+                or when the settings of the DOE algorithm
+                have no `n_samples` setting
+                or when the DOE algorithm samples the boundary of the unit hypercube.
 
         Notes:
              All the estimation techniques,
@@ -196,11 +218,19 @@ class ROSobolAnalysis(
         if algo_settings is None:
             algo_settings = doe_library_factory.create_settings("OT_SOBOL_INDICES")
 
-        use_pick_and_freeze = isinstance(algo_settings, OT_SOBOL_INDICES_Settings)
+        if "n_samples" not in type(algo_settings).model_fields:
+            msg = (
+                f"The DOE algorithm {algo_settings.target_class_name!r} "
+                "has no 'n_samples' setting "
+                "to receive the sampling budget of each event."
+            )
+            raise ValueError(msg)
 
-        # Only pick-and-freeze strategy can compute second-order indices.
-        if not use_pick_and_freeze:
-            compute_second_order = False
+        use_pick_and_freeze, compute_second_order = self._check_doe_settings(
+            algo_settings, compute_second_order
+        )
+        algo_name = algo_settings.target_class_name
+        doe_library = doe_library_factory.create(algo_name)
 
         dimension = random_space.dimension
 
@@ -251,47 +281,78 @@ class ROSobolAnalysis(
 
         budget = sampling_budget // n_events
 
-        # Second pass: draw the Sobol' samples of every event with its share
-        # of the sampling budget.
+        log_replaced_setting(
+            algo_settings, "n_samples", budget, "the per-event sampling budget"
+        )
+
+        update = {"n_samples": budget}
+        if use_pick_and_freeze:
+            update["eval_second_order"] = compute_second_order
+
+        # The DOE algorithm and the OpenTURNS random generator share one seed:
+        # the integer seed setting if any, otherwise the seed argument.
+        # A NumPy random generator as seed setting is left to the DOE algorithm.
+        # A plugin DOE algorithm may have no seed setting.
+        settings_seed = getattr(algo_settings, "seed", None)
+        if isinstance(settings_seed, int):
+            if seed is not None and seed != settings_seed:
+                msg = (
+                    f"The argument 'seed' ({seed}) is replaced by "
+                    f"the setting 'seed' of {type(algo_settings).__name__} "
+                    f"({settings_seed})."
+                )
+                logger.warning(msg)
+
+            seed = settings_seed
+        else:
+            seed = default_seed if seed is None else seed
+            if settings_seed is None and "seed" in type(algo_settings).model_fields:
+                update["seed"] = seed
+
+        settings = algo_settings.model_copy()
+        for name, value in update.items():
+            setattr(settings, name, value)
+
+        # The DOE algorithm samples the unit hypercube;
+        # the standard normal quantiles of these unit samples,
+        # shifted by the design point of an event,
+        # are distributed according to the auxiliary density of this event
+        # (the auxiliary marginals are independent unit-variance normals).
+        # As the budget and the seed are the same for all the events,
+        # so are the unit samples.
+        with seed_ot_random_generator(seed):
+            unit_samples = doe_library.sample_unit_hypercube(dimension, settings)
+
+        # The standard normal quantiles of the unit samples are computed here,
+        # not by RandomSpace.untransform_vect,
+        # and are infinite at 0 and 1 for every component,
+        # as the standard normal distribution is unbounded;
+        # so the open unit hypercube is required whatever the random variables.
+        if ((unit_samples <= 0.0) | (unit_samples >= 1.0)).any():
+            msg = (
+                f"The DOE algorithm {algo_name!r} "
+                "has sampled the boundary of the unit hypercube, "
+                "whose standard normal quantiles are infinite; "
+                "use a randomized design, e.g. scrambled."
+            )
+            raise ValueError(msg)
+
+        standard_quantiles = norm.ppf(unit_samples)
+        if use_pick_and_freeze:
+            # The pick-and-freeze design is the largest one
+            # whose number of rows N(2+d) (or N(2+2d)) does not exceed the budget.
+            sample_size = budget // sampling_factor
+        else:
+            sample_size = len(unit_samples)
+
+        # The map from the standard space to the physical space.
+        ot_distribution = random_space.variables.distribution.distribution
+        inverse_transform = ot_distribution.getInverseIsoProbabilisticTransformation()
+
+        # Shift the shared samples to the design point of every event.
         for event_name, event in events.items():
             standard_design_point = event_to_design_point[event_name]
-
-            if use_pick_and_freeze:
-                # The OTSobolDOE pick-and-freeze design is the largest one whose
-                # number of rows N(2+d) (or N(2+2d)) does not exceed the budget.
-                sample_size = budget // sampling_factor
-
-                # OTSobolDOE draws a unit-hypercube design; map it to the auxiliary
-                # density by shifting the standard normal quantiles of the unit
-                # samples by the design point
-                # (the auxiliary marginals are independent unit-variance normals).
-                with seed_ot_random_generator(seed):
-                    unit_samples = OTSobolDOE().generate_samples(
-                        dimension,
-                        OT_SOBOL_INDICES_Settings(
-                            n_samples=budget,
-                            eval_second_order=compute_second_order,
-                            seed=seed,
-                        ),
-                    )
-                standard_samples = norm.ppf(unit_samples) + standard_design_point
-            else:
-                # The auxiliary IS density is a unit-variance normal distribution
-                # centered on the design point in the standard space.
-                auxiliary_distribution = Normal(
-                    Point(standard_design_point),
-                    Point([1.0] * dimension),
-                    CorrelationMatrix(dimension),
-                )
-                sample_size = budget
-                with seed_ot_random_generator(seed):
-                    standard_samples = array(auxiliary_distribution.getSample(budget))
-
-            # Map the standard samples to the physical space.
-            ot_distribution = random_space.variables.distribution.distribution
-            inverse_transform = (
-                ot_distribution.getInverseIsoProbabilisticTransformation()
-            )
+            standard_samples = standard_quantiles + standard_design_point
             physical_samples = array(inverse_transform(standard_samples))
 
             output_values = self.__evaluate_model(
@@ -486,7 +547,7 @@ class ROSobolAnalysis(
         confidence_level: float = 0.95,
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
-        seed: int | None = seed,
+        seed: int | None = default_seed,
     ) -> SobolIndicesEstimatorMixin.SensitivityIndices:
         """
         Args:

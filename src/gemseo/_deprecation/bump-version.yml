@@ -604,7 +604,7 @@ attributes:
   gemseo.algos.database.LOGGER: gemseo.core.problem.database.logger
   gemseo.algos.design_space.LOGGER: gemseo.space.design.logger
   gemseo.algos.doe.base_doe_library.LOGGER: gemseo.doe.core.base_doe_library.logger
-  gemseo.algos.doe.base_doe_settings.LOGGER: gemseo.doe.core.base_doe_settings.logger
+  gemseo.algos.doe.base_doe_settings.LOGGER: gemseo.doe.core.base_doe_library.logger
   gemseo.algos.doe.base_full_factorial_doe.LOGGER: gemseo.doe.core.base_full_factorial_doe.logger
   gemseo.algos.doe.custom_doe.custom_doe.LOGGER: gemseo.doe.custom_doe.custom_doe.logger
   gemseo.algos.doe.scipy.scipy_doe.LOGGER: gemseo.doe.scipy.scipy_doe.logger
@@ -660,7 +660,7 @@ attributes:
   gemseo.problems.mdo.scalable.data_driven.study.process.LOGGER: gemseo.problem.mdo.scalable.data_driven.study.process.logger
   gemseo.scenarios.base_scenario.LOGGER: gemseo.scenario.evaluation.logger
   gemseo.uncertainty.distributions.base_distribution_fitter.LOGGER: gemseo.uncertainty.distribution.core.base_fitter.logger
-  gemseo.uncertainty.sensitivity.sobol_analysis.LOGGER: gemseo.uncertainty.sensitivity.sobol.logger
+  gemseo.uncertainty.sensitivity.sobol_analysis.LOGGER: gemseo.uncertainty.sensitivity._sobol_indices_estimator.logger
   gemseo.uncertainty.statistics.base_parametric_statistics.LOGGER: gemseo.uncertainty.statistic.core.base_parametric.logger
   gemseo.uncertainty.statistics.tolerance_interval.distribution.LOGGER: gemseo.uncertainty.statistic.tolerance_interval.base.logger
   gemseo.utils.derivatives.base_gradient_approximator.LOGGER: gemseo.util.derivative.approximator.base.logger

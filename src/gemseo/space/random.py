@@ -23,6 +23,10 @@ from typing import Final
 from typing import cast
 
 from numpy import array
+from numpy import isinf
+from numpy import isnan
+from numpy import nan
+from numpy import zeros
 from prettytable import PrettyTable
 
 from gemseo.space._random.variables import RandomVariables
@@ -32,9 +36,12 @@ from gemseo.space.variable.random import RandomVariable
 from gemseo.space.variable.random import _check_distribution_libraries
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.string import _format_value_in_pretty_table_16
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from numpy import ndarray
@@ -44,6 +51,7 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.core.base_settings import (
         BaseDistributionSettings,
     )
+    from gemseo.util.typing import BooleanArray
 
 
 _VARIABLES_VIEW: Final[str] = f"_{BaseVariableSpace.__name__}__variables_view"
@@ -281,7 +289,7 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
         return sample
 
     def transform_vect(self, x_vect: ndarray) -> ndarray:  # noqa: D102
-        return self.__transform(x_vect, inverse=False)
+        return self.__transform(x_vect, self.__get_distribution(), inverse=False)
 
     def untransform_vect(
         self,
@@ -308,15 +316,165 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
                 is not the dimension of the space,
                 e.g. `ValueError: Expected an array of shape (..., 1); got (2,).`,
                 or when a component of the vector is outside $[0,1]$
-                and `no_check` is `False`.
+                and `no_check` is `False`,
+                or when a component of the vector is $0$ (resp. $1$)
+                for a random variable unbounded below (resp. above),
+                which would be mapped to an infinite value.
         """
         # Report an empty random space before anything else,
         # as the dimension of the unit hypercube is then zero.
-        self.__get_distribution()
-        if not no_check:
-            self.__check_unit_vect(x_vect)
+        distribution = self.__get_distribution()
+        self.__check_unit_vect_shape(x_vect)
+        # The extrema are computed once for the range check and the fast path.
+        # An empty array has no extrema; NaN skips the fast path.
+        lower, upper = (x_vect.min(), x_vect.max()) if x_vect.size else (nan, nan)
+        # A NaN component makes both extrema NaN,
+        # so the components are then compared one by one.
+        if not no_check and (
+            lower < 0.0
+            or upper > 1.0
+            or (isnan(lower) and ((x_vect < 0.0) | (x_vect > 1.0)).any())
+        ):
+            msg = "The components of x_vect must be in [0, 1]."
+            raise ValueError(msg)
 
-        return self.__transform(x_vect, inverse=True)
+        # A point strictly inside the unit hypercube is never on its boundary.
+        if not (lower > 0.0 and upper < 1.0):
+            self.__check_unit_vect_boundary(x_vect, distribution)
+
+        return self.__transform(x_vect, distribution, inverse=True)
+
+    def __check_unit_vect_boundary(
+        self, x_vect: ndarray, distribution: BaseJointDistribution
+    ) -> None:
+        """Check that no component of the boundary is mapped to an infinite value.
+
+        For independent random variables,
+        each component is mapped by the quantile function of its random variable:
+        the component $0$ (resp. $1$) is mapped to an infinite value
+        when this random variable is unbounded below (resp. above).
+        Some libraries silently return finite but arbitrary values instead.
+
+        A copula other than the independent one
+        maps the components of its random variables together,
+        sequentially, in ascending order of position in the random space:
+        a component enters the quantiles of the components
+        that come at or after it in the block,
+        and only of those.
+        Hence,
+        a component $0$ or $1$ of a random variable of the block is rejected
+        only when an unbounded component comes at or after it in the block,
+        as it could then lead to an infinite value for the latter.
+        The bounded components that come after the last unbounded one are accepted.
+
+        Args:
+            x_vect: A point of the unit hypercube,
+                or several points stored in an array of shape `(..., dimension)`.
+            distribution: The joint probability distribution of the random space.
+
+        Raises:
+            ValueError: When a component of the boundary
+                would be mapped to an infinite value.
+        """
+        points = x_vect.reshape(-1, x_vect.shape[-1])
+        at_lower_bound = (points == 0.0).any(axis=0)
+        at_upper_bound = (points == 1.0).any(axis=0)
+        at_boundary = at_lower_bound | at_upper_bound
+        if not at_boundary.any():
+            return
+
+        support = distribution.support
+        unbounded_below = isinf(support[:, 0])
+        unbounded_above = isinf(support[:, 1])
+        unbounded = unbounded_below | unbounded_above
+        is_infinite = (at_lower_bound & unbounded_below) | (
+            at_upper_bound & unbounded_above
+        )
+        name_to_indices = self._variables.name_to_indices
+        names = self.__get_names(name_to_indices, is_infinite, name_to_indices)
+        reasons = []
+        if names:
+            reasons.append(f"for {self.__name_variables(names)}")
+
+        for copula_names, copula in self._variables.copulas:
+            if copula.hasIndependentCopula():
+                # The components of the random variables are mapped one by one.
+                continue
+
+            # OpenTURNS maps the components of a block sequentially,
+            # in ascending order of position.
+            block_indices = sorted(
+                index for name in copula_names for index in name_to_indices[name]
+            )
+            unbounded_positions = [
+                position
+                for position, index in enumerate(block_indices)
+                if unbounded[index]
+            ]
+            if not unbounded_positions:
+                continue
+
+            # A component only enters the quantiles of the ones coming after it,
+            # so that a boundary component after the last unbounded one is harmless.
+            influencing = zeros(len(is_infinite), dtype=bool)
+            influencing[block_indices[: unbounded_positions[-1] + 1]] = True
+            unbounded_names = self.__get_names(copula_names, unbounded, name_to_indices)
+            boundary_names = (
+                self.__get_names(
+                    copula_names, at_boundary & influencing, name_to_indices
+                )
+                - names
+            )
+            if boundary_names:
+                reasons.append(
+                    "through the copula involving "
+                    f"{self.__name_variables(unbounded_names, 'unbounded ')}, "
+                    f"for {self.__name_variables(boundary_names)}"
+                )
+
+        if reasons:
+            msg = (
+                "The components equal to 0 or 1 of the point of the unit hypercube "
+                f"are mapped to infinite values {' and, '.join(reasons)}; "
+                "avoid the points on the faces of the unit hypercube, "
+                "e.g. with a randomized design."
+            )
+            raise ValueError(msg)
+
+    @staticmethod
+    def __get_names(
+        names: Iterable[str],
+        mask: BooleanArray,
+        name_to_indices: Mapping[str, range],
+    ) -> set[str]:
+        """Return the names of the random variables with a component in a mask.
+
+        Args:
+            names: The names of the random variables to consider.
+            mask: The mask over the components of the random space.
+            name_to_indices: The indices of the components of the random variables
+                in the random space.
+
+        Returns:
+            The names of the random variables
+            with at least one component in the mask.
+        """
+        return {name for name in names if mask[name_to_indices[name]].any()}
+
+    @staticmethod
+    def __name_variables(names: Collection[str], qualifier: str = "") -> str:
+        """Return the designation of random variables in an error message.
+
+        Args:
+            names: The names of the random variables.
+            qualifier: The qualifier of the random variables, if any,
+                followed by a space.
+
+        Returns:
+            The designation of the random variables.
+        """
+        plural = "s" if len(names) > 1 else ""
+        return f"the {qualifier}random variable{plural} {pretty_repr(names)}"
 
     def __get_distribution(self) -> BaseJointDistribution:
         """Return the joint probability distribution of the random space.
@@ -332,7 +490,10 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
         self.check()
         return cast("BaseJointDistribution", self._variables.distribution)
 
-    def __transform(self, x_vect: ndarray, inverse: bool) -> ndarray:
+    @staticmethod
+    def __transform(
+        x_vect: ndarray, distribution: BaseJointDistribution, inverse: bool
+    ) -> ndarray:
         """Evaluate the iso-probabilistic transformation of the random variables.
 
         This transformation maps the random variables
@@ -348,17 +509,14 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
                 or a point of the unit hypercube with `inverse=True`.
                 The components are read along the last dimension,
                 so an array of shape `(..., dimension)` maps several points at once.
+            distribution: The joint probability distribution of the random space.
             inverse: Whether the inverse cumulative density function
                 is used as the evaluation function,
                 or the cumulative density function.
 
         Returns:
             The transformed point.
-
-        Raises:
-            ValueError: When the random space is empty.
         """
-        distribution = self.__get_distribution()
         transform = (
             distribution.map_from_uniform if inverse else distribution.map_to_uniform
         )
@@ -371,25 +529,20 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
         points = x_vect.reshape(-1, x_vect.shape[-1])
         return array(list(map(transform, points))).reshape(x_vect.shape)
 
-    def __check_unit_vect(self, x_vect: ndarray) -> None:
-        """Check that a point belongs to the unit hypercube of the random space.
+    def __check_unit_vect_shape(self, x_vect: ndarray) -> None:
+        """Check that a point has the dimension of the unit hypercube.
 
         Args:
             x_vect: The point to be checked.
 
         Raises:
-            ValueError: When the point does not have the dimension of the space
-                or when its components are not in $[0,1]$.
+            ValueError: When the point does not have the dimension of the space.
         """
         dimension = self.dimension
         # Compare the trailing dimension as a slice,
         # so that a 0D array is reported instead of raising an IndexError.
         if x_vect.shape[-1:] != (dimension,):
             msg = f"Expected an array of shape (..., {dimension}); got {x_vect.shape}."
-            raise ValueError(msg)
-
-        if (x_vect > 1.0).any() or (x_vect < 0.0).any():
-            msg = "The components of x_vect must be in [0, 1]."
             raise ValueError(msg)
 
     def get_pretty_table(

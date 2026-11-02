@@ -47,6 +47,7 @@ from gemseo.doe.oat_doe.settings.oat_doe_settings import default_step
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
+from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
 from gemseo.util.string import repr_variable
@@ -285,7 +286,14 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         if algo_settings is None:
             algo_settings = doe_library_factory.create_settings(self.default_driver)
 
-        algo_settings.n_samples = n_replicates
+        # A positive n_samples prevails over n_replicates (see MorrisDOE).
+        if n_samples == 0:
+            log_replaced_setting(
+                algo_settings, "n_samples", n_replicates, "the argument 'n_replicates'"
+            )
+            algo_settings = algo_settings.model_copy()
+            algo_settings.n_samples = n_replicates
+
         super().compute_samples(
             disciplines,
             random_space,

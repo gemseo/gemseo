@@ -18,21 +18,6 @@ from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.util.testing.helper import assert_exception
 
 
-def test_doe_settings_wait_time_between_samples(caplog):
-    """Check the log when setting wait_time_between_samples in serial mode."""
-    BaseDOESettings(wait_time_between_samples=0.2)
-    assert caplog.record_tuples == [
-        (
-            "gemseo.doe.core.base_doe_settings",
-            30,
-            (
-                "The option 'wait_time_between_samples' is ignored "
-                "when the option 'n_processes' is 1 (serial mode)."
-            ),
-        )
-    ]
-
-
 def test_doe_settings_vectorize_in_parallel(snapshot):
     """Check the error when setting vectorize in parallel mode."""
     with assert_exception(NotImplementedError, snapshot):

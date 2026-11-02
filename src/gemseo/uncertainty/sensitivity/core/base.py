@@ -64,6 +64,7 @@ from gemseo.util.file_path_manager import FilePathManager
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.pydantic import create_model
+from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
@@ -1051,11 +1052,21 @@ class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
         disciplines = list(disciplines)
         if algo_settings is None:
             algo_settings = doe_library_factory.create_settings(self.default_driver)
+        update = {"use_one_line_progress_bar": True}
         if n_samples > 0:
-            algo_settings.n_samples = n_samples
+            log_replaced_setting(
+                algo_settings, "n_samples", n_samples, "the argument 'n_samples'"
+            )
+            update["n_samples"] = n_samples
+
+        # Copy the settings to leave those of the user unchanged;
+        # the assignments are validated.
+        algo_settings = algo_settings.model_copy()
+        for name, value in update.items():
+            setattr(algo_settings, name, value)
+
         self._output_names = list(output_names or get_all_outputs(disciplines))
         self._input_names = list(random_space.variables)
-        algo_settings.use_one_line_progress_bar = True
         formulation_settings = create_model(
             MDF_Settings, settings_model=formulation_settings
         )

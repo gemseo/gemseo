@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import logging
 from functools import partial
 from typing import Any
 from typing import ClassVar
@@ -25,6 +26,8 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
 from gemseo.util.typing import StrKeyMapping
+
+logger = logging.getLogger(__name__)
 
 
 class BasePydanticModel(
@@ -123,6 +126,25 @@ class BaseSettings(BasePydanticModel):
     ) -> str:
         """The name of the class intended to use these settings."""
         return self.__target_class_name
+
+
+def log_replaced_setting(
+    settings: BaseModel, name: str, value: Any, origin: str
+) -> None:
+    """Log a warning when a setting set explicitly is about to be replaced.
+
+    Args:
+        settings: The settings.
+        name: The name of the setting.
+        value: The value replacing the one of the setting.
+        origin: The description of the origin of this value.
+    """
+    if name in settings.model_fields_set and getattr(settings, name) != value:
+        msg = (
+            f"The setting {name!r} of {type(settings).__name__} "
+            f"({getattr(settings, name)}) is replaced by {origin} ({value})."
+        )
+        logger.warning(msg)
 
 
 def copy_field(name: str, model: type[BasePydanticModel], **kwargs: Any) -> FieldInfo:

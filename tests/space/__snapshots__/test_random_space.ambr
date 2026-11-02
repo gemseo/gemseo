@@ -171,9 +171,36 @@
 # name: test_untransform_vect_0d
   'Expected an array of shape (..., 3); got ().'
 # ---
-# name: test_untransform_vect_check
+# name: test_untransform_vect_boundary_several_points
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variables 'y' and 'z'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_boundary_with_copula
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values through the copula involving the unbounded random variable 'y', for the random variable 'x'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_boundary_with_copula_and_unbounded_variable
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'y' and, through the copula involving the unbounded random variable 'y', for the random variable 'x'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_check[nan_with_out_of_range]
   'The components of x_vect must be in [0, 1].'
 # ---
-# name: test_untransform_vect_wrong_size
+# name: test_untransform_vect_check[out_of_range]
+  'The components of x_vect must be in [0, 1].'
+# ---
+# name: test_untransform_vect_infinite[0.0-check]
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'y'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_infinite[0.0-no_check]
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'y'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_infinite[1.0-check]
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'y'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_infinite[1.0-no_check]
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'y'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
+# name: test_untransform_vect_wrong_size[check]
+  'Expected an array of shape (..., 3); got (2,).'
+# ---
+# name: test_untransform_vect_wrong_size[no_check]
   'Expected an array of shape (..., 3); got (2,).'
 # ---

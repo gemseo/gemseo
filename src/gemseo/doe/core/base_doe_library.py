@@ -255,6 +255,7 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         # with its own functions.
         stop_if_nan = problem.stop_if_nan
         problem.stop_if_nan = False
+
         try:
             if self._settings.n_processes > 1:
                 self.__run_in_parallel_one_at_a_time()

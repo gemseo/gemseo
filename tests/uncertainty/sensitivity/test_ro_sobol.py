@@ -50,15 +50,21 @@ from scipy.stats import norm
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.doe import DiagonalDOE_Settings
+from gemseo.doe import OT_LHS_Settings
+from gemseo.doe import OT_MONTE_CARLO_Settings
+from gemseo.doe import OT_SOBOL_INDICES_Settings
+from gemseo.doe import PYDOE_CCDESIGN_Settings
+from gemseo.doe import PYDOE_LHS_Settings
+from gemseo.doe import Sobol_Settings
+from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.doe.openturns._algorithm.ot_sobol_doe import OTSobolDOE
-from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.space.random import RandomSpace
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
-from gemseo.uncertainty.reliability.openturns.mc_settings import OT_MC_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 from gemseo.uncertainty.sensitivity._is_sobol_indices_estimator import (
     ISSobolIndicesEstimator,
@@ -224,6 +230,20 @@ def test_high_dimension_sampling_factor() -> None:
     assert len(dataset_no_second_order) == sample_size_no_second_order * (2 + 3)
 
 
+def test_doe_settings_without_n_samples(discipline, parameter_space, snapshot) -> None:
+    """Check that DOE settings without n_samples are rejected before FORM."""
+    analysis = ROSobolAnalysis()
+    y = analysis.get_event_variables("y")
+    with assert_exception(ValueError, snapshot):
+        analysis.compute_samples(
+            [discipline],
+            parameter_space,
+            {"y_high": y > threshold},
+            n_samples=1000,
+            algo_settings=PYDOE_CCDESIGN_Settings(),
+        )
+
+
 def test_too_small_n_samples(discipline, parameter_space, snapshot) -> None:
     """Check that a budget too small to sample after FORM raises an error."""
     analysis = ROSobolAnalysis()
@@ -241,20 +261,14 @@ def test_seed_reproducibility_pick_and_freeze(discipline, parameter_space) -> No
     of a `seed_ot_random_generator` context, making the `seed` argument inert.
     """
 
-    def get_input_data(seed):
-        analysis = ROSobolAnalysis()
-        y = analysis.get_event_variables("y")
-        dataset = analysis.compute_samples(
-            [discipline],
-            parameter_space,
-            {"y_high": y > threshold},
-            n_samples=100,
-            seed=seed,
+    def get(seed):
+        return compute_one_event_input_samples(
+            discipline, parameter_space, seed=seed, compute_second_order=True
         )
-        return dataset.get_view(group_names=dataset.input_group).to_numpy()
 
-    assert_array_equal(get_input_data(1), get_input_data(1))
-    assert not (get_input_data(1) == get_input_data(2)).all()
+    samples = get(1)
+    assert_array_equal(samples, get(1))
+    assert not (samples == get(2)).all()
 
 
 def test_small_budget_accepted_by_rank_not_pick_and_freeze(
@@ -282,7 +296,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
         parameter_space,
         {"y_high": y > threshold},
         n_samples=n_samples,
-        algo_settings=OT_MC_Settings(),
+        algo_settings=OT_MONTE_CARLO_Settings(),
     )
     assert len(dataset) >= 1
 
@@ -374,7 +388,7 @@ def test_rank_based(discipline, parameter_space) -> None:
         parameter_space,
         {"y_high": y > threshold},
         n_samples=2000,
-        algo_settings=OT_MC_Settings(),
+        algo_settings=OT_MONTE_CARLO_Settings(),
     )
     # The i.i.d. budget is n_samples minus the FORM evaluations.
     dataset = analysis.dataset
@@ -397,7 +411,7 @@ def test_inconsistent_algorithm_with_iid_samples(
         parameter_space,
         {"y_high": y > threshold},
         n_samples=2000,
-        algo_settings=OT_MC_Settings(),
+        algo_settings=OT_MONTE_CARLO_Settings(),
     )
     with assert_exception(ValueError, snapshot):
         analysis.compute_indices(algo=SobolAnalysis.Algorithm.SALTELLI)
@@ -480,7 +494,7 @@ def test_plot_rank_based(discipline, parameter_space) -> None:
         parameter_space,
         {"y_high": y > threshold},
         n_samples=2000,
-        algo_settings=OT_MC_Settings(),
+        algo_settings=OT_MONTE_CARLO_Settings(),
     )
     analysis.compute_indices()
     fig = analysis.plot("y_high", save=False)
@@ -610,7 +624,7 @@ def linear_rank_analysis(linear_discipline, linear_space) -> ROSobolAnalysis:
         linear_space,
         {"y_high": y > linear_threshold},
         n_samples=linear_rank_n_samples,
-        algo_settings=OT_MC_Settings(),
+        algo_settings=OT_MONTE_CARLO_Settings(),
     )
     return analysis
 
@@ -1143,3 +1157,250 @@ def test_undefined_indices_are_logged(discipline, parameter_space, caplog) -> No
     assert isnan(indices.first["y_high"][0]["x1"]).all()
     assert "Some Sobol' indices of the event 'y_high' are undefined" in caplog.text
     assert "10 of the 10 bootstrap replicates of the event 'y_high'" in caplog.text
+
+
+def compute_one_event_samples(
+    discipline,
+    parameter_space,
+    algo_settings=None,
+    seed=None,
+    compute_second_order=False,
+):
+    """Compute the samples of a one-event analysis with a budget of 100."""
+    analysis = ROSobolAnalysis()
+    y = analysis.get_event_variables("y")
+    return analysis.compute_samples(
+        [discipline],
+        parameter_space,
+        {"y_high": y > threshold},
+        n_samples=100,
+        algo_settings=algo_settings,
+        compute_second_order=compute_second_order,
+        seed=seed,
+    )
+
+
+def compute_one_event_input_samples(
+    discipline,
+    parameter_space,
+    algo_settings=None,
+    seed=None,
+    compute_second_order=False,
+) -> RealArray:
+    """Compute the input samples of a one-event analysis with a budget of 100."""
+    return compute_one_event_samples(
+        discipline, parameter_space, algo_settings, seed, compute_second_order
+    ).input_dataset.to_numpy()
+
+
+def test_lhs_settings_are_honored(discipline, parameter_space) -> None:
+    """Check that the LHS algorithm of the settings stratifies the samples."""
+    dataset = compute_one_event_samples(discipline, parameter_space, OT_LHS_Settings())
+    samples = dataset.input_dataset.to_numpy()
+    n = len(samples)
+    assert dataset.misc["sample_size"]["y_high"] == n
+    u = norm.cdf(samples - dataset.misc["design_point"]["y_high"])
+    for column in u.T:
+        assert sorted((column * n).astype(int)) == list(range(n))
+
+
+def test_seed_of_settings(discipline, parameter_space) -> None:
+    """Check that the seed of the settings is used and prevails over the argument."""
+
+    def get(settings_seed, seed):
+        return compute_one_event_input_samples(
+            discipline,
+            parameter_space,
+            OT_MONTE_CARLO_Settings(seed=settings_seed),
+            seed=seed,
+        )
+
+    samples = get(4, 1)
+    # The seed of the settings wins over the seed argument.
+    assert_array_equal(samples, get(4, 2))
+    assert not (samples == get(5, 1)).all()
+
+
+@pytest.mark.parametrize(
+    ("seed", "n_warnings"),
+    [(2, 1), (0, 1), (4, 0), (None, 0)],
+    ids=["other", "default_seed", "same", "none"],
+)
+def test_seed_argument_replaced_warning(
+    discipline, parameter_space, caplog, seed, n_warnings
+) -> None:
+    """Check the warning about a seed argument replaced by the seed of the settings.
+
+    An explicit seed argument equal to the default seed of gemseo is reported,
+    unlike the default value `None` of the seed argument.
+    """
+    compute_one_event_samples(
+        discipline, parameter_space, OT_MONTE_CARLO_Settings(seed=4), seed=seed
+    )
+    message = (
+        f"The argument 'seed' ({seed}) is replaced by "
+        "the setting 'seed' of OT_MONTE_CARLO_Settings (4)."
+    )
+    messages = [r.message for r in caplog.records if "The argument 'seed'" in r.message]
+    assert messages == [message] * n_warnings
+
+
+def test_seed_argument_when_settings_have_no_seed(discipline, parameter_space) -> None:
+    """Check that the seed argument is used when the settings have no seed."""
+    assert_array_equal(
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings(), 7
+        ),
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings(seed=7), 1
+        ),
+    )
+
+
+def test_seed_argument_changes_samples(discipline, parameter_space) -> None:
+    """Check that two seed arguments give different samples."""
+    samples = compute_one_event_input_samples(
+        discipline, parameter_space, OT_MONTE_CARLO_Settings(), 7
+    )
+    other_samples = compute_one_event_input_samples(
+        discipline, parameter_space, OT_MONTE_CARLO_Settings(), 8
+    )
+    assert not (samples == other_samples).all()
+
+
+def test_seed_argument_none_is_default_seed(discipline, parameter_space) -> None:
+    """Check that no seed argument means the default seed of gemseo."""
+    assert_array_equal(
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings(), None
+        ),
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings(), 0
+        ),
+    )
+
+
+def test_settings_without_seed_setting(
+    discipline, parameter_space, monkeypatch
+) -> None:
+    """Check that the settings of a DOE algorithm can have no seed setting.
+
+    DiagonalDOE has no seed setting
+    and is made to sample the open unit hypercube.
+    """
+    generate_unit_samples = DiagonalDOE._generate_unit_samples
+    monkeypatch.setattr(
+        DiagonalDOE,
+        "_generate_unit_samples",
+        lambda self, input_space: 0.1 + 0.8 * generate_unit_samples(self, input_space),
+    )
+    dataset = compute_one_event_samples(
+        discipline, parameter_space, DiagonalDOE_Settings(), seed=3
+    )
+    assert dataset.misc["sample_size"]["y_high"] == len(dataset)
+
+
+@pytest.mark.parametrize(
+    ("settings", "n_warnings"),
+    [(OT_MONTE_CARLO_Settings(n_samples=50), 1), (OT_MONTE_CARLO_Settings(), 0)],
+    ids=["explicit_n_samples", "default_n_samples"],
+)
+def test_n_samples_setting_replaced_warning(
+    discipline, parameter_space, caplog, settings, n_warnings
+) -> None:
+    """Check the warning about an explicit n_samples replaced by the budget."""
+    compute_one_event_samples(discipline, parameter_space, settings)
+    messages = [r.message for r in caplog.records if "is replaced" in r.message]
+    assert len(messages) == n_warnings
+    assert all("(50)" in message for message in messages)
+
+
+def test_n_samples_setting_replaced(discipline, parameter_space) -> None:
+    """Check that an explicit n_samples is replaced by the per-event budget."""
+    assert_array_equal(
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings(n_samples=50)
+        ),
+        compute_one_event_input_samples(
+            discipline, parameter_space, OT_MONTE_CARLO_Settings()
+        ),
+    )
+
+
+def test_second_order_warning_without_pick_and_freeze(
+    discipline, parameter_space, caplog
+) -> None:
+    """Check the warning when second-order indices are requested without PF."""
+    compute_one_event_samples(
+        discipline,
+        parameter_space,
+        OT_MONTE_CARLO_Settings(),
+        compute_second_order=True,
+    )
+    assert (
+        "The second-order indices can only be computed "
+        "with the OT_SOBOL_INDICES algorithm."
+    ) in caplog.text
+
+
+def test_second_order_turned_off_without_pick_and_freeze(
+    discipline, parameter_space
+) -> None:
+    """Check that the second-order indices are not computed without PF."""
+    dataset = compute_one_event_samples(
+        discipline,
+        parameter_space,
+        OT_MONTE_CARLO_Settings(),
+        compute_second_order=True,
+    )
+    assert dataset.misc["eval_second_order"] is False
+
+
+def test_boundary_of_unit_hypercube(discipline, parameter_space, snapshot) -> None:
+    """Check that a DOE algorithm sampling the boundary of the unit hypercube fails."""
+    with assert_exception(ValueError, snapshot):
+        compute_one_event_samples(
+            discipline, parameter_space, Sobol_Settings(scramble=False)
+        )
+
+
+def test_numpy_generator_seed(discipline, parameter_space) -> None:
+    """Check that a NumPy generator can be the seed of the settings."""
+
+    def get(seed):
+        return compute_one_event_input_samples(
+            discipline, parameter_space, PYDOE_LHS_Settings(seed=default_rng(seed))
+        )
+
+    samples = get(1)
+    assert_array_equal(samples, get(1))
+    assert not (samples == get(2)).all()
+
+
+@pytest.mark.parametrize(
+    ("settings", "n_warnings"),
+    [
+        (OT_SOBOL_INDICES_Settings(eval_second_order=True), 1),
+        (OT_SOBOL_INDICES_Settings(eval_second_order=False), 0),
+        (OT_SOBOL_INDICES_Settings(), 0),
+    ],
+    ids=["conflicting", "consistent", "default"],
+)
+def test_eval_second_order_replaced_warning(
+    discipline, parameter_space, caplog, settings, n_warnings
+) -> None:
+    """Check the warning about an explicit eval_second_order replaced."""
+    compute_one_event_samples(discipline, parameter_space, settings)
+    messages = [
+        r.message
+        for r in caplog.records
+        if "The setting 'eval_second_order'" in r.message
+    ]
+    assert len(messages) == n_warnings
+
+
+def test_settings_unchanged(discipline, parameter_space) -> None:
+    """Check that compute_samples leaves the settings of the user unchanged."""
+    settings = OT_SOBOL_INDICES_Settings()
+    compute_one_event_samples(discipline, parameter_space, settings)
+    assert settings == OT_SOBOL_INDICES_Settings()

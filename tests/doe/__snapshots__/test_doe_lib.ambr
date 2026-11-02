@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_unbounded_random_space_boundary
+  "The components equal to 0 or 1 of the point of the unit hypercube are mapped to infinite values for the random variable 'x'; avoid the points on the faces of the unit hypercube, e.g. with a randomized design."
+# ---
 # name: test_uunormalized_components[-inf-1]
   'The components 2, 3 and 4 of the design space are unbounded.'
 # ---

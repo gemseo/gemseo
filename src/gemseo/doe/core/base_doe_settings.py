@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Callable  # noqa:TC003
 from collections.abc import Sequence  # noqa:TC003
 from typing import TYPE_CHECKING  # noqa:TC003
@@ -34,8 +33,6 @@ from gemseo.core.problem.evaluation import EvaluationType  # noqa:TC001
 
 if TYPE_CHECKING:
     from typing import Self
-
-logger = logging.getLogger(__name__)
 
 
 class BaseDOESettings(BaseDriverSettings):
@@ -101,12 +98,6 @@ This option is not compatible with the vectorization of functions evaluations.
             NotImplementedError: When combining vectorization
                 with parallelization or preprocessors.
         """
-        if self.wait_time_between_samples > 0 and self.n_processes == 1:
-            logger.warning(
-                "The option 'wait_time_between_samples' is ignored "
-                "when the option 'n_processes' is 1 (serial mode)."
-            )
-
         if self.vectorize and self.n_processes > 1:
             msg = "Vectorization in parallel is not supported."
             raise NotImplementedError(msg)

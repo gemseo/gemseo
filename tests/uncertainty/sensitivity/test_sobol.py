@@ -745,7 +745,7 @@ def test_rank_based_sobol_warning(discipline, random_space, caplog):
         algo_settings=MC_Settings(),
     )
     assert (
-        "gemseo.uncertainty.sensitivity.sobol",
+        "gemseo.uncertainty.sensitivity._sobol_indices_estimator",
         30,
         (
             "The second-order indices can only be computed "
@@ -895,3 +895,71 @@ def test_plot_second_order(sobol, snapshot_matplotlib):
         "y", settings=Heatmap_Settings(colormap="viridis")
     )
     heatmap.execute(save=False)
+
+
+@pytest.mark.parametrize(
+    ("settings", "n_warnings"),
+    [
+        (OT_SOBOL_INDICES_Settings(eval_second_order=True), 1),
+        (OT_SOBOL_INDICES_Settings(eval_second_order=False), 0),
+        (OT_SOBOL_INDICES_Settings(), 0),
+    ],
+    ids=["conflicting", "consistent", "default"],
+)
+def test_eval_second_order_replaced_warning(
+    discipline, random_space, caplog, settings, n_warnings
+) -> None:
+    """Check the warning about an explicit eval_second_order replaced."""
+    SobolAnalysis().compute_samples(
+        [discipline],
+        random_space,
+        20,
+        algo_settings=settings,
+        compute_second_order=False,
+    )
+    messages = [
+        r.message
+        for r in caplog.records
+        if "The setting 'eval_second_order'" in r.message
+    ]
+    assert len(messages) == n_warnings
+
+
+def test_settings_unchanged(discipline, random_space) -> None:
+    """Check that compute_samples leaves the settings of the user unchanged."""
+    settings = OT_SOBOL_INDICES_Settings()
+    SobolAnalysis().compute_samples(
+        [discipline],
+        random_space,
+        20,
+        algo_settings=settings,
+        compute_second_order=False,
+    )
+    assert settings == OT_SOBOL_INDICES_Settings()
+
+
+@pytest.mark.parametrize(
+    ("settings", "is_logged"),
+    [
+        (OT_SOBOL_INDICES_Settings(n_samples=10), True),
+        (OT_SOBOL_INDICES_Settings(n_samples=20), False),
+        (OT_SOBOL_INDICES_Settings(), False),
+    ],
+    ids=["explicit_replaced", "explicit_same", "default"],
+)
+def test_n_samples_setting_replaced_warning(
+    discipline, random_space, caplog, settings, is_logged
+) -> None:
+    """Check the warning about an explicit n_samples replaced by the argument."""
+    SobolAnalysis().compute_samples(
+        [discipline],
+        random_space,
+        20,
+        algo_settings=settings,
+        compute_second_order=False,
+    )
+    message = (
+        "The setting 'n_samples' of OT_SOBOL_INDICES_Settings (10) is replaced by "
+        "the argument 'n_samples' (20)."
+    )
+    assert (message in caplog.text) is is_logged

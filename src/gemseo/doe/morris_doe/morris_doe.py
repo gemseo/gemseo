@@ -28,6 +28,7 @@ from gemseo.doe.core.base_doe_library import DOEAlgorithmDescription
 from gemseo.doe.factory import DOELibraryFactory
 from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
 from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
+from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
@@ -82,7 +83,15 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
                 )
                 raise ValueError(msg)
 
-            doe_algo_settings.n_samples = n_replicates
+            if getattr(doe_algo_settings, "n_samples", None) != n_replicates:
+                log_replaced_setting(
+                    doe_algo_settings,
+                    "n_samples",
+                    n_replicates,
+                    "the number of replicates inferred from 'n_samples'",
+                )
+                doe_algo_settings = doe_algo_settings.model_copy()
+                doe_algo_settings.n_samples = n_replicates
 
         initial_points = doe_algo.sample_unit_hypercube(
             dimension, settings=doe_algo_settings

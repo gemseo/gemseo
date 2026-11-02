@@ -23,6 +23,9 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveInt  # noqa: TC002
 
+from gemseo.doe.core.base_n_samples_based_doe_settings import (
+    BaseNSamplesBasedDOESettings,
+)
 from gemseo.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 
 
@@ -40,7 +43,7 @@ class Criterion(StrEnum):
     LHSMU = "lhsmu"
 
 
-class PYDOE_LHS_Settings(BasePyDOESettings):  # noqa: N801
+class PYDOE_LHS_Settings(BasePyDOESettings, BaseNSamplesBasedDOESettings):  # noqa: N801
     """The settings for the LHS DOE from the pyDOE library."""
 
     criterion: Criterion | None = Field(
@@ -54,8 +57,6 @@ If `None`, randomize the points within the intervals.""",
         default=5,
         description="The number of iterations in the `correlation`/`maximin` algorithms.",  # noqa: E501
     )
-
-    n_samples: PositiveInt = Field(default=1, description="The number of samples.")
 
     seed: NonNegativeInt | Generator | None = Field(
         default=None,

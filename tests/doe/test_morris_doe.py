@@ -22,6 +22,7 @@ from pydantic import ValidationError
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.morris_doe.morris_doe import MorrisDOE
 from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
+from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -117,3 +118,26 @@ def test_morris_doe_step_too_large(step, snapshot):
     """Check that a step reaching 0.5 is rejected, as in the OAT DOE it feeds."""
     with assert_exception(ValidationError, snapshot):
         MorrisDOE_Settings(step=step)
+
+
+def test_doe_algo_settings_unchanged():
+    """Check that the settings of the inner DOE algorithm are left unchanged."""
+    settings = MorrisDOE_Settings(n_samples=20)
+    MorrisDOE().sample_unit_hypercube(3, settings)
+    assert settings.doe_algo_settings.n_samples == 1
+
+
+@pytest.mark.parametrize(
+    ("doe_algo_settings", "is_logged"),
+    [(PYDOE_LHS_Settings(n_samples=2), True), (PYDOE_LHS_Settings(), False)],
+    ids=["explicit", "default"],
+)
+def test_doe_algo_n_samples_replaced_warning(caplog, doe_algo_settings, is_logged):
+    """Check the warning about an explicit n_samples of the inner DOE replaced."""
+    settings = MorrisDOE_Settings(n_samples=20, doe_algo_settings=doe_algo_settings)
+    MorrisDOE().sample_unit_hypercube(3, settings)
+    message = (
+        "The setting 'n_samples' of PYDOE_LHS_Settings (2) is replaced by "
+        "the number of replicates inferred from 'n_samples' (5)."
+    )
+    assert (message in caplog.text) is is_logged
