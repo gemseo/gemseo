@@ -109,7 +109,7 @@ from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_S
 from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.post._graph_view import GraphView
+from gemseo.post.graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1

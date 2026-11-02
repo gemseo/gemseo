@@ -120,9 +120,9 @@ if TYPE_CHECKING:
     from gemseo.mda.core.base_settings import BaseMDASettings
     from gemseo.optimization.problem import OptimizationProblem
     from gemseo.optimization.result import OptimizationResult
-    from gemseo.post._graph_view import GraphView
     from gemseo.post.core.base_post import BasePost
     from gemseo.post.core.base_post_settings import BasePostSettings
+    from gemseo.post.graph_view import GraphView
     from gemseo.problem.mdo.scalable.data_driven.discipline import (
         DataDrivenScalableDiscipline,
     )

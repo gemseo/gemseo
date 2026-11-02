@@ -116,6 +116,7 @@ modules:
   gemseo.algos.doe.openturns._algos: gemseo.doe.openturns._algorithm
   gemseo.algos.opt.mnbi._utils: gemseo.optimization.mnbi._util
   gemseo.core._process_flow.execution_sequences: gemseo.core._process_flow.execution_sequence
+  gemseo.post._graph_view: gemseo.post.graph_view
   gemseo.post.dataset._trend: gemseo.post.dataset.trend
   gemseo.post.dataset.plots._matplotlib.color_evolution: gemseo.post.dataset.plot._matplotlib.heatmap
   gemseo.post.dataset.plots._matplotlib.scatter_plot_matrix: gemseo.post.dataset.plot._matplotlib.pair_plot

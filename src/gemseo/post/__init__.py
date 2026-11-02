@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from gemseo.post.factory import post_factory  # noqa: F401
     from gemseo.post.gradient_sensitivity import GradientSensitivity  # noqa: F401
     from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings  # noqa: F401
+    from gemseo.post.graph_view import GraphView  # noqa: F401
     from gemseo.post.hessian_history import HessianHistory  # noqa: F401
     from gemseo.post.hessian_history_settings import HessianHistory_Settings  # noqa: F401
     from gemseo.post.obj_constr_hist import ObjConstrHist  # noqa: F401
@@ -76,6 +77,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "Correlations_Settings": "correlations_settings",
     "GradientSensitivity": "gradient_sensitivity",
     "GradientSensitivity_Settings": "gradient_sensitivity_settings",
+    "GraphView": "graph_view",
     "HessianHistory": "hessian_history",
     "HessianHistory_Settings": "hessian_history_settings",
     "ObjConstrHist": "obj_constr_hist",

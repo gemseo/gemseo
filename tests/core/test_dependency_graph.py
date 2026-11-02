@@ -31,7 +31,7 @@ import pytest
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.post._graph_view import GraphView
+from gemseo.post.graph_view import GraphView
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
