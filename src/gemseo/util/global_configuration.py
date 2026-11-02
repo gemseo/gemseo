@@ -17,10 +17,10 @@
 
 from __future__ import annotations
 
-import os
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
+from typing import cast
 
 from pydantic import Field
 from pydantic import model_validator
@@ -57,6 +57,9 @@ if TYPE_CHECKING:
     from typing import Self
 
     from pydantic import ValidationInfo
+    from pydantic_settings import DotEnvSettingsSource
+    from pydantic_settings import EnvSettingsSource
+    from pydantic_settings import PydanticBaseSettingsSource
 
 
 def _apply_check_desvars_bounds(value: bool) -> None:
@@ -305,29 +308,44 @@ after execution.""",
 
         super().__init__(**data)
 
-    @model_validator(mode="before")
     @classmethod
-    def __reject_fast(cls, data: Any) -> Any:
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Reject the `fast` option, replaced by the fast mode methods.
 
         Args:
-            data: The input data.
+            settings_cls: The settings class.
+            init_settings: The source of the values passed to the constructor.
+            env_settings: The source of the environment variables.
+            dotenv_settings: The source of the dotenv file.
+            file_secret_settings: The source of the secret files.
 
         Returns:
-            The input data.
+            The sources, in their order of priority.
 
         Raises:
             ValueError: When the `fast` option is set
                 in the environment or in a dotenv file.
         """
-        # A dotenv file passes an unknown key with its prefix,
-        # whereas the environment source only reads the names of the fields.
+        # The raw names of the sources are read instead of the validated data:
+        # the dotenv source passes an unknown prefixed key
+        # with or without its prefix depending on the version of pydantic-settings,
+        # and an unprefixed key of the same name belongs to another tool.
         fast_name = f"{cls.model_config['env_prefix']}fast".lower()
-        names = [*data, *os.environ] if isinstance(data, dict) else list(os.environ)
-        if any(isinstance(name, str) and name.lower() == fast_name for name in names):
-            raise ValueError(_fast_removed_message)
+        for source in (
+            cast("EnvSettingsSource", env_settings),
+            cast("DotEnvSettingsSource", dotenv_settings),
+        ):
+            if any(name.lower() == fast_name for name in source.env_vars):
+                raise ValueError(_fast_removed_message)
 
-        return data
+        return init_settings, env_settings, dotenv_settings, file_secret_settings
 
     @model_validator(mode="after")
     def __apply_fields(self, info: ValidationInfo) -> Self:
