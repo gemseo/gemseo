@@ -36,5 +36,8 @@ class BaseLinearSolverSettings(BaseSettings):
 
     save_when_fail: bool = Field(
         default=False,
-        description="Whether to use an incomplete LU factorization as preconditioner.",
+        description=(
+            "Whether to save the linear problem to the disk "
+            "when the solver does not converge."
+        ),
     )
