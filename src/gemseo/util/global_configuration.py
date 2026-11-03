@@ -20,7 +20,6 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import cast
 
 from pydantic import Field
 from pydantic import model_validator
@@ -57,8 +56,6 @@ if TYPE_CHECKING:
     from typing import Self
 
     from pydantic import ValidationInfo
-    from pydantic_settings import DotEnvSettingsSource
-    from pydantic_settings import EnvSettingsSource
     from pydantic_settings import PydanticBaseSettingsSource
 
 
@@ -338,11 +335,8 @@ after execution.""",
         # with or without its prefix depending on the version of pydantic-settings,
         # and an unprefixed key of the same name belongs to another tool.
         fast_name = f"{cls.model_config['env_prefix']}fast".lower()
-        for source in (
-            cast("EnvSettingsSource", env_settings),
-            cast("DotEnvSettingsSource", dotenv_settings),
-        ):
-            if any(name.lower() == fast_name for name in source.env_vars):
+        for source in (env_settings, dotenv_settings):
+            if any(name.lower() == fast_name for name in source.env_vars):  # type: ignore[attr-defined]
                 raise ValueError(_fast_removed_message)
 
         return init_settings, env_settings, dotenv_settings, file_secret_settings
