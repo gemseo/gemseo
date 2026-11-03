@@ -11,3 +11,12 @@
 # name: test_fast_rejected_from_an_environment_variable
   'The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set.'
 # ---
+# name: test_prefixed_fast_rejected_by_the_constructor[GEMSEO_FAST]
+  'The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set.'
+# ---
+# name: test_prefixed_fast_rejected_by_the_constructor[gemseo_fast]
+  'The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set.'
+# ---
+# name: test_unknown_options_rejected_by_the_constructor
+  "Unknown options of the global configuration: ['ENABLE_DISCIPLINE_CACHE', 'GEMSEO_ENABLE_DISCIPLINE_CACHE', 'foo']."
+# ---

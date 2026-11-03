@@ -295,13 +295,32 @@ after execution.""",
             **data: The values of the fields.
 
         Raises:
-            ValueError: When the `fast` option is passed.
+            ValueError: When the `fast` option is passed,
+                with or without its prefix,
+                or when a keyword is not the name of an option.
         """  # noqa: D205 D212
-        # Only the constructor spells the option without the prefix;
-        # a prefix-free name coming from a dotenv file
-        # belongs to another tool and is ignored.
-        if "fast" in {name.lower() for name in data}:
+        # Only the constructor is strict: the environment and the dotenv file
+        # may hold keys of other tools, which stay ignored.
+        # The removed fast option is rejected with or without the prefix,
+        # whatever the case.
+        names = {name.lower() for name in data}
+        if names & {"fast", f"{self.model_config['env_prefix']}fast".lower()}:
             raise ValueError(_fast_removed_message)
+
+        # A keyword must be the exact name of an option:
+        # pydantic-settings 2.9 ignores `ENABLE_DISCIPLINE_CACHE=False`
+        # while 2.16 applies it, so only the exact names behave
+        # the same way with every supported version.
+        # The names starting with an underscore are the private parameters
+        # of `BaseSettings.__init__`, such as `_env_file`, and are kept.
+        unknown = {
+            name
+            for name in data
+            if name not in type(self).model_fields and not name.startswith("_")
+        }
+        if unknown:
+            msg = f"Unknown options of the global configuration: {sorted(unknown)}."
+            raise ValueError(msg)
 
         super().__init__(**data)
 

@@ -258,6 +258,26 @@ def test_fast_rejected_by_the_constructor_whatever_the_case(snapshot):
         GlobalConfiguration(FAST=True)
 
 
+@pytest.mark.parametrize("name", ["gemseo_fast", "GEMSEO_FAST"])
+def test_prefixed_fast_rejected_by_the_constructor(name, snapshot):
+    """Check that the removed fast option raises when passed with its prefix."""
+    with assert_exception(ValueError, snapshot):
+        GlobalConfiguration(**{name: True})
+
+
+def test_unknown_options_rejected_by_the_constructor(snapshot):
+    """Check that the keywords that are not the exact names of options raise."""
+    with assert_exception(ValueError, snapshot):
+        GlobalConfiguration(
+            foo=1, ENABLE_DISCIPLINE_CACHE=False, GEMSEO_ENABLE_DISCIPLINE_CACHE=False
+        )
+
+
+def test_private_init_parameter_accepted_by_the_constructor():
+    """Check that a private parameter of BaseSettings.__init__ is accepted."""
+    assert GlobalConfiguration(_env_file=None).enable_discipline_cache
+
+
 def test_fast_rejected_from_a_dotenv_file(tmp_wd, snapshot):
     """Check that the removed fast option raises when read from a dotenv file."""
     (tmp_wd / ".env").write_text("GEMSEO_FAST=True")
