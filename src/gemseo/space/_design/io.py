@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 import h5py
+import numpy
 from numpy import array
 from numpy import bytes_
 from numpy import float64
@@ -31,7 +32,6 @@ from numpy import genfromtxt
 from numpy import isin
 from numpy import nan
 from numpy import where
-from numpy.char import find
 from pandas import DataFrame
 from pydantic import ValidationError
 
@@ -806,7 +806,7 @@ def _convert_cells_to_floats(
         i.e. neither a number nor, if `no_value_rows` is given, a cell meaning no value.
     """
     # float() reads "1_0" as 10, which hides a typing error in the file.
-    is_invalid = find(cells, "_") >= 0
+    is_invalid = numpy.char.find(cells, "_") >= 0
     is_masked = is_invalid if no_value_rows is None else is_invalid | no_value_rows
     # Masking the cells that are not numbers lets a single cast convert the others.
     cells = where(is_masked, "nan", cells)
