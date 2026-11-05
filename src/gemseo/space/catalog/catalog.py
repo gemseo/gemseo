@@ -22,11 +22,11 @@ from typing import Annotated
 from typing import Any
 from typing import Final
 
+import numpy
 from numpy import array
 from numpy import array_equal
 from numpy import flatnonzero
 from numpy import ndarray
-from numpy.char import encode
 from pandas import DataFrame
 from pydantic import BaseModel
 from pydantic import Field
@@ -530,17 +530,22 @@ label naming a single row, not an absence of labels.""",
                 to UTF-8; every offender is named at once.
         """
         self.check_hdf_writable()
-        group.create_dataset(labels_group, data=encode(self.labels, "utf-8"))
+        group.create_dataset(labels_group, data=numpy.char.encode(self.labels, "utf-8"))
         # The names are stored explicitly because HDF does not preserve
         # the insertion order of the members of a group,
         # while the order of the properties takes part in the equality of two catalogs.
         group.create_dataset(
-            property_names_group, data=encode(array(self._property_names), "utf-8")
+            property_names_group,
+            data=numpy.char.encode(array(self._property_names), "utf-8"),
         )
         hdf_properties = group.create_group(properties_group)
         for name, property_values in self.properties.items():
             was_unicode = property_values.dtype.kind == "U"
-            data = encode(property_values, "utf-8") if was_unicode else property_values
+            data = (
+                numpy.char.encode(property_values, "utf-8")
+                if was_unicode
+                else property_values
+            )
             dataset = hdf_properties.create_dataset(name, data=data)
             dataset.attrs[was_unicode_attribute] = was_unicode
 

@@ -96,10 +96,24 @@ select = [
     "T10",
     "T20",
     "TCH",
+    "TID253",
     "TRY",
     "W",
     "UP",
     "YTT",
+]
+
+[lint.flake8-tidy-imports]
+# These numpy submodules cannot be imported with numpy 1.24,
+# the lowest version allowed by pyproject.toml:
+# numpy.char is only an attribute of numpy in numpy 1.x,
+# the other ones do not exist before numpy 1.25 or 2.0.
+# Access them as attributes of numpy inside the code, e.g. numpy.char.encode().
+banned-module-level-imports = [
+    "numpy.char",
+    "numpy.dtypes",
+    "numpy.exceptions",
+    "numpy.strings",
 ]
 
 [lint.flake8-type-checking]

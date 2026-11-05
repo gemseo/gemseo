@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
-from numpy.char import encode
+import numpy
 
 if TYPE_CHECKING:
     from h5py import Dataset
@@ -82,7 +82,7 @@ def find_hdf_writing_error(name: str, property_values: ndarray) -> str:
         )
 
     try:
-        encode(name, "utf-8")
+        numpy.char.encode(name, "utf-8")
     except UnicodeEncodeError:
         return (
             f"The property name {name!r} of the catalog cannot be encoded "
@@ -126,7 +126,7 @@ def find_unencodable_utf8_value(values: ndarray) -> str | None:
         `None` if UTF-8 can encode them all.
     """
     try:
-        encode(values, "utf-8")
+        numpy.char.encode(values, "utf-8")
     except UnicodeEncodeError:
         pass
     else:
@@ -134,7 +134,7 @@ def find_unencodable_utf8_value(values: ndarray) -> str | None:
 
     for value in values:
         try:
-            encode(value, "utf-8")
+            numpy.char.encode(value, "utf-8")
         except UnicodeEncodeError:  # noqa: PERF203
             return str(value)
 

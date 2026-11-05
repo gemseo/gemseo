@@ -32,12 +32,11 @@ from typing import Any
 from typing import ClassVar
 
 import h5py
+import numpy
 from numpy import append
 from numpy import array
 from numpy import bytes_
 from numpy import str_
-from numpy.char import decode
-from numpy.char import encode
 from scipy.sparse import csr_array
 
 from gemseo.core.cache.base import BaseCache
@@ -238,7 +237,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 raise TypeError(msg)
             elif value.dtype.type is str_:
                 # See https://docs.h5py.org/en/stable/strings.html
-                converted_data[name] = encode(value, "utf-8")
+                converted_data[name] = numpy.char.encode(value, "utf-8")
             else:
                 converted_data[name] = to_real(value)
         return converted_data
@@ -303,7 +302,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 if dataset.attrs.get(self.__SparseMatricesAttribute.SPARSE):
                     value = self.__read_sparse_array(dataset)
                 elif dataset.dtype.type == bytes_:
-                    value = decode(array(dataset), "utf-8")
+                    value = numpy.char.decode(array(dataset), "utf-8")
                 else:
                     value = array(dataset)
                 data[key] = value

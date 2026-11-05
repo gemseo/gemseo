@@ -26,11 +26,11 @@ from typing import Any
 from typing import Final
 from typing import NoReturn
 
+import numpy
 from numpy import asarray
 from numpy import full
 from numpy import ndarray
 from numpy import str_
-from numpy.char import strip as strip_array
 from pandas import DataFrame
 from pandas import Index
 from pandas import MultiIndex
@@ -889,7 +889,7 @@ def _strip_strings(values: ndarray) -> ndarray:
     """
     kind = values.dtype.kind
     if kind in "US":
-        return strip_array(values)
+        return numpy.char.strip(values)
 
     if kind == "O":
         stripped_values = deepcopy(values)
