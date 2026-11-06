@@ -118,6 +118,14 @@ analysis.compute_percentile(50)
 analysis.compute_median()
 
 # %%
+# Interquartile range (difference between the third and first quartiles):
+analysis.compute_interquartile_range()
+
+# %%
+# Quartile coefficient of dispersion (interquartile range normalized by the sum of the first and third quartiles):
+analysis.compute_quartile_coefficient_of_dispersion()
+
+# %%
 # ### 3. Compute tolerance intervals
 #
 # Two-sided tolerance interval with 50% coverage and 95% confidence:
@@ -153,7 +161,9 @@ default_output = discipline.execute()
 #   [compute_quantile(p)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quantile],
 #   [compute_quartile(n)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quartile],
 #   [compute_percentile(n)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_percentile],
-#   [compute_median()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_median];
+#   [compute_median()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_median],
+#   [compute_interquartile_range()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_interquartile_range],
+#   [compute_quartile_coefficient_of_dispersion()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quartile_coefficient_of_dispersion];
 # - tolerance:
 #   [compute_tolerance_interval(cov)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_tolerance_interval],
 #   [compute_b_value()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_b_value];

@@ -65,8 +65,17 @@ for the different variables:
   which is the mean squared variation around the mean value,
 - [compute_standard_deviation()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_standard_deviation]: the standard deviation,
   which is the square root of the variance,
-- [compute_variation_coefficient()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_variation_coefficient]`: the coefficient of variation,
+- [compute_variation_coefficient()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_variation_coefficient]: the coefficient of variation,
   which is the standard deviation normalized by the mean,
+- [compute_interquartile_range()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_interquartile_range]:
+  the interquartile range,
+  which is the difference between the third and first quartiles,
+  a robust counterpart of the standard deviation,
+- [compute_quartile_coefficient_of_dispersion()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quartile_coefficient_of_dispersion]:
+  the quartile coefficient of dispersion,
+  which is the interquartile range normalized by the sum of the first and third quartiles,
+  a robust counterpart of the coefficient of variation
+  meant for data whose quartiles share the same sign,
 - [compute_quantile()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quantile]: the quantile associated with a probability,
   which is the cut point diving the range into a first continuous interval
   with this given probability and a second continuous interval
@@ -436,6 +445,51 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     symbols["quartile"] = "q"
 
+    def compute_interquartile_range(self) -> dict[str, RealArray]:
+        r"""Compute the interquartile range $\text{IQR}[X]$.
+
+        This is the difference between the third and first quartiles:
+        $\text{IQR}[X]=q[X; 3]-q[X; 1]$.
+
+        Returns:
+            The component-wise interquartile range of the different variables.
+        """
+        q1 = self.compute_quartile(1)
+        q3 = self.compute_quartile(3)
+        return {name: q3[name] - q1[name] for name in q1}
+
+    symbols["interquartile_range"] = "IQR"
+
+    def compute_quartile_coefficient_of_dispersion(self) -> dict[str, RealArray]:
+        r"""Compute the quartile coefficient of dispersion $\text{QCD}[X]$.
+
+        This is the interquartile range
+        normalized by the sum of the first and third quartiles:
+        $\text{QCD}[X]=(q[X; 3]-q[X; 1])/(q[X; 3]+q[X; 1])$,
+        see [Wikipedia](https://en.wikipedia.org/wiki/Quartile_coefficient_of_dispersion).
+
+        This statistic is meant for positive data,
+        i.e. when the first quartile is strictly positive,
+        like the coefficient of variation is meant for a positive mean;
+        it then lies in $[0,1)$.
+        For negative data,
+        i.e. when the third quartile is strictly negative,
+        it is the opposite of the statistic of $-X$
+        and lies in $(-1,0]$.
+        When the quartiles have different signs or one is zero,
+        its value is not meaningful:
+        it can be negative, greater than 1 in absolute value, infinite or NaN.
+
+        Returns:
+            The component-wise quartile coefficient of dispersion
+            of the different variables.
+        """
+        q1 = self.compute_quartile(1)
+        q3 = self.compute_quartile(3)
+        return {name: (q3[name] - q1[name]) / (q3[name] + q1[name]) for name in q1}
+
+    symbols["quartile_coefficient_of_dispersion"] = "QCD"
+
     @abstractmethod
     def compute_range(self) -> dict[str, RealArray]:
         r"""Compute the range $R[X]$.
@@ -460,7 +514,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         r"""Compute the coefficient of variation $CoV[X]$.
 
         This is the standard deviation normalized by the expectation:
-        $CoV[X]=\mathbb{E}[S]/\mathbb{E}[X]$.
+        $CoV[X]=\mathbb{S}[X]/\mathbb{E}[X]$.
 
         Returns:
             The component-wise coefficient of variation of the different variables.
