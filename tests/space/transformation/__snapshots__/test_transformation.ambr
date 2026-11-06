@@ -2,6 +2,12 @@
 # name: test_create_for_a_non_design_space_with_normalization
   'The functions cannot take normalized inputs because a RandomSpace cannot be normalized.'
 # ---
+# name: test_get_relaxed_names_of_an_unknown_name[empty composition]
+  'SpaceComposition cannot carry the relaxed variables y back to its original space; a transformation renaming its variables or adding new ones must override get_relaxed_names.'
+# ---
+# name: test_get_relaxed_names_of_an_unknown_name[normalization]
+  'SpaceNormalization cannot carry the relaxed variables y back to its original space; a transformation renaming its variables or adding new ones must override get_relaxed_names.'
+# ---
 # name: test_requires_finite_bounds_is_checked_at_construction
   '_BoundedTransformation requires finite bounds, which these variables do not have: y.'
 # ---

@@ -25,6 +25,7 @@ from gemseo.space.transformation.identity import SpaceIdentity
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Iterable
     from collections.abc import Iterator
 
     from gemseo.core.function.array_function import ArrayFunction
@@ -215,6 +216,20 @@ class SpaceComposition(BaseSpaceTransformation[_SpaceT]):
             value = transformation.inverse_transform_value(value)
 
         return value
+
+    def get_relaxed_names(  # noqa: D102
+        self, working_names: Iterable[str] = ()
+    ) -> set[str]:
+        # The names are carried back from the working space of the composition
+        # to its original space, one transformation after the other,
+        # each one reading the names of its own working space.
+        names = set(working_names)
+        for transformation in reversed(self.__transformations):
+            names = transformation.get_relaxed_names(names)
+
+        # The default checks that the names carried back are original ones,
+        # whatever the overrides of the transformations.
+        return super().get_relaxed_names(names)
 
     def create_constraints(  # noqa: D102
         self, working_space: BaseVariableSpace

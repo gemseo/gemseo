@@ -81,7 +81,6 @@ from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.transformation._working import create_working_transformation
 from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -92,6 +91,7 @@ from gemseo.uncertainty.distribution.openturns.uniform_settings import (
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
+from tests.space.transformation._helpers import create_default_transformation
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -701,7 +701,7 @@ def test_normalize_linear_function() -> None:
     initial_value = objective.evaluate(x_0)
     problem = OptimizationProblem(design_space)
     problem.objective = objective
-    composition = create_working_transformation(design_space, normalize=True)
+    composition = create_default_transformation(design_space, normalize=True)
     problem.bind_functions(use_database=False)
     working_problem = problem.create_working_problem(composition)
     assert allclose(working_problem.objective.evaluate(zeros(2)), low_bnd_value)
@@ -1033,7 +1033,7 @@ def test_grad_normalization(pow2_problem) -> None:
     problem = pow2_problem
     x_vec = ones(3)
     grad = problem.objective.jac(x_vec)
-    composition = create_working_transformation(problem.design_space, normalize=True)
+    composition = create_default_transformation(problem.design_space, normalize=True)
     problem.bind_functions()
     working_problem = problem.create_working_problem(composition)
     norm_grad = working_problem.objective.jac(x_vec)

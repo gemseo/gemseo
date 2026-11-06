@@ -29,6 +29,8 @@ from gemseo.space.transformation.base import BaseSpaceTransformation
 from gemseo.space.variable.factory import deterministic_variable_factory
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.space.design import DesignSpace
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
@@ -88,7 +90,7 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
         self.__relax_discrete = relax_discrete
         super().__init__(space)
         # Computed once, here, and read from both `_create_working_space` and
-        # `relaxed_names`, so the two agree on what is relaxed.
+        # `get_relaxed_names`, so the two agree on what is relaxed.
         self.__relaxed_names = frozenset(
             name
             for name, variable in space.variables.items()
@@ -102,10 +104,10 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
             if variable.type == VariableType.DISCRETE and relax_discrete
         )
 
-    @property
-    def relaxed_names(self) -> frozenset[str]:
-        """The names of the variables this transformation relaxes to float ones."""
-        return self.__relaxed_names
+    def get_relaxed_names(  # noqa: D102
+        self, working_names: Iterable[str] = ()
+    ) -> set[str]:
+        return super().get_relaxed_names(working_names) | self.__relaxed_names
 
     def _create_working_space(self) -> DesignSpace:  # noqa: D102
         space = self._original_space

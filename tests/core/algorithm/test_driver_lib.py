@@ -24,14 +24,19 @@ from __future__ import annotations
 import dataclasses
 import gc
 import logging
+import operator
 import weakref
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import NoReturn
 from unittest import mock
 
 import pytest
+from numpy import arange
 from numpy import array
 from numpy import full
+from numpy import zeros
 
 from gemseo import compute_doe
 from gemseo import configuration
@@ -47,6 +52,7 @@ from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.doe.scipy.settings.mc import MC_Settings
+from gemseo.enum._variable_type import VariableType
 from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
@@ -57,6 +63,11 @@ from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space._core.rendering import render_string
 from gemseo.space.design import DesignSpace
+from gemseo.space.transformation.base import BaseSpaceTransformation
+from gemseo.space.transformation.composition import SpaceComposition
+from gemseo.space.transformation.identity import SpaceIdentity
+from gemseo.space.transformation.normalization import SpaceNormalization
+from gemseo.space.transformation.relaxation import SpaceRelaxation
 from gemseo.space.util import get_value_and_bounds
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
@@ -96,13 +107,36 @@ def optimization_problem():
     return problem
 
 
-def test_empty_design_space(snapshot) -> None:
-    """Check that a driver cannot be executed with an empty design space."""
+def _check_algorithm(problem: OptimizationProblem) -> None:
+    """Check the suitability of a driver to a problem.
+
+    Args:
+        problem: The problem.
+    """
     with concretize_classes(MyDriver):
         driver = MyDriver()
     driver._algo_name = "algo_name"
+    driver._check_algorithm(problem)
+
+
+def _execute_slsqp(problem: OptimizationProblem) -> None:
+    """Execute SLSQP on a problem.
+
+    Args:
+        problem: The problem.
+    """
+    ScipyOpt("SLSQP").execute(problem, settings=SLSQP_Settings(max_iter=1))
+
+
+@pytest.mark.parametrize(
+    "run", [_check_algorithm, _execute_slsqp], ids=["check", "execute"]
+)
+def test_empty_design_space(run, snapshot) -> None:
+    """Check that a driver cannot be executed with an empty design space."""
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = ArrayFunction(lambda x: array([0.0]), name="f")
     with assert_exception(ValueError, snapshot):
-        driver._check_algorithm(OptimizationProblem(DesignSpace()))
+        run(problem)
 
 
 def test_no_functions(optimization_problem, snapshot):
@@ -778,3 +812,534 @@ def test_compute_doe_with_catalog_variable(
             algo_name="PYDOE_LHS",
             n_samples=2,
         )
+
+
+class _RenamingTransformation(SpaceIdentity):
+    """A transformation renaming the variables of a design space with a prefix.
+
+    Its backward map is the identity, so a relaxed working variable is relaxed in
+    the original space too, under its original name.
+    """
+
+    def _create_working_space(self) -> DesignSpace:
+        space = deepcopy(self._original_space)
+        for name in tuple(space.variables):
+            space.rename_variable(name, f"w_{name}")
+
+        return space
+
+    def get_relaxed_names(self, working_names=()):
+        return {name.removeprefix("w_") for name in working_names}
+
+
+def test_default_transformation_factories_appended() -> None:
+    """Check that a driver can append a transformation to the default chain."""
+
+    class Driver(ScipyOpt):
+        def _get_default_transformation_factories(self, problem):
+            factories = super()._get_default_transformation_factories(problem)
+            factories.append(SpaceNormalization)
+            return factories
+
+    problem = Power2()
+    with mock.patch.object(
+        problem, "create_working_problem", wraps=problem.create_working_problem
+    ) as mock_create_working_problem:
+        Driver("SLSQP").execute(
+            problem, settings=SLSQP_Settings(max_iter=1, normalize_design_space=False)
+        )
+
+    (transformation,) = mock_create_working_problem.call_args.args
+    assert [type(sub_transformation) for sub_transformation in transformation] == [
+        SpaceNormalization
+    ]
+
+
+def _create_integer_problem() -> OptimizationProblem:
+    """Create a problem with an integer variable SLSQP does not handle."""
+    design_space = DesignSpace()
+    design_space.add_integer_variable("x", lower_bound=0, upper_bound=10, value=5)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([(x[0] - 3.4) ** 2]),
+        name="f",
+        jac=lambda x: array([[2.0 * (x[0] - 3.4)]]),
+    )
+    return problem
+
+
+def _create_driver(factories, algo_name: str = "SLSQP") -> ScipyOpt:
+    """Create a SciPy driver whose working transformation chain is given.
+
+    Args:
+        factories: The factories of the working transformations.
+        algo_name: The name of the algorithm.
+
+    Returns:
+        The driver.
+    """
+
+    class Driver(ScipyOpt):
+        def _get_default_transformation_factories(self, problem):
+            return list(factories)
+
+    return Driver(algo_name)
+
+
+class _IntegerizingTransformation(SpaceIdentity):
+    """A transformation turning the variables into integer ones of the same names."""
+
+    def _create_working_space(self) -> DesignSpace:
+        space = DesignSpace()
+        for name, variable in self._original_space.variables.items():
+            space.add_integer_variable(
+                name, size=variable.size, lower_bound=0, upper_bound=10
+            )
+
+        return space
+
+
+class _OneHotEncoding(BaseSpaceTransformation):
+    """The one-hot encoding of a design space made of a scalar discrete variable.
+
+    A scalar categorical or catalog variable is encoded the same way,
+    its choices being the positions of its labels.
+    The backward map decodes a value into the domain of the variable,
+    which is then not relaxed.
+    """
+
+    def __init__(self, space: DesignSpace) -> None:
+        super().__init__(space)
+        ((self.__name, variable),) = space.variables.items()
+        if variable.type in {VariableType.CATEGORICAL, VariableType.CATALOG}:
+            choices = arange(len(variable.labels))
+        else:
+            choices = variable.choices
+        self.__choices = array(choices, dtype=float)
+
+    def _create_working_space(self) -> DesignSpace:
+        space = DesignSpace()
+        space.add_real_variable(
+            f"{self.__name}_one_hot",
+            size=self.__choices.size,
+            lower_bound=0.0,
+            upper_bound=1.0,
+            value=self.transform_value(self._original_space.get_current_value()),
+        )
+        return space
+
+    def transform_value(self, value):
+        return (
+            abs(self.__choices - value[..., :1]).argmin(axis=-1)[..., None]
+            == arange(self.__choices.size)
+        ).astype(float)
+
+    def inverse_transform_value(self, value, no_check=False):
+        return self.__choices[value.argmax(axis=-1)][..., None]
+
+    def transform_jacobian(self, jacobian, value=None):
+        return zeros((*jacobian.shape[:-1], self.__choices.size))
+
+    def inverse_transform_jacobian(self, jacobian, value=None):
+        return zeros((*jacobian.shape[:-1], 1))
+
+    def get_relaxed_names(self, working_names=()):
+        return set()
+
+
+def _create_discrete_space() -> DesignSpace:
+    space = DesignSpace()
+    space.add_discrete_variable("d", [1, 3, 8], value=3)
+    return space
+
+
+def _create_categorical_space() -> DesignSpace:
+    space = DesignSpace()
+    space.add_categorical_variable("m", ["a", "b", "c"], value="b")
+    return space
+
+
+def _create_catalog_space() -> DesignSpace:
+    space = DesignSpace()
+    space.add_catalog_variable("c", {"mass": [2.7, 7.8, 4.5]}, value=1)
+    return space
+
+
+@pytest.mark.parametrize(
+    ("create_space", "values"),
+    [
+        (_create_discrete_space, {1.0, 3.0, 8.0}),
+        (_create_categorical_space, {0.0, 1.0, 2.0}),
+        (_create_catalog_space, {0.0, 1.0, 2.0}),
+    ],
+    ids=["discrete", "categorical", "catalog"],
+)
+def test_encoded_variable(create_space, values) -> None:
+    """Check that a variable encoded into other ones need not be relaxed.
+
+    SLSQP handles no discrete, categorical or catalog variables,
+    but the encoding replaces the variable with float ones
+    and its backward map decodes a value into the domain of the variable.
+    """
+    design_space = create_space()
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        operator.itemgetter(slice(1)), name="f", jac=lambda x: array([[1.0]])
+    )
+    _create_driver([_OneHotEncoding]).execute(
+        problem, settings=SLSQP_Settings(max_iter=1)
+    )
+
+    assert problem.solution.x_opt[0] in values
+    assert problem.database.relaxed_variable_names == set()
+
+
+def test_categorical_variable_left_in_working_space(snapshot) -> None:
+    """Check that a categorical variable remaining in the working space is refused."""
+    problem = OptimizationProblem(_create_categorical_space())
+    problem.objective = ArrayFunction(
+        operator.itemgetter(slice(1)), name="f", jac=lambda x: array([[1.0]])
+    )
+    with assert_exception(ValueError, snapshot):
+        _create_driver([]).execute(problem, settings=SLSQP_Settings(max_iter=1))
+
+
+class _AddingIntegerTransformation(SpaceIdentity):
+    """A transformation adding an integer variable to the working space."""
+
+    def _create_working_space(self) -> DesignSpace:
+        space = deepcopy(self._original_space)
+        space.add_integer_variable("n", lower_bound=0, upper_bound=1)
+        return space
+
+
+_RELAX_INTEGER_VARIABLES = pytest.mark.parametrize(
+    "relax_integer_variables", [True, False], ids=["setting on", "setting off"]
+)
+
+
+@pytest.mark.parametrize(
+    ("create_problem", "factories", "relax_integer_variables"),
+    [
+        (_create_integer_problem, [], True),
+        (_create_integer_problem, [_RenamingTransformation], True),
+        (
+            _create_integer_problem,
+            [SpaceRelaxation, _AddingIntegerTransformation],
+            True,
+        ),
+        (_create_integer_problem, [], False),
+        (
+            _create_integer_problem,
+            [SpaceRelaxation, _IntegerizingTransformation],
+            True,
+        ),
+        (Power2, [_IntegerizingTransformation], True),
+    ],
+    ids=[
+        "no transformation",
+        "renaming",
+        "undeclared variable",
+        "no transformation and no relaxation",
+        "relaxed variable turned back into an integer one",
+        "real variable turned into an integer one",
+    ],
+)
+def test_working_space_with_unhandled_variables(
+    snapshot, create_problem, factories, relax_integer_variables
+) -> None:
+    """Check that the algorithm must handle the variables of the working space.
+
+    A declared variable must be relaxed whatever its working variable,
+    a variable the user did not declare is checked under its working name,
+    a working variable of an unhandled kind is refused whatever its name,
+    and the hint to relax them is given only when the setting is the reason.
+    """
+    with assert_exception(ValueError, snapshot):
+        _create_driver(factories).execute(
+            create_problem(),
+            settings=SLSQP_Settings(
+                relax_integer_variables=relax_integer_variables, max_iter=1
+            ),
+        )
+
+
+def test_refused_run_keeps_the_relaxed_variable_names(snapshot) -> None:
+    """Check that a refused run keeps the relaxed names of the previous runs.
+
+    It evaluates nothing,
+    so the names keep describing the evaluations of the database.
+    """
+    problem = _create_integer_problem()
+    problem.database.relaxed_variable_names = {"x"}
+    with assert_exception(ValueError, snapshot):
+        _create_driver([]).execute(
+            problem, settings=SLSQP_Settings(relax_integer_variables=True, max_iter=1)
+        )
+
+    assert problem.database.relaxed_variable_names == {"x"}
+
+
+def test_normalized_integer_variable(snapshot) -> None:
+    """Check that a normalized integer variable must be relaxed all the same.
+
+    The normalization makes its working variable a float one,
+    but the algorithm would iterate on an image of an integer variable.
+    """
+    problem = _create_integer_problem()
+    problem.design_space.enable_integer_variables_normalization = True
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("SLSQP").execute(problem, settings=SLSQP_Settings(max_iter=1))
+
+
+def test_no_relaxation_warning_for_a_refused_run(caplog, snapshot) -> None:
+    """Check that no relaxation is reported when another kind refuses the run."""
+    design_space = DesignSpace()
+    design_space.add_integer_variable("i", lower_bound=0, upper_bound=10, value=5)
+    design_space.add_discrete_variable("d", [1, 3, 8], value=3)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: array([x.sum()]), name="f", jac=lambda x: array([[1.0, 1.0]])
+    )
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("SLSQP").execute(
+            problem,
+            settings=SLSQP_Settings(
+                relax_integer_variables=True,
+                relax_discrete_variables=False,
+                max_iter=1,
+            ),
+        )
+
+    assert "relaxed to float ones" not in caplog.text
+
+
+def test_no_relaxation_warning_for_an_unsuitable_algorithm(caplog, snapshot) -> None:
+    """Check that no relaxation is reported when the algorithm is not suited.
+
+    L-BFGS-B handles no equality constraints.
+    """
+    problem = _create_integer_problem()
+    problem.add_constraint(
+        ArrayFunction(lambda x: x - 5.0, name="h", jac=lambda x: array([[1.0]])),
+        constraint_type=ArrayFunction.ConstraintType.EQ,
+    )
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("L_BFGS_B").execute(
+            problem,
+            settings=L_BFGS_B_Settings(relax_integer_variables=True, max_iter=1),
+        )
+
+    assert "relaxed to float ones" not in caplog.text
+
+
+def _raise_value_error(space: DesignSpace) -> NoReturn:
+    """Raise a ValueError, as a transformation that cannot be built.
+
+    Args:
+        space: The space the transformation is built on.
+
+    Raises:
+        ValueError: Always.
+    """
+    msg = "The transformation cannot be built."
+    raise ValueError(msg)
+
+
+def test_unsuitability_before_a_transformation_error(snapshot) -> None:
+    """Check that the unsuitability comes before an error of the transformation.
+
+    L-BFGS-B handles no equality constraints.
+    """
+    problem = Power2()
+    with assert_exception(ValueError, snapshot) as exc_info:
+        _create_driver([_raise_value_error], "L_BFGS_B").execute(
+            problem, settings=L_BFGS_B_Settings(max_iter=1)
+        )
+
+    assert str(exc_info.value.__cause__) == "The transformation cannot be built."
+
+
+class _FailingWorkingSpaceTransformation(SpaceIdentity):
+    """A transformation that cannot build its working space."""
+
+    def _create_working_space(self) -> DesignSpace:
+        msg = "The working space cannot be built."
+        raise ValueError(msg)
+
+
+@pytest.mark.parametrize(
+    "failing_factory",
+    [_raise_value_error, _FailingWorkingSpaceTransformation],
+    ids=["transformation not built", "working space not built"],
+)
+def test_unhandled_kind_before_a_transformation_error(
+    failing_factory, monkeypatch, snapshot
+) -> None:
+    """Check that the relaxation hint comes before an error of the transformations.
+
+    The transformation cannot be built,
+    or a composition cannot build the working space of its last transformation,
+    on demand,
+    so the suitability check reads the relaxation settings,
+    and SLSQP handles no integer variables.
+    The driver does not override its factories,
+    so the settings decide.
+    """
+    get_default_factories = base_driver_library.get_default_transformation_factories
+    monkeypatch.setattr(
+        base_driver_library,
+        "get_default_transformation_factories",
+        lambda *args, **kwargs: [
+            *get_default_factories(*args, **kwargs),
+            failing_factory,
+        ],
+    )
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("SLSQP").execute(
+            _create_integer_problem(), settings=SLSQP_Settings(max_iter=1)
+        )
+
+
+def test_hint_for_a_driver_with_its_own_factories(snapshot) -> None:
+    """Check that a driver with its own chain gives the hint too, caused by the build.
+
+    What its chain would have relaxed is unknown,
+    so the settings decide,
+    and the error of the build is shown as the cause.
+    """
+    with assert_exception(ValueError, snapshot) as exc_info:
+        _create_driver([SpaceRelaxation, _raise_value_error]).execute(
+            _create_integer_problem(),
+            settings=SLSQP_Settings(relax_integer_variables=False, max_iter=1),
+        )
+
+    assert str(exc_info.value.__cause__) == "The transformation cannot be built."
+
+
+def test_check_variable_handling_before_a_problem_error(snapshot) -> None:
+    """Check that a driver without a working problem checks its variables first."""
+    calls = []
+
+    class Driver(ScipyOpt):
+        _iterates_on_working_problem: ClassVar[bool] = False
+
+        def _check_variable_handling(self, input_space) -> None:
+            calls.append(input_space)
+
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = ArrayFunction(lambda x: array([0.0]), name="f")
+    with assert_exception(ValueError, snapshot):
+        Driver("SLSQP").execute(problem, settings=SLSQP_Settings(max_iter=1))
+
+    assert calls == [problem.input_space]
+
+
+class _FrozenRelaxation(SpaceRelaxation):
+    """A relaxation reporting its relaxed names as a frozen set."""
+
+    def get_relaxed_names(self, working_names=()):
+        return frozenset(super().get_relaxed_names(working_names))
+
+
+def test_database_relaxed_names_are_a_copy() -> None:
+    """Check that the database owns the set of relaxed names, not the chain."""
+    problem = _create_integer_problem()
+    _create_driver([_FrozenRelaxation]).execute(
+        problem, settings=SLSQP_Settings(relax_integer_variables=True, max_iter=1)
+    )
+    database = problem.database
+    assert database.relaxed_variable_names == {"x"}
+    assert type(database.relaxed_variable_names) is set
+    database.clear()
+    assert not database.relaxed_variable_names
+
+
+def test_relaxation_hint_before_another_unsuitability(snapshot) -> None:
+    """Check that the relaxation hint comes before the generic unsuitability.
+
+    L-BFGS-B handles neither integer variables nor equality constraints.
+    """
+    problem = _create_integer_problem()
+    problem.add_constraint(
+        ArrayFunction(lambda x: x - 1.0, name="h", jac=lambda x: array([[1.0]])),
+        constraint_type=ArrayFunction.ConstraintType.EQ,
+    )
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("L_BFGS_B").execute(problem, settings=L_BFGS_B_Settings(max_iter=1))
+
+
+class _WrongRenamingTransformation(_RenamingTransformation):
+    """A renaming transformation not carrying the relaxed names back."""
+
+    def get_relaxed_names(self, working_names=()):
+        return set(working_names)
+
+
+def test_relaxed_names_not_carried_back(snapshot) -> None:
+    """Check that relaxed names that are not names of the user's space are refused."""
+    with assert_exception(ValueError, snapshot):
+        _create_driver([_WrongRenamingTransformation, SpaceRelaxation]).execute(
+            _create_integer_problem(),
+            settings=SLSQP_Settings(relax_integer_variables=True, max_iter=1),
+        )
+
+
+@pytest.mark.parametrize(
+    "factories",
+    [
+        [SpaceNormalization, SpaceRelaxation],
+        [_RenamingTransformation, SpaceRelaxation],
+        [lambda space: SpaceComposition(space, SpaceRelaxation)],
+    ],
+    ids=["normalization-relaxation", "renaming-relaxation", "nested"],
+)
+@_RELAX_INTEGER_VARIABLES
+def test_relaxed_variable_names(factories, relax_integer_variables) -> None:
+    """Check the names of the variables the working transformation relaxes.
+
+    They are the names of the user's space,
+    whatever the order of the chain,
+    and the chain is checked rather than the relaxation setting.
+    """
+    problem = _create_integer_problem()
+    _create_driver(factories).execute(
+        problem,
+        settings=SLSQP_Settings(
+            relax_integer_variables=relax_integer_variables, max_iter=1
+        ),
+    )
+
+    assert problem.database.relaxed_variable_names == {"x"}
+
+
+@_RELAX_INTEGER_VARIABLES
+def test_relaxation_warning(caplog, relax_integer_variables) -> None:
+    """Check that a warning is logged when the chain relaxes, whatever the setting."""
+    _create_driver([SpaceRelaxation]).execute(
+        _create_integer_problem(),
+        settings=SLSQP_Settings(
+            relax_integer_variables=relax_integer_variables, max_iter=1
+        ),
+    )
+
+    assert (
+        "Running an algorithm that does not handle integer variables; "
+        "they are relaxed to float ones."
+    ) in caplog.text
+
+
+def test_default_transformation_factories_without_working_problem() -> None:
+    """Check that a driver iterating on no working problem asks for no factory."""
+
+    class Driver(ScipyOpt):
+        _iterates_on_working_problem: ClassVar[bool] = False
+
+    problem = Power2()
+    driver = Driver("SLSQP")
+    with mock.patch.object(
+        driver, "_get_default_transformation_factories"
+    ) as mock_get_default_transformation_factories:
+        driver.execute(problem, settings=SLSQP_Settings(max_iter=1))
+
+    mock_get_default_transformation_factories.assert_not_called()

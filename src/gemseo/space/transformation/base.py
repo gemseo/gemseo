@@ -29,6 +29,8 @@ from gemseo.space.variable.numeric import BaseNumericVariable
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.core.function.array_function import ArrayFunction
     from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import NumberArray
@@ -245,6 +247,58 @@ class BaseSpaceTransformation(
             The projected value, in the original domain.
         """
         return value
+
+    def get_relaxed_names(self, working_names: Iterable[str] = ()) -> set[str]:
+        """Return the names of the original variables whose domain is relaxed.
+
+        The backward map of a transformation relaxing the domain
+        may hand over a value outside the domain the original space declares,
+        e.g. `3.4` for an integer variable;
+        such a variable is said to be relaxed.
+        A transformation built after this one may relax variables too,
+        which are variables of the working space of this one;
+        their names are passed on to this one,
+        which carries them back to its original space,
+        so that a composition can be asked whatever the order
+        and the renaming of its transformations.
+
+        By default,
+        a transformation relaxes no variable
+        and gives each working variable the name of an original one,
+        so a relaxed working variable is the relaxed original variable of the same name.
+        A transformation renaming its variables or adding new ones
+        overrides this method,
+        e.g. one encoding a variable into others,
+        whose backward map decodes a value into the domain of the original variable,
+        which is then not relaxed,
+        and which a driver accepts
+        even when its algorithm does not handle the kind of that variable,
+        since the variable is not in the working space the algorithm iterates on;
+        the default refuses a working name that is not an original one,
+        rather than silently dropping a relaxed variable.
+
+        Args:
+            working_names: The names of the variables of the working space
+                whose domain is relaxed by the transformations built after this one.
+
+        Returns:
+            The names of the variables of the original space whose domain is relaxed.
+
+        Raises:
+            ValueError: When a working name is not the name of an original variable.
+        """
+        names = set(working_names)
+        unknown_names = names.difference(self._original_space.variables)
+        if unknown_names:
+            msg = (
+                f"{type(self).__name__} cannot carry the relaxed variables "
+                f"{', '.join(sorted(unknown_names))} back to its original space; "
+                "a transformation renaming its variables or adding new ones "
+                "must override get_relaxed_names."
+            )
+            raise ValueError(msg)
+
+        return names
 
     def create_constraints(
         self, working_space: BaseVariableSpace

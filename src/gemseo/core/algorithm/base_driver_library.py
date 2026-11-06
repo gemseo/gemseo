@@ -71,8 +71,9 @@ from gemseo.core.problem.termination_criterion import MaxIterReachedException
 from gemseo.core.problem.termination_criterion import MaxTimeReached
 from gemseo.core.problem.termination_criterion import TerminationCriterion
 from gemseo.enum._variable_type import VariableType
-from gemseo.space.transformation._working import create_working_transformation
+from gemseo.space.transformation._working import get_default_transformation_factories
 from gemseo.space.transformation._working import project_onto_declared_domain
+from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.util._workflow_observer.injector import WorkflowObserverMeta
 from gemseo.util.constant import _enable_progress_bar
 from gemseo.util.derivative.approximation_mode import ApproximationMode
@@ -84,11 +85,15 @@ from gemseo.util.string import _convert_camel_case_to_lower_case_words
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Set as AbstractSet
+
     from gemseo.core.algorithm._progress_bar.base import BaseProgressBar
     from gemseo.core.algorithm.progress_bar_data.factory import ProgressBarDataName
     from gemseo.optimization.problem import OptimizationProblem
     from gemseo.optimization.result import OptimizationResult
     from gemseo.space.base import BaseVariableSpace
+    from gemseo.space.design import DesignSpace
     from gemseo.space.transformation.base import BaseSpaceTransformation
 
 DriverSettingType = (
@@ -169,10 +174,19 @@ class BaseDriverLibrary(
     __start_time: float
     """The time at which the execution begins."""
 
+    __transformed_kinds: frozenset[VariableType] | None
+    """The kinds of variables the working transformation of the run takes care of.
+
+    These are the kinds of the variables it relaxes or encodes into other ones.
+    It is `None` when there is no working transformation to read them from,
+    and the relaxation settings are read instead.
+    """
+
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self._progress_bar = None
         self.__start_time = 0.0
+        self.__transformed_kinds = None
 
     @classmethod
     def _get_unsuitability_reason(
@@ -220,17 +234,35 @@ class BaseDriverLibrary(
         if self._settings is None:
             return description
 
-        # A relaxed kind is handled through the relaxation,
-        # and `_check_variable_handling` has already warned about it.
+        # A kind the working transformation relaxes or encodes is handled.
+        # Without a transformation, e.g. for a meta-driver,
+        # the relaxation settings decide instead,
+        # and the catalog and categorical kinds are not handled.
+        transformed_kinds = self.__transformed_kinds
+        if transformed_kinds is None:
+            relax_integer_variables = self._settings.relax_integer_variables
+            relax_discrete_variables = self._settings.relax_discrete_variables
+            encode_categorical = False
+            encode_catalog = False
+        else:
+            relax_integer_variables = VariableType.INTEGER in transformed_kinds
+            relax_discrete_variables = VariableType.DISCRETE in transformed_kinds
+            encode_categorical = VariableType.CATEGORICAL in transformed_kinds
+            encode_catalog = VariableType.CATALOG in transformed_kinds
+
         return dataclasses.replace(
             description,
             handle_integer_variables=(
-                description.handle_integer_variables
-                or self._settings.relax_integer_variables
+                description.handle_integer_variables or relax_integer_variables
             ),
             handle_discrete_variables=(
-                description.handle_discrete_variables
-                or self._settings.relax_discrete_variables
+                description.handle_discrete_variables or relax_discrete_variables
+            ),
+            handle_categorical_variables=(
+                description.handle_categorical_variables or encode_categorical
+            ),
+            handle_catalog_variables=(
+                description.handle_catalog_variables or encode_catalog
             ),
         )
 
@@ -494,127 +526,96 @@ class BaseDriverLibrary(
         log.dedent()
         logger.info("%s", log)
 
-    def _check_variable_handling(
-        self,
-        input_space: BaseVariableSpace,
-    ) -> None:
-        """Check if the algo handles the non-continuous variables.
+    def __check_categorical_kinds(self, space: BaseVariableSpace) -> None:
+        """Check that the algo handles the catalog and categorical variables of a space.
 
-        The user may relax the integer and discrete variables
-        the algorithm does not handle,
-        in this case a warning is logged.
+        A catalog variable is a categorical one
+        and no setting relaxes these variables.
 
         Args:
-            input_space: The input space of the problem.
+            space: The space to check,
+                e.g. the input space of the problem
+                or the working space of the algorithm.
 
         Raises:
             ValueError: If the algo does not handle catalog variables
-                and the input space includes at least one catalog variable,
-                or if the corresponding relaxation setting is set to `False`
-                and the algo does not handle integer (resp. discrete) variables
-                and the input space includes at least one integer (resp. discrete)
-                variable,
+                and the space includes at least one catalog variable,
                 or if the algo does not handle categorical variables
-                and the input space includes at least one categorical variable.
+                and the space includes at least one categorical variable.
         """
-        self._check_catalog_variables(input_space)
-        variables = input_space.variables
+        self._check_catalog_variables(space)
         if (
-            variables.has_variables_of_type(VariableType.CATEGORICAL)
+            space.variables.has_variables_of_type(VariableType.CATEGORICAL)
             and not self.ALGORITHM_INFOS[self._algo_name].handle_categorical_variables
         ):
             # A categorical variable has no relaxation.
-            msg = (
-                f"Algorithm {self._algo_name} is not adapted to the problem, "
-                "it does not handle categorical variables.\n"
-                "Use an algorithm handling them, e.g. a DOE algorithm."
+            msg = self.__create_unhandled_kind_message(
+                VariableType.CATEGORICAL,
+                ".\nUse an algorithm handling them, e.g. a DOE algorithm.",
             )
             raise ValueError(msg)
 
-        self.__check_kind_handling(
-            variables.has_variables_of_type(VariableType.INTEGER),
-            self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables,
-            self._settings.relax_integer_variables,
-            VariableType.INTEGER,
-        )
-        self.__check_kind_handling(
-            variables.has_variables_of_type(VariableType.DISCRETE),
-            self.ALGORITHM_INFOS[self._algo_name].handle_discrete_variables,
-            self._settings.relax_discrete_variables,
-            VariableType.DISCRETE,
-        )
-
     def _check_catalog_variables(self, input_space: BaseVariableSpace) -> None:
-        """Check that the algo handles the catalog variables of the input space.
+        """Check that the algo handles the catalog variables of a space.
 
         No setting relaxes a catalog variable.
 
         Args:
-            input_space: The input space of the problem.
+            input_space: The space to check.
 
         Raises:
             ValueError: If the algo does not handle catalog variables
-                and the input space includes at least one catalog variable.
+                and the space includes at least one catalog variable.
         """
         if (
             input_space.variables.has_variables_of_type(VariableType.CATALOG)
             and not self.ALGORITHM_INFOS[self._algo_name].handle_catalog_variables
         ):
             # A catalog variable has no relaxation.
-            msg = (
-                f"Algorithm {self._algo_name} is not adapted to the problem, "
-                "it does not handle catalog variables.\n"
-                "Use an algorithm handling them; no GEMSEO driver does yet."
+            msg = self.__create_unhandled_kind_message(
+                VariableType.CATALOG,
+                ".\nUse an algorithm handling them; no GEMSEO driver does yet.",
             )
             raise ValueError(msg)
 
-    def __check_kind_handling(
+    def _check_variable_handling(
         self,
-        has_variables_of_kind: bool,
-        handles_kind: bool,
-        relax: bool,
-        kind: str,
+        input_space: BaseVariableSpace,
     ) -> None:
-        """Check if the algo handles one kind of variable.
+        """Check if the algo handles the variables of the input space.
 
-        The user may relax the variables of this kind the algorithm does not handle,
+        This method is called only for a driver
+        iterating on the problem the user built,
+        e.g. one handing sub-problems to sub-drivers,
+        which relax the variables according to their own settings,
+        before the run.
+        A driver iterating on a working problem does not call it:
+        the variables of its working space are checked instead,
+        once its working transformation is built,
+        so overriding this method has no effect on such a driver.
+        The user may relax the variables the algorithm does not handle,
         in this case a warning is logged.
 
         Args:
-            has_variables_of_kind: Whether the input space has variables of this kind.
-            handles_kind: Whether the algorithm handles variables of this kind.
-            relax: Whether to relax the variables of this kind.
-            kind: The kind of variable, either `"integer"` or `"discrete"`.
+            input_space: The input space of the problem.
 
         Raises:
-            ValueError: If `relax` is set to `False` and
-                the algo does not handle variables of this kind and the
-                input space includes at least one variable of this kind.
+            ValueError: If the algo does not handle catalog (resp. categorical)
+                variables and the input space includes at least one catalog
+                (resp. categorical) variable,
+                or if the corresponding relaxation setting is set to `False`
+                and the algo does not handle integer (resp. discrete) variables
+                and the input space includes at least one integer (resp. discrete)
+                variable.
         """
-        if not has_variables_of_kind or handles_kind:
-            return
+        self.__check_categorical_kinds(input_space)
+        self.__check_relaxation_settings(input_space)
+        variables = input_space.variables
+        for kind in self.__get_unhandled_kinds():
+            if not variables.has_variables_of_type(kind):
+                continue
 
-        setting_name = f"relax_{kind}_variables"
-        if not relax:
-            # Neither the algorithm nor a relaxation takes care of the domain,
-            # so the functions would receive values outside of it:
-            # a discrete value off its choices,
-            # or a non-integral integer value.
-            msg = (
-                f"Algorithm {self._algo_name} is not adapted to the problem, "
-                f"it does not handle {kind} variables.\n"
-                f"Set '{setting_name}' to 'True' to relax them to float ones, "
-                "or use an algorithm handling them."
-            )
-            raise ValueError(msg)
-
-        if self._iterates_on_working_problem:
-            logger.warning(
-                "Running an algorithm that does not handle "
-                "%s variables; they are relaxed to float ones.",
-                kind,
-            )
-        else:
+            # The setting of this kind is `True`, see the check above.
             # An algorithm iterating on no working problem
             # applies no relaxation itself:
             # it passes the variables on as declared,
@@ -626,6 +627,84 @@ class BaseDriverLibrary(
                 self._algo_name,
                 kind,
             )
+
+    def __check_relaxation_settings(self, input_space: BaseVariableSpace) -> None:
+        """Check that the settings relax the kinds of variables the algorithm needs.
+
+        The settings alone decide here, whatever the transformations of the run.
+        It is the check of a driver without a working problem,
+        and of a run whose working transformation cannot be built,
+        so that the relaxation hint still comes first.
+
+        Args:
+            input_space: The input space of the problem.
+
+        Raises:
+            ValueError: If the input space includes at least one variable
+                of a kind the algorithm does not handle
+                and the corresponding relaxation setting is set to `False`.
+        """
+        variables = input_space.variables
+        for kind in self.__get_unhandled_kinds():
+            if variables.has_variables_of_type(
+                kind
+            ) and not self.__get_relaxation_setting(kind):
+                raise ValueError(self.__create_unhandled_kind_message(kind))
+
+    def __get_unhandled_kinds(self) -> tuple[VariableType, ...]:
+        """Return the kinds of variables the algorithm does not handle natively.
+
+        Returns:
+            The kinds of variables the algorithm does not handle natively.
+        """
+        description = self.ALGORITHM_INFOS[self._algo_name]
+        return tuple(
+            kind
+            for kind, handles_kind in (
+                (VariableType.INTEGER, description.handle_integer_variables),
+                (VariableType.DISCRETE, description.handle_discrete_variables),
+            )
+            if not handles_kind
+        )
+
+    def __get_relaxation_setting(self, kind: VariableType) -> bool:
+        """Return the setting relaxing a kind of variables.
+
+        Args:
+            kind: The kind of variables.
+
+        Returns:
+            Whether the variables of this kind are relaxed.
+        """
+        return getattr(self._settings, f"relax_{kind}_variables")
+
+    def __create_unhandled_kind_message(
+        self, kind: VariableType, end: str | None = None
+    ) -> str:
+        """Create the message of an algorithm not handling a kind of variables.
+
+        Args:
+            kind: The kind of variables.
+            end: The end of the message,
+                following "it does not handle <kind> variables".
+                If `None`,
+                the relaxation setting is the reason why the variables are not relaxed,
+                so the message tells to change it.
+
+        Returns:
+            The message.
+        """
+        if end is None:
+            end = (
+                ".\n"
+                f"Set 'relax_{kind}_variables' to 'True' to relax them to float ones, "
+                "or use an algorithm handling them."
+            )
+
+        return (
+            f"Algorithm {self._algo_name} is not adapted to the problem, "
+            f"it does not handle {kind} variables{end}"
+        )
 
     @property
     def _is_solving_optimization_problem(self) -> bool:
@@ -680,6 +759,7 @@ class BaseDriverLibrary(
         # so a pickle taken after the run would carry that whole graph.
         self._original_problem = None
         self._transformation = None
+        self.__transformed_kinds = None
 
     def _attach_criteria(self, problem: EvaluationProblem[_SpaceT]) -> None:
         """Attach the termination criteria to the problem the user built.
@@ -740,8 +820,10 @@ class BaseDriverLibrary(
         Raises:
             ValueError: If there is no function in the problem.
         """
-        solve_optimization_problem = self.__prepare_run(problem, settings)
-        problem = self.__build_working_problem(problem)
+        solve_optimization_problem, transformation, relaxed_names = self.__prepare_run(
+            problem, settings
+        )
+        problem = self.__build_working_problem(problem, transformation, relaxed_names)
         self.__log_problem(solve_optimization_problem)
         with self.__record_iterations(problem):
             result = self.__run_algorithm(problem, solve_optimization_problem)
@@ -761,7 +843,7 @@ class BaseDriverLibrary(
         self,
         problem: EvaluationProblem[_SpaceT],
         settings: BaseDriverSettings | None,
-    ) -> bool:
+    ) -> tuple[bool, SpaceComposition, set[str]]:
         """Validate the problem, build the settings of the run and apply them.
 
         Args:
@@ -770,7 +852,9 @@ class BaseDriverLibrary(
                 or `None` to use the default ones.
 
         Returns:
-            Whether the algorithm solves an optimization problem.
+            Whether the algorithm solves an optimization problem,
+            the map from the coordinates the user declared to the working ones,
+            and the names of the variables it relaxes.
 
         Raises:
             ValueError: If there is no function in the problem.
@@ -783,11 +867,58 @@ class BaseDriverLibrary(
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class, settings_model=settings
         )
-        # The variable-handling message, with its
+        # The variable-handling messages, with their
         # "Set 'relax_..._variables' to 'True'" hint,
-        # must be raised before the generic unsuitability message.
-        self._check_variable_handling(problem.input_space)
+        # must be raised before the generic unsuitability message,
+        # and before the settings are applied to the problem.
+        # The problem is checked before a transformation is built on its space,
+        # so that an inconsistent space gives its own message,
+        # and the working space is built here,
+        # the composition building the one of its last transformation on demand.
+        self.__transformed_kinds = None
+        try:
+            problem.check()
+            transformation = self.__create_working_transformation(problem)
+            transformation.working_space  # noqa: B018
+        except Exception as error:  # noqa: BLE001
+            check_error = error
+        else:
+            check_error = None
+
+        if check_error is not None:
+            # A problem that is not ready, e.g. an empty input space,
+            # or a transformation that cannot be built,
+            # e.g. a normalization of a space that has no bounds to normalize
+            # against, must not hide that the algorithm is not suited anyway,
+            # nor the relaxation hint, which comes first.
+            # What the transformations would have relaxed or encoded is unknown,
+            # so the settings decide, whatever the driver,
+            # and the error of the build is chained to the raised one,
+            # since a hint may be misleading
+            # for a chain relaxing variables whatever the settings.
+            try:
+                if self._iterates_on_working_problem:
+                    self.__check_categorical_kinds(problem.input_space)
+                    self.__check_relaxation_settings(problem.input_space)
+                else:
+                    self._check_variable_handling(problem.input_space)
+
+                self._check_algorithm(problem)
+            except ValueError as error:
+                raise error from check_error
+
+            raise check_error
+
+        relaxed_names = transformation.get_relaxed_names()
+        if self._iterates_on_working_problem:
+            self.__transformed_kinds = self.__check_working_space_handling(
+                problem.input_space, transformation, relaxed_names
+            )
+        else:
+            self._check_variable_handling(problem.input_space)
+
         self._check_algorithm(problem)
+        self.__log_relaxed_kinds(problem.input_space, relaxed_names)
         self.__warn_if_normalize_design_space_is_ignored()
 
         solve_optimization_problem = self._is_solving_optimization_problem
@@ -800,7 +931,7 @@ class BaseDriverLibrary(
         if enable_progress_bar is not None:
             self.enable_progress_bar = enable_progress_bar
 
-        return solve_optimization_problem
+        return solve_optimization_problem, transformation, relaxed_names
 
     def __warn_if_normalize_design_space_is_ignored(self) -> None:
         """Warn when `normalize_design_space` is explicitly set but has no effect.
@@ -829,53 +960,214 @@ class BaseDriverLibrary(
                 self._algo_name,
             )
 
-    def __build_working_problem(
+    def _get_default_transformation_factories(
         self, problem: EvaluationProblem[_SpaceT]
-    ) -> EvaluationProblem[_SpaceT]:
-        """Bind the functions of the problem and build the working one to iterate on.
+    ) -> list[Callable[[DesignSpace], BaseSpaceTransformation[DesignSpace]]]:
+        """Return the factories of the map from the user's coordinates to the working ones.
+
+        The working space is built by applying the transformations in order,
+        each one built on the working space of the transformation before it,
+        see [SpaceComposition][gemseo.space.transformation.composition.SpaceComposition].
+        By default,
+        the variables of a kind the algorithm does not handle are relaxed,
+        according to the settings of the run,
+        then the space is normalized,
+        according to the settings of the run too.
+
+        A driver changing the chain overrides this method,
+        either calling it to append, insert or replace a factory,
+        or returning its own chain,
+        and may read the settings of the run and the name of the algorithm
+        to make the chain depend on them.
+        It is called only when the algorithm iterates on a working problem.
 
         Args:
             problem: The problem the user built.
 
         Returns:
-            The working problem the algorithm iterates on,
-            which is the one the user built when the driver builds none.
-        """
-        problem.check()
-        # Base drivers have no 'vectorize' option,
-        # unlike certain specialized drivers, such as DOEs.
-        vectorize = getattr(self._settings, "vectorize", False)
-        normalize = (
-            self._settings.normalize_design_space and self._iterates_on_working_problem
-        )
+            The factories of the transformations,
+            from the original space to the working one,
+            e.g. a transformation class
+            or a `functools.partial` of it setting its other arguments.
+        """  # noqa: E501
         # A kind of variable the algorithm handles is left as declared:
         # the algorithm, and the functions of the problem,
         # such as a discipline whose grammar declares an integer,
         # expect a value of the domain the user declared, not a relaxed one.
-        description = self.ALGORITHM_INFOS[self._algo_name]
-        relax_integer = (
-            self._settings.relax_integer_variables
-            and self._iterates_on_working_problem
-            and not description.handle_integer_variables
+        unhandled_kinds = self.__get_unhandled_kinds()
+        return get_default_transformation_factories(
+            problem.input_space,
+            normalize=self._settings.normalize_design_space,
+            relax_integer=(
+                VariableType.INTEGER in unhandled_kinds
+                and self.__get_relaxation_setting(VariableType.INTEGER)
+            ),
+            relax_discrete=(
+                VariableType.DISCRETE in unhandled_kinds
+                and self.__get_relaxation_setting(VariableType.DISCRETE)
+            ),
         )
-        relax_discrete = (
-            self._settings.relax_discrete_variables
-            and self._iterates_on_working_problem
-            and not description.handle_discrete_variables
-        )
+
+    def __create_working_transformation(
+        self, problem: EvaluationProblem[_SpaceT]
+    ) -> SpaceComposition:
+        """Create the map from the coordinates the user declared to the working ones.
+
+        Args:
+            problem: The problem the user built.
+
+        Returns:
+            The map from the coordinates the user declared to the working ones.
+        """
+        if self._iterates_on_working_problem:
+            return SpaceComposition(
+                problem.input_space,
+                *self._get_default_transformation_factories(problem),
+            )
+
         # A driver iterating on the problem the user built
-        # applies neither coordinate transformation and gets an empty composition,
+        # applies no transformation and gets an empty composition,
         # which is the identity;
         # the composition is built whatever the case,
-        # so that a caller applying the backward map need not ask whether there is one.
-        transformation = create_working_transformation(
-            problem.input_space,
-            normalize=normalize,
-            relax_integer=relax_integer,
-            relax_discrete=relax_discrete,
+        # so that a caller applying the backward map
+        # need not ask whether there is one.
+        return SpaceComposition(problem.input_space)
+
+    def __check_working_space_handling(
+        self,
+        input_space: BaseVariableSpace,
+        transformation: SpaceComposition,
+        relaxed_names: AbstractSet[str],
+    ) -> frozenset[VariableType]:
+        """Check that the algorithm handles the variables of the working space.
+
+        The transformations are chosen by
+        [_get_default_transformation_factories][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary._get_default_transformation_factories],
+        which a driver may override,
+        so the variables are checked on the working space they lead to,
+        whatever the relaxation settings,
+        the transformations, their order,
+        and the variables they replace or rename.
+
+        Args:
+            input_space: The input space of the problem.
+            transformation: The working transformation.
+            relaxed_names: The names of the variables it relaxes.
+
+        Returns:
+            The kinds of the declared variables
+            the transformation relaxes or encodes into other ones.
+
+        Raises:
+            ValueError: When a variable of the working space
+                has a type the algorithm does not handle.
+        """  # noqa: E501
+        # A catalog or categorical variable has no relaxation,
+        # so one remaining in the working space is refused,
+        # whereas one encoded away is accepted, as below.
+        self.__check_categorical_kinds(transformation.working_space)
+        # A declared variable of a kind the algorithm does not handle
+        # is accepted when the transformation relaxes it,
+        # or when the working space has no variable of its name:
+        # the transformation then encodes it into other variables
+        # and its backward map decodes a value into the domain of the variable,
+        # see `BaseSpaceTransformation.get_relaxed_names`.
+        # Otherwise,
+        # its working variable may have another type,
+        # e.g. a normalized integer variable is a float one,
+        # but the algorithm still iterates on an image of an integer variable.
+        # A working variable of such a kind is refused whatever its name,
+        # since it is what the algorithm iterates on.
+        original_variables = input_space.variables
+        working_variables = transformation.working_space.variables
+        unhandled_kinds = self.__get_unhandled_kinds()
+        for kind in unhandled_kinds:
+            unrelaxed_names = [
+                name
+                for name, variable in original_variables.items()
+                if variable.type == kind
+                and name not in relaxed_names
+                and name in working_variables
+            ]
+            working_names = [
+                name
+                for name, variable in working_variables.items()
+                if variable.type == kind
+            ]
+            if not (unrelaxed_names or working_names):
+                continue
+
+            if unrelaxed_names and not self.__get_relaxation_setting(kind):
+                # The usual case: the user did not ask for a relaxation,
+                # so the message tells to.
+                msg = self.__create_unhandled_kind_message(kind)
+            elif unrelaxed_names:
+                # The settings ask for a relaxation the transformation
+                # does not apply.
+                msg = self.__create_unhandled_kind_message(
+                    kind,
+                    " and its working transformation leaves "
+                    f"{', '.join(unrelaxed_names)} unrelaxed.",
+                )
+            else:
+                msg = self.__create_unhandled_kind_message(
+                    kind,
+                    f" and its working space has the {kind} variables "
+                    f"{', '.join(working_names)}.",
+                )
+
+            raise ValueError(msg)
+
+        return frozenset(
+            variable.type
+            for name, variable in original_variables.items()
+            if name in relaxed_names or name not in working_variables
         )
-        # The composition may hold a transformation relaxing some of the
-        # variables to float ones; the database is told which, so
+
+    def __log_relaxed_kinds(
+        self, input_space: BaseVariableSpace, relaxed_names: AbstractSet[str]
+    ) -> None:
+        """Warn for each kind of variables the algorithm does not handle and relaxes.
+
+        It is called once every check has accepted the run,
+        so that the log reports only a relaxation that does run.
+
+        Args:
+            input_space: The input space of the problem.
+            relaxed_names: The names of the variables the transformation relaxes.
+        """
+        original_variables = input_space.variables
+        for kind in self.__get_unhandled_kinds():
+            if any(original_variables[name].type == kind for name in relaxed_names):
+                logger.warning(
+                    "Running an algorithm that does not handle "
+                    "%s variables; they are relaxed to float ones.",
+                    kind,
+                )
+
+    def __build_working_problem(
+        self,
+        problem: EvaluationProblem[_SpaceT],
+        transformation: SpaceComposition,
+        relaxed_names: AbstractSet[str],
+    ) -> EvaluationProblem[_SpaceT]:
+        """Bind the functions of the problem and build the working one to iterate on.
+
+        Args:
+            problem: The problem the user built.
+            transformation: The map from the coordinates the user declared
+                to the working ones.
+            relaxed_names: The names of the variables it relaxes.
+
+        Returns:
+            The working problem the algorithm iterates on,
+            which is the one the user built when the driver builds none.
+        """
+        # Base drivers have no 'vectorize' option,
+        # unlike certain specialized drivers, such as DOEs.
+        vectorize = getattr(self._settings, "vectorize", False)
+        # The transformation may relax some of the variables to float ones;
+        # the database is told which, so
         # `to_dataset()` can export them as float columns from this flag
         # rather than from the values it records, which may happen to be
         # integral even for a relaxed run.
@@ -883,14 +1175,10 @@ class BaseDriverLibrary(
         # the database may outlive this run, e.g. a second, non-relaxed,
         # one on the same problem, which relaxes nothing and must not keep
         # exporting the columns of the first run as float.
-        from gemseo.space.transformation.relaxation import SpaceRelaxation
-
-        relaxed_variable_names = set()
-        for sub_transformation in transformation:
-            if isinstance(sub_transformation, SpaceRelaxation):
-                relaxed_variable_names.update(sub_transformation.relaxed_names)
-
-        problem.database.relaxed_variable_names = relaxed_variable_names
+        # Set only once the run is accepted:
+        # a refused run evaluates nothing,
+        # so the names keep describing the evaluations of the previous runs.
+        problem.database.relaxed_variable_names = set(relaxed_names)
 
         # The problem binds its own functions to its own database and counters,
         # in the coordinates the user declared.
