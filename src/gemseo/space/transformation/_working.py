@@ -19,12 +19,11 @@ from __future__ import annotations
 from functools import partial
 from typing import TYPE_CHECKING
 
-from gemseo.space.transformation.composition import SpaceComposition
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from gemseo.space.base import BaseVariableSpace
+    from gemseo.space.design import DesignSpace
     from gemseo.space.transformation.base import BaseSpaceTransformation
     from gemseo.util.typing import NumberArray
 
@@ -40,7 +39,7 @@ def project_onto_declared_domain(
     [SpaceRelaxation][gemseo.space.transformation.relaxation.SpaceRelaxation].
     This projects it back,
     without building the working space of a
-    [working transformation][gemseo.space.transformation._working.create_working_transformation],
+    [working transformation][gemseo.space.transformation._working.get_default_transformation_factories],
     a copy of the space that the projection never reads.
 
     Args:
@@ -70,13 +69,13 @@ def project_onto_declared_domain(
     )
 
 
-def create_working_transformation(
+def get_default_transformation_factories(
     space: BaseVariableSpace,
     normalize: bool = False,
     relax_integer: bool = False,
     relax_discrete: bool = False,
-) -> SpaceComposition:
-    """Create the composition of coordinate transformations a driver asks for.
+) -> list[Callable[[DesignSpace], BaseSpaceTransformation[DesignSpace]]]:
+    """Return the factories of the coordinate transformations.
 
     The transformations are ordered from the original space to the working one:
     the relaxation first,
@@ -85,7 +84,7 @@ def create_working_transformation(
     so that the backward map denormalizes
     and hands the relaxed value over as it is.
     A space that is not a design space applies neither transformation,
-    which leaves an empty composition.
+    which leaves no factory.
 
     Args:
         space: The space the problem is defined on.
@@ -96,7 +95,9 @@ def create_working_transformation(
             to float ones.
 
     Returns:
-        The composition, possibly empty.
+        The factories, possibly none,
+        to be passed to a
+        [SpaceComposition][gemseo.space.transformation.composition.SpaceComposition].
 
     Raises:
         ValueError: When normalization is asked of a space that has no
@@ -119,16 +120,14 @@ def create_working_transformation(
             )
             raise ValueError(msg)
 
-        return SpaceComposition(space)
+        return []
 
-    transformation_factories: list[
-        Callable[[DesignSpace], BaseSpaceTransformation[DesignSpace]]
-    ] = []
+    factories: list[Callable[[DesignSpace], BaseSpaceTransformation[DesignSpace]]] = []
     variables = space.variables
     if (relax_integer and variables.has_variables_of_type(VariableType.INTEGER)) or (
         relax_discrete and variables.has_variables_of_type(VariableType.DISCRETE)
     ):
-        transformation_factories.append(
+        factories.append(
             partial(
                 SpaceRelaxation,
                 relax_integer=relax_integer,
@@ -140,6 +139,6 @@ def create_working_transformation(
         # The composition builds a transformation on the working space of the
         # one before it, so the normalization normalizes the relaxed space
         # when there is one.
-        transformation_factories.append(SpaceNormalization)
+        factories.append(SpaceNormalization)
 
-    return SpaceComposition(space, *transformation_factories)
+    return factories

@@ -35,8 +35,8 @@ from gemseo.optimization.augmented_lagrangian.settings.order_1 import (
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
-from gemseo.space.transformation._working import create_working_transformation
 from gemseo.util.global_configuration import GlobalConfiguration
+from tests.space.transformation._helpers import create_default_transformation
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -181,7 +181,7 @@ def test_the_store_holds_the_jacobians_of_the_algorithm() -> None:
     problem.add_observable(
         ArrayFunction(lambda x: 2.0 * x, name="f", jac=lambda x: array([[2.0]]))
     )
-    chain = create_working_transformation(design_space, normalize=True)
+    chain = create_default_transformation(design_space, normalize=True)
     problem.bind_functions()
     working_problem = problem.create_working_problem(chain)
 

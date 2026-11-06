@@ -38,12 +38,12 @@ from gemseo.core.problem.termination_criterion import DesvarIsNan
 from gemseo.core.problem.termination_criterion import FunctionIsNan
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.transformation._working import create_working_transformation
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
 from gemseo.util.testing.helper import assert_exception
+from tests.space.transformation._helpers import create_default_transformation
 
 
 @pytest.fixture
@@ -196,7 +196,7 @@ def test_jacobian_approximator_is_built_lazily(
         differentiation_method="finite_differences",
         differentiation_method_options={"step": 1e-7},
     )
-    transformation = create_working_transformation(design_space, normalize=True)
+    transformation = create_default_transformation(design_space, normalize=True)
 
     recorded.set_perturbation_transformation(transformation)
     recorded.set_perturbation_transformation(None)
@@ -253,7 +253,7 @@ def test_approximated_jacobian_with_no_design_space_and_a_transformation(
         differentiation_method="finite_differences",
         differentiation_method_options={"step": 1e-7},
     )
-    recorded.set_perturbation_transformation(create_working_transformation(space))
+    recorded.set_perturbation_transformation(create_default_transformation(space))
 
     assert_allclose(recorded.jac(array([1.0, 2.0])), array([2.0, 4.0]), rtol=1e-5)
 
@@ -693,7 +693,7 @@ def test_approximated_jacobian_with_a_transformation_can_be_pickled() -> None:
         differentiation_method_options={"step": 1e-7},
     )
     recorded.set_perturbation_transformation(
-        create_working_transformation(space, normalize=True)
+        create_default_transformation(space, normalize=True)
     )
     input_value = array([1.0, 2.0])
 

@@ -1,4 +1,13 @@
 # serializer version: 1
+# name: test_categorical_variable_left_in_working_space
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle categorical variables.
+  Use an algorithm handling them, e.g. a DOE algorithm.
+  '''
+# ---
+# name: test_check_variable_handling_before_a_problem_error
+  'The algorithm SLSQP is not adapted to the problem because the variable space is empty.'
+# ---
 # name: test_compute_doe_with_catalog_variable[False]
   '''
   Algorithm PYDOE_LHS is not adapted to the problem, it does not handle catalog variables.
@@ -11,8 +20,11 @@
   Use an algorithm handling them; no GEMSEO driver does yet.
   '''
 # ---
-# name: test_empty_design_space
+# name: test_empty_design_space[check]
   'The algorithm algo_name is not adapted to the problem because the variable space is empty.'
+# ---
+# name: test_empty_design_space[execute]
+  'The algorithm SLSQP is not adapted to the problem because the variable space is empty.'
 # ---
 # name: test_execute_with_catalog_variable[doe]
   '''
@@ -41,12 +53,81 @@
 # name: test_get_result_without_result_class
   'The driver library MyDriver cannot build a result; set its class attribute _result_class.'
 # ---
+# name: test_hint_for_a_driver_with_its_own_factories
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
 # name: test_no_functions
   'A driver requires a problem with at least one function.'
+# ---
+# name: test_no_relaxation_warning_for_a_refused_run
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_no_relaxation_warning_for_an_unsuitable_algorithm
+  'The algorithm L_BFGS_B is not adapted to the problem because it does not handle equality constraints.'
+# ---
+# name: test_normalized_integer_variable
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_refused_run_keeps_the_relaxed_variable_names
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working transformation leaves x unrelaxed.'
+# ---
+# name: test_relaxation_hint_before_another_unsuitability
+  '''
+  Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_relaxed_names_not_carried_back
+  'SpaceComposition cannot carry the relaxed variables w_x back to its original space; a transformation renaming its variables or adding new ones must override get_relaxed_names.'
 # ---
 # name: test_reset_releases_the_state_of_a_run_that_raises
   'The objective cannot be evaluated.'
 # ---
 # name: test_the_hooks_of_a_run_that_raises_are_released
   'The objective cannot be evaluated.'
+# ---
+# name: test_unhandled_kind_before_a_transformation_error[transformation not built]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_unhandled_kind_before_a_transformation_error[working space not built]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_unsuitability_before_a_transformation_error
+  'The algorithm L_BFGS_B is not adapted to the problem because it does not handle equality constraints.'
+# ---
+# name: test_working_space_with_unhandled_variables[no transformation and no relaxation]
+  '''
+  Algorithm SLSQP is not adapted to the problem, it does not handle integer variables.
+  Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_working_space_with_unhandled_variables[no transformation]
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working transformation leaves x unrelaxed.'
+# ---
+# name: test_working_space_with_unhandled_variables[real variable turned into an integer one]
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working space has the integer variables x.'
+# ---
+# name: test_working_space_with_unhandled_variables[relaxed variable turned back into an integer one]
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working space has the integer variables x.'
+# ---
+# name: test_working_space_with_unhandled_variables[renaming]
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working space has the integer variables w_x.'
+# ---
+# name: test_working_space_with_unhandled_variables[undeclared variable]
+  'Algorithm SLSQP is not adapted to the problem, it does not handle integer variables and its working space has the integer variables n.'
 # ---

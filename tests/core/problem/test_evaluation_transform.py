@@ -38,11 +38,11 @@ from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.space.design import DesignSpace
-from gemseo.space.transformation._working import create_working_transformation
 from gemseo.space.transformation.base import BaseSpaceTransformation
 from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.space.transformation.normalization import SpaceNormalization
 from gemseo.util.testing.helper import assert_exception
+from tests.space.transformation._helpers import create_default_transformation
 from tests.space.transformation.test_transformation import FreezingTransformation
 
 if TYPE_CHECKING:
@@ -325,7 +325,7 @@ def test_transform_preserves_the_concrete_problem_class(transformation) -> None:
     from gemseo.problem.optimization.rosenbrock import Rosenbrock
 
     problem = Rosenbrock()
-    composition = create_working_transformation(problem.design_space, normalize=True)
+    composition = create_default_transformation(problem.design_space, normalize=True)
     problem.bind_functions()
 
     working_problem = problem.create_working_problem(composition)
@@ -962,7 +962,7 @@ def test_approximated_jacobian_perturbs_in_the_working_coordinates() -> None:
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(lambda x: x**2, name="f"))
     problem.differentiation_method = "finite_differences"
-    composition = create_working_transformation(space, normalize=True)
+    composition = create_default_transformation(space, normalize=True)
     problem.bind_functions()
 
     working_problem = problem.create_working_problem(composition)
@@ -1053,7 +1053,7 @@ def test_complex_step_perturbation_keeps_the_imaginary_part_through_the_backward
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(lambda x: array([x[0] ** 2]), name="f"))
     problem.differentiation_method = "complex_step"
-    composition = create_working_transformation(
+    composition = create_default_transformation(
         space, normalize=True, relax_integer=True
     )
     problem.bind_functions()
@@ -1137,7 +1137,7 @@ def test_forward_differences_flip_at_the_working_upper_bound() -> None:
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(compute_output, name="f"))
     problem.differentiation_method = "finite_differences"
-    composition = create_working_transformation(space, normalize=True)
+    composition = create_default_transformation(space, normalize=True)
     problem.bind_functions()
 
     working_problem = problem.create_working_problem(composition)
@@ -1192,7 +1192,7 @@ def test_transform_stops_before_an_integer_normalization_hides_a_nan() -> None:
     problem = OptimizationProblem(space)
     problem.objective = ArrayFunction(objective, name="f", jac=jac, dim=1)
     problem.bind_functions()
-    composition = create_working_transformation(space, normalize=True)
+    composition = create_default_transformation(space, normalize=True)
     working_problem = problem.create_working_problem(composition)
 
     with pytest.raises(DesvarIsNan):
@@ -1234,7 +1234,7 @@ def test_relaxed_integer_perturbed_like_a_float() -> None:
     problem = EvaluationProblem(space)
     problem.add_observable(ArrayFunction(compute_output, name="f"))
     problem.differentiation_method = "finite_differences"
-    composition = create_working_transformation(
+    composition = create_default_transformation(
         space, normalize=True, relax_integer=True
     )
     problem.bind_functions()

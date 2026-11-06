@@ -32,13 +32,14 @@ from numpy.testing import assert_equal
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
-from gemseo.space.transformation._working import create_working_transformation
+from gemseo.space.transformation._working import get_default_transformation_factories
 from gemseo.space.transformation.base import BaseSpaceTransformation
 from gemseo.space.transformation.composition import SpaceComposition
 from gemseo.space.transformation.identity import SpaceIdentity
 from gemseo.space.transformation.normalization import SpaceNormalization
 from gemseo.space.transformation.relaxation import SpaceRelaxation
 from gemseo.util.testing.helper import assert_exception
+from tests.space.transformation._helpers import create_default_transformation
 
 if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
@@ -185,25 +186,82 @@ def test_relaxation_working_space_current_value_mutation_is_isolated(
     assert design_space.get_current_value(["i"]).dtype == original_dtype
 
 
-def test_relaxation_names(mixed_space) -> None:
+@pytest.mark.parametrize(
+    ("relax_integer", "relax_discrete", "working_names", "expected"),
+    [
+        (True, True, (), {"i", "d"}),
+        (True, False, (), {"i"}),
+        (False, True, (), {"d"}),
+        (False, False, (), set()),
+        (True, False, {"d"}, {"i", "d"}),
+    ],
+    ids=[
+        "both relaxed",
+        "integer relaxed",
+        "discrete relaxed",
+        "none relaxed",
+        "integer relaxed and discrete passed on",
+    ],
+)
+def test_relaxation_names(
+    mixed_space, relax_integer, relax_discrete, working_names, expected
+) -> None:
     """Check the names of the variables a relaxation relaxes.
 
-    `relaxed_names` agrees with `working_space`: the names it lists are the
-    ones the working space carries over as float variables that were not
-    float to start with.
+    They are the ones the working space carries over as float variables
+    that were not float to start with,
+    plus the names relaxed by the transformations built after it.
     """
-    relaxation = SpaceRelaxation(mixed_space)
-    assert relaxation.relaxed_names == frozenset({"i", "d"})
-    relaxation = SpaceRelaxation(mixed_space, relax_discrete=False)
-    assert relaxation.relaxed_names == frozenset({"i"})
-    relaxation = SpaceRelaxation(mixed_space, relax_integer=False)
-    assert relaxation.relaxed_names == frozenset({"d"})
-    assert (
-        SpaceRelaxation(
-            mixed_space, relax_integer=False, relax_discrete=False
-        ).relaxed_names
-        == frozenset()
+    relaxation = SpaceRelaxation(
+        mixed_space, relax_integer=relax_integer, relax_discrete=relax_discrete
     )
+    assert relaxation.get_relaxed_names(working_names) == expected
+
+
+@pytest.mark.parametrize(
+    "create_transformation",
+    [SpaceNormalization, SpaceComposition],
+    ids=["normalization", "empty composition"],
+)
+@pytest.mark.parametrize(
+    ("working_names", "expected"),
+    [((), set()), ({"i"}, {"i"})],
+    ids=["no relaxed name", "relaxed name"],
+)
+def test_get_relaxed_names_of_a_transformation_relaxing_nothing(
+    design_space, create_transformation, working_names, expected
+) -> None:
+    """Check that a transformation relaxing nothing passes the relaxed names on."""
+    transformation = create_transformation(design_space)
+    assert transformation.get_relaxed_names(working_names) == expected
+
+
+@pytest.mark.parametrize(
+    "create_transformation",
+    [SpaceNormalization, SpaceComposition],
+    ids=["normalization", "empty composition"],
+)
+def test_get_relaxed_names_of_an_unknown_name(
+    design_space, create_transformation, snapshot
+) -> None:
+    """Check that a working name that is not an original one is refused."""
+    transformation = create_transformation(design_space)
+    with assert_exception(ValueError, snapshot):
+        transformation.get_relaxed_names({"i", "y"})
+
+
+@pytest.mark.parametrize(
+    "factories",
+    [
+        (SpaceRelaxation, SpaceNormalization),
+        (SpaceNormalization, SpaceRelaxation),
+        (lambda space: SpaceComposition(space, SpaceRelaxation),),
+    ],
+    ids=["relaxation-normalization", "normalization-relaxation", "nested"],
+)
+def test_get_relaxed_names_of_a_composition(mixed_space, factories) -> None:
+    """Check that a composition gives the relaxed names whatever the order."""
+    assert SpaceComposition(mixed_space, *factories).get_relaxed_names() == {"i", "d"}
 
 
 def test_relaxation_keeps_a_variable_without_a_value(design_space) -> None:
@@ -326,7 +384,7 @@ def test_create_for_relaxes_then_normalizes(design_space) -> None:
     so the integer variable is normalized too,
     and the backward map denormalizes without rounding.
     """
-    composition = create_working_transformation(
+    composition = create_default_transformation(
         design_space, normalize=True, relax_integer=True, relax_discrete=True
     )
 
@@ -343,18 +401,19 @@ def test_create_for_relaxes_then_normalizes(design_space) -> None:
     )
 
 
-def test_create_for_each_combination(design_space) -> None:
+@pytest.mark.parametrize(
+    ("settings", "expected_length"),
+    [
+        ({}, 0),
+        ({"normalize": True}, 1),
+        ({"relax_integer": True, "relax_discrete": True}, 1),
+    ],
+    ids=["nothing", "normalization", "relaxation"],
+)
+def test_create_for_each_combination(design_space, settings, expected_length) -> None:
     """Check that each transformation is applied only when the driver asks for it."""
-    assert len(create_working_transformation(design_space)) == 0
-    assert len(create_working_transformation(design_space, normalize=True)) == 1
-    assert (
-        len(
-            create_working_transformation(
-                design_space, relax_integer=True, relax_discrete=True
-            )
-        )
-        == 1
-    )
+    composition = create_default_transformation(design_space, **settings)
+    assert len(composition) == expected_length
 
 
 def test_create_for_skips_relaxation_with_nothing_to_relax() -> None:
@@ -362,7 +421,7 @@ def test_create_for_skips_relaxation_with_nothing_to_relax() -> None:
     space = DesignSpace()
     space.add_real_variable("x", lower_bound=0.0, upper_bound=10.0)
 
-    composition = create_working_transformation(
+    composition = create_default_transformation(
         space, normalize=True, relax_integer=True, relax_discrete=True
     )
 
@@ -376,7 +435,7 @@ def test_create_for_relaxes_a_discrete_variable() -> None:
     space = DesignSpace()
     space.add_discrete_variable("d", [1, 3, 8])
 
-    composition = create_working_transformation(space, relax_discrete=True)
+    composition = create_default_transformation(space, relax_discrete=True)
 
     assert [
         type(transformation).__name__ for transformation in composition.transformations
@@ -391,7 +450,7 @@ def test_create_for_relax_discrete_on_a_space_without_discrete_variables(
     `design_space` has an integer variable and no discrete one,
     so a request to relax the discrete variables alone finds nothing to relax.
     """
-    assert len(create_working_transformation(design_space, relax_discrete=True)) == 0
+    assert len(create_default_transformation(design_space, relax_discrete=True)) == 0
 
 
 def test_create_for_relax_integer_on_a_space_without_integer_variables() -> None:
@@ -403,7 +462,7 @@ def test_create_for_relax_integer_on_a_space_without_integer_variables() -> None
     space = DesignSpace()
     space.add_discrete_variable("d", [1, 3, 8])
 
-    assert len(create_working_transformation(space, relax_integer=True)) == 0
+    assert len(create_default_transformation(space, relax_integer=True)) == 0
 
 
 def test_create_for_a_non_design_space() -> None:
@@ -413,7 +472,7 @@ def test_create_for_a_non_design_space() -> None:
     """
     from gemseo.space.random import RandomSpace
 
-    assert len(create_working_transformation(RandomSpace())) == 0
+    assert get_default_transformation_factories(RandomSpace()) == []
 
 
 def test_create_for_a_non_design_space_with_normalization(snapshot) -> None:
@@ -421,7 +480,7 @@ def test_create_for_a_non_design_space_with_normalization(snapshot) -> None:
     from gemseo.space.random import RandomSpace
 
     with assert_exception(ValueError, snapshot):
-        create_working_transformation(RandomSpace(), normalize=True)
+        create_default_transformation(RandomSpace(), normalize=True)
 
 
 def test_normalization_jacobian(design_space) -> None:

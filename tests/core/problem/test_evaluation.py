@@ -35,11 +35,11 @@ from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
-from gemseo.space.transformation._working import create_working_transformation
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.util.testing.helper import assert_exception
+from tests.space.transformation._helpers import create_default_transformation
 
 
 def test_default(caplog):
@@ -295,7 +295,7 @@ def test_wrapper_original_is_transitive() -> None:
     raw_function = ArrayFunction(sum, name="sum")
     problem.add_observable(raw_function)
 
-    chain = create_working_transformation(design_space, normalize=True)
+    chain = create_default_transformation(design_space, normalize=True)
     problem.bind_functions()
     assert problem.observables[0].original is raw_function
 
