@@ -44,9 +44,11 @@ class _UnsuitabilityReason(StrEnum):
     NOT_LINEAR_OPERATOR = _linear_solver_template.format("a linear operator")
 
     # BaseOptimizationLibrary
+    NO_OBJECTIVE = "the problem has no objective"
     NON_LINEAR_PROBLEM = _optimizer_template.format("non-linear problems")
     INEQUALITY_CONSTRAINTS = _optimizer_template.format("inequality constraints")
     EQUALITY_CONSTRAINTS = _optimizer_template.format("equality constraints")
+    MULTIPLE_OBJECTIVES = _optimizer_template.format("multiple objectives")
 
     # PyDOE
     SMALL_DIMENSION = (

@@ -11,6 +11,9 @@
 # name: test_linear_algorithm_rejects_nonlinear_problem[MILP]
   'The algorithm MILP is not adapted to the problem because it does not handle non-linear problems.'
 # ---
+# name: test_multiple_objectives_not_handled
+  'The algorithm SLSQP is not adapted to the problem because it does not handle multiple objectives.'
+# ---
 # name: test_removal_redundant_settings[DUAL_ANNEALING_Settings-maxfun]
   '''
   1 validation error for DUAL_ANNEALING_Settings

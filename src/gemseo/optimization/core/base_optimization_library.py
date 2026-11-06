@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -277,6 +278,9 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         algorithm_description: OptimizationAlgorithmDescription,
         problem: OptimizationProblem,
     ) -> _UnsuitabilityReason:
+        if problem.objective is None:
+            return _UnsuitabilityReason.NO_OBJECTIVE
+
         reason = super()._get_unsuitability_reason(algorithm_description, problem)
         if reason:
             return reason
@@ -295,6 +299,14 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
 
         if not problem.is_linear and algorithm_description.for_linear_problems:
             return _UnsuitabilityReason.NON_LINEAR_PROBLEM
+
+        if not algorithm_description.handle_multiobjective:
+            # The dimension of the objective may be unknown
+            # before its first evaluation;
+            # the algorithm is not rejected in that case.
+            with contextlib.suppress(ValueError):
+                if not problem.is_mono_objective:
+                    return _UnsuitabilityReason.MULTIPLE_OBJECTIVES
 
         return reason
 

@@ -28,6 +28,7 @@ from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
 )
 from gemseo.optimization.factory import optimization_library_factory
+from gemseo.optimization.mnbi.mnbi import MNBI
 from gemseo.optimization.nlopt.settings.nlopt_cobyla_settings import (
     NLOPT_COBYLA_Settings,
 )
@@ -40,6 +41,7 @@ from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.optimization.scipy_milp.scipy_milp import ScipyMILP
+from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
@@ -70,17 +72,35 @@ def test_is_algorithm_suited() -> None:
     design_space = DesignSpace()
     design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, "f")
     assert BaseOptimizationLibrary.is_algorithm_suited(description, problem)
 
 
-def test_is_algorithm_suited_design_space() -> None:
-    """Check is_algorithm_suited with unhandled empty design space."""
+@pytest.mark.parametrize(
+    ("has_objective", "expected_reason"),
+    [
+        pytest.param(False, _UnsuitabilityReason.NO_OBJECTIVE, id="no-objective"),
+        pytest.param(
+            True, _UnsuitabilityReason.EMPTY_VARIABLE_SPACE, id="empty-design-space"
+        ),
+    ],
+)
+def test_is_algorithm_suited_no_objective_or_empty_design_space(
+    has_objective, expected_reason
+) -> None:
+    """Check is_algorithm_suited without objective or with an empty design space.
+
+    The absence of objective prevails over any other reason.
+    """
     description = OptimizationAlgorithmDescription("foo", "bar")
     problem = OptimizationProblem(DesignSpace())
+    if has_objective:
+        problem.objective = ArrayFunction(lambda x: x, "f")
+
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
-        == _UnsuitabilityReason.EMPTY_VARIABLE_SPACE
+        == expected_reason
     )
 
 
@@ -92,6 +112,7 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
     design_space = DesignSpace()
     design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, "f")
     problem.add_constraint(
         ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.EQ)
     )
@@ -110,6 +131,7 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
     design_space = DesignSpace()
     design_space.add_real_variable("x")
     problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, "f")
     problem.add_constraint(
         ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.INEQ)
     )
@@ -164,6 +186,35 @@ def test_linear_algorithm_rejects_nonlinear_problem(
         library_cls(algo_name).execute(Rosenbrock())
 
 
+def test_multiple_objectives_not_handled(snapshot) -> None:
+    """Check that an algorithm that does not handle multiple objectives raises."""
+    with assert_exception(ValueError, snapshot):
+        ScipyOpt("SLSQP").execute(BinhKorn())
+
+
+@pytest.mark.parametrize(
+    ("library_class", "algo_name", "expected_reason"),
+    [
+        pytest.param(
+            ScipyOpt,
+            "SLSQP",
+            _UnsuitabilityReason.MULTIPLE_OBJECTIVES,
+            id="SLSQP",
+        ),
+        pytest.param(MNBI, "MNBI", _UnsuitabilityReason.NO_REASON, id="MNBI"),
+    ],
+)
+def test_is_algorithm_suited_multiple_objectives(
+    library_class, algo_name, expected_reason
+) -> None:
+    """Check is_algorithm_suited with a multi-objective problem."""
+    description = library_class.ALGORITHM_INFOS[algo_name]
+    assert (
+        library_class._get_unsuitability_reason(description, BinhKorn())
+        == expected_reason
+    )
+
+
 @pytest.mark.parametrize("kind", ["integer", "discrete", "categorical"])
 @pytest.mark.parametrize("handles_kind", [False, True])
 def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
@@ -184,6 +235,7 @@ def test_is_algorithm_suited_variable_kind(kind, handles_kind) -> None:
         design_space.add_categorical_variable("x", ["a", "b"], value="a")
 
     problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x, "f")
     assert (
         BaseOptimizationLibrary.is_algorithm_suited(description, problem)
         is handles_kind

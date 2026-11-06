@@ -27,5 +27,5 @@
   'The class foo is not available; the available ones are: BiLevelScenarioResult and ScenarioResult.'
 # ---
 # name: test_no_objective
-  'Missing objective function in optimization problem.'
+  'The algorithm SLSQP is not adapted to the problem because the problem has no objective.'
 # ---
