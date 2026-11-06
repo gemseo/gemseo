@@ -231,6 +231,12 @@ def test_get_criteria(
         ([0.496535, 0.419187, 0.620707, 0.686311], "compute_quartile", (2,), {}),
         ([0.496535, 0.419187, 0.620707, 0.686311], "compute_percentile", (50,), {}),
         ([0.496535, 0.419187, 0.620707, 0.686311], "compute_median", (), {}),
+        (
+            [0.501483, 2.002467, 0.903869, 1.068773],
+            "compute_interquartile_range",
+            (),
+            {},
+        ),
         ([0.496535, 0.419187, 0.873166, 0.98483], "compute_moment", (1,), {}),
     ],
 )
@@ -254,6 +260,20 @@ def test_statistics(
     assert result_1.shape == (1,)
     assert result_2.shape == (1,)
     assert result_3.shape == (2,)
+
+
+def test_quartile_coefficient_of_dispersion(statistics) -> None:
+    """Check compute_quartile_coefficient_of_dispersion() for positive variables.
+
+    x_1 is fitted by U(a,b),
+    so its QCD is (b-a)/(2(a+b)),
+    while x_3[i] is fitted by an exponential distribution
+    with location g and scale s,
+    so its QCD is s*ln(3)/(2g+s*ln(16/3)).
+    """
+    result = statistics.compute_quartile_coefficient_of_dispersion()
+    assert_allclose(result["x_1"], [0.504983], atol=1e-6)
+    assert_allclose(result["x_3"], [0.611507, 0.646765], atol=1e-6)
 
 
 def test_compute_margin(statistics) -> None:

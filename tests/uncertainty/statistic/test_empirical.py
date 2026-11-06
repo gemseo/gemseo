@@ -153,6 +153,13 @@ def test_variables_x_1(x_1_statistics) -> None:
         ([5.5, -5.5, 5.5], "compute_quartile", (2,), {}),
         ([5.5, -5.5, 5.5], "compute_percentile", (50,), {}),
         ([5.5, -5.5, 5.5], "compute_median", (), {}),
+        ([4.5, 4.5, 4.5], "compute_interquartile_range", (), {}),
+        (
+            [0.409091, -0.409091, 0.409091],
+            "compute_quartile_coefficient_of_dispersion",
+            (),
+            {},
+        ),
         ([0.0, 0.0, 0.0], "compute_moment", (1,), {}),
     ],
 )
@@ -220,15 +227,24 @@ def test_compute_joint_probability(statistics, value, kwargs) -> None:
     assert isinstance(result_2, float)
 
 
-def test_variation_coefficient() -> None:
-    """Check compute_variation_coefficient()."""
+@pytest.mark.parametrize(
+    ("method_name", "expected"),
+    [
+        ("compute_variation_coefficient", 3),
+        ("compute_interquartile_range", 2.0),
+        ("compute_quartile_coefficient_of_dispersion", 0.5),
+    ],
+)
+def test_composite_statistics(method_name, expected) -> None:
+    """Check the statistics computed from other statistics."""
 
     class NewStatistics(BaseStatistics):
         compute_mean = lambda self: {"x": 2}  # noqa: E731
         compute_standard_deviation = lambda self: {"x": 6}  # noqa: E731
+        compute_quantile = lambda self, prob: {"x": 4 * prob}  # noqa: E731
 
     with concretize_classes(NewStatistics):
-        assert NewStatistics(Dataset()).compute_variation_coefficient() == {"x": 3}
+        assert getattr(NewStatistics(Dataset()), method_name)() == {"x": expected}
 
 
 def test_plot_boxplot(statistics, snapshot_matplotlib) -> None:
