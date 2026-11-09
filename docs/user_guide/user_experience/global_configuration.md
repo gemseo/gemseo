@@ -101,12 +101,26 @@ The `logging` option groups the settings of the GEMSEO loggers:
 level, message and date formats, log file and file mode.
 `logging.enable = False` disables the GEMSEO logs.
 
-These settings apply to the logger `gemseo`
-and to the loggers of its plugins, whose names start with `gemseo`.
-A plugin logger gets them only if it exists when they are applied.
-A plugin imported after `gemseo` gets them at the next change of `logging`.
+These settings apply to the logger `gemseo` and to the loggers of the GEMSEO plugins.
+
+??? note "Which loggers are configured"
+    The logger of a plugin is the one of the module named by its
+    [`gemseo_plugins` entry point][gemseo.core.base_factory.BaseFactory.plugin_entry_point],
+    usually its top-level package.
+    The logger of a plugin found in a directory of the `GEMSEO_PATH` environment variable
+    is the one of its top-level module or package.
+    A package that is neither declared by such an entry point
+    nor found in `GEMSEO_PATH`
+    is not configured:
+    configure its logger yourself.
+
+    GEMSEO removes the handlers of all these loggers.
+    Then,
+    it adds its own handlers,
+    unless `logging.enable` is `False`.
+
 By default,
-they leave the root logger and the loggers of other libraries alone.
+the settings leave the root logger and the other loggers alone.
 This follows the [Python recommendation for library logging](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
 To see the logs of your own code,
 configure your own loggers.

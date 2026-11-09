@@ -188,8 +188,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         sys_path.pop(0)
 
         # Import from the setuptools entry points.
-        for entry_point in entry_points(group=self.plugin_entry_point):
-            module_name = entry_point.value
+        for module_name in _get_plugin_module_names(self.plugin_entry_point):
             self.__import_modules_from(module_name)
             module_names += [module_name]
 
@@ -222,10 +221,9 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         for path in paths:
             sys.path.insert(0, path)
 
-        mod_names = []
-        for _, mod_name, _ in pkgutil.iter_modules(path=paths):
+        mod_names = list(_get_search_path_module_names(search_paths))
+        for mod_name in mod_names:
             self.__import_modules_from(mod_name)
-            mod_names += [mod_name]
 
         for _ in paths:
             sys.path.pop(0)
@@ -524,3 +522,36 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         return repr_html_wrapper.format(
             self.__pretty_table_representation.get_html_string()
         )
+
+
+def _get_plugin_module_names(group: str) -> tuple[str, ...]:
+    """Return the names of the modules declared by the plugin entry points.
+
+    The modules are not imported.
+
+    Args:
+        group: The name of the entry point group declaring the plugins.
+
+    Returns:
+        The names of the modules declared by the plugin entry points.
+    """
+    return tuple(entry_point.value for entry_point in entry_points(group=group))
+
+
+def _get_search_path_module_names(search_paths: str) -> tuple[str, ...]:
+    """Return the names of the top-level modules found in search paths.
+
+    The modules are not imported.
+
+    Args:
+        search_paths: The search paths separated by [os.pathsep][os.pathsep],
+            as in the environment variable `GEMSEO_PATH`.
+
+    Returns:
+        The names of the top-level modules found in the search paths.
+    """
+    if not search_paths:
+        return ()
+
+    paths = search_paths.split(os.pathsep)
+    return tuple(module.name for module in pkgutil.iter_modules(path=paths))

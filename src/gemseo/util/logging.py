@@ -21,14 +21,15 @@
 
 from __future__ import annotations
 
+import os
 import types
+from functools import cache
 from logging import WARNING
 from logging import FileHandler
 from logging import Formatter
 from logging import LogRecord
 from logging import StreamHandler
 from logging import getLogger
-from logging import root
 from sys import stderr
 from sys import stdout
 from typing import TYPE_CHECKING
@@ -39,6 +40,9 @@ from pydantic import Field
 from pydantic import PrivateAttr
 from pydantic import model_validator
 
+from gemseo.core.base_factory import BaseFactory
+from gemseo.core.base_factory import _get_plugin_module_names
+from gemseo.core.base_factory import _get_search_path_module_names
 from gemseo.util.constant import _logging_date_format
 from gemseo.util.constant import _logging_file_mode
 from gemseo.util.constant import _logging_file_path
@@ -130,11 +134,12 @@ Values can either be
     @model_validator(mode="after")
     def __validate(self) -> Self:
         """Create the logger."""
-        # Configure the loggers for GEMSEO and its plugins.
-        # Do not configure non-GEMSEO loggers unless asked for via the root logger.
-        gemseo_names = [
-            name for name in root.manager.loggerDict if _is_gemseo_logger(name)
-        ]
+        # Configure the loggers of GEMSEO and of its plugins, even if not yet imported.
+        # Do not configure other loggers unless asked for via the root logger.
+        gemseo_names = _get_logger_names(
+            BaseFactory.plugin_entry_point,
+            os.environ.get(BaseFactory._env_var_with_search_paths, ""),
+        )
         names = list(gemseo_names)
         if self.configure_root_logger:
             names.append("")
@@ -163,16 +168,37 @@ Values can either be
         return self
 
 
-def _is_gemseo_logger(name: str) -> bool:
-    """Check whether a name is the name of the GEMSEO logger or one of its plugins.
+@cache
+def _get_logger_names(group: str, search_paths: str) -> frozenset[str]:
+    """Return the names of the loggers of GEMSEO and of its plugins.
+
+    The logger of a plugin declared by an entry point
+    is the one of the module named by this entry point.
+    The logger of a plugin found in a search path
+    is the one of its top-level module.
+    A logger whose ancestor is one of these loggers is ignored,
+    so that its records are not emitted twice.
+    The modules are not imported
+    and the result is cached for each entry point group and search paths.
 
     Args:
-        name: The name.
+        group: The name of the entry point group declaring the plugins.
+        search_paths: The search paths of the plugins separated by
+            [os.pathsep][os.pathsep].
 
     Returns:
-        Whether the name is the name of the GEMSEO logger or one of its plugins.
+        The names of the loggers of GEMSEO and of its plugins.
     """
-    return name.startswith("gemseo") and "." not in name
+    names = {
+        "gemseo",
+        *_get_plugin_module_names(group),
+        *_get_search_path_module_names(search_paths),
+    }
+    return frozenset(
+        name
+        for name in names
+        if not any(name.startswith(f"{other}.") for other in names)
+    )
 
 
 def _configure_logger(
