@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-import os
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
@@ -57,6 +56,7 @@ if TYPE_CHECKING:
     from typing import Self
 
     from pydantic import ValidationInfo
+    from pydantic_settings import PydanticBaseSettingsSource
 
 
 def _apply_check_desvars_bounds(value: bool) -> None:
@@ -295,39 +295,70 @@ after execution.""",
             **data: The values of the fields.
 
         Raises:
-            ValueError: When the `fast` option is passed.
+            ValueError: When the `fast` option is passed,
+                with or without its prefix,
+                or when a keyword is not the name of an option.
         """  # noqa: D205 D212
-        # Only the constructor spells the option without the prefix;
-        # a prefix-free name coming from a dotenv file
-        # belongs to another tool and is ignored.
-        if "fast" in {name.lower() for name in data}:
+        # Only the constructor is strict: the environment and the dotenv file
+        # may hold keys of other tools, which stay ignored.
+        # The removed fast option is rejected with or without the prefix,
+        # whatever the case.
+        names = {name.lower() for name in data}
+        if names & {"fast", f"{self.model_config['env_prefix']}fast".lower()}:
             raise ValueError(_fast_removed_message)
+
+        # A keyword must be the exact name of an option:
+        # pydantic-settings 2.9 ignores `ENABLE_DISCIPLINE_CACHE=False`
+        # while 2.16 applies it, so only the exact names behave
+        # the same way with every supported version.
+        # The names starting with an underscore are the private parameters
+        # of `BaseSettings.__init__`, such as `_env_file`, and are kept.
+        unknown = {
+            name
+            for name in data
+            if name not in type(self).model_fields and not name.startswith("_")
+        }
+        if unknown:
+            msg = f"Unknown options of the global configuration: {sorted(unknown)}."
+            raise ValueError(msg)
 
         super().__init__(**data)
 
-    @model_validator(mode="before")
     @classmethod
-    def __reject_fast(cls, data: Any) -> Any:
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Reject the `fast` option, replaced by the fast mode methods.
 
         Args:
-            data: The input data.
+            settings_cls: The settings class.
+            init_settings: The source of the values passed to the constructor.
+            env_settings: The source of the environment variables.
+            dotenv_settings: The source of the dotenv file.
+            file_secret_settings: The source of the secret files.
 
         Returns:
-            The input data.
+            The sources, in their order of priority.
 
         Raises:
             ValueError: When the `fast` option is set
                 in the environment or in a dotenv file.
         """
-        # A dotenv file passes an unknown key with its prefix,
-        # whereas the environment source only reads the names of the fields.
+        # The raw names of the sources are read instead of the validated data:
+        # the dotenv source passes an unknown prefixed key
+        # with or without its prefix depending on the version of pydantic-settings,
+        # and an unprefixed key of the same name belongs to another tool.
         fast_name = f"{cls.model_config['env_prefix']}fast".lower()
-        names = [*data, *os.environ] if isinstance(data, dict) else list(os.environ)
-        if any(isinstance(name, str) and name.lower() == fast_name for name in names):
-            raise ValueError(_fast_removed_message)
+        for source in (env_settings, dotenv_settings):
+            if any(name.lower() == fast_name for name in source.env_vars):  # type: ignore[attr-defined]
+                raise ValueError(_fast_removed_message)
 
-        return data
+        return init_settings, env_settings, dotenv_settings, file_secret_settings
 
     @model_validator(mode="after")
     def __apply_fields(self, info: ValidationInfo) -> Self:

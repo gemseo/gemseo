@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import pytest
-from pydantic import ValidationError
 
 from gemseo import configuration
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
@@ -259,22 +258,42 @@ def test_fast_rejected_by_the_constructor_whatever_the_case(snapshot):
         GlobalConfiguration(FAST=True)
 
 
+@pytest.mark.parametrize("name", ["gemseo_fast", "GEMSEO_FAST"])
+def test_prefixed_fast_rejected_by_the_constructor(name, snapshot):
+    """Check that the removed fast option raises when passed with its prefix."""
+    with assert_exception(ValueError, snapshot):
+        GlobalConfiguration(**{name: True})
+
+
+def test_unknown_options_rejected_by_the_constructor(snapshot):
+    """Check that the keywords that are not the exact names of options raise."""
+    with assert_exception(ValueError, snapshot):
+        GlobalConfiguration(
+            foo=1, ENABLE_DISCIPLINE_CACHE=False, GEMSEO_ENABLE_DISCIPLINE_CACHE=False
+        )
+
+
+def test_private_init_parameter_accepted_by_the_constructor():
+    """Check that a private parameter of BaseSettings.__init__ is accepted."""
+    assert GlobalConfiguration(_env_file=None).enable_discipline_cache
+
+
 def test_fast_rejected_from_a_dotenv_file(tmp_wd, snapshot):
     """Check that the removed fast option raises when read from a dotenv file."""
     (tmp_wd / ".env").write_text("GEMSEO_FAST=True")
-    with assert_exception(ValidationError, snapshot):
+    with assert_exception(ValueError, snapshot):
         GlobalConfiguration()
 
 
 def test_fast_rejected_from_an_environment_variable(tmp_wd, monkeypatch, snapshot):
     """Check that the removed fast option raises when set in the environment.
 
-    The test runs in an empty working directory: `GlobalConfiguration` also reads
-    the `.env` file of the working directory, whose keys would otherwise appear in
-    the snapshotted message, e.g. the `UV_PYTHON` of the justfile's local `.env`.
+    The test runs in an empty working directory:
+    `GlobalConfiguration` also reads the `.env` file of the working directory,
+    which could hold the removed option too.
     """
     monkeypatch.setenv("GEMSEO_FAST", "True")
-    with assert_exception(ValidationError, snapshot):
+    with assert_exception(ValueError, snapshot):
         GlobalConfiguration()
 
 

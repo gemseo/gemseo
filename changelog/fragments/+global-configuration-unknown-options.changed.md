@@ -1,0 +1,1 @@
+The constructor of the global configuration raises an error naming the keywords that are not the names of its options, instead of ignoring them, e.g. `GEMSEO_FAST` or `GEMSEO_ENABLE_DISCIPLINE_CACHE`.
