@@ -18,16 +18,16 @@ from __future__ import annotations
 import os
 import sys
 import warnings
-from logging import root
 from pathlib import Path
 
 from gemseo import _configure_logger
+from gemseo.core.base_factory import BaseFactory
 from gemseo.util.constant import _logging_date_format
 from gemseo.util.constant import _logging_file_mode
 from gemseo.util.constant import _logging_file_path
 from gemseo.util.constant import _logging_level
 from gemseo.util.constant import _logging_message_format
-from gemseo.util.logging import _is_gemseo_logger
+from gemseo.util.logging import _get_logger_names
 
 _initial_cwd = Path.cwd()
 """The working directory captured at module import.
@@ -67,17 +67,19 @@ def reset_logging(gallery_conf, fname):
     # execution). The tee captures them for the gallery "Out:" block and
     # forwards them at debug level, keeping the console clean.
     stream = _WrapStdOut()
-    for name in root.manager.loggerDict:
-        if _is_gemseo_logger(name):
-            _configure_logger(
-                name,
-                _logging_level,
-                _logging_message_format,
-                _logging_date_format,
-                _logging_file_path,
-                _logging_file_mode,
-                stream,
-            )
+    for name in _get_logger_names(
+        BaseFactory.plugin_entry_point,
+        os.environ.get(BaseFactory._env_var_with_search_paths, ""),
+    ):
+        _configure_logger(
+            name,
+            _logging_level,
+            _logging_message_format,
+            _logging_date_format,
+            _logging_file_path,
+            _logging_file_mode,
+            stream,
+        )
     # Reapply the deprecation filters in case an example or another plugin
     # reset warnings.filters between examples.
     warnings.filterwarnings("ignore", category=DeprecationWarning)
