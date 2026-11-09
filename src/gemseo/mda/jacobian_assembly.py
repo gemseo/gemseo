@@ -27,7 +27,6 @@ from collections import defaultdict
 from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import ClassVar
 from typing import NamedTuple
 
 import matplotlib.pyplot as plt
@@ -1024,9 +1023,6 @@ class CoupledSystem:
 
     linear_problem: LinearProblem | None
     """The considered linear problem."""
-
-    default_linear_solver: ClassVar[str] = "LGMRES"
-    """The default linear solver."""
 
     def __init__(self) -> None:  # noqa:D107
         self.n_linear_resolutions = 0
