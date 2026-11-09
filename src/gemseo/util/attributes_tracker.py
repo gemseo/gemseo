@@ -67,6 +67,7 @@ data into Pydantic model classes that `PydanticGrammar` can consume.
 from __future__ import annotations
 
 import operator
+from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
 from functools import cache
@@ -84,6 +85,7 @@ from gemseo.util.data_conversion import flatten_nested_dict
 from gemseo.util.pydantic import copy_field
 
 if TYPE_CHECKING:
+    from collections.abc import MutableMapping
     from typing import Self
 
     from pydantic.fields import FieldInfo
@@ -214,6 +216,11 @@ class _ModelTrackerMixin:
     def attrs_written(self) -> set[str]:
         """The written field names."""
         return self.__dict__[_state_key].attrs_written
+
+    @property
+    def attrs_assigned(self) -> set[str]:
+        """The names of the fields assigned as a whole."""
+        return self.__dict__[_state_key].attrs_assigned
 
     def get_input_model(self) -> type[BaseModel]:
         """Return a model whose fields were read during the tracked execution.
@@ -676,21 +683,143 @@ def _get_field_info(model: BaseModel, attr_name: str) -> FieldInfo:
         model: The tracked model.
         attr_name: The field name.
     """
-    value = _unwrap_value(model.__dict__[attr_name])
+    # The value is copied so that the default holds no tracked sub-model,
+    # e.g. in a list of sub-models: the default of the field class would
+    # otherwise hold it, which prevents the grammar from being pickled.
+    value = copy_untracked_value(model.__dict__[attr_name])
     # The default factory, if any, is discarded since a default is set:
     # a field cannot have both.
     return copy_field(attr_name, type(model), default=value, default_factory=None)
 
 
-def _unwrap_value(value: Any) -> Any:
+def _unwrap_tracked_value(value: Any) -> Any:
     """Return the original object wrapped in a container tracker.
 
     Args:
         value: A possibly wrapped field value.
+
+    Returns:
+        The object wrapped by *value* if it is a container tracker
+        (`_NDArrayTracker` or `_SequenceTracker`), otherwise *value* itself.
     """
     if isinstance(value, _BaseTracker):
         return value.wrapped_obj
     return value
+
+
+def copy_untracked_value(value: Any) -> Any:
+    """Return a deep copy of a possibly tracked value without any tracking.
+
+    The models held by *value*,
+    including the ones nested in lists, tuples, sets and dictionaries,
+    are copied without validation,
+    so that they can be copied when frozen,
+    and without running the validators again, nor `model_post_init`.
+
+    Args:
+        value: A possibly tracked value.
+
+    Returns:
+        A deep copy of *value* holding no tracked model and no container tracker,
+        except in containers other than lists, tuples, sets, frozensets and
+        dictionaries, which are copied with `copy.deepcopy` as they are.
+    """
+    return _copy_untracked_value(value, {})
+
+
+def _copy_untracked_model(
+    model: BaseModel, memo: MutableMapping[int, Any]
+) -> BaseModel:
+    """Return a deep copy of a possibly tracked model without any tracking.
+
+    The copy is built without validation,
+    nor `model_post_init`.
+
+    Args:
+        model: A possibly tracked model.
+        memo: The copies already made, by identifier of the copied object,
+            so that an object referenced several times is copied once.
+
+    Returns:
+        A deep copy of *model* without any tracking.
+    """
+    model_class = (
+        type(model).__bases__[1]
+        if isinstance(model, _ModelTrackerMixin)
+        else type(model)
+    )
+    # The copy is built from the class without calling its constructor,
+    # nor model_construct which would call model_post_init again.
+    model_copy = model_class.__new__(model_class)
+    object.__setattr__(
+        model_copy,
+        "__dict__",
+        {
+            name: _copy_untracked_value(model.__dict__[name], memo)
+            for name in model_class.model_fields
+        },
+    )
+    object.__setattr__(
+        model_copy, "__pydantic_fields_set__", set(model.model_fields_set)
+    )
+    for attribute_name in ("__pydantic_extra__", "__pydantic_private__"):
+        # These attributes are None when the model allows no extra field
+        # or has no private attribute.
+        values = getattr(model, attribute_name, None)
+        object.__setattr__(
+            model_copy,
+            attribute_name,
+            None
+            if values is None
+            else {
+                name: _copy_untracked_value(value, memo)
+                for name, value in values.items()
+            },
+        )
+    return model_copy
+
+
+def _copy_untracked_value(value: Any, memo: MutableMapping[int, Any]) -> Any:
+    """Return a deep copy of a possibly tracked value without any tracking.
+
+    Args:
+        value: A possibly tracked value.
+        memo: The copies already made, by identifier of the copied object,
+            so that an object referenced several times is copied once;
+            it is compatible with the memo of `copy.deepcopy`.
+
+    Returns:
+        A deep copy of *value* without any tracking.
+    """
+    value = _unwrap_tracked_value(value)
+    value_id = id(value)
+    if value_id in memo:
+        return memo[value_id]
+    value_type = type(value)
+    if isinstance(value, BaseModel):
+        value_copy = _copy_untracked_model(value, memo)
+    elif value_type in {list, set}:
+        # The elements are copied after registering the copy,
+        # so that a self-referencing container is copied once.
+        value_copy = memo[value_id] = value_type()
+        items = (_copy_untracked_value(item, memo) for item in value)
+        if value_type is list:
+            value_copy.extend(items)
+        else:
+            value_copy.update(items)
+    elif value_type is dict:
+        value_copy = memo[value_id] = {}
+        value_copy.update(
+            (_copy_untracked_value(key, memo), _copy_untracked_value(item, memo))
+            for key, item in value.items()
+        )
+    elif value_type in {tuple, frozenset}:
+        value_copy = value_type(_copy_untracked_value(item, memo) for item in value)
+    else:
+        # The other objects are not searched for tracked models.
+        return deepcopy(value, memo)
+    memo[value_id] = value_copy
+    return value_copy
 
 
 def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
@@ -727,7 +856,7 @@ def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
 
     if is_written:
         for attr_name in state.attrs_written:
-            attr_value = _unwrap_value(model.__dict__[attr_name])
+            attr_value = _unwrap_tracked_value(model.__dict__[attr_name])
             if isinstance(attr_value, BaseModel):
                 # A whole sub-model assignment writes all its fields.
                 items[attr_name] = _expand_model_fields(attr_value)
@@ -783,7 +912,7 @@ def _expand_model_fields(model: BaseModel) -> dict[str, Any]:
     """
     items = {}
     for field_name in type(model).model_fields:
-        value = _unwrap_value(model.__dict__[field_name])
+        value = _unwrap_tracked_value(model.__dict__[field_name])
         if isinstance(value, BaseModel):
             items[field_name] = _expand_model_fields(value)
         else:

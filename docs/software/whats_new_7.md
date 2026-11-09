@@ -593,7 +593,13 @@ reads its inputs from and writes its outputs to a Pydantic model,
 instead of dictionaries.
 Its input and output grammars are deduced from the fields it reads and writes,
 so they need not be declared,
-and several disciplines can share the same model:
+and several disciplines can share the same model.
+The outputs of the dry-run performed at construction to infer the grammars
+are written back into the model passed to the discipline,
+which must therefore not be frozen;
+the disciplines sharing a model thus see the values computed by the ones built before them,
+so the order in which they are built matters.
+Executing a discipline never modifies this model:
 
 ```python
 from pydantic import BaseModel

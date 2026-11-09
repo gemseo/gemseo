@@ -178,6 +178,57 @@ print("Outputs:", sorted(chained_discipline.io.output_grammar.keys()))
 # through an attribute access for the leaf to be seen as an input or output.
 
 # %%
+# ## Share one model between disciplines
+#
+# The dry-run performed at construction time writes its outputs **into the
+# model instance you pass**. This matters when one model is shared by several
+# disciplines: the disciplines built first compute into the model the fields
+# that the disciplines built next then read.
+# **The order in which the disciplines are built therefore matters.**
+# For the same reason, a model must not be reused for a second build:
+# a field both read and written by ``_run_from_model``, e.g.
+# ``model.x = model.x + 1``, would drift at each build.
+#
+# The input defaults of a discipline are the values of the model from before its own
+# dry-run: a field both read and written by the discipline defaults to the value
+# it had before the discipline was built, not to its dry-run output.
+# A sub-model assigned as a whole (``model.y = Y(...)``) is written back as a whole,
+# and the other outputs field by field.
+#
+# Executing a discipline, on the other hand, never touches the model you
+# passed: ``execute`` runs ``_run_from_model`` on a deep copy, so the shared
+# model always keeps the values computed by the construction-time dry-runs.
+
+
+class SharedModel(BaseModel):
+    """A model shared by two disciplines."""
+
+    a: float = Field(default=1.0, description="Input of the first discipline.")
+    b: float = Field(default=-1.0, description="Intermediate value.")
+    c: float = Field(default=0.0, description="Output of the second discipline.")
+
+
+class FirstDiscipline(BaseModelDiscipline):
+    """Compute ``b = 2 * a``."""
+
+    def _run_from_model(self, model: SharedModel) -> None:
+        model.b = 2.0 * model.a
+
+
+class SecondDiscipline(BaseModelDiscipline):
+    """Compute ``c = b + 1``."""
+
+    def _run_from_model(self, model: SharedModel) -> None:
+        model.c = model.b + 1.0
+
+
+shared_model = SharedModel()
+print("Before the builds: b =", shared_model.b, "c =", shared_model.c)
+FirstDiscipline(shared_model)
+SecondDiscipline(shared_model)
+print("After the builds: b =", shared_model.b, "c =", shared_model.c)
+
+# %%
 # ## Summary
 #
 # [BaseModelDiscipline][gemseo.discipline.base_model_discipline.BaseModelDiscipline]
