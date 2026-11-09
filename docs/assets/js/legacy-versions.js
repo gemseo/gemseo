@@ -9,20 +9,20 @@
  */
 (function () {
   var legacyVersions = [
-    { label: "6.3.3", url: "https://gemseo.gitlab.io/dev/gemseo/6.3.3/index.html" },
-    { label: "6.2.0", url: "https://gemseo.gitlab.io/dev/gemseo/6.2.0/index.html" },
-    { label: "6.1.0", url: "https://gemseo.gitlab.io/dev/gemseo/6.1.0/index.html" },
-    { label: "6.0.0", url: "https://gemseo.gitlab.io/dev/gemseo/6.0.0/index.html" },
-    { label: "5.3.2", url: "https://gemseo.gitlab.io/dev/gemseo/5.3.2/index.html" },
-    { label: "5.2.0", url: "https://gemseo.gitlab.io/dev/gemseo/5.2.0/index.html" },
-    { label: "5.1.1", url: "https://gemseo.gitlab.io/dev/gemseo/5.1.1/index.html" },
-    { label: "5.0.1", url: "https://gemseo.gitlab.io/dev/gemseo/5.0.1/index.html" },
-    { label: "4.3.0.post0", url: "https://gemseo.gitlab.io/dev/gemseo/4.3.0.post0/index.html" },
-    { label: "4.1.0", url: "https://gemseo.gitlab.io/dev/gemseo/4.1.0/index.html" },
-    { label: "4.0.1", url: "https://gemseo.gitlab.io/dev/gemseo/4.0.1/index.html" },
-    { label: "3.2.2", url: "https://gemseo.gitlab.io/dev/gemseo/3.2.2/index.html" },
-    { label: "3.1.0", url: "https://gemseo.gitlab.io/dev/gemseo/3.1.0/index.html" },
-    { label: "3.0.3", url: "https://gemseo.gitlab.io/dev/gemseo/3.0.3/index.html" },
+    { label: "6.3.3", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/6.3.3/" },
+    { label: "6.2.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/6.2.0/" },
+    { label: "6.1.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/6.1.0/" },
+    { label: "6.0.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/6.0.0/" },
+    { label: "5.3.2", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/5.3.2/" },
+    { label: "5.2.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/5.2.0/" },
+    { label: "5.1.1", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/5.1.1/" },
+    { label: "5.0.1", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/5.0.1/" },
+    { label: "4.3.0.post0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/4.3.0.post0/" },
+    { label: "4.1.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/4.1.0/" },
+    { label: "4.0.1", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/4.0.1/" },
+    { label: "3.2.2", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/3.2.2/" },
+    { label: "3.1.0", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/3.1.0/" },
+    { label: "3.0.3", url: "https://gemseo.gitlab.io/dev/doc/gemseo-legacy/3.0.3/" },
   ];
 
   /* The links carry no marker of their own, so the guard against a second pass lives on
