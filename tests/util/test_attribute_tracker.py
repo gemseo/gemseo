@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import operator
+
 import pytest
 from numpy import asarray
 from numpy import float64
@@ -24,6 +26,7 @@ from numpy import ones
 from numpy import zeros
 from numpy.testing import assert_allclose
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import PrivateAttr
 from pydantic import ValidationError
@@ -34,6 +37,7 @@ from gemseo.util.attributes_tracker import _ModelTrackerMixin
 from gemseo.util.attributes_tracker import _NDArrayTracker
 from gemseo.util.attributes_tracker import _SequenceTracker
 from gemseo.util.attributes_tracker import _state_key
+from gemseo.util.attributes_tracker import copy_untracked_value
 from gemseo.util.attributes_tracker import track_model
 from gemseo.util.attributes_tracker import wrap_with_attributes_tracking
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
@@ -446,6 +450,140 @@ class ContainerModel(BaseModel):
     out: float = 0.0
 
 
+def test_copy_untracked_value_model_private_attribute() -> None:
+    """A copy of a tracked model must keep its private attributes, untracked."""
+    tracker = wrap_with_attributes_tracking(MethodModel())
+    tracker.update_cache()
+    model = copy_untracked_value(tracker)
+    assert type(model) is MethodModel
+    assert _state_key not in model.__dict__
+    assert model._cache == 1.0
+
+
+def test_copy_untracked_value_model_nested_sub_models() -> None:
+    """A copy of a tracked model must hold untracked nested sub-models."""
+    tracker = wrap_with_attributes_tracking(Top())
+    tracker.mid.deep.c = 5.0
+    model = copy_untracked_value(tracker)
+    assert type(model.mid) is Mid
+    assert type(model.mid.deep) is Deep
+    assert _state_key not in model.mid.deep.__dict__
+    assert model.mid.deep.c == 5.0
+
+
+def test_copy_untracked_value_model_container_field() -> None:
+    """A copy of a tracked model must hold plain containers decoupled from it."""
+    tracker = wrap_with_attributes_tracking(ContainerModel())
+    tracker.lst.append(3.0)
+    model = copy_untracked_value(tracker)
+    assert type(model.lst) is list
+    assert model.lst == [1.0, 2.0, 3.0]
+    model.lst.append(4.0)
+    assert tracker.lst == [1.0, 2.0, 3.0]
+
+
+class ModelListModel(BaseModel):
+    inner: Inner = Inner()
+    inners: list[Inner] = []
+
+
+def test_copy_untracked_value_model_sub_models_in_container_field() -> None:
+    """A copy of a tracked model must hold untracked sub-models in its containers."""
+    tracker = wrap_with_attributes_tracking(ModelListModel())
+    tracker.inners = [tracker.inner]
+    model = copy_untracked_value(tracker)
+    assert type(model.inners) is list
+    assert type(model.inners[0]) is Inner
+    assert _state_key not in model.inners[0].__dict__
+
+
+class ExtraModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    a: float = 1.0
+
+
+class ExtraParentModel(BaseModel):
+    inner: Inner = Inner()
+
+
+def test_copy_untracked_value_model_extra_fields() -> None:
+    """A copy of a model allowing extra fields must keep them, untracked."""
+    tracker = wrap_with_attributes_tracking(ExtraParentModel())
+    model = copy_untracked_value(ExtraModel(a=2.0, b=3.0, c=tracker.inner))
+    assert model.model_extra.keys() == {"b", "c"}
+    assert model.b == 3.0
+    assert type(model.c) is Inner
+    assert _state_key not in model.c.__dict__
+    assert model.model_fields_set == {"a", "b", "c"}
+
+
+class PostInitModel(BaseModel):
+    """A model counting the calls to its `model_post_init`."""
+
+    a: float = 1.0
+    _post_init_calls: int = PrivateAttr(default=0)
+
+    def model_post_init(self, context: object) -> None:
+        """Count the call and double the field `a`.
+
+        Args:
+            context: The validation context.
+        """
+        self._post_init_calls += 1
+        self.a *= 2
+
+
+def test_copy_untracked_value_model_post_init() -> None:
+    """A copy of a model must not call its model_post_init again."""
+    tracker = wrap_with_attributes_tracking(PostInitModel())
+    model = copy_untracked_value(tracker)
+    assert model.a == 2.0
+    assert model._post_init_calls == 1
+
+
+def test_copy_untracked_value_model_no_extra_and_no_private() -> None:
+    """A copy of a model without extra field nor private attribute must have none."""
+    model = copy_untracked_value(Inner())
+    assert model.model_extra is None
+    assert model.__pydantic_private__ is None
+
+
+@pytest.mark.parametrize(
+    ("wrap", "unwrap"),
+    [
+        (lambda item: [item], operator.itemgetter(0)),
+        (lambda item: (item,), operator.itemgetter(0)),
+        (lambda item: {"k": item}, operator.itemgetter("k")),
+        (lambda item: {"k": [(item,)]}, lambda value: value["k"][0][0]),
+    ],
+)
+def test_copy_untracked_value(wrap, unwrap) -> None:
+    """A copy of a value must hold untracked sub-models, whatever the container."""
+    tracker = wrap_with_attributes_tracking(ModelListModel())
+    value = wrap(tracker.inner)
+    value_copy = copy_untracked_value(value)
+    assert type(value_copy) is type(value)
+    assert type(unwrap(value_copy)) is Inner
+    assert _state_key not in unwrap(value_copy).__dict__
+    assert unwrap(value_copy).a == 1.0
+
+
+def test_copy_untracked_value_container_tracker() -> None:
+    """A copy of a container tracker must be the plain copied container."""
+    tracker = wrap_with_attributes_tracking(ContainerModel())
+    value = copy_untracked_value([tracker.lst])
+    assert type(value[0]) is list
+    assert value[0] == [1.0, 2.0]
+    assert value[0] is not tracker.lst.wrapped_obj
+
+
+def test_copy_untracked_value_shared_reference() -> None:
+    """A copy of a value must keep an object referenced several times shared."""
+    tracker = wrap_with_attributes_tracking(ModelListModel())
+    value = copy_untracked_value([tracker.inner, tracker.inner])
+    assert value[0] is value[1]
+
+
 def test_container_mutators_tracked() -> None:
     """Mutating methods of containers must be recorded as writes."""
     tracker = wrap_with_attributes_tracking(ContainerModel())
@@ -512,6 +650,22 @@ def test_frozen_model_write_raises() -> None:
     with pytest.raises(ValidationError, match="frozen"):
         tracker.a = 2.0
     assert "a" not in tracker.attrs_written
+
+
+class FrozenParentModel(BaseModel):
+    frozen_inner: FrozenModel = FrozenModel()
+
+
+@pytest.mark.parametrize("container_class", [set, frozenset])
+def test_copy_untracked_value_set(container_class) -> None:
+    """A copy of a set must hold untracked sub-models."""
+    tracker = wrap_with_attributes_tracking(FrozenParentModel())
+    value_copy = copy_untracked_value(container_class([tracker.frozen_inner]))
+    assert type(value_copy) is container_class
+    (item,) = value_copy
+    assert type(item) is FrozenModel
+    assert _state_key not in item.__dict__
+    assert item.a == 1.0
 
 
 class ValidatedModel(BaseModel, validate_assignment=True):

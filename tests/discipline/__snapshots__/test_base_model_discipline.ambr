@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_frozen_input[AccumulateDiscipline-FrozenFieldModel]
+  '''
+  The discipline sets its inputs on a copy of the model at execution, so the following must not be frozen:
+  - the field y of the model FrozenFieldModel holding the input y
+  '''
+# ---
+# name: test_frozen_input[ElementwiseDiscipline-FrozenElementwiseModel]
+  '''
+  The discipline sets its inputs on a copy of the model at execution, so the following must not be frozen:
+  - the model FrozenElementwiseModel holding the input x
+  '''
+# ---
+# name: test_frozen_input[SubModelInputDiscipline-FrozenSubModelInputParentModel]
+  '''
+  The discipline sets its inputs on a copy of the model at execution, so the following must not be frozen:
+  - the model FrozenElementwiseModel holding the input sub.x
+  '''
+# ---
