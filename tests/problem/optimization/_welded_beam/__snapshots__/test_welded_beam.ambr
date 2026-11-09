@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_invalid_welding
+  "'four-sided' is not a welding; the weldings are two_sided and four_sided."
+# ---
