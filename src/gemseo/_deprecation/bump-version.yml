@@ -2876,7 +2876,7 @@ classes:
   Correlations:
     MAXIMUM_CORRELATION_COEFFICIENT: maximum_correlation_coefficient
   CoupledSystem:
-    DEFAULT_LINEAR_SOLVER: default_linear_solver
+    DEFAULT_LINEAR_SOLVER: null
   DatasetPlot:
     DEFAULT_PLOT_ENGINE: default_plot_engine
     FILE_FORMATS_TO_PLOT_ENGINES: file_formats_to_plot_engines
