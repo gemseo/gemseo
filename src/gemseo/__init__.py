@@ -78,7 +78,6 @@ from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.global_configuration import _configuration as configuration
 from gemseo.util.logging import _configure_logger
-from gemseo.util.logging import _is_gemseo_logger as _is_gemseo_logger
 from gemseo.util.pickle import from_pickle  # noqa: F401
 from gemseo.util.pickle import to_pickle  # noqa: F401
 from gemseo.util.pydantic import create_model
