@@ -40,19 +40,13 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.discipline import Discipline
-from gemseo.discipline import AnalyticDiscipline
-from gemseo.mda import MDAChain
-from gemseo.mda import MDAChain_Settings
-from gemseo.mda import MDANewtonRaphson_Settings
 from gemseo.mda.jacobian_assembly import JacobianAssembly
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.typing import StrKeyMapping
     from numpy import ndarray
+
+    from gemseo.core.discipline import Discipline
 
 
 def disc_1_expr(
@@ -132,34 +126,40 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
-def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
+def disc_3_expr(
+    y1: float = 1.0, y2: float = 2.0, x: float = 2.0, w1: float = 1.0
+) -> float:
     """A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
         y2: The second input coupling value.
         x: The design variables.
+        w1: The state value of the first discipline.
 
     Returns:
         The objective function.
     """
-    obj = y1 + 2 * y2 + 11 * x
+    obj = y1 + 2 * y2 + 11 * x + 3 * w1
     return obj  # noqa: RET504
 
 
-def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray:
+def disc_3_expr_jac(
+    y1: float = 1.0, y2: float = 2.0, x: float = 2.0, w1: float = 1.0
+) -> ndarray:
     """A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
         y2: The second input coupling value.
         x: The design variables.
+        w1: The state value of the first discipline.
 
     Returns:
         The objective function Jacobian.
     """
-    d_obj_d_y1_y2_x = array([[1.0, 2.0, 11.0]])
-    return d_obj_d_y1_y2_x  # noqa: RET504
+    d_obj_d_y1_y2_x_w1 = array([[1.0, 2.0, 11.0, 3.0]])
+    return d_obj_d_y1_y2_x_w1  # noqa: RET504
 
 
 @pytest.fixture
@@ -227,60 +227,3 @@ def test_adjoint(res_disciplines, mode, matrix_type) -> None:
     mda.linearization_mode = mode
     mda.matrix_type = matrix_type
     assert MDAJacobianChecker(mda).check(inputs=["x"], outputs=["obj"])
-
-
-class ImplicitDiscipline(Discipline):
-    """An implicit discipline with a state `w` and a residual `r = 2w - a`."""
-
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__()
-        self.io.input_grammar.update_from_names(["a", "w"])
-        self.io.output_grammar.update_from_names(["w", "r"])
-        self.io.input_grammar.defaults = {"a": array([1.0]), "w": array([0.0])}
-        self.io.residual_to_state_variable = {"r": "w"}
-
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
-        w = input_data["w"]
-        return {"w": w, "r": 2 * w - input_data["a"]}
-
-    def _compute_jacobian(
-        self,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-    ) -> None:
-        self._init_jacobian(input_names, output_names, fill_missing_keys=True)
-        self.jac["r"]["w"] = array([[2.0]])
-        self.jac["r"]["a"] = array([[-1.0]])
-        self.jac["w"]["w"] = array([[1.0]])
-
-
-@pytest.mark.parametrize(
-    "mode",
-    [
-        JacobianAssembly.MDADerivationMode.ADJOINT,
-        JacobianAssembly.MDADerivationMode.DIRECT,
-    ],
-)
-@pytest.mark.parametrize(
-    ("expression", "expected"), [("a", 4 / 3), ("w", 2 / 3), ("3*w+a", 10 / 3)]
-)
-def test_function_of_state(mode, expression, expected) -> None:
-    """Check the total derivative of a function of a state variable.
-
-    With `a = x + w/2` and `2w = a`, `w = 2x/3` and `a = 4x/3`.
-    """
-    mda = MDAChain(
-        [
-            AnalyticDiscipline({"a": "x+0.5*w"}),
-            ImplicitDiscipline(),
-            AnalyticDiscipline({"f": expression}),
-        ],
-        settings=MDAChain_Settings(
-            inner_mda_settings=MDANewtonRaphson_Settings(tolerance=1e-12)
-        ),
-    )
-    mda.linearization_mode = mode
-    mda.add_differentiated_inputs(["x"])
-    mda.add_differentiated_outputs(["f"])
-    jacobian = mda.linearize({"x": array([1.0])})
-    assert jacobian["f"]["x"][0, 0] == pytest.approx(expected)
