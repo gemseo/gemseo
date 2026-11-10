@@ -45,13 +45,13 @@
 -#}
 {%- set suffix = config.extra.logo_suffix | d("") -%}
 {%- if not suffix and config.site_name != "GEMSEO" -%}
-  {%- set suffix = config.site_name.lower().replace("gemseo-", "") -%}
+  {%- set suffix = (config.site_name | lower | replace("gemseo-", "")) -%}
 {%- endif -%}
 <header class="{{ class }}" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
     <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name | e }}" data-md-component="logo">
       <div class="gemseo-bar">
-        <img src="{{ config.theme.logo | url }}" alt="{{ config.site_name.lower() }}">
+        <img src="{{ config.theme.logo | url }}" alt="{{ config.site_name | lower }}">
         {%- if suffix %}
         <span class="slash" aria-hidden="true">/</span>
         <span class="suffix">{{ suffix }}</span>
@@ -83,8 +83,8 @@
       {% if config.extra.alternate %}
         {% include "partials/alternate.html" %}
       {% endif %}
-      {% if "material/search" in config.plugins %}
-        {% set search = config.plugins["material/search"] | attr("config") %}
+      {% if "search" in config.plugins %}
+        {% set search = config.plugins["search"] | attr("config") %}
         {% if search.enabled %}
           <label class="md-header__button md-icon" for="__search" title="{{ lang.t('search.placeholder') }}">
             {% set icon = config.theme.icon.search or "material/magnify" %}

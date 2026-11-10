@@ -56,7 +56,7 @@
 
   {#- Multi-column footer region. Columns/links are defined in the standalone
       `footer.yml` under `docs/` (loaded into config.extra.footer by the
-      `docs/hooks/load_footer.py` hook). Edit that file to add/remove/reorder
+      `docs/_scripts/prebuild.py` script). Edit that file to add/remove/reorder
       columns and links — no template change needed. -#}
   {% set footer_columns = config.extra.footer.columns if config.extra.footer else [] %}
 

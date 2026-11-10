@@ -36,14 +36,14 @@ _citation_block_regex = re.compile(r"\[([^\]\[\n]*@[^\]\[\n]*)\]")
 A block can cite several references
 and prefix or suffix a key,
 e.g. ``[see @foo, p. 1; @bar]``,
-as mkdocs-bibtex splits it on the semicolons
-(see ``CITATION_BLOCK_REGEX`` in ``mkdocs_bibtex.citation``).
+as the citation extension splits it on the semicolons
+(see ``citation_block_regex`` in ``docs_tools.bibtex_citations``).
 """
 
 _email_regex = re.compile(r"[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}")
 """The regular expression that an email address matches.
 
-mkdocs-bibtex ignores the parts of a citation block including an email address,
+The citation extension ignores the parts of a citation block including an email address,
 e.g. ``[contact@gemseo.org]``.
 """
 
@@ -51,15 +51,15 @@ _citation_key_regex = re.compile(r"@([^\s,;]+)")
 """The regular expression to find the key of a citation.
 
 The key pattern is deliberately loose,
-so that a key that mkdocs-bibtex cannot parse is caught by the tests
+so that a key that the citation extension cannot parse is caught by the tests
 instead of being silently ignored.
 """
 
 _key_regex = re.compile(r"^[\w-]+$")
 """The regular expression that a citation key must match.
 
-mkdocs-bibtex parses the key of a bracketed citation with ``[\\w-]+``
-(see ``CITATION_REGEX`` in ``mkdocs_bibtex.citation``),
+The citation extension parses the key of a bracketed citation with ``[\\w-]+``
+(see ``citation_regex`` in ``docs_tools.bibtex_citations``),
 so a key including any other character, e.g. a colon, cannot be cited.
 """
 

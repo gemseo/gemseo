@@ -43,3 +43,9 @@ devbox.json
 devbox.lock
 
 .claude
+
+/docs/css/gallery
+/docs/assets/learning_paths.json
+/docs/assets/reading_times.json
+/docs/assets/complexities.json
+/docs/changelog

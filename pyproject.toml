@@ -82,18 +82,11 @@ doc = [
     "griffe-fieldz",
     "griffe-inherited-docstrings",
     "mike",
-    "mkdocs <2",
-    "mkdocs-bibtex",
-    "mkdocs-gallery",
-    "mkdocs-gen-files",
-    "mkdocs-include-markdown-plugin",
-    "mkdocs-literate-nav",
-    "mkdocs-macros-plugin",
-    "mkdocs-material",
-    "mkdocs-section-index",
+    # The citations and the gallery, navigation and credits generation (docs-tools prebuild).
+    "docs-tools",
     "mkdocstrings[python]",
     "mkdocs-autorefs",
-    "mkdocs-minify-plugin",
+    "zensical",
     # For supporting DataFrame in pydantic models in an example.
     "pandera",
 ]
@@ -140,3 +133,8 @@ cache-keys = [
     { file = "pyproject.toml" },
     { git = { commit = true, tags = true } },
 ]
+
+[tool.uv.sources]
+docs-tools = { git = "https://gitlab.com/gemseo/dev/doc/docs-tools.git", branch = "develop" }
+# The fork of mike compatible with Zensical, not published on PyPI.
+mike = { git = "https://github.com/squidfunk/mike.git" }

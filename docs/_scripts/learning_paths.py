@@ -15,7 +15,7 @@
 """Assemble the documentation home learning paths into a single JSON asset.
 
 Each goal is described by a ``docs/learning_paths/<goal>.yml`` file and the
-display order lives in ``_config.yml``. This script reads them at build time,
+display order lives in ``_config.yml``. This script reads them before the build (see ``prebuild.py``),
 validates the content and writes ``assets/learning_paths.json``, which the home
 page fetches and renders.
 
@@ -35,7 +35,6 @@ import json
 import re
 from pathlib import Path
 
-import mkdocs_gen_files
 import yaml
 
 _types = frozenset({"explanation", "tutorial", "howto", "reference"})
@@ -44,7 +43,7 @@ _required_goal_keys = ("id", "code", "title", "audience", "blurb", "resources")
 
 _source_dir = Path("docs/learning_paths")
 _docs_dir = _source_dir.parent
-_output_path = "assets/learning_paths.json"
+_output_path = _docs_dir / "assets" / "learning_paths.json"
 
 # The gallery pages are written by the gallery plugin, possibly after this
 # script runs, so a `generated/examples/<rest>/` path is resolved against the
@@ -322,5 +321,5 @@ def _build_payload() -> dict:
     return {"goals": goals}
 
 
-with mkdocs_gen_files.open(_output_path, "w") as output_file:
+with _output_path.open("w", encoding="utf-8") as output_file:
     json.dump(_build_payload(), output_file, ensure_ascii=False)

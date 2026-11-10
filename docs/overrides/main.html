@@ -9,7 +9,7 @@
 {% block htmltitle %}
   {% if page.meta and page.meta.title %}
     <title>{{ page.meta.title }} - GEMSEO&reg;</title>
-  {% elif page.title and not page.is_homepage %}
+  {% elif page.title and page.url not in ["", "."] %}
     <title>{{ page.title | striptags }} - GEMSEO&reg;</title>
   {% else %}
     <title>GEMSEO&reg;</title>
