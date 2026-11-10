@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_plot_variance_decomposition_invalid_threshold_error[nan]
+  'The threshold must be non-negative; got nan.'
+# ---
+# name: test_plot_variance_decomposition_invalid_threshold_error[negative]
+  'The threshold must be non-negative; got -0.1.'
+# ---
+# name: test_plot_variance_decomposition_of_constant_output
+  "The Sobol' indices of 'constant' are undefined, as the variance of the output is zero."
+# ---

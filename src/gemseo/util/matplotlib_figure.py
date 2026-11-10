@@ -17,8 +17,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
+from matplotlib.colors import ListedColormap
+from matplotlib.colors import to_hex
+from numpy import linspace
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -28,6 +33,34 @@ if TYPE_CHECKING:
 
 FigSizeType = tuple[float, float]
 """The type of a figure size."""
+
+_max_qualitative_size: Final[int] = 20
+"""The largest number of colors of a qualitative colormap, e.g. `"tab20"`.
+
+A listed colormap with more colors, e.g. `"viridis"`, is continuous.
+"""
+
+
+def _get_colors(colormap_name: str, n_colors: int) -> list[str]:
+    """Get colors from a colormap.
+
+    The colors of a qualitative colormap (e.g. `"tab10"`) are used in turn,
+    while the ones of a continuous colormap are evenly spaced.
+
+    Args:
+        colormap_name: The name of the colormap.
+        n_colors: The number of colors.
+
+    Returns:
+        The colors, as hexadecimal codes.
+    """
+    colormap = colormaps[colormap_name]
+    if isinstance(colormap, ListedColormap) and _max_qualitative_size >= colormap.N:
+        positions = [index % colormap.N for index in range(n_colors)]
+    else:
+        positions = linspace(0.0, 1.0, n_colors)
+
+    return [to_hex(colormap(position)) for position in positions]
 
 
 def save_show_figure(
