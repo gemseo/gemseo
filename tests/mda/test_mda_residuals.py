@@ -126,34 +126,40 @@ def disc_2_expr_jac(w2: float = 3.0, y1: float = 1.0, x: float = 2.0) -> ndarray
     return d_y_w_r_d_w_y_x  # noqa: RET504
 
 
-def disc_3_expr(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> float:
+def disc_3_expr(
+    y1: float = 1.0, y2: float = 2.0, x: float = 2.0, w1: float = 1.0
+) -> float:
     """A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
         y2: The second input coupling value.
         x: The design variables.
+        w1: The state value of the first discipline.
 
     Returns:
         The objective function.
     """
-    obj = y1 + 2 * y2 + 11 * x
+    obj = y1 + 2 * y2 + 11 * x + 3 * w1
     return obj  # noqa: RET504
 
 
-def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray:
+def disc_3_expr_jac(
+    y1: float = 1.0, y2: float = 2.0, x: float = 2.0, w1: float = 1.0
+) -> ndarray:
     """A linear objective function. Third toy discipline.
 
     Args:
         y1: The first input coupling value.
         y2: The second input coupling value.
         x: The design variables.
+        w1: The state value of the first discipline.
 
     Returns:
         The objective function Jacobian.
     """
-    d_obj_d_y1_y2_x = array([[1.0, 2.0, 11.0]])
-    return d_obj_d_y1_y2_x  # noqa: RET504
+    d_obj_d_y1_y2_x_w1 = array([[1.0, 2.0, 11.0, 3.0]])
+    return d_obj_d_y1_y2_x_w1  # noqa: RET504
 
 
 @pytest.fixture
