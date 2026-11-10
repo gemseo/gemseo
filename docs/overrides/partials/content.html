@@ -1,0 +1,40 @@
+{#-
+  Override of the theme's `partials/content.html`.
+
+  It renders the reading-time and complexity badges under the first heading
+  of the pages opting in through their front matter:
+
+  - `reading_time: true` shows the reading time
+    estimated by docs/_scripts/prebuild.py into `config.extra.reading_times`,
+  - `complexity: beginner|intermediate|advanced` shows the complexity level.
+
+  On the home page, it also embeds the data of the learning paths.
+-#}
+{% set meta = page.meta or {} %}
+{% set badges %}
+  {%- if meta.reading_time is true and page.url in config.extra.reading_times -%}
+    <p class="reading-time"><span class="twemoji">{% include ".icons/material/clock-outline.svg" %}</span> {{ config.extra.reading_times[page.url] }} min read</p>
+  {%- endif -%}
+  {%- set level = (meta.complexity | d("") | string | trim | lower) -%}
+  {%- if level in ["beginner", "intermediate", "advanced"] -%}
+    <p class="complexity"><span class="twemoji">{% include ".icons/material/school-outline.svg" %}</span> {{ level | title }}</p>
+  {%- endif -%}
+{% endset %}
+{% include "partials/actions.html" %}
+{% if "<h1" not in page.content %}
+  <h1>{{ page.title | d(config.site_name, true)}}</h1>
+  {{ badges }}
+  {{ page.content }}
+{% elif badges | trim %}
+  {{ page.content | replace("</h1>", "</h1>\n" ~ badges) }}
+{% else %}
+  {{ page.content }}
+{% endif %}
+{%- if page.url in ["", "."] and config.extra.home_data %}
+  {#- The data of the learning paths read by assets/js/home.js. -#}
+  <script type="application/json" id="gemseo-lp-data">{{ config.extra.home_data | tojson }}</script>
+{%- endif %}
+{% include "partials/tags.html" %}
+{% include "partials/source-file.html" %}
+{% include "partials/feedback.html" %}
+{% include "partials/comments.html" %}

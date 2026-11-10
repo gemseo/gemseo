@@ -2,8 +2,8 @@
 reading_time: true
 complexity: intermediate
 description: "GEMSEO's machine learning capabilities,
-covering clustering, classification, and regression models,
-along with quality assessment, data transformation techniques, and model selection and calibration methods."
+  covering clustering, classification, and regression models,
+  along with quality assessment, data transformation techniques, and model selection and calibration methods."
 tags: ['user_guide']
 search:
   boost: 2

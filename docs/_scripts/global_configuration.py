@@ -12,12 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Insert the list of the global configuration options in its user guide page.
+"""Write the list of the global configuration options of its user guide page.
 
-The list is built at build time from the fields of
+The list is built before the build (see ``prebuild.py``) from the fields of
 [GlobalConfiguration][gemseo.util.global_configuration.GlobalConfiguration],
 so that it cannot drift from the code.
-It replaces the marker [_marker][] of the page [_page_path][].
+It is written to [_output_path][],
+which the page includes with a snippet.
 
 The defaults are read from the fields, not from `gemseo.configuration`:
 the latter is built from the environment variables and the `.env` file
@@ -28,12 +29,12 @@ from __future__ import annotations
 
 from enum import Enum
 from logging import getLevelName
+from pathlib import Path
 from pathlib import PurePath
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
-import mkdocs_gen_files
 from pydantic import BaseModel
 
 from gemseo.util.global_configuration import GlobalConfiguration
@@ -43,11 +44,8 @@ if TYPE_CHECKING:
 
     from pydantic.fields import FieldInfo
 
-_page_path: Final[str] = "user_guide/user_experience/global_configuration.md"
-"""The path of the page, relative to the documentation directory."""
-
-_marker: Final[str] = "<!-- global-configuration-options -->"
-"""The marker of the page replaced by the list."""
+_output_path: Final[Path] = Path("_docs") / "global_configuration.md"
+"""The path of the list, relative to the root of the repository."""
 
 _nested_field_names: Final[tuple[str, ...]] = ("logging", "directory_manager")
 """The names of the fields whose own fields are listed instead of them."""
@@ -133,14 +131,5 @@ def _build_list() -> str:
     return "\n".join(lines)
 
 
-with mkdocs_gen_files.open(_page_path, "r") as page_file:
-    _content = page_file.read()
-
-if _marker not in _content:
-    msg = f"The page {_page_path} does not contain the marker {_marker}."
-    raise ValueError(msg)
-
-with mkdocs_gen_files.open(_page_path, "w") as page_file:
-    page_file.write(_content.replace(_marker, _build_list()))
-
-mkdocs_gen_files.set_edit_path(_page_path, _page_path)
+_output_path.parent.mkdir(exist_ok=True)
+_output_path.write_text(_build_list() + "\n", encoding="utf-8")

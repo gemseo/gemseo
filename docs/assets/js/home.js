@@ -14,23 +14,23 @@ Runs only on the home page (guarded by the presence of #gemseo-lp) and is
 compatible with the mkdocs-material instant-navigation observable `document$`.
 
 The data is normally read from the #gemseo-lp-data element that
-docs/hooks/home_data.py embeds in the built page, which costs no request at all.
+docs/overrides/partials/content.html embeds in the home page, which costs no request at all.
 Fetching the three build assets one by one is kept as a fallback, for the case
-where that hook could not inline them.
+where that element is missing.
 */
 
 (function () {
   "use strict";
 
   var DATA_FILE = "assets/learning_paths.json";
-  // Reading times computed at build time by docs/hooks/reading_time.py, keyed
+  // Reading times computed before the build by docs/_scripts/prebuild.py, keyed
   // by page url. Pages that opt out (reading_time: false) are absent from it.
   var TIMES_FILE = "assets/reading_times.json";
-  // Complexity levels computed at build time by docs/hooks/complexity.py, keyed
+  // Complexity levels computed before the build by docs/_scripts/prebuild.py, keyed
   // by page url. Pages that do not opt in (no valid `complexity` frontmatter)
   // are absent from it.
   var LEVELS_FILE = "assets/complexities.json";
-  // The element holding the three above merged by docs/hooks/home_data.py.
+  // The element holding the three above, embedded by docs/overrides/partials/content.html.
   var DATA_ELEMENT_ID = "gemseo-lp-data";
   var LS_ROLE = "gemseo.lastRole";
 
@@ -439,7 +439,7 @@ where that hook could not inline them.
     render(state);
   }
 
-  // Render from the data embedded in the page by docs/hooks/home_data.py, when
+  // Render from the data embedded in the page by docs/overrides/partials/content.html, when
   // present. Returns true when the panel has been rendered, false when the
   // caller should fall back to fetching the three build assets.
   function readInline(root) {

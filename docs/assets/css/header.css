@@ -211,34 +211,16 @@
 }
 
 /*
- * mkdocs-material shows a wide inline search box on desktop (>= 60em). We want
- * the magnifying-glass icon only there too, like on mobile; clicking it still
- * expands the same search panel via the existing [data-md-toggle=search]:checked
- * rules, which are untouched.
+ * The theme shows a "Search" button on desktop (>= 60em). We want the
+ * magnifying-glass icon only there too, like on mobile; clicking it opens the
+ * same search dialog through the [data-md-toggle=search] checkbox.
  */
 @media screen and (min-width: 60em) {
   .md-header__button[for="__search"] {
     display: inline-block;
   }
 
-  .md-header .md-search__inner {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    /* opacity:0 is Material's own technique below 60em: the collapsed input
-       stays focusable, so Tab and the keyboard shortcuts still open the panel. */
-    opacity: 0;
-  }
-
-  /* Restore the metrics Material gives the expanded panel. */
-  [data-md-toggle="search"]:checked ~ .md-header .md-search__inner {
-    opacity: 1;
-    overflow: visible;
-    padding: 0.1rem 0;
-  }
-
-  /* Once the panel expands, its own icon is enough — hide the toggle button. */
-  [data-md-toggle="search"]:checked ~ .md-header .md-header__button[for="__search"] {
+  .md-header .md-search {
     display: none;
   }
 }

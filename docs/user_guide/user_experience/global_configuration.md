@@ -196,4 +196,4 @@ by setting the attribute of `gemseo.configuration`.
 The list below gives the options,
 their environment variables and their default values.
 
-<!-- global-configuration-options -->
+--8<-- "_docs/global_configuration.md"

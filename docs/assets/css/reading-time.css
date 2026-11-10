@@ -9,7 +9,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 /*
 Reading-time badge rendered under the first heading of every opted-in page by
-the docs/hooks/reading_time.py mkdocs hook.
+the template docs/overrides/partials/content.html.
 */
 
 .reading-time {

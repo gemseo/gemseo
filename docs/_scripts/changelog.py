@@ -15,15 +15,15 @@
 """Split the changelog into one page per minor version.
 
 The file `CHANGELOG.md`, written by towncrier, stays the single source of the
-changelog. At build time, this script splits it into the pages of the
-directory [_output_dir][]:
+changelog. Before the build (see `prebuild.py`), this script splits it into the
+pages of the directory [_output_dir][]:
 
 - `index.md`: the introduction of `CHANGELOG.md`, the latest release and the
   nested list of all the pages and of their versions,
 - `X.Y.md`: the versions `X.Y.*` (including the pre-releases such as `X.Y.0rc0`),
   for each minor version `X.Y` from [_first_individual_minor][] on,
 - `older.md`: all the versions before [_first_individual_minor][],
-- `SUMMARY.md`: the navigation, read by the plugin literate-nav.
+- `SUMMARY.md`: the navigation, expanded by `prebuild.py` as literate-nav did.
 
 The sections of the versions are copied in the order of `CHANGELOG.md`,
 which must be the newest first, the only change being that the label starting
@@ -34,7 +34,6 @@ structure instead of silently skipping what it does not understand.
 
 from __future__ import annotations
 
-import os
 import re
 from dataclasses import dataclass
 from itertools import groupby
@@ -42,19 +41,13 @@ from operator import attrgetter
 from pathlib import Path
 from typing import Final
 
-import mkdocs_gen_files
 from markdown.extensions.toc import slugify
 
-project_dir = Path(os.getenv("MKDOCS_CONFIG_DIR", "."))
-
-_changelog_path: Final[Path] = project_dir / "CHANGELOG.md"
+_changelog_path: Final[Path] = Path("CHANGELOG.md")
 """The path to the changelog written by towncrier."""
 
-_edit_path: Final[str] = "CHANGELOG.md"
-"""The path to the edited file of the generated pages, relative to the project."""
-
-_output_dir: Final[str] = "changelog"
-"""The directory of the generated pages, relative to the documentation directory."""
+_output_dir: Final[Path] = Path("docs") / "changelog"
+"""The directory of the generated pages, relative to the root of the repository."""
 
 _intro_heading: Final[str] = "# Changelog"
 """The heading of the changelog title, before its introduction."""
@@ -353,7 +346,7 @@ def _render_index(intro: str, pages: list[_Page]) -> str:
 
 
 def _render_summary(pages: list[_Page]) -> str:
-    """Render the navigation read by the plugin literate-nav.
+    """Render the navigation of the changelog pages.
 
     Args:
         pages: The pages, the newest first.
@@ -377,14 +370,10 @@ def _write_page(file_name: str, content: str) -> None:
         file_name: The name of the file of the page.
         content: The Markdown source of the page.
     """
-    path = f"{_output_dir}/{file_name}"
-    with mkdocs_gen_files.open(path, "w") as page_file:
-        page_file.write(content)
-
-    if file_name != "SUMMARY.md":
-        mkdocs_gen_files.set_edit_path(path, _edit_path)
+    (_output_dir / file_name).write_text(content, encoding="utf-8", newline="\n")
 
 
+_output_dir.mkdir(exist_ok=True)
 _intro, _release_notes = _split_changelog(_changelog_path.read_text(encoding="utf-8"))
 _pages = _group_versions(_parse_versions(_release_notes))
 

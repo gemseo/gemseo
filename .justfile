@@ -61,17 +61,24 @@ check *args: install-hooks
 check-typing *args:
     uv run --only-group typing mypy {{ args }}
 
-# Build and serve the documentation
-[env("DISABLE_MKDOCS_2_WARNING", "true")]
+# Generate the documentation files that Zensical cannot generate itself (gallery, nav, ...), `--no-gallery` skips the examples
+[arg("gallery", long="no-gallery", value="--no-gallery")]
+[group('doc')]
+doc-prebuild gallery="":
+    uv run --group doc --extra all python docs/_scripts/prebuild.py {{ gallery }}
+
+# Build and serve the documentation, `--no-gallery` skips the examples, pass the Zensical options after `--`
+[arg("gallery", long="no-gallery", value="--no-gallery")]
 [env("DOCSTRING_INHERITANCE_ENABLE", "1")]
 [group('doc')]
-doc *args:
-    uv run --group doc --extra all mkdocs serve {{ args }}
+doc gallery="" *args: (doc-prebuild gallery)
+    uv run --group doc --extra all zensical serve {{ args }}
 
-# Build and serve the documentation without the API
+# Build and serve the documentation without the API, `--no-gallery` skips the examples
+[arg("gallery", long="no-gallery", value="--no-gallery")]
 [group('doc')]
-doc-fast *args:
-    @{{ just }} doc --config-file mkdocs-fast.yml {{ args }}
+doc-fast gallery="" *args:
+    @{{ just }} doc {{ gallery }} -- --config-file mkdocs-fast.yml {{ args }}
 
 # Create and check the PyPI distribution
 [group('packaging')]
