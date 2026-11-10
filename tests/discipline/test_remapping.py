@@ -22,6 +22,7 @@ import pytest
 from numpy import array
 from numpy import complex64
 from numpy import float32
+from numpy import int8
 from numpy import int64
 from numpy import zeros
 from numpy.testing import assert_allclose
@@ -38,6 +39,8 @@ from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from numpy import ndarray
 
     from gemseo.util.typing import StrKeyMapping
 
@@ -450,64 +453,87 @@ def test_whole_variable_not_cast() -> None:
     assert_equal(original_discipline.io.input_data["s"], array(["three", "four"]))
 
 
-def test_component_lossless_cast() -> None:
-    """Check that a value mapped to a component can be cast without loss."""
+def create_component_remapping(
+    default: ndarray | None, mapping: tuple[str, int]
+) -> tuple[TypedDiscipline, RemappingDiscipline]:
+    """Create a remapping of a variable `v` to a component of a `TypedDiscipline`.
+
+    Args:
+        default: The default value of the original variable,
+            if `None`, the one of `TypedDiscipline`.
+        mapping: The original variable and the index of the component.
+
+    Returns:
+        The original discipline and the remapping discipline.
+    """
     original_discipline = TypedDiscipline()
-    discipline = RemappingDiscipline(
-        original_discipline, {"m": ("n", 0), "t": ("s", 1)}
-    )
-    discipline.execute({"m": array([3.0]), "t": array(["xy"])})
-    assert_equal(original_discipline.io.input_data["n"], array([3, 2]))
-    assert_equal(original_discipline.io.input_data["s"], array(["ab", "xy"]))
+    if default is not None:
+        original_discipline.io.input_grammar.defaults[mapping[0]] = default
+    return original_discipline, RemappingDiscipline(original_discipline, {"v": mapping})
 
 
 @pytest.mark.parametrize(
-    "input_data",
+    ("default", "mapping", "value", "expected"),
     [
-        {"m": array([2.5]), "t": array(["xy"])},
-        {"m": array([3]), "t": array(["xyz"])},
-        {"m": array([3]), "t": array([2.5])},
+        (None, ("n", 0), array([3.0]), array([3, 2])),
+        (None, ("n", 0), array([[3.0]]), array([3, 2])),
+        (None, ("s", 1), array(["xy"]), array(["ab", "xy"])),
+        (
+            array([1.0, 2.0], dtype=float32),
+            ("n", 0),
+            array([0.1]),
+            array([0.1, 2.0], dtype=float32),
+        ),
+        (
+            array([1.0, 2.0], dtype=complex64),
+            ("n", 0),
+            array([0.1]),
+            array([0.1, 2.0], dtype=complex64),
+        ),
+        (array([b"ab", b"cd"]), ("s", 1), array(["xy"]), array([b"ab", b"xy"])),
+        (array(["ab", "cd"]), ("s", 1), array([b"xy"]), array(["ab", "xy"])),
+    ],
+    ids=[
+        "integral-float-into-int",
+        "leading-unit-dimension",
+        "str-into-str",
+        "float64-into-float32",
+        "float64-into-complex64",
+        "str-into-bytes",
+        "bytes-into-str",
     ],
 )
-def test_component_lossy_cast(input_data, snapshot) -> None:
+def test_component_lossless_cast(default, mapping, value, expected) -> None:
+    """Check that a value mapped to a component can be cast without loss."""
+    original_discipline, discipline = create_component_remapping(default, mapping)
+    discipline.execute({"v": value})
+    assert_equal(original_discipline.io.input_data[mapping[0]], expected)
+
+
+@pytest.mark.parametrize(
+    ("default", "mapping", "value"),
+    [
+        (None, ("n", 0), array([2.5])),
+        (array([1, 2], dtype=int8), ("n", 0), array([300])),
+        (None, ("s", 1), array(["xyz"])),
+        (None, ("s", 1), array([2.5])),
+        (array([1.0, 2.0], dtype=float32), ("n", 0), array([1e300])),
+        (array([b"ab", b"cd"]), ("s", 1), array(["xyz"])),
+    ],
+    ids=[
+        "float-into-int",
+        "int-overflow",
+        "str-truncation",
+        "float-into-str",
+        "float-overflow",
+        "bytes-truncation",
+    ],
+)
+def test_component_lossy_cast(default, mapping, value, snapshot) -> None:
     """Check that a value mapped to a component cannot be stored with a loss."""
-    discipline = RemappingDiscipline(TypedDiscipline(), {"m": ("n", 0), "t": ("s", 1)})
+    _, discipline = create_component_remapping(default, mapping)
     with assert_exception(ValueError, snapshot):
-        discipline.execute(input_data)
-
-
-def test_component_float_precision() -> None:
-    """Check that a float stored in a variable of lower precision is rounded."""
-    original_discipline = TypedDiscipline()
-    original_discipline.io.input_grammar.defaults["n"] = array(
-        [1.0, 2.0], dtype=float32
-    )
-    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
-    discipline.execute({"m": array([0.1])})
-    assert_equal(
-        original_discipline.io.input_data["n"], array([0.1, 2.0], dtype=float32)
-    )
-
-
-def test_component_with_leading_unit_dimension() -> None:
-    """Check a value with a leading unit dimension stored in a component."""
-    original_discipline = TypedDiscipline()
-    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
-    discipline.execute({"m": array([[3.0]])})
-    assert_equal(original_discipline.io.input_data["n"], array([3, 2]))
-
-
-def test_component_float_into_complex() -> None:
-    """Check that a float stored in a complex variable of lower precision is rounded."""
-    original_discipline = TypedDiscipline()
-    original_discipline.io.input_grammar.defaults["n"] = array(
-        [1.0, 2.0], dtype=complex64
-    )
-    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
-    discipline.execute({"m": array([0.1])})
-    assert_equal(
-        original_discipline.io.input_data["n"], array([0.1, 2.0], dtype=complex64)
-    )
+        discipline.execute({"v": value})
 
 
 class ListDiscipline(Discipline):
@@ -540,39 +566,3 @@ def test_list_variable(mapping, value, expected) -> None:
     discipline = RemappingDiscipline(original_discipline, {"a": mapping})
     discipline.execute({"a": value})
     assert original_discipline.io.input_data["x"] == expected
-
-
-def test_component_float_overflow(snapshot) -> None:
-    """Check that a float overflowing a variable of lower precision raises."""
-    original_discipline = TypedDiscipline()
-    original_discipline.io.input_grammar.defaults["n"] = array(
-        [1.0, 2.0], dtype=float32
-    )
-    discipline = RemappingDiscipline(original_discipline, {"m": ("n", 0)})
-    with assert_exception(ValueError, snapshot):
-        discipline.execute({"m": array([1e300])})
-
-
-@pytest.mark.parametrize(
-    ("default", "value", "expected"),
-    [
-        (array([b"ab", b"cd"]), array(["xy"]), array([b"ab", b"xy"])),
-        (array(["ab", "cd"]), array([b"xy"]), array(["ab", "xy"])),
-    ],
-)
-def test_component_str_and_bytes(default, value, expected) -> None:
-    """Check that a str stored in a bytes variable and vice versa is accepted."""
-    original_discipline = TypedDiscipline()
-    original_discipline.io.input_grammar.defaults["s"] = default
-    discipline = RemappingDiscipline(original_discipline, {"t": ("s", 1)})
-    discipline.execute({"t": value})
-    assert_equal(original_discipline.io.input_data["s"], expected)
-
-
-def test_component_bytes_truncation(snapshot) -> None:
-    """Check that a str truncated in a bytes variable raises."""
-    original_discipline = TypedDiscipline()
-    original_discipline.io.input_grammar.defaults["s"] = array([b"ab", b"cd"])
-    discipline = RemappingDiscipline(original_discipline, {"t": ("s", 1)})
-    with assert_exception(ValueError, snapshot):
-        discipline.execute({"t": array(["xyz"])})
