@@ -24,6 +24,7 @@ from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
 from gemseo.util.file_path_manager import FilePathManager
+from gemseo.util.matplotlib_figure import _get_colors
 from gemseo.util.matplotlib_figure import save_show_figure
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
 
@@ -72,3 +73,15 @@ def test_save_show_figure(
 
     if file_path is not None:
         assert Path(file_path).exists()
+
+
+@pytest.mark.parametrize(
+    ("colormap_name", "expected"),
+    [
+        ("tab10", ["#1f77b4", "#ff7f0e", "#2ca02c"]),
+        ("viridis", ["#440154", "#21918c", "#fde725"]),
+    ],
+)
+def test_get_colors(colormap_name, expected) -> None:
+    """Check that qualitative colormaps cycle and continuous ones are spaced."""
+    assert _get_colors(colormap_name, 3) == expected

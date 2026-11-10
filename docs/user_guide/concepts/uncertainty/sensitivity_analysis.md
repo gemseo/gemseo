@@ -179,12 +179,17 @@ It is efficient for initial screening but does not quantify the exact contributi
 
 ### Sobol' analysis { #concept-sobol-analysis }
 
-Sobol' analysis decomposes the total output variance by the [Sobol'-Hoeffding identity](https://openturns.github.io/openturns/latest/theory/reliability_sensitivity/sensitivity_sobol.html):
+For independent inputs,
+Sobol' analysis decomposes the total output variance
+by the Hoeffding-Sobol' decomposition [@hoeffding1948; @sobol1993]:
 
 $$\mathbb{V}[Y] = \sum_i V_i + \sum_{i<j} V_{ij} + \cdots$$
 
-where $V_i = \mathbb{V}[\mathbb{E}[Y|X_i]]$ is the variance explained by $X_i$ alone.
-The normalized indices $S_i = V_i / \mathbb{V}[Y]$ lie in $[0, 1]$ and sum to $1$.
+where $V_i = \mathbb{V}[\mathbb{E}[Y|X_i]]$ is the variance explained by $X_i$ alone,
+$V_{ij} = \mathbb{V}[\mathbb{E}[Y|X_i,X_j]] - V_i - V_j$ is the variance explained by the interaction of $X_i$ and $X_j$
+and the dots stand for the interactions of higher order.
+The normalized indices $S_i = V_i / \mathbb{V}[Y]$, $S_{ij} = V_{ij} / \mathbb{V}[Y]$, ... lie in $[0, 1]$ and sum to $1$;
+the first-order indices alone sum to $1$ only when the output has no interaction.
 This decomposition yields three types of indices:
 
 | Index        | Symbol      | Interpretation                                   |
@@ -203,6 +208,31 @@ together with their confidence intervals as vertical bars:
 ![Sobol' first and total-order indices](figs/sobol_analysis.png)
 
 This method requires a large number of model evaluations (typically 10 000+).
+
+[plot_variance_decomposition()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot_variance_decomposition]
+shows how the variance of an output is shared out
+as a [Treemap][gemseo.post.dataset.treemap.Treemap]:
+the unit square is the output variance,
+each first-order index $S_i$ and each second-order index $S_{ij}$ is a tile whose area is its share of this variance,
+and a grey residual tile named "orders ≥ 3" gathers the remaining part, i.e. the interactions of order 3 and more
+(it is named "estimation error" when there are at most two input components, as there is no such interaction).
+When the second-order indices are not computed,
+only the first-order tiles and the residual one are drawn,
+the latter being named "orders ≥ 2" as it gathers all the interactions.
+With estimated indices, the residual tile also contains the estimation error.
+The indices whose absolute value is below a threshold (0.01 by default, set by `threshold`)
+are considered indistinguishable from zero, e.g. estimation noise:
+they have no tile and their sum is merged into the residual tile,
+which is then labelled "orders ≥ 3 + small terms".
+The threshold should be at least the standard error of the estimates,
+about $1/\sqrt{N}$ for $N$ samples (see `get_intervals`):
+a tile below this level is not a significant interaction.
+A negative estimate at or below the opposite of the threshold has no tile;
+the figure lists the most negative ones under it.
+When the estimates of the tiles sum to more than 1, the areas are rescaled to fit the square,
+which is also said under the figure.
+Long input names can be shortened with the `labels` setting, given per input:
+the label of an input also labels its interactions, e.g. `"t/c × x"`.
 
 #### Estimators { #concept-sobol-estimators }
 

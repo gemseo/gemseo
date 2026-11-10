@@ -1,0 +1,46 @@
+# serializer version: 1
+# name: test_duplicated_column_names_error
+  "Treemap requires distinct column names; got duplicates: 'y'."
+# ---
+# name: test_invalid_dataset_error[negative]
+  'Treemap requires non-negative values.'
+# ---
+# name: test_invalid_dataset_error[not_finite]
+  'Treemap requires finite values.'
+# ---
+# name: test_invalid_dataset_error[not_numeric]
+  'Treemap requires numeric values.'
+# ---
+# name: test_invalid_dataset_error[several_samples]
+  'Treemap requires a dataset with a single sample; got 2 samples.'
+# ---
+# name: test_invalid_dataset_error[zero_sum]
+  'Treemap requires at least one positive value.'
+# ---
+# name: test_invalid_tile_color_error[misspelled_name]
+  '''
+  1 validation error for Treemap_Settings
+  tile_colors
+    Value error, The tile color of 'a' is neither a color nor a tuple of colors: 'gren'. [type=value_error, input_value={'a': 'gren'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_tile_color_error[rgb_out_of_range]
+  '''
+  1 validation error for Treemap_Settings
+  tile_colors
+    Value error, The tile color of 'a' is neither a color nor a tuple of colors: (255.0, 0.0, 0.0). [type=value_error, input_value={'a': (255, 0, 0)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_tile_color_error[string_of_color_letters]
+  '''
+  1 validation error for Treemap_Settings
+  tile_colors
+    Value error, The tile color of 'a' is neither a color nor a tuple of colors: 'kb'. [type=value_error, input_value={'a': 'kb'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_unknown_residual_error
+  "The residual tile 'z' is not a column of the dataset."
+# ---

@@ -22,24 +22,32 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 
 import pytest
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import isnan
+from numpy import nan
 from numpy import pi
 from numpy import sign
 from numpy import sin
+from numpy import zeros
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
 from gemseo import sample_disciplines
+from gemseo.dataset import Dataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
+from gemseo.post.dataset.treemap_settings import Treemap_Settings
+from gemseo.problem.uncertainty.ishigami import statistics as ishigami_statistics
+from gemseo.problem.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
@@ -49,9 +57,14 @@ from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
 from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from gemseo.core.discipline import Discipline
+    from gemseo.post.dataset.treemap import Treemap
 
 StatisticsType = tuple[
     dict[str, NDArray[float]],
@@ -115,6 +128,19 @@ def sobol(discipline: Discipline, random_space: RandomSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], random_space, 100)
+    analysis.compute_indices()
+    return analysis
+
+
+@pytest.fixture(scope="module")
+def sobol_without_second_order(
+    discipline: Discipline, random_space: RandomSpace
+) -> SobolAnalysis:
+    """A Sobol' analysis without second-order indices."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline], random_space, 100, compute_second_order=False
+    )
     analysis.compute_indices()
     return analysis
 
@@ -963,3 +989,736 @@ def test_n_samples_setting_replaced_warning(
         "the argument 'n_samples' (20)."
     )
     assert (message in caplog.text) is is_logged
+
+
+@pytest.fixture(scope="module")
+def ishigami_sobol() -> SobolAnalysis:
+    """A Sobol' analysis of the Ishigami function with second-order indices."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples([IshigamiDiscipline()], IshigamiSpace(), 100)
+    analysis.compute_indices()
+    return analysis
+
+
+def test_plot_variance_decomposition_from_estimates(ishigami_sobol) -> None:
+    """Check that the variance decomposition can be drawn from estimated indices."""
+    treemap = ishigami_sobol.plot_variance_decomposition("y")
+    assert treemap.dataset.get_columns()[-1] == "orders ≥ 3"
+    treemap.execute(save=False)
+
+
+def _make_indices(
+    first: Mapping[str, Sequence[float]],
+    second: Mapping[tuple[str, str], Sequence[Sequence[float]]],
+) -> SobolAnalysis.SensitivityIndices:
+    """Return the Sobol' indices of an output "y" from hand-made values.
+
+    Args:
+        first: The first-order indices of each input.
+        second: The second-order indices of some pairs of inputs,
+            as matrices whose rows correspond to the components of the first input
+            and columns to the ones of the second input.
+            The missing pairs have zero indices.
+
+    Returns:
+        The Sobol' indices.
+    """
+    second_order = {
+        name_i: {
+            name_j: zeros((len(first[name_i]), len(first[name_j]))) for name_j in first
+        }
+        for name_i in first
+    }
+    for (name_i, name_j), values in second.items():
+        second_order[name_i][name_j] = array(values)
+        second_order[name_j][name_i] = array(values).T
+
+    return SobolAnalysis.SensitivityIndices(
+        first={"y": [{name: array(values) for name, values in first.items()}]},
+        second={"y": [second_order]},
+    )
+
+
+def _patch_with_ishigami_indices(
+    analysis: SobolAnalysis, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Give a Sobol' analysis the exact indices of the Ishigami function.
+
+    Args:
+        analysis: The Sobol' analysis of the Ishigami function.
+        monkeypatch: The pytest fixture to patch the analysis.
+    """
+    stats = ishigami_statistics
+    indices = _make_indices(
+        {"x1": [stats.sobol_1], "x2": [stats.sobol_2], "x3": [stats.sobol_3]},
+        {
+            ("x1", "x2"): [[stats.sobol_12]],
+            ("x1", "x3"): [[stats.sobol_13]],
+            ("x2", "x3"): [[stats.sobol_23]],
+        },
+    )
+    monkeypatch.setattr(analysis, "_indices", indices)
+
+
+def test_plot_variance_decomposition(
+    ishigami_sobol, monkeypatch, snapshot_matplotlib
+) -> None:
+    """Check the tiles of the variance decomposition of the Ishigami function."""
+    _patch_with_ishigami_indices(ishigami_sobol, monkeypatch)
+    treemap = ishigami_sobol.plot_variance_decomposition("y")
+    dataset = treemap.dataset
+    assert dataset.get_columns() == ["x1", "x2", "x1 × x3", "orders ≥ 3"]  # noqa: RUF001
+    stats = ishigami_statistics
+    assert_almost_equal(
+        dataset.get_view().to_numpy()[0],
+        [stats.sobol_1, stats.sobol_2, stats.sobol_13, 0.0],
+    )
+    treemap.execute(save=False)
+
+
+@pytest.mark.parametrize(
+    ("setting_name", "expected"),
+    [
+        ("title", "Variance decomposition of y"),
+        ("residual_name", "orders ≥ 3"),
+        ("residual_label", "small terms"),
+        ("colormap", "tab10"),
+        # The exact indices sum to 1 up to a rounding error: no rescaling to report.
+        ("footnote", ""),
+    ],
+)
+def test_plot_variance_decomposition_default_settings(
+    ishigami_sobol, monkeypatch, setting_name, expected
+) -> None:
+    """Check the settings computed when the user gives none."""
+    _patch_with_ishigami_indices(ishigami_sobol, monkeypatch)
+    treemap = ishigami_sobol.plot_variance_decomposition("y")
+    assert getattr(treemap.settings, setting_name) == expected
+
+
+@pytest.mark.parametrize(
+    ("tile_name", "expected"),
+    [
+        pytest.param("x1", ("#1f77b4",), id="first_input"),
+        pytest.param("x2", ("#ff7f0e",), id="second_input"),
+        pytest.param("x1 × x3", ("#8fbbda", "#96d096"), id="interaction"),  # noqa: RUF001
+    ],
+)
+def test_plot_variance_decomposition_tile_colors(
+    ishigami_sobol, monkeypatch, tile_name, expected
+) -> None:
+    """Check that an input has a color of the colormap and an interaction faded ones."""
+    _patch_with_ishigami_indices(ishigami_sobol, monkeypatch)
+    treemap = ishigami_sobol.plot_variance_decomposition("y")
+    assert treemap.settings.tile_colors[tile_name] == expected
+
+
+def _plot_variance_decomposition_with_user_settings(
+    sobol: SobolAnalysis, monkeypatch: pytest.MonkeyPatch, **settings: Any
+) -> Treemap:
+    """Plot the variance decomposition of hand-made indices with user settings.
+
+    Args:
+        sobol: The Sobol' analysis.
+        monkeypatch: The pytest fixture to patch the analysis.
+        **settings: The settings of the treemap given by the user.
+
+    Returns:
+        The treemap.
+    """
+    # The computed footnote is not empty.
+    indices = _make_indices(
+        {"x1": [0.8], "x23": [0.6, -0.1]}, {("x1", "x23"): [[0.4, 0.2]]}
+    )
+    monkeypatch.setattr(sobol, "_indices", indices)
+    return sobol.plot_variance_decomposition("y", Treemap_Settings(**settings))
+
+
+@pytest.mark.parametrize(
+    ("setting_name", "value"),
+    [
+        ("title", "My title"),
+        ("colormap", "viridis"),
+        ("residual_label", "tiny"),
+        ("footnote", "My footnote"),
+    ],
+)
+def test_plot_variance_decomposition_user_settings(
+    sobol, monkeypatch, setting_name, value
+) -> None:
+    """Check that a setting given by the user overrides the computed one."""
+    treemap = _plot_variance_decomposition_with_user_settings(
+        sobol, monkeypatch, **{setting_name: value}
+    )
+    assert getattr(treemap.settings, setting_name) == value
+
+
+@pytest.mark.parametrize(
+    ("setting_name", "value", "expected"),
+    [
+        pytest.param("tile_colors", {"x1": "red"}, {"x1": ("red",)}, id="tile_colors"),
+        pytest.param("labels", {"x2": "Second"}, {"x2": "Second"}, id="labels"),
+    ],
+)
+def test_plot_variance_decomposition_user_mapping_settings(
+    sobol, monkeypatch, setting_name, value, expected
+) -> None:
+    """Check that the entries of a mapping given by the user override the computed."""
+    treemap = _plot_variance_decomposition_with_user_settings(
+        sobol, monkeypatch, **{setting_name: value}
+    )
+    actual = getattr(treemap.settings, setting_name)
+    assert {key: actual[key] for key in value} == expected
+
+
+@pytest.mark.parametrize(
+    ("tile_colors", "expected"),
+    [
+        pytest.param({"x1": "red"}, ("#ff8080", "#ffbf86"), id="color_name"),
+        pytest.param({"x1": (1.0, 0.0, 0.0)}, ("#ff8080", "#ffbf86"), id="rgb_tuple"),
+        pytest.param(
+            {"x23[0]": (0.0, 0.0, 1.0, 0.5)},
+            ("#8fbbda", "#8080ff"),
+            id="rgba_tuple",
+        ),
+        pytest.param(
+            {"x1": ("red", "blue")},
+            ("#8fbbda", "#ffbf86"),
+            id="bands_ignored",
+        ),
+    ],
+)
+def test_plot_variance_decomposition_user_colors_fade_in_interactions(
+    sobol, monkeypatch, tile_colors, expected
+) -> None:
+    """Check that the interaction of two inputs fades the colors set by the user."""
+    indices = _make_indices(
+        {"x1": [0.4], "x23": [0.3, 0.1]}, {("x1", "x23"): [[0.1, 0.05]]}
+    )
+    monkeypatch.setattr(sobol, "_indices", indices)
+    settings = sobol.plot_variance_decomposition(
+        "y", Treemap_Settings(tile_colors=tile_colors)
+    ).settings
+    assert settings.tile_colors["x1 × x23[0]"] == expected  # noqa: RUF001
+
+
+def test_plot_variance_decomposition_two_components(sobol, monkeypatch) -> None:
+    """Check that the residual tile is not said to have interactions of order 3."""
+    indices = _make_indices({"x1": [0.5], "x2": [0.3]}, {("x1", "x2"): [[0.1]]})
+    monkeypatch.setattr(sobol, "_indices", indices)
+    monkeypatch.setattr(
+        sobol,
+        "dataset",
+        Dataset.from_array(zeros((1, 3)), variable_names=["x1", "x2", "y"]),
+    )
+    treemap = sobol.plot_variance_decomposition("y")
+    assert list(treemap.dataset.get_columns()) == [
+        "x1",
+        "x2",
+        "x1 × x2",  # noqa: RUF001
+        "estimation error",
+    ]
+    assert treemap.settings.residual_name == "estimation error"
+
+
+def test_plot_variance_decomposition_input_named_residual(sobol, monkeypatch) -> None:
+    """Check that an input named "residual" does not clash with the residual tile."""
+    indices = _make_indices(
+        {"residual": [0.5], "x": [0.3]}, {("residual", "x"): [[0.1]]}
+    )
+    monkeypatch.setattr(sobol, "_indices", indices)
+    monkeypatch.setattr(
+        sobol,
+        "dataset",
+        Dataset.from_array(zeros((1, 3)), variable_names=["residual", "x", "y"]),
+    )
+    treemap = sobol.plot_variance_decomposition(
+        "y", Treemap_Settings(labels={"residual": "R"})
+    )
+    names = list(treemap.dataset.get_columns())
+    assert len(set(names)) == len(names)
+    assert names[-1] == "estimation error"
+    assert treemap.settings.labels["estimation error"] == "estimation error"
+    treemap.execute(save=False)
+
+
+def test_plot_variance_decomposition_without_second_order(
+    sobol_without_second_order,
+) -> None:
+    """Check that the first-order indices and a residual are drawn by default."""
+    treemap = sobol_without_second_order.plot_variance_decomposition(("y", 0))
+    names = list(treemap.dataset.get_columns())
+    # The negative estimates have no tile.
+    assert names[-1] == "orders ≥ 2"
+    assert treemap.settings.residual_name == "orders ≥ 2"
+    assert set(names[:-1]) <= {"x1", "x23[0]", "x23[1]"}
+    assert "x1 × x23[0]" not in names  # noqa: RUF001
+    assert_almost_equal(sum(treemap._create_specific_data_from_dataset()[1]), 1.0)
+    treemap.execute(save=False)
+
+
+def test_plot_variance_decomposition_without_second_order_logs(
+    sobol_without_second_order, caplog
+) -> None:
+    """Check that the absence of second-order indices is logged."""
+    sobol_without_second_order.plot_variance_decomposition(("y", 0))
+    assert (
+        "The second-order Sobol' indices of 'y' are not computed; "
+        "only the first-order ones are shown, "
+        "the residual tile gathering all the interactions." in caplog.text
+    )
+
+
+def test_plot_variance_decomposition_negative_terms(
+    sobol, monkeypatch, snapshot_matplotlib
+) -> None:
+    """Check that negative estimates have no tile and are given in the footnote."""
+    indices = _make_indices(
+        {"x1": [0.4], "x23": [0.3, -0.05]},
+        {("x1", "x23"): [[0.1, 0.05]], ("x23", "x23"): [[0.0, -0.02], [-0.02, 0.0]]},
+    )
+    monkeypatch.setattr(sobol, "_indices", indices)
+    treemap = sobol.plot_variance_decomposition("y")
+    dataset = treemap.dataset
+    names = list(dataset.get_columns())
+    areas = dataset.get_view().to_numpy()[0]
+    assert names == ["x1", "x23[0]", "x1 × x23[0]", "x1 × x23[1]", "orders ≥ 3"]  # noqa: RUF001
+    assert_almost_equal(areas, [0.4, 0.3, 0.1, 0.05, 0.15])
+    assert treemap.settings.footnote == (
+        "Negative estimates, without tile: x23[1] = -0.05, x23[0] × x23[1] = -0.02."  # noqa: RUF001
+    )
+    treemap.execute(save=False)
+
+
+def _patch_with_scalar_inputs(
+    analysis: SobolAnalysis, monkeypatch: pytest.MonkeyPatch, n_inputs: int
+) -> list[str]:
+    """Give a Sobol' analysis scalar inputs with equal first-order indices.
+
+    Args:
+        analysis: The Sobol' analysis.
+        monkeypatch: The pytest fixture to patch the analysis.
+        n_inputs: The number of scalar inputs.
+
+    Returns:
+        The names of the inputs.
+    """
+    names = [f"x{i}" for i in range(n_inputs)]
+    indices = _make_indices({name: [0.5 / n_inputs] for name in names}, {})
+    monkeypatch.setattr(analysis, "_indices", indices)
+    monkeypatch.setattr(
+        analysis,
+        "dataset",
+        Dataset.from_array(zeros((1, n_inputs + 1)), variable_names=[*names, "y"]),
+    )
+    return names
+
+
+@pytest.mark.parametrize(
+    ("n_inputs", "colormap"), [(10, "tab10"), (12, "tab20"), (21, "viridis")]
+)
+def test_plot_variance_decomposition_many_inputs(
+    sobol, monkeypatch, n_inputs, colormap
+) -> None:
+    """Check that each input has its own color when the default colormap is short."""
+    names = _patch_with_scalar_inputs(sobol, monkeypatch, n_inputs)
+    settings = sobol.plot_variance_decomposition("y").settings
+    assert settings.colormap == colormap
+    assert len({settings.tile_colors[name] for name in names}) == n_inputs
+
+
+def test_plot_variance_decomposition_many_inputs_tab20_order(
+    sobol, monkeypatch
+) -> None:
+    """Check that the first inputs have distinct hues when tab20 is used."""
+    names = _patch_with_scalar_inputs(sobol, monkeypatch, 12)
+    tile_colors = sobol.plot_variance_decomposition("y").settings.tile_colors
+    # The dark tones of tab20 come first, then the light ones.
+    assert [tile_colors[name][0] for name in names[:4]] == [
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+    ]
+    assert tile_colors[names[10]] == ("#aec7e8",)
+
+
+def test_plot_variance_decomposition_many_inputs_user_colormap(
+    sobol, monkeypatch
+) -> None:
+    """Check that the colormap set by the user is kept, even if it is short."""
+    _patch_with_scalar_inputs(sobol, monkeypatch, 12)
+    settings = sobol.plot_variance_decomposition(
+        "y", Treemap_Settings(colormap="tab10")
+    ).settings
+    assert settings.colormap == "tab10"
+    assert settings.tile_colors["x0"] == settings.tile_colors["x10"]
+
+
+def test_plot_variance_decomposition_of_constant_output(
+    discipline_with_constant_output_and_space, snapshot
+) -> None:
+    """Check that the variance decomposition of a constant output is undefined."""
+    discipline, random_space = discipline_with_constant_output_and_space
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], random_space, 100)
+    analysis.compute_indices()
+    with assert_exception(ValueError, snapshot):
+        analysis.plot_variance_decomposition("constant")
+
+
+@pytest.mark.parametrize(
+    ("first", "second", "threshold", "expected_columns", "expected_values"),
+    [
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.005]},
+            {
+                ("x1", "x23"): [[0.1, -0.004]],
+                ("x23", "x23"): [[0.0, 0.003], [0.003, 0.0]],
+            },
+            0.01,
+            ["x1", "x23[0]", "x1 × x23[0]", "orders ≥ 3"],  # noqa: RUF001
+            [0.4, 0.3, 0.1, 0.2],
+            id="default_threshold",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.005]},
+            {
+                ("x1", "x23"): [[0.1, -0.004]],
+                ("x23", "x23"): [[0.0, 0.003], [0.003, 0.0]],
+            },
+            0.0,
+            [
+                "x1",
+                "x23[0]",
+                "x23[1]",
+                "x1 × x23[0]",  # noqa: RUF001
+                "x23[0] × x23[1]",  # noqa: RUF001
+                "orders ≥ 3",
+            ],
+            [0.4, 0.3, 0.005, 0.1, 0.003, 0.192],
+            id="zero_threshold",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, nan]},
+            {("x1", "x23"): [[0.1, 0.05]]},
+            0.01,
+            [
+                "x1",
+                "x23[0]",
+                "x1 × x23[0]",  # noqa: RUF001
+                "x1 × x23[1]",  # noqa: RUF001
+                "orders ≥ 3",
+            ],
+            [0.4, 0.3, 0.1, 0.05, 0.15],
+            id="undefined_term",
+        ),
+        pytest.param(
+            {"x1": [0.8], "x23": [0.6, 0.0]},
+            {("x1", "x23"): [[0.4, 0.2]]},
+            0.01,
+            [
+                "x1",
+                "x23[0]",
+                "x1 × x23[0]",  # noqa: RUF001
+                "x1 × x23[1]",  # noqa: RUF001
+                "orders ≥ 3",
+            ],
+            [0.8, 0.6, 0.4, 0.2, 0.0],
+            id="sum_above_one",
+        ),
+    ],
+)
+def test_plot_variance_decomposition_dataset(
+    sobol,
+    monkeypatch,
+    first,
+    second,
+    threshold,
+    expected_columns,
+    expected_values,
+) -> None:
+    """Check the columns and values of the dataset of the treemap."""
+    monkeypatch.setattr(sobol, "_indices", _make_indices(first, second))
+    treemap = sobol.plot_variance_decomposition("y", threshold=threshold)
+    dataset = treemap.dataset
+    assert list(dataset.get_columns()) == expected_columns
+    assert_almost_equal(dataset.get_view().to_numpy()[0], expected_values)
+
+
+@pytest.mark.parametrize(
+    ("first", "second", "threshold", "settings", "expected"),
+    [
+        # The zero pair x23[0] x x23[1] is not a small term: it contributes nothing.
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.1]},
+            {("x1", "x23"): [[0.1, 0.1]]},
+            0.01,
+            {},
+            "orders ≥ 3",
+            id="no_small_term",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.1]},
+            {
+                ("x1", "x23"): [[0.1, 0.1]],
+                ("x23", "x23"): [[0.0, 0.005], [0.005, 0.0]],
+            },
+            0.01,
+            {},
+            "orders ≥ 3 + small terms",
+            id="small_term",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.005]},
+            {
+                ("x1", "x23"): [[0.1, -0.004]],
+                ("x23", "x23"): [[0.0, 0.003], [0.003, 0.0]],
+            },
+            0.0,
+            {},
+            "orders ≥ 3",
+            id="zero_threshold",
+        ),
+        pytest.param(
+            {"x1": [0.5], "x23": [0.3, 0.001]},
+            None,
+            0.01,
+            {},
+            "orders ≥ 2 + small terms",
+            id="without_second_order",
+        ),
+        pytest.param(
+            {"x1": [0.5], "x23": [0.3, 0.001]},
+            None,
+            0.0,
+            {},
+            "orders ≥ 2",
+            id="without_second_order_zero_threshold",
+        ),
+        # The user's residual label replaces "small terms" in the residual label.
+        pytest.param(
+            {"x1": [0.6], "x23": [0.3, 0.05]},
+            {("x1", "x23"): [[0.0, 0.003]]},
+            0.01,
+            {"min_area": 0.1, "residual_label": "noise"},
+            "orders ≥ 3 + noise",
+            id="user_label_with_min_area",
+        ),
+        pytest.param(
+            {"x1": [0.6], "x23": [0.3, 0.05]},
+            {("x1", "x23"): [[0.0, 0.003]]},
+            0.01,
+            {"residual_label": "noise"},
+            "orders ≥ 3 + noise",
+            id="user_label_without_min_area",
+        ),
+        # "small terms" is not repeated when tiles are merged by min_area.
+        pytest.param(
+            {"x1": [0.6], "x23": [0.3, 0.05]},
+            {("x1", "x23"): [[0.0, 0.0]]},
+            0.01,
+            {"min_area": 0.1},
+            "orders ≥ 3 + small terms",
+            id="default_label_with_min_area",
+        ),
+        # The user's label of the residual tile keeps the suffix.
+        pytest.param(
+            {"x1": [0.6], "x23": [0.3, 0.05]},
+            {("x1", "x23"): [[0.0, 0.003]]},
+            0.01,
+            {"labels": {"orders ≥ 3": "rest"}},
+            "rest + small terms",
+            id="user_residual_tile_label_with_small_terms",
+        ),
+        pytest.param(
+            {"x1": [0.6], "x23": [0.3, 0.05]},
+            {("x1", "x23"): [[0.0, 0.0]]},
+            0.01,
+            {"labels": {"orders ≥ 3": "rest"}},
+            "rest",
+            id="user_residual_tile_label_without_small_terms",
+        ),
+    ],
+)
+def test_plot_variance_decomposition_residual_label(
+    sobol, monkeypatch, first, second, threshold, settings, expected
+) -> None:
+    """Check the label of the residual tile.
+
+    It mentions the small terms only if any, and only once.
+    """
+    if second is None:
+        indices = SobolAnalysis.SensitivityIndices(
+            first={"y": [{name: array(value) for name, value in first.items()}]}
+        )
+    else:
+        indices = _make_indices(first, second)
+
+    monkeypatch.setattr(sobol, "_indices", indices)
+    treemap = sobol.plot_variance_decomposition(
+        "y", Treemap_Settings(**settings), threshold=threshold
+    )
+    assert treemap._create_specific_data_from_dataset()[0][-1] == expected
+
+
+@pytest.mark.parametrize(
+    ("first", "second", "threshold", "expected"),
+    [
+        pytest.param(
+            {"x1": [0.8], "x23": [0.6, 0.0]},
+            {("x1", "x23"): [[0.4, 0.2]]},
+            0.01,
+            "The estimates sum to 2.00 > 1: the areas are rescaled.",
+            id="sum_above_one",
+        ),
+        pytest.param(
+            {"x1": [0.8], "x23": [0.6, 0.005]},
+            {("x1", "x23"): [[0.4, 0.2]]},
+            0.01,
+            "The estimates sum to 2.00 > 1: the areas are rescaled.\n"
+            "The indices below the threshold are not shown.",
+            id="sum_above_one_and_small_terms",
+        ),
+        pytest.param(
+            {"x1": [0.8], "x23": [0.6, -0.1]},
+            {("x1", "x23"): [[0.4, 0.2]]},
+            0.01,
+            "Negative estimates, without tile: x23[1] = -0.10.\n"
+            "The estimates sum to 2.00 > 1: the areas are rescaled.",
+            id="negative_terms_and_sum_above_one",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, -0.02]},
+            {
+                ("x1", "x23"): [[-0.07, -0.05]],
+                ("x23", "x23"): [[0.0, -0.04], [-0.04, 0.0]],
+            },
+            0.01,
+            "4 negative estimates, without tile; "
+            "the most negative: "
+            "x1 × x23[0] = -0.07, x1 × x23[1] = -0.05, "  # noqa: RUF001
+            "x23[0] × x23[1] = -0.04.",  # noqa: RUF001
+            id="four_negative_terms_summed_up",
+        ),
+        # Three negative terms are listed one by one.
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.02]},
+            {
+                ("x1", "x23"): [[-0.07, -0.05]],
+                ("x23", "x23"): [[0.0, -0.04], [-0.04, 0.0]],
+            },
+            0.01,
+            "Negative estimates, without tile: "
+            "x1 × x23[0] = -0.07, x1 × x23[1] = -0.05, "  # noqa: RUF001
+            "x23[0] × x23[1] = -0.04.",  # noqa: RUF001
+            id="three_negative_terms_listed",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, nan]},
+            {("x1", "x23"): [[0.1, 0.05]]},
+            0.01,
+            "Undefined estimates, without tile: x23[1].",
+            id="undefined_term",
+        ),
+        # A negative estimate at the opposite of the threshold is negative.
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, -0.02]},
+            {},
+            0.02,
+            "Negative estimates, without tile: x23[1] = -0.02.",
+            id="negative_term_equal_to_threshold",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, -0.02]},
+            {},
+            0.03,
+            "",
+            id="negative_term_above_minus_threshold",
+        ),
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, -0.02]},
+            {},
+            0.01,
+            "Negative estimates, without tile: x23[1] = -0.02.",
+            id="negative_term_below_minus_threshold",
+        ),
+        # A negative estimate is listed even if it rounds to zero.
+        pytest.param(
+            {"x1": [0.4], "x23": [0.3, 0.005]},
+            {
+                ("x1", "x23"): [[0.1, -0.004]],
+                ("x23", "x23"): [[0.0, 0.003], [0.003, 0.0]],
+            },
+            0.0,
+            "Negative estimates, without tile: x1 × x23[1] = -0.00.",  # noqa: RUF001
+            id="negative_term_rounded_to_zero",
+        ),
+    ],
+)
+def test_plot_variance_decomposition_footnote(
+    sobol, monkeypatch, first, second, threshold, expected
+) -> None:
+    """Check the footnote listing the estimates without tile and the rescaling."""
+    monkeypatch.setattr(sobol, "_indices", _make_indices(first, second))
+    treemap = sobol.plot_variance_decomposition("y", threshold=threshold)
+    assert treemap.settings.footnote == expected
+
+
+def test_plot_variance_decomposition_noise_does_not_rescale(sobol, monkeypatch) -> None:
+    """Check that the second-order estimation noise neither adds tiles nor rescales."""
+    n_inputs = 20
+    names = _patch_with_scalar_inputs(sobol, monkeypatch, n_inputs)
+    second = {}
+    k = 0
+    for i in range(n_inputs):
+        for j in range(i + 1, n_inputs):
+            second[names[i], names[j]] = [[0.005 if k % 2 else -0.005]]
+            k += 1
+
+    monkeypatch.setattr(
+        sobol,
+        "_indices",
+        _make_indices({name: [0.4 / n_inputs] for name in names}, second),
+    )
+    treemap = sobol.plot_variance_decomposition("y")
+    assert list(treemap.dataset.get_columns()) == [*names, "orders ≥ 3"]
+    assert not treemap.settings.footnote
+    assert_almost_equal(treemap.dataset.get_view().to_numpy()[0][-1], 0.6)
+    assert treemap.settings.labels["orders ≥ 3"] == "orders ≥ 3 + small terms"
+
+
+@pytest.mark.parametrize(
+    "threshold",
+    [pytest.param(-0.1, id="negative"), pytest.param(nan, id="nan")],
+)
+def test_plot_variance_decomposition_invalid_threshold_error(
+    sobol, snapshot, threshold
+) -> None:
+    """Check that a negative or NaN threshold is rejected."""
+    with assert_exception(ValueError, snapshot):
+        sobol.plot_variance_decomposition("y", threshold=threshold)
+
+
+def test_plot_variance_decomposition_input_labels(sobol, monkeypatch) -> None:
+    """Check that the labels of the inputs also label their interactions."""
+    indices = _make_indices(
+        {"x1": [0.3], "x23": [0.2, 0.1]},
+        {
+            ("x1", "x23"): [[0.1, 0.05]],
+            ("x23", "x23"): [[0.0, -0.05], [-0.05, 0.0]],
+        },
+    )
+    monkeypatch.setattr(sobol, "_indices", indices)
+    labels = {"x1": "a", "x23": "b", "x23[1]": "c", "x1 × x23[0]": "special"}  # noqa: RUF001
+    treemap = sobol.plot_variance_decomposition("y", Treemap_Settings(labels=labels))
+    settings = treemap.settings
+    assert {name: settings.labels[name] for name in treemap.dataset.get_columns()} == {
+        "x1": "a",
+        "x23[0]": "b[0]",
+        "x23[1]": "c",
+        "x1 × x23[0]": "special",  # noqa: RUF001
+        "x1 × x23[1]": "a × c",  # noqa: RUF001
+        "orders ≥ 3": "orders ≥ 3",
+    }
+    assert settings.footnote == "Negative estimates, without tile: b[0] × c = -0.05."  # noqa: RUF001

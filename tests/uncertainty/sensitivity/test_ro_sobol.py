@@ -1404,3 +1404,14 @@ def test_settings_unchanged(discipline, parameter_space) -> None:
     settings = OT_SOBOL_INDICES_Settings()
     compute_one_event_samples(discipline, parameter_space, settings)
     assert settings == OT_SOBOL_INDICES_Settings()
+
+
+def test_plot_variance_decomposition(analysis) -> None:
+    """Check that the variance decomposition of an event can be plotted."""
+    treemap = analysis.plot_variance_decomposition("y_high")
+    assert treemap.settings.title == "Variance decomposition of y_high"
+    names = list(treemap.dataset.get_columns())
+    # With two inputs, there is no interaction of order 3 or more.
+    assert names[-1] == "estimation error"
+    assert set(names[:-1]) <= {"x1", "x2", "x1 × x2"}  # noqa: RUF001
+    treemap.execute(save=False)

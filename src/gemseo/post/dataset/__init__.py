@@ -64,6 +64,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.radviz import RadViz  # noqa: F401
     from gemseo.post.dataset.scatter import Scatter  # noqa: F401
     from gemseo.post.dataset.surfaces import Surfaces  # noqa: F401
+    from gemseo.post.dataset.treemap import Treemap  # noqa: F401
     from gemseo.post.dataset.yvsx import YvsX  # noqa: F401
     from gemseo.post.dataset.zvsxy import ZvsXY  # noqa: F401
 
@@ -81,6 +82,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "RadarChart": "radar_chart",
     "Scatter": "scatter",
     "Surfaces": "surfaces",
+    "Treemap": "treemap",
     "YvsX": "yvsx",
     "ZvsXY": "zvsxy",
     "dataset_plot_factory": "factory",

@@ -166,9 +166,14 @@ including
 [RadarChart][gemseo.post.dataset.radar_chart.RadarChart],
 [Boxplot][gemseo.post.dataset.boxplot.Boxplot],
 [BarPlot][gemseo.post.dataset.bar_plot.BarPlot],
+[Treemap][gemseo.post.dataset.treemap.Treemap],
 [YvsX][gemseo.post.dataset.yvsx.YvsX]
 and
 [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY].
+The [Treemap][gemseo.post.dataset.treemap.Treemap]
+draws one tile per variable in a unit square,
+with an area proportional to the value of the variable,
+using the squarified layout that keeps the tiles close to squares [@bruls2000squarified].
 Plots can be combined into a single figure,
 customized through the underlying matplotlib API
 or rendered as interactive HTML through plotly.

@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import logging
+import operator
 from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
@@ -33,9 +34,13 @@ from typing import Final
 from typing import Protocol
 
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
+from matplotlib.colors import to_hex
+from matplotlib.colors import to_rgb
 from matplotlib.transforms import Affine2D
 from numpy import array
 from numpy import asarray
+from numpy import isnan
 from numpy import sign
 from numpy import zeros
 from openturns import JansenSensitivityAlgorithm
@@ -48,18 +53,23 @@ from gemseo.dataset.dataset import Dataset
 from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.post.dataset.heatmap import Heatmap
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
+from gemseo.post.dataset.treemap import Treemap
+from gemseo.post.dataset.treemap_settings import Treemap_Settings
 from gemseo.uncertainty.sensitivity._ot_sobol_indices_estimator import (
     OTSobolIndicesEstimator,
 )
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
+from gemseo.util.matplotlib_figure import _get_colors
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
+from gemseo.util.string import get_variables_with_components
 from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
     from pathlib import Path
 
     from matplotlib.figure import Figure
@@ -67,10 +77,69 @@ if TYPE_CHECKING:
 
     from gemseo.dataset.io_dataset import IODataset
     from gemseo.doe.core.base_doe_settings import BaseDOESettings
+    from gemseo.post.dataset.treemap_settings import _Color
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
     from gemseo.util.string import VariableOrComponent
     from gemseo.util.typing import RealArray
+
+_sum_tolerance: Final[float] = 1e-12
+"""The excess over 1 of a sum of Sobol' indices that is a rounding error."""
+
+_max_listed_negative_terms: Final[int] = 3
+"""The maximum number of negative estimates listed one by one in the footnote."""
+
+
+def _build_footnote(
+    negative_terms: Sequence[tuple[str, float]],
+    undefined_terms: Sequence[str],
+    kept_sum: float,
+    has_small_terms: bool,
+    value_format: str,
+) -> str:
+    """Build the footnote of the treemap of a variance decomposition.
+
+    Args:
+        negative_terms: The labels and values of the negative estimates
+            that have no tile, from the most negative to the least negative.
+        undefined_terms: The labels of the undefined estimates.
+        kept_sum: The sum of the estimates that have a tile.
+        has_small_terms: Whether some estimates are below the threshold,
+            and thus have no tile.
+        value_format: The format specification of the values.
+
+    Returns:
+        The footnote, with one line per issue; empty if there is none.
+    """
+    lines = []
+    if negative_terms:
+        n_negative_terms = len(negative_terms)
+        listed_terms = ", ".join(
+            f"{name} = {value:{value_format}}"
+            for name, value in negative_terms[:_max_listed_negative_terms]
+        )
+        if n_negative_terms > _max_listed_negative_terms:
+            lines.append(
+                f"{n_negative_terms} negative estimates, without tile; "
+                f"the most negative: {listed_terms}."
+            )
+        else:
+            lines.append(f"Negative estimates, without tile: {listed_terms}.")
+
+    if undefined_terms:
+        lines.append(
+            f"Undefined estimates, without tile: {', '.join(undefined_terms)}."
+        )
+
+    if kept_sum > 1.0 + _sum_tolerance:
+        lines.append(
+            f"The estimates sum to {kept_sum:{value_format}} > 1: "
+            "the areas are rescaled."
+        )
+        if has_small_terms:
+            lines.append("The indices below the threshold are not shown.")
+
+    return "\n".join(lines)
 
 
 logger = logging.getLogger(__name__)
@@ -756,6 +825,27 @@ class SobolIndicesEstimatorMixin:
             for output_name, output_sensitivity_indices in indices.items()
         }
 
+    def __get_components_and_variables(
+        self,
+        indices: Mapping[str, RealArray] | Mapping[str, Mapping[str, RealArray]],
+    ) -> tuple[list[tuple[str, int]], list[str]]:
+        """Get the input components of Sobol' indices and their representations.
+
+        Args:
+            indices: The Sobol' indices of an output component,
+                with one item per input.
+
+        Returns:
+            The input components, as (name, component) tuples
+            and their string representations.
+        """
+        name_to_size = self.dataset.variable_name_to_n_components
+        components = list(get_variables_with_components(indices, name_to_size))
+        variables = [
+            repr_variable(name, index, name_to_size[name]) for name, index in components
+        ]
+        return components, variables
+
     def plot_second_order(
         self,
         output: VariableOrComponent,
@@ -794,22 +884,309 @@ class SobolIndicesEstimatorMixin:
             )
             raise ValueError(msg)
 
-        name_to_size = self.dataset.variable_name_to_n_components
-        components = [
-            (name, index) for name in indices for index in range(name_to_size[name])
-        ]
-        variables = [
-            repr_variable(name, index, name_to_size[name]) for name, index in components
-        ]
+        components, variables = self.__get_components_and_variables(indices)
         n = len(variables)
         data = zeros((n, n))
         for i, (name_i, component_i) in enumerate(components):
             indices_i = indices[name_i]
             for j, (name_j, component_j) in enumerate(components):
-                index = asarray(indices_i[name_j])[component_i, component_j]
+                index = indices_i[name_j][component_i, component_j]
                 data[i, j] = max(index, 0.0)
 
         dataset = Dataset.from_array(data, variable_names=variables)
         settings_kwargs = settings.model_dump() if settings is not None else {}
         settings_kwargs["symmetric"] = True
         return Heatmap(dataset, settings=Heatmap_Settings(**settings_kwargs))
+
+    def __get_terms(
+        self,
+        output_name: str,
+        output_component: int,
+        first_order_indices: Mapping[str, RealArray],
+        components: Sequence[tuple[str, int]],
+        variables: Sequence[str],
+        colors: Sequence[_Color],
+        component_labels: Sequence[str],
+        user_labels: Mapping[str, str],
+    ) -> tuple[dict[str, tuple[float, tuple[_Color, ...]]], dict[str, str], str]:
+        """Get the terms of the variance decomposition of an output component.
+
+        Args:
+            output_name: The name of the output.
+            output_component: The component of the output.
+            first_order_indices: The first-order Sobol' indices
+                of the output component.
+            components: The input components, as (name, component) tuples.
+            variables: The string representations of the input components.
+            colors: The colors of the input components.
+            component_labels: The labels of the input components.
+            user_labels: The labels set by the user.
+
+        Returns:
+            The terms, as a mapping from their names
+            to their raw Sobol' indices and their colors,
+            the labels of the terms
+            and the name of the residual tile.
+        """
+        faded_colors = [
+            to_hex([(1.0 + channel) / 2.0 for channel in to_rgb(color)])
+            for color in colors
+        ]
+        n_components = len(components)
+        # The terms of the decomposition: name -> (raw index, colors).
+        terms: dict[str, tuple[float, tuple[_Color, ...]]] = {
+            variables[k]: (
+                float(first_order_indices[name][index]),
+                (colors[k],),
+            )
+            for k, (name, index) in enumerate(components)
+        }
+        term_labels = dict(zip(variables, component_labels, strict=True))
+        if self.indices.second.get(output_name):
+            # With at most two components, there is no interaction of order 3 or more.
+            residual_name = "orders ≥ 3" if n_components > 2 else "estimation error"
+            second_order_indices = self.indices.second[output_name][output_component]
+            for i, (name_i, component_i) in enumerate(components):
+                for j in range(i + 1, n_components):
+                    name_j, component_j = components[j]
+                    index = second_order_indices[name_i][name_j][
+                        component_i, component_j
+                    ]
+                    pair_name = f"{variables[i]} × {variables[j]}"  # noqa: RUF001
+                    terms[pair_name] = (
+                        float(index),
+                        (faded_colors[i], faded_colors[j]),
+                    )
+                    term_labels[pair_name] = user_labels.get(
+                        pair_name,
+                        f"{component_labels[i]} × {component_labels[j]}",  # noqa: RUF001
+                    )
+        else:
+            residual_name = "orders ≥ 2"
+            logger.info(
+                "The second-order Sobol' indices of %r are not computed; "
+                "only the first-order ones are shown, "
+                "the residual tile gathering all the interactions.",
+                output_name,
+            )
+
+        return terms, term_labels, residual_name
+
+    def plot_variance_decomposition(
+        self,
+        output: VariableOrComponent,
+        settings: Treemap_Settings | None = None,
+        threshold: float = 0.01,
+    ) -> Treemap:
+        r"""Plot how the variance of an output is shared out, using a treemap.
+
+        For independent inputs,
+        the variance of the output is the sum of the first-order effects,
+        the second-order interactions and the interactions of higher order
+        (Hoeffding-Sobol' decomposition),
+        so the tiles partition the unit square.
+        The unit square represents the variance of the output.
+        Each first-order Sobol' index $S_i$ is drawn as a tile
+        whose area is the share of the variance explained by the input $X_i$ alone,
+        and each second-order Sobol' index $S_{ij}$ is drawn as a tile
+        whose area is the share explained by the interaction of $X_i$ and $X_j$.
+        The tiles of the inputs are colored in the order of the random space;
+        an interaction tile is split into the two faded colors of its inputs.
+        The grey residual tile, named `"orders ≥ 3"`,
+        is the remaining share of the variance,
+        i.e. the interactions of order 3 and more,
+        plus the sum of the indices below `threshold`, if any;
+        in that case, it is labelled `"orders ≥ 3 + small terms"`.
+        When there are at most two input components,
+        there is no interaction of order 3 or more
+        and the residual tile is named `"estimation error"` instead,
+        as it only holds the estimation error and the small terms.
+        More precisely, its area is what remains of the unit square
+        once the other tiles are removed,
+        so it also absorbs the negative estimates that have no tile (see below),
+        which are estimation noise.
+
+        The tiles are labelled with the Sobol' indices.
+        A negative estimate at or below `-threshold` has no tile
+        and is given in the footnote instead,
+        as is an undefined estimate (NaN);
+        if there are more than three of them,
+        the footnote gives their number and the three most negative ones.
+        When the indices kept as tiles sum to more than 1,
+        the areas are rescaled to fit the square
+        and there is no residual tile
+        while the labels still show the estimates
+        and the footnote says that the areas are rescaled
+        and, if some indices are below `threshold`, that they are not shown.
+
+        When the second-order indices are not computed
+        (e.g. `compute_second_order=False` or a rank-based estimation),
+        only the first-order indices and the residual tile are drawn,
+        the latter then gathering all the interactions
+        and being named `"orders ≥ 2"`.
+
+        Args:
+            output: The output of interest.
+                Either a name or a tuple of the form (name, component).
+                If name, its first component is considered.
+            settings: The settings of the treemap.
+                If `None`, use the default ones,
+                with the title `"Variance decomposition of <output>"`
+                and the label `"small terms"` for the tiles
+                merged because of `min_area`.
+                If the colormap is not set
+                and the default one has fewer colors than the input components,
+                `"tab20"` is used if it has enough colors,
+                otherwise `"viridis"`,
+                so that each input component has its own color.
+                The colors, the title, the footnote and the labels
+                computed from the Sobol' indices
+                are overridden by the ones set by the user.
+                The labels can be given per input,
+                e.g. `{"wing_thickness_to_chord_ratio": "t/c"}`,
+                and then also label the interactions of these inputs;
+                the label of an input variable `x` of dimension greater than 1
+                labels its components `"<label>[i]"`,
+                unless a component `"x[i]"` has its own label.
+                A label whose key is the name of a tile,
+                e.g. the one of an interaction, labels this tile only.
+            threshold: The threshold on the absolute value of the Sobol' indices.
+                An index whose absolute value is below it
+                is considered indistinguishable from zero,
+                e.g. because of the estimation noise:
+                it has no tile
+                and the sum of these indices goes to the residual tile.
+                The threshold should be at least the standard error
+                of the estimates, about $1/\sqrt{N}$ for $N$ samples
+                (see `get_intervals`):
+                a tile below this level is not a significant interaction.
+                With 0, every positive index has a tile.
+
+        Returns:
+            The treemap of the variance decomposition.
+
+        Raises:
+            ValueError: When the Sobol' indices of the output are undefined
+                because the variance of the output is zero
+                or when the threshold is negative or NaN.
+        """
+        if not threshold >= 0.0:
+            msg = f"The threshold must be non-negative; got {threshold}."
+            raise ValueError(msg)
+
+        output_name, output_component = get_name_and_component(output)
+        first_order_indices = self.indices.first[output_name][output_component]
+        if first_order_indices is None:
+            msg = (
+                f"The Sobol' indices of {output_name!r} "
+                "are undefined, as the variance of the output is zero."
+            )
+            raise ValueError(msg)
+
+        user_settings = settings if settings is not None else Treemap_Settings()
+        components, variables = self.__get_components_and_variables(first_order_indices)
+        name_to_size = self.dataset.variable_name_to_n_components
+        n_components = len(components)
+        colormap = user_settings.colormap
+        colors: list[_Color] = list(_get_colors(colormap, n_components))
+        if (
+            "colormap" not in user_settings.model_fields_set
+            and n_components > colormaps[colormap].N
+        ):
+            if n_components <= colormaps["tab20"].N:
+                colormap = "tab20"
+                # Interleave the pairs so that neighbours have distinct hues.
+                tab20_colors = _get_colors(colormap, colormaps["tab20"].N)
+                colors = list([*tab20_colors[::2], *tab20_colors[1::2]][:n_components])
+            else:
+                colormap = "viridis"
+                colors = list(_get_colors(colormap, n_components))
+
+        # The faded colors of the interactions derive from the user colors.
+        for k, variable in enumerate(variables):
+            user_color = user_settings.tile_colors.get(variable)
+            if user_color is not None and len(user_color) == 1:
+                colors[k] = user_color[0]
+
+        user_labels = user_settings.labels
+        component_labels = [
+            user_labels.get(
+                variable,
+                repr_variable(user_labels.get(name, name), index, name_to_size[name]),
+            )
+            for (name, index), variable in zip(components, variables, strict=True)
+        ]
+        terms, term_labels, residual_name = self.__get_terms(
+            output_name,
+            output_component,
+            first_order_indices,
+            components,
+            variables,
+            colors,
+            component_labels,
+            user_labels,
+        )
+        value_format = user_settings.value_format
+        has_small_terms = any(
+            0.0 < abs(value) < threshold for value, _ in terms.values()
+        )
+        # The categories partition the terms:
+        # undefined, negative without tile, small, zero and kept.
+        undefined_terms = [
+            term_labels[name] for name, (value, _) in terms.items() if isnan(value)
+        ]
+        negative_terms = sorted(
+            (
+                (term_labels[name], value)
+                for name, (value, _) in terms.items()
+                if value < 0.0 and value <= -threshold
+            ),
+            key=operator.itemgetter(1),
+        )
+        kept_terms = {
+            name: term
+            for name, term in terms.items()
+            if term[0] > 0.0 and term[0] >= threshold
+        }
+        kept_sum = sum(value for value, _ in kept_terms.values())
+        residual = max(1.0 - kept_sum, 0.0)
+        # The treemap rescales the values when they sum to more than 1.
+        dataset = Dataset.from_array(
+            asarray([[*(value for value, _ in kept_terms.values()), residual]]),
+            variable_names=[*kept_terms, residual_name],
+        )
+
+        settings_kwargs = user_settings.model_dump()
+        settings_kwargs["colormap"] = colormap
+        settings_kwargs["residual_name"] = residual_name
+        settings_kwargs["tile_colors"] = {
+            **{name: color for name, (_, color) in kept_terms.items()},
+            **user_settings.tile_colors,
+        }
+        residual_label = user_settings.residual_label
+        if "residual_label" not in user_settings.model_fields_set:
+            residual_label = "small terms"
+            settings_kwargs["residual_label"] = residual_label
+
+        residual_tile_label = user_labels.get(residual_name, residual_name)
+        if has_small_terms:
+            residual_tile_label = f"{residual_tile_label} + {residual_label}"
+
+        settings_kwargs["labels"] = {
+            **{name: term_labels[name] for name in kept_terms},
+            **user_labels,
+            residual_name: residual_tile_label,
+        }
+
+        if not user_settings.footnote:
+            settings_kwargs["footnote"] = _build_footnote(
+                negative_terms, undefined_terms, kept_sum, has_small_terms, value_format
+            )
+
+        if "title" not in user_settings.model_fields_set:
+            output_repr = repr_variable(
+                output_name, output_component, name_to_size[output_name]
+            )
+            settings_kwargs["title"] = f"Variance decomposition of {output_repr}"
+
+        return Treemap(dataset, settings=Treemap_Settings(**settings_kwargs))
