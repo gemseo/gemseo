@@ -82,6 +82,9 @@ if TYPE_CHECKING:
     from gemseo.mda.jacobian_assembly import MDADerivationMode  # noqa: F401
     from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod  # noqa: F401
     from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod  # noqa: F401
+    from gemseo.optimization.scipy_global.settings.basinhopping_local_method import (
+        BasinHoppingLocalMethod,  # noqa: F401
+    )
     from gemseo.optimization.scipy_global.settings.differential_evolution import (
         DifferentialEvolutionUpdating,  # noqa: F401
     )
@@ -241,6 +244,10 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
         "gemseo.post._engine.robustness_quantifier:RobustnessQuantifier.Approximation"
     ),
     "ApproximationMode": "gemseo.util.derivative.approximation_mode:ApproximationMode",
+    "BasinHoppingLocalMethod": (
+        "gemseo.optimization.scipy_global.settings.basinhopping_local_method"
+        ":BasinHoppingLocalMethod"
+    ),
     "CacheType": "gemseo.core.discipline.base_discipline:CacheType",
     "ChainDerivationMode": "gemseo.discipline.chain.chain:ChainDerivationMode",
     "ColormapName": "gemseo.post.dataset.pair_plot_settings:ColormapName",

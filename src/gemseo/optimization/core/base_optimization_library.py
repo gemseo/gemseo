@@ -29,6 +29,7 @@ from typing import ClassVar
 from typing import TypeVar
 
 import numpy
+from numpy import isfinite
 from numpy import isinf
 
 from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
@@ -66,6 +67,9 @@ class OptimizationAlgorithmDescription(DriverDescription):
 
     handle_multiobjective: bool = False
     """Whether the optimization algorithm handles multiple objectives."""
+
+    handle_unbounded_variables: bool = True
+    """Whether the optimization algorithm handles variables with infinite bounds."""
 
     positive_constraints: bool = False
     """Whether the optimization algorithm requires positive constraints."""
@@ -151,9 +155,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
     def _check_constraints_handling(self, problem: OptimizationProblem) -> None:
         """Check if problem and algorithm are consistent for constraints handling."""
         algo_name = self._algo_name
+        description = self._get_algorithm_description_to_check()
         if (
             tuple(problem.constraints.get_equality_constraints())
-            and not self.ALGORITHM_INFOS[algo_name].handle_equality_constraints
+            and not description.handle_equality_constraints
         ):
             msg = (
                 "Requested optimization algorithm "
@@ -162,7 +167,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
             raise ValueError(msg)
         if (
             tuple(problem.constraints.get_inequality_constraints())
-            and not self.ALGORITHM_INFOS[algo_name].handle_inequality_constraints
+            and not description.handle_inequality_constraints
         ):
             msg = (
                 "Requested optimization algorithm "
@@ -183,7 +188,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         """
         if (
             tuple(problem.constraints.get_inequality_constraints())
-            and self.ALGORITHM_INFOS[self._algo_name].positive_constraints
+            and self._get_algorithm_description_to_check().positive_constraints
         ):
             return [-constraint for constraint in problem.constraints]
         return problem.constraints
@@ -198,6 +203,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
         # and the settings they read are adjusted by some `_pre_run` implementations,
         # so they are built there
         # rather than here.
+        # The fixed description is read on purpose:
+        # an algorithm requiring the gradient only through a setting,
+        # such as BASINHOPPING with a gradient-based local method,
+        # has no KKT tolerance settings.
         if self.ALGORITHM_INFOS[self._algo_name].require_gradient:
             kkt_abs_tol = self._settings.kkt_tol_abs
             kkt_rel_tol = self._settings.kkt_tol_rel
@@ -238,7 +247,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
             progress_bar_data_name=self._settings.progress_bar_data_name,
         )
 
-        require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
+        require_gradient = self._get_algorithm_description_to_check().require_gradient
         problem.input_space.initialize_missing_current_values()
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
             problem.input_space.to_complex()
@@ -307,6 +316,14 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
             with contextlib.suppress(ValueError):
                 if not problem.is_mono_objective:
                     return _UnsuitabilityReason.MULTIPLE_OBJECTIVES
+
+        if not algorithm_description.handle_unbounded_variables:
+            input_space = problem.input_space
+            if not (
+                isfinite(input_space.get_lower_bounds()).all()
+                and isfinite(input_space.get_upper_bounds()).all()
+            ):
+                return _UnsuitabilityReason.UNBOUNDED_VARIABLES
 
         return reason
 

@@ -14,6 +14,38 @@
 # name: test_multiple_objectives_not_handled
   'The algorithm SLSQP is not adapted to the problem because it does not handle multiple objectives.'
 # ---
+# name: test_removal_redundant_settings[BASINHOPPING_Settings-T]
+  '''
+  1 validation error for BASINHOPPING_Settings
+    Value error, The 'T' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.org/more_on/catalogs/optimization/) for more information. [type=value_error, input_value={'T': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_removal_redundant_settings[BASINHOPPING_Settings-niter]
+  '''
+  1 validation error for BASINHOPPING_Settings
+    Value error, The 'niter' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.org/more_on/catalogs/optimization/) for more information. [type=value_error, input_value={'niter': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_removal_redundant_settings[BASINHOPPING_Settings-rng]
+  '''
+  1 validation error for BASINHOPPING_Settings
+    Value error, The 'rng' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.org/more_on/catalogs/optimization/) for more information. [type=value_error, input_value={'rng': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_removal_redundant_settings[DIRECT_Settings-maxfun]
+  '''
+  1 validation error for DIRECT_Settings
+    Value error, The 'maxfun' setting cannot be passed to the optimization library since there exists a GEMSEO counterpart. 
+  Please consider using the corresponding GEMSEO setting (see https://gemseo.org/more_on/catalogs/optimization/) for more information. [type=value_error, input_value={'maxfun': 'foo'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_removal_redundant_settings[DUAL_ANNEALING_Settings-maxfun]
   '''
   1 validation error for DUAL_ANNEALING_Settings

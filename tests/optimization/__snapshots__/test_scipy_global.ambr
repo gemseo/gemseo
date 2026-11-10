@@ -1,4 +1,13 @@
 # serializer version: 1
+# name: test_basinhopping_rejects_unhandled_constraints[COBYLA]
+  'The algorithm BASINHOPPING is not adapted to the problem because it does not handle equality constraints.'
+# ---
+# name: test_basinhopping_rejects_unhandled_constraints[L-BFGS-B]
+  'The algorithm BASINHOPPING is not adapted to the problem because it does not handle equality constraints.'
+# ---
+# name: test_direct_rejects_infinite_bounds
+  'The algorithm DIRECT is not adapted to the problem because it does not handle unbounded variables.'
+# ---
 # name: test_differential_evolution_immediate_updating_with_workers[_build_with_updating_and_all_cpus]
   '''
   1 validation error for DIFFERENTIAL_EVOLUTION_Settings
@@ -33,9 +42,21 @@
   Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
   '''
 # ---
+# name: test_scipy_global_rejects_discrete_variables_without_relaxation[BASINHOPPING]
+  '''
+  Algorithm BASINHOPPING is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
 # name: test_scipy_global_rejects_discrete_variables_without_relaxation[DIFFERENTIAL_EVOLUTION]
   '''
   Algorithm DIFFERENTIAL_EVOLUTION is not adapted to the problem, it does not handle discrete variables.
+  Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
+  '''
+# ---
+# name: test_scipy_global_rejects_discrete_variables_without_relaxation[DIRECT]
+  '''
+  Algorithm DIRECT is not adapted to the problem, it does not handle discrete variables.
   Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
   '''
 # ---

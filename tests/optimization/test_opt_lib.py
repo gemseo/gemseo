@@ -23,6 +23,8 @@ import pytest
 
 from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization import BASINHOPPING_Settings
+from gemseo.optimization import DIRECT_Settings
 from gemseo.optimization.core.base_optimization_library import BaseOptimizationLibrary
 from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
@@ -327,6 +329,10 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
 @pytest.mark.parametrize(
     ("settings_model", "redundant_setting"),
     [
+        (BASINHOPPING_Settings, "niter"),
+        (BASINHOPPING_Settings, "rng"),
+        (BASINHOPPING_Settings, "T"),
+        (DIRECT_Settings, "maxfun"),
         (DUAL_ANNEALING_Settings, "maxfun"),
         (SLSQP_Settings, "maxiter"),
         (TNC_Settings, "eps"),
