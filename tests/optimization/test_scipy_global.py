@@ -30,7 +30,10 @@ from unittest.case import TestCase
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import log
+from numpy.random import default_rng
+from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from pydantic import ValidationError
 from scipy.optimize import OptimizeResult
@@ -38,10 +41,13 @@ from scipy.optimize import differential_evolution
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.optimization import BASINHOPPING_Settings
+from gemseo.optimization import DIRECT_Settings
 from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_global import scipy_global
 from gemseo.optimization.scipy_global.scipy_global import ScipyGlobalOpt
+from gemseo.optimization.scipy_global.scipy_global import _BoundedRandomDisplacement
 from gemseo.optimization.scipy_global.settings.differential_evolution import (
     DIFFERENTIAL_EVOLUTION_Settings,
 )
@@ -63,6 +69,8 @@ from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.opt_lib_test_base import OptLibraryTestBase
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from gemseo.core.problem.database import Database
 
 
@@ -109,6 +117,12 @@ def get_settings(algo_name):
         settings["sampling_method"] = "sobol"
         settings["iters"] = 1
         del settings["seed"]
+    elif algo_name == "DIRECT":
+        settings["max_iter"] = 1000
+        del settings["seed"]
+    elif algo_name == "BASINHOPPING":
+        settings["max_iter"] = 300
+        settings["local_method"] = "SLSQP"
     return settings
 
 
@@ -724,13 +738,37 @@ def test_parallel_reports_an_unpicklable_exception(serial_executors):
 
 
 @pytest.fixture
-def unconstrained_problem() -> OptimizationProblem:
-    """An unconstrained optimization problem"""
+def scipy_spies() -> Iterator[dict[str, mock.Mock]]:
+    """The spies on the SciPy functions called by the library, by algorithm name.
+
+    Each spy wraps the actual function.
+    """
+    attribute = "_ScipyGlobalOpt__names_to_functions"
+    spies = {
+        name: mock.Mock(wraps=function)
+        for name, function in getattr(ScipyGlobalOpt, attribute).items()
+    }
+    with mock.patch.object(ScipyGlobalOpt, attribute, spies):
+        yield spies
+
+
+def _create_unconstrained_problem() -> OptimizationProblem:
+    """Create an unconstrained optimization problem.
+
+    Returns:
+        The problem.
+    """
     design_space = DesignSpace()
     design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
     return problem
+
+
+@pytest.fixture
+def unconstrained_problem() -> OptimizationProblem:
+    """An unconstrained optimization problem"""
+    return _create_unconstrained_problem()
 
 
 @pytest.mark.parametrize("algorithm_name", ScipyGlobalOpt.ALGORITHM_INFOS)
@@ -841,3 +879,459 @@ def test_scipy_global_rejects_discrete_variables_without_relaxation(
     settings = lib.ALGORITHM_INFOS[algorithm_name].settings_class(max_iter=3)
     with assert_exception(ValueError, snapshot):
         lib.execute(problem, settings=settings)
+
+
+def test_basinhopping_on_constrained_problem() -> None:
+    """Check that the default basin-hopping reaches the optimum of Power2."""
+    result = optimization_library_factory.execute(
+        Power2(), settings=BASINHOPPING_Settings(max_iter=200)
+    )
+    x_opt, f_opt = Power2.get_solution()
+    assert_allclose(result.x_opt, x_opt, rtol=1e-3)
+    assert result.f_opt == pytest.approx(f_opt, rel=1e-3)
+
+
+@pytest.mark.parametrize("local_method", ["L-BFGS-B", "COBYLA"])
+def test_basinhopping_rejects_unhandled_constraints(snapshot, local_method) -> None:
+    """Check that basin-hopping rejects constraints its local method ignores."""
+    with assert_exception(ValueError, snapshot):
+        optimization_library_factory.execute(
+            Power2(),
+            settings=BASINHOPPING_Settings(local_method=local_method, max_iter=10),
+        )
+
+
+def test_basinhopping_is_adapted_to_constraints_by_default() -> None:
+    """Check that the default basin-hopping is listed for a constrained problem."""
+    assert "BASINHOPPING" in ScipyGlobalOpt.filter_adapted_algorithms(Power2())
+
+
+def _add_analytic_gradient(problem: OptimizationProblem) -> None:
+    """Give an analytic gradient to the objective of a problem.
+
+    Args:
+        problem: The problem.
+    """
+    problem.objective = ArrayFunction(
+        lambda x: x**2, name="f", jac=lambda x: 2 * x.reshape((1, 1))
+    )
+
+
+def _approximate_gradient(problem: OptimizationProblem) -> None:
+    """Approximate the gradient of the objective of a problem by finite differences.
+
+    Args:
+        problem: The problem.
+    """
+    problem.differentiation_method = problem.DifferentiationMethod.FINITE_DIFFERENCES
+
+
+def _add_constraint(problem: OptimizationProblem) -> None:
+    """Add an inequality constraint to a problem.
+
+    Args:
+        problem: The problem.
+    """
+    problem.add_constraint(
+        ArrayFunction(lambda x: 0.2 - x, name="g", jac=lambda x: array([[-1.0]])),
+        constraint_type="ineq",
+    )
+
+
+def _add_analytic_gradient_and_constraint(problem: OptimizationProblem) -> None:
+    """Give an analytic gradient to the objective of a problem and constrain it.
+
+    Args:
+        problem: The problem.
+    """
+    _add_analytic_gradient(problem)
+    _add_constraint(problem)
+
+
+def _add_analytic_gradient_and_constraint_without_gradient(
+    problem: OptimizationProblem,
+) -> None:
+    """Give an analytic gradient to the objective of a problem only, and constrain it.
+
+    Args:
+        problem: The problem.
+    """
+    _add_analytic_gradient(problem)
+    problem.add_constraint(
+        ArrayFunction(lambda x: 0.2 - x, name="g"), constraint_type="ineq"
+    )
+
+
+def _add_equality_constraint(problem: OptimizationProblem) -> None:
+    """Add an equality constraint without gradient to a problem.
+
+    Args:
+        problem: The problem.
+    """
+    problem.add_constraint(
+        ArrayFunction(lambda x: x - 0.2, name="h"), constraint_type="eq"
+    )
+
+
+def _create_problem_without_gradient() -> OptimizationProblem:
+    """Create a problem with an inequality constraint and no gradient.
+
+    Returns:
+        The problem.
+    """
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
+    problem.add_constraint(
+        ArrayFunction(lambda x: 0.2 - x, name="g"), constraint_type="ineq"
+    )
+    return problem
+
+
+@pytest.mark.parametrize("local_method", ["COBYLA", None], ids=["explicit", "default"])
+def test_basinhopping_on_constrained_problem_without_gradient(local_method) -> None:
+    """Check that basin-hopping solves a constrained problem without gradient."""
+    problem = _create_problem_without_gradient()
+    result = optimization_library_factory.execute(
+        problem, settings=BASINHOPPING_Settings(local_method=local_method, max_iter=50)
+    )
+    # The constraint x >= 0.2 is active at the optimum.
+    assert_allclose(result.x_opt, [0.2], atol=1e-3)
+    # The constraint is satisfied up to the inequality tolerance of the problem.
+    assert result.is_feasible
+    assert 0.2 - result.x_opt[0] <= problem.tolerances.inequality
+
+
+def _create_problem_with(update_problem):
+    """Create a creator of an unconstrained problem updated by a function.
+
+    Args:
+        update_problem: The function updating the problem.
+
+    Returns:
+        The creator of the problem.
+    """
+
+    def create_problem() -> OptimizationProblem:
+        problem = _create_unconstrained_problem()
+        update_problem(problem)
+        return problem
+
+    return create_problem
+
+
+def _create_unconstrained_problem_without_gradient() -> OptimizationProblem:
+    """Create a problem without gradient and without constraint.
+
+    Returns:
+        The problem.
+    """
+    problem = _create_problem_without_gradient()
+    problem.constraints.clear()
+    return problem
+
+
+def _create_solved_problem_without_gradient() -> OptimizationProblem:
+    """Create a problem without gradient and with a constraint, already solved.
+
+    Its functions are wrapped, and a wrapper reports a Jacobian
+    even when the function has none.
+
+    Returns:
+        The problem.
+    """
+    problem = _create_problem_without_gradient()
+    optimization_library_factory.execute(
+        problem, settings=BASINHOPPING_Settings(max_iter=5)
+    )
+    return problem
+
+
+def _create_nested_subproblem() -> OptimizationProblem:
+    """Create a problem whose objective wraps a wrapper, without gradient.
+
+    The objective of the problem is the bound function of a problem
+    whose objective is itself a bound function.
+
+    Returns:
+        The problem.
+    """
+    problems = []
+    for _ in range(3):
+        design_space = DesignSpace()
+        design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+        problems.append(OptimizationProblem(design_space))
+
+    problem_0, problem_1, problem_2 = problems
+    problem_0.objective = ArrayFunction(lambda x: (x - 0.3) ** 2, name="f")
+    problem_0.bind_functions()
+    problem_1.objective = problem_0.objective
+    problem_1.bind_functions()
+    problem_2.objective = problem_1.objective
+    return problem_2
+
+
+@pytest.mark.parametrize(
+    ("create_problem", "settings", "expected"),
+    [
+        (_create_problem_with(lambda problem: None), {}, "Nelder-Mead"),
+        (_create_problem_with(_add_analytic_gradient), {}, "L-BFGS-B"),
+        (_create_problem_with(_approximate_gradient), {}, "L-BFGS-B"),
+        (_create_problem_with(_add_constraint), {}, "COBYLA"),
+        (_create_problem_with(_add_equality_constraint), {}, "COBYQA"),
+        (_create_problem_with(_add_analytic_gradient_and_constraint), {}, "SLSQP"),
+        (
+            _create_problem_with(
+                _add_analytic_gradient_and_constraint_without_gradient
+            ),
+            {},
+            "COBYLA",
+        ),
+        # A scaled function reports a Jacobian even when the function has none.
+        (
+            _create_unconstrained_problem_without_gradient,
+            {"max_iter": 30, "scaling_threshold": 1e-3},
+            "Nelder-Mead",
+        ),
+        (
+            _create_problem_without_gradient,
+            {"max_iter": 30, "scaling_threshold": 1e-3},
+            "COBYLA",
+        ),
+        # The default local method is the same when the problem is solved again.
+        (_create_solved_problem_without_gradient, {}, "COBYLA"),
+        # The original function of a function of a sub-problem is itself wrapped.
+        (_create_nested_subproblem, {"max_iter": 30}, "Nelder-Mead"),
+    ],
+    ids=[
+        "no-gradient",
+        "analytic-gradient",
+        "approximated-gradient",
+        "no-gradient-inequality",
+        "no-gradient-equality",
+        "analytic-gradient-constrained",
+        "constraint-without-gradient",
+        "scaling-unconstrained",
+        "scaling-constrained",
+        "solved-problem",
+        "nested-subproblem",
+    ],
+)
+def test_basinhopping_default_local_method(
+    create_problem, settings, expected, scipy_spies
+) -> None:
+    """Check the default local method from the gradient and the constraints."""
+    optimization_library_factory.execute(
+        create_problem(), settings=BASINHOPPING_Settings(**{"max_iter": 5, **settings})
+    )
+
+    spy = scipy_spies["BASINHOPPING"]
+    assert spy.call_args.kwargs["minimizer_kwargs"]["method"] == expected
+
+
+@pytest.mark.parametrize("normalize_design_space", [False, True])
+def test_basinhopping_stays_within_bounds(normalize_design_space) -> None:
+    """Check that basin-hopping never evaluates a point outside the bounds."""
+    problem = Rosenbrock()
+    optimization_library_factory.execute(
+        problem,
+        settings=BASINHOPPING_Settings(
+            max_iter=50,
+            stepsize=50.0,
+            normalize_design_space=normalize_design_space,
+        ),
+    )
+    x_history = array(problem.database.get_x_vect_history())
+    assert (x_history >= problem.input_space.get_lower_bounds()).all()
+    assert (x_history <= problem.input_space.get_upper_bounds()).all()
+
+
+class _FixedDisplacement:
+    """A random number generator stub returning a given displacement."""
+
+    def __init__(self, displacement) -> None:
+        self.displacement = array(displacement)
+
+    def uniform(self, low, high, size):
+        return self.displacement.copy()
+
+
+@pytest.mark.parametrize(
+    ("x_vect", "displacement", "lower_bound", "upper_bound", "expected"),
+    [
+        # A step crossing the upper bound is reflected.
+        ([0.9], [0.3], [0.0], [1.0], [0.8]),
+        # A step crossing the lower bound is reflected.
+        ([0.1], [-0.3], [0.0], [1.0], [0.2]),
+        # A step longer than two widths is folded several times: 0.9 + 2.5 = 3.4.
+        ([0.9], [2.5], [0.0], [1.0], [0.6]),
+        # A step inside the bounds is unchanged.
+        ([0.5], [0.2], [0.0], [1.0], [0.7]),
+        # One-sided bounds are reflected, unbounded components are unchanged
+        # and the last component is fixed.
+        (
+            [0.1, 0.8, 1.0, 2.0],
+            [-0.3, 0.4, 7.0, 0.5],
+            [0.0, -inf, -inf, 2.0],
+            [inf, 1.0, inf, 2.0],
+            [0.2, 0.8, 8.0, 2.0],
+        ),
+    ],
+    ids=[
+        "upper-bound",
+        "lower-bound",
+        "multiple-folds",
+        "inside",
+        "one-sided-unbounded-fixed",
+    ],
+)
+def test_bounded_random_displacement_reflects(
+    x_vect, displacement, lower_bound, upper_bound, expected
+) -> None:
+    """Check that the displacement reflects on the bounds instead of clipping."""
+    take_step = _BoundedRandomDisplacement(
+        1.0, _FixedDisplacement(displacement), array(lower_bound), array(upper_bound)
+    )
+    assert_allclose(take_step(array(x_vect)), expected, atol=1e-12)
+
+
+def test_bounded_random_displacement_stays_within_bounds() -> None:
+    """Check that random displacements stay within the bounds."""
+    lower_bound = array([0.0, -1.0, -inf])
+    upper_bound = array([1.0, 3.0, 2.0])
+    take_step = _BoundedRandomDisplacement(
+        10.0, default_rng(0), lower_bound, upper_bound
+    )
+    x_vect = array([0.5, 0.0, 0.0])
+    for _ in range(100):
+        x_vect = take_step(x_vect)
+        assert (x_vect >= lower_bound).all()
+        assert (x_vect <= upper_bound).all()
+
+
+def test_basinhopping_with_unbounded_variable() -> None:
+    """Check that basin-hopping runs on an unbounded variable."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=-inf, upper_bound=inf, value=3.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(
+        lambda x: (x - 1.0) ** 2, name="f", jac=lambda x: 2 * (x - 1.0).reshape((1, 1))
+    )
+    result = optimization_library_factory.execute(
+        problem,
+        settings=BASINHOPPING_Settings(
+            max_iter=30, normalize_design_space=False, local_options={"maxiter": 20}
+        ),
+    )
+    assert_allclose(result.x_opt, [1.0], atol=1e-3)
+
+
+def test_basinhopping_seed() -> None:
+    """Check that basin-hopping is reproducible given a seed."""
+    x_opts = []
+    for _ in range(2):
+        problem = Rosenbrock()
+        optimization_library_factory.execute(
+            problem, settings=BASINHOPPING_Settings(max_iter=30, seed=3)
+        )
+        x_opts.append(array(problem.database.get_x_vect_history()))
+
+    assert_equal(x_opts[0], x_opts[1])
+
+
+def test_basinhopping_uses_one_generator(scipy_spies) -> None:
+    """Check that the steps and the Metropolis test share one generator."""
+    optimization_library_factory.execute(
+        Rosenbrock(), settings=BASINHOPPING_Settings(max_iter=5)
+    )
+
+    spy = scipy_spies["BASINHOPPING"]
+    kwargs = spy.call_args.kwargs
+    assert "seed" not in kwargs
+    assert kwargs["take_step"]._rng is kwargs["rng"]
+
+
+def test_basinhopping_niter_success() -> None:
+    """Check that basin-hopping stops when the best local minimum stops improving."""
+    # GEMSEO's own stopping criteria are disabled to leave SciPy's alone.
+    result = optimization_library_factory.execute(
+        Rosenbrock(),
+        settings=BASINHOPPING_Settings(
+            max_iter=100_000,
+            niter_success=2,
+            ftol_rel=0.0,
+            ftol_abs=0.0,
+            xtol_rel=0.0,
+            xtol_abs=0.0,
+        ),
+    )
+    assert result.message == "success condition satisfied"
+
+
+def test_basinhopping_accept_test(scipy_spies) -> None:
+    """Check that basin-hopping applies the acceptance test of the user."""
+    calls = []
+
+    def accept_test(**kwargs):
+        calls.append(kwargs)
+        return True
+
+    optimization_library_factory.execute(
+        Rosenbrock(),
+        settings=BASINHOPPING_Settings(
+            max_iter=100, niter_success=2, accept_test=accept_test
+        ),
+    )
+
+    spy = scipy_spies["BASINHOPPING"]
+    assert set(calls[0]) == {"f_new", "x_new", "f_old", "x_old"}
+    assert spy.call_args.kwargs["accept_test"] is accept_test
+
+
+def test_direct_rejects_infinite_bounds(snapshot) -> None:
+    """Check that DIRECT rejects a design space with infinite bounds."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=-inf, upper_bound=1.0, value=0.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
+    with assert_exception(ValueError, snapshot):
+        optimization_library_factory.execute(
+            problem, settings=DIRECT_Settings(normalize_design_space=False)
+        )
+
+
+@pytest.mark.parametrize("locally_biased", [True, False], ids=["DIRECT-L", "DIRECT"])
+def test_direct_budget(locally_biased) -> None:
+    """Check that DIRECT and DIRECT-L terminate and respect the budget."""
+    problem = Rosenbrock()
+    result = optimization_library_factory.execute(
+        problem, settings=DIRECT_Settings(max_iter=100, locally_biased=locally_biased)
+    )
+    assert len(problem.database) <= 100
+    assert result.f_opt < 1.0
+
+
+def test_direct_caps_max_iter(caplog, scipy_spies) -> None:
+    """Check that DIRECT warns when it reduces max_iter and monitors the new budget.
+
+    The settings of the user are left unchanged.
+    """
+    problem = Rosenbrock()
+    settings = DIRECT_Settings(max_iter=20_000_000, f_min=1.0)
+    optimization_library_factory.execute(problem, settings=settings)
+
+    spy = scipy_spies["DIRECT"]
+    assert spy.call_args.kwargs["maxfun"] == 10_000_000
+    assert spy.call_args.kwargs["maxiter"] == 10_000_000
+    assert problem.evaluation_counter.maximum == 10_000_000
+    assert settings.max_iter == 20_000_000
+    assert (
+        "DIRECT cannot evaluate the functions more than 10000000 times; "
+        "max_iter is reduced from 20000000 to this value."
+    ) in caplog.text
+
+
+def test_direct_default_max_iter() -> None:
+    """Check that the default max_iter of DIRECT is small."""
+    assert DIRECT_Settings().max_iter == 1_000

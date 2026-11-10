@@ -49,6 +49,7 @@ class _UnsuitabilityReason(StrEnum):
     INEQUALITY_CONSTRAINTS = _optimizer_template.format("inequality constraints")
     EQUALITY_CONSTRAINTS = _optimizer_template.format("equality constraints")
     MULTIPLE_OBJECTIVES = _optimizer_template.format("multiple objectives")
+    UNBOUNDED_VARIABLES = _optimizer_template.format("unbounded variables")
 
     # PyDOE
     SMALL_DIMENSION = (

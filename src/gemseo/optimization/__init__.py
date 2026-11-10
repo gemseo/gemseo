@@ -58,9 +58,13 @@ if TYPE_CHECKING:
         NLOPT_SLSQP_Settings,
     )
     from gemseo.optimization.problem import OptimizationProblem  # noqa: F401
+    from gemseo.optimization.scipy_global.settings.basinhopping import (  # noqa: F401
+        BASINHOPPING_Settings,
+    )
     from gemseo.optimization.scipy_global.settings.differential_evolution import (  # noqa: F401
         DIFFERENTIAL_EVOLUTION_Settings,
     )
+    from gemseo.optimization.scipy_global.settings.direct import DIRECT_Settings  # noqa: F401
     from gemseo.optimization.scipy_global.settings.dual_annealing import (  # noqa: F401
         DUAL_ANNEALING_Settings,
     )
@@ -92,11 +96,15 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "Augmented_Lagrangian_Order_1_Settings": (
         "augmented_lagrangian.settings.order_1:Augmented_Lagrangian_Order_1_Settings"
     ),
+    "BASINHOPPING_Settings": (
+        "scipy_global.settings.basinhopping:BASINHOPPING_Settings"
+    ),
     "COBYLA_Settings": "scipy_local.settings.cobyla:COBYLA_Settings",
     "COBYQA_Settings": "scipy_local.settings.cobyqa:COBYQA_Settings",
     "DIFFERENTIAL_EVOLUTION_Settings": (
         "scipy_global.settings.differential_evolution:DIFFERENTIAL_EVOLUTION_Settings"
     ),
+    "DIRECT_Settings": "scipy_global.settings.direct:DIRECT_Settings",
     "DUAL_ANNEALING_Settings": (
         "scipy_global.settings.dual_annealing:DUAL_ANNEALING_Settings"
     ),
