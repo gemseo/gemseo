@@ -398,14 +398,18 @@ def test_jacobian_wrt_categorical_inputs_only() -> None:
     assert function.jac(array([1.0])).shape == (0,)
 
 
-class IntegerDiscipline(Discipline):
-    """A discipline whose grammar declares a Python integer input."""
+class ScalarDiscipline(Discipline):
+    """A discipline whose grammar declares a Python scalar input."""
 
     default_grammar_type = Discipline.GrammarType.SIMPLE
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(self, type_: type) -> None:
+        """
+        Args:
+            type_: The type of the input `n`.
+        """  # noqa: D205, D212
         super().__init__()
-        self.io.input_grammar.update_from_types({"x": ndarray, "n": int})
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": type_})
         self.io.output_grammar.update_from_types({"y": ndarray})
         self.n = None
 
@@ -414,16 +418,17 @@ class IntegerDiscipline(Discipline):
         return {"y": input_data["x"] * self.n}
 
 
-def test_integer_input_declared_as_python_integer() -> None:
-    """Check that an integer input declared as a Python integer is given as such."""
-    discipline = IntegerDiscipline()
+@pytest.mark.parametrize("type_", [int, float])
+def test_integer_input_declared_as_python_scalar(type_) -> None:
+    """Check that an integer input declared as a Python scalar has its declared type."""
+    discipline = ScalarDiscipline(type_)
     function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 1})
     # As a DOE records the type of the variables of a mixed space.
     x_vect = array([2.0, 3.0])
     x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
     assert_allclose(function.evaluate(x_vect), array([6.0]))
     assert discipline.n == 3
-    assert type(discipline.n) is int
+    assert type(discipline.n) is type_
 
 
 class SeriesDiscipline(Discipline):
@@ -458,3 +463,34 @@ def test_integer_input_converted_by_user(monkeypatch) -> None:
     assert_allclose(function.evaluate(x_vect), array([14.0]))
     assert isinstance(discipline.n, Series)
     assert discipline.n.dtype == int64
+
+
+class ListDiscipline(Discipline):
+    """A discipline whose input is a list."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": list})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.n = None
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.n = input_data["n"]
+        return {"y": input_data["x"] * sum(self.n)}
+
+
+def test_integer_input_converted_to_list_by_user(monkeypatch) -> None:
+    """Check that a typed input converted to a list by a user converter is kept."""
+    monkeypatch.setattr(BaseDataConverter, "value_to_array_converters", {"n": array})
+    monkeypatch.setattr(
+        BaseDataConverter, "array_to_value_converters", {"n": ndarray.tolist}
+    )
+    monkeypatch.setattr(BaseDataConverter, "value_size_getters", {"n": len})
+    discipline = ListDiscipline()
+    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 2})
+    x_vect = array([2.0, 3.0, 4.0])
+    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
+    assert_allclose(function.evaluate(x_vect), array([14.0]))
+    assert discipline.n == [3.0, 4.0]

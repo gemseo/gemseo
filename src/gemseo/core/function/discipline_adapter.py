@@ -21,7 +21,9 @@
 
 from __future__ import annotations
 
+from numbers import Number
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import array
 from numpy import empty
@@ -501,11 +503,13 @@ class DisciplineAdapter(ArrayFunction):
     def _create_discipline_input_data(
         self,
         x_vect: ndarray,
-    ) -> dict[str, ndarray]:
+    ) -> dict[str, Any]:
         """Create the discipline input data from the function input vector.
 
         The variables in the input data are cast according to the types defined in the
-        design space.
+        design space,
+        except a Python scalar whose grammar declares a continuous type, e.g. `float`,
+        which is left as is.
 
         The categorical variables are given as labels.
 
@@ -513,7 +517,8 @@ class DisciplineAdapter(ArrayFunction):
             x_vect: The input vector of the function.
 
         Returns:
-            The input data of the discipline.
+            The input data of the discipline,
+            whose values have the types declared by its grammar.
         """
         if self.__default_inputs:
             self.__discipline.io.input_grammar.defaults.update(self.__default_inputs)
@@ -521,10 +526,9 @@ class DisciplineAdapter(ArrayFunction):
         if not self.__input_name_to_slice:
             self.__create_input_name_to_slice()
 
-        input_data = (
-            self.__discipline.io.input_grammar.data_converter.convert_array_to_data(
-                x_vect, self.__input_name_to_slice
-            )
+        data_converter = self.__discipline.io.input_grammar.data_converter
+        input_data = data_converter.convert_array_to_data(
+            x_vect, self.__input_name_to_slice
         )
         variable_types = x_vect.dtype.metadata
         if variable_types is not None:
@@ -534,10 +538,13 @@ class DisciplineAdapter(ArrayFunction):
                     value = input_data[name]
                     if hasattr(value, "astype"):
                         input_data[name] = value.astype(type_, copy=False)
-                    else:
-                        # The value is a Python scalar, e.g. for a grammar declaring
-                        # int, which shall remain one.
-                        input_data[name] = array(value).astype(type_).item()
+                    elif isinstance(value, Number) and not data_converter.is_continuous(
+                        name
+                    ):
+                        # A grammar declaring a Python scalar type, e.g. int,
+                        # receives a Python scalar of the type of the variable;
+                        # a continuous one, e.g. float, accepts the value as is.
+                        input_data[name] = type_(value).item()
 
         self.__decode_labels(input_data, x_vect)
 
@@ -547,7 +554,7 @@ class DisciplineAdapter(ArrayFunction):
         return input_data
 
     def __decode_labels(
-        self, input_data: MutableMapping[str, ndarray], x_vect: ndarray
+        self, input_data: MutableMapping[str, Any], x_vect: ndarray
     ) -> None:
         """Set the categorical inputs to their labels.
 
