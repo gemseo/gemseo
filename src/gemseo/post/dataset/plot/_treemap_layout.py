@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+from math import fsum
 from typing import TYPE_CHECKING
 from typing import Final
 from typing import NamedTuple
@@ -65,7 +66,7 @@ def compute_squarified_layout(
         gets a rectangle of zero size.
     """
     rectangles = [Rectangle(0.0, 0.0, 0.0, 0.0)] * len(areas)
-    total_area = sum(areas)
+    total_area = fsum(areas)
     scale = width * height / total_area
     min_area = total_area * _relative_area_tolerance
     indices = [index for index in range(len(areas)) if areas[index] > min_area]

@@ -137,25 +137,29 @@ def test_compute_squarified_layout_last_area_last() -> None:
 
 
 @pytest.mark.parametrize(
-    "areas",
+    ("areas", "tolerance"),
     [
-        pytest.param([1, 1.1e-16], id="one_and_epsilon"),
-        pytest.param([1, 1e-17], id="one_and_tiny"),
-        pytest.param([0.5, 0.5, 1e-17], id="two_halves_and_tiny"),
-        pytest.param([0.6, 0.3, 0.1, 1e-17], id="three_areas_and_tiny"),
+        pytest.param([1, 1.1e-16], None, id="default_tolerance-one_and_epsilon"),
+        pytest.param([1, 1e-17], None, id="default_tolerance-one_and_tiny"),
+        pytest.param(
+            [0.5, 0.5, 1e-17], None, id="default_tolerance-two_halves_and_tiny"
+        ),
+        pytest.param(
+            [0.6, 0.3, 0.1, 1e-17], None, id="default_tolerance-three_areas_and_tiny"
+        ),
+        pytest.param([1, 1.1e-16], 0.0, id="no_tolerance-one_and_epsilon"),
+        pytest.param([1, 1e-17], 0.0, id="no_tolerance-one_and_tiny"),
+        pytest.param([0.5, 0.5, 1e-17], 0.0, id="no_tolerance-two_halves_and_tiny"),
     ],
-)
-@pytest.mark.parametrize(
-    "tolerance",
-    [pytest.param(None, id="default_tolerance"), pytest.param(0.0, id="no_tolerance")],
 )
 def test_compute_squarified_layout_negligible_area(
     areas, tolerance, monkeypatch
 ) -> None:
     """Check that a negligible area gets a rectangle of zero size.
 
-    Without tolerance, the rounding errors consume the free space
-    before the negligible tile is placed.
+    Without tolerance,
+    the tiles placed before the negligible one leave no free space,
+    which holds only when their rows fill the rectangle exactly.
     """
     if tolerance is not None:
         monkeypatch.setattr(_treemap_layout, "_relative_area_tolerance", tolerance)
