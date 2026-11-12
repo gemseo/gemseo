@@ -281,23 +281,35 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
         assert file_exists if plot else not file_exists
 
 
+def _create_backup_scenario(expressions: StrKeyMapping) -> tuple[MDOScenario, Path]:
+    """Create a scenario minimizing ``y`` and backing up only at each iteration.
+
+    Args:
+        expressions: The expressions of the outputs of the discipline,
+            including ``y``, depending on the design variable ``x``.
+
+    Returns:
+        The scenario and the path to its backup file.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([AnalyticDiscipline(expressions)], design_space)
+    scenario.add_objective("y")
+    file_path = Path("backup.h5")
+    scenario.set_backup_settings(
+        file_path, at_each_iteration=True, at_each_function_call=False
+    )
+    return scenario, file_path
+
+
 def test_backup_last_point_on_first_execution(tmp_wd) -> None:
     """Check that the backup stores all the outputs at the last point of a first run.
 
     The constraint is evaluated at the last point after the new iteration
     notification which updates the backup file.
     """
-    design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = MDOScenario(
-        [AnalyticDiscipline({"y": "2*x", "c": "x-0.5"})], design_space
-    )
-    scenario.add_objective("y")
+    scenario, file_path = _create_backup_scenario({"y": "2*x", "c": "x-0.5"})
     scenario.add_constraint("c", constraint_type="ineq")
-    file_path = Path("backup.h5")
-    scenario.set_backup_settings(
-        file_path, at_each_iteration=True, at_each_function_call=False
-    )
     scenario.execute(CustomDOE_Settings(samples=array([[0.1], [0.2], [0.3]])))
 
     database = scenario.formulation.problem.database
@@ -311,14 +323,7 @@ def test_backup_new_outputs_at_existing_points(tmp_wd) -> None:
 
     The second run evaluates no new point, so it triggers no new iteration.
     """
-    design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = MDOScenario([AnalyticDiscipline({"y": "2*x", "o": "3*x"})], design_space)
-    scenario.add_objective("y")
-    file_path = Path("backup.h5")
-    scenario.set_backup_settings(
-        file_path, at_each_iteration=True, at_each_function_call=False
-    )
+    scenario, file_path = _create_backup_scenario({"y": "2*x", "o": "3*x"})
     settings = CustomDOE_Settings(samples=array([[0.1], [0.2], [0.3]]))
     scenario.execute(settings)
     scenario.add_observable("o")
@@ -331,14 +336,7 @@ def test_backup_new_outputs_at_existing_points(tmp_wd) -> None:
 
 def test_backup_empty_database(tmp_wd) -> None:
     """Check that no backup file is created when the run evaluates no point."""
-    design_space = DesignSpace()
-    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = MDOScenario([AnalyticDiscipline({"y": "2*x"})], design_space)
-    scenario.add_objective("y")
-    file_path = Path("backup.h5")
-    scenario.set_backup_settings(
-        file_path, at_each_iteration=True, at_each_function_call=False
-    )
+    scenario, file_path = _create_backup_scenario({"y": "2*x"})
     with patch.object(scenario, "_execute"):
         scenario.execute(CustomDOE_Settings(samples=array([[0.1]])))
 
