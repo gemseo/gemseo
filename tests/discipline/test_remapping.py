@@ -559,6 +559,7 @@ class ListDiscipline(Discipline):
         ("x", (3, 4), [3, 4]),
         (("x", 0), [3], [3, 2]),
     ],
+    ids=["whole-from-list", "whole-from-ndarray", "whole-from-tuple", "component"],
 )
 def test_list_variable(mapping, value, expected) -> None:
     """Check that a list variable remapped as a whole or by component stays a list."""
