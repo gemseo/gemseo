@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from copy import deepcopy
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import NoReturn
@@ -29,10 +28,10 @@ from numpy import iscomplexobj
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
+from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
-    from gemseo.core.cache.cache_entry import CacheEntry
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
@@ -56,20 +55,6 @@ class RemappingDiscipline(Discipline):
     """
 
     default_grammar_type = Discipline.GrammarType.SIMPLER
-
-    __original_discipline_is_outdated: bool = False
-    """Whether the original discipline was not executed at the current input data.
-
-    This is the case when the output data of this discipline were loaded from its
-    cache at input data other than the ones of the last execution of the original
-    discipline.
-    """
-
-    __last_input_data: StrKeyMapping | None = None
-    """The input data of this discipline at the last execution of the original one.
-
-    `None` if the original discipline has not been executed yet.
-    """
 
     def __init__(
         self,
@@ -182,45 +167,37 @@ class RemappingDiscipline(Discipline):
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.__execute_original_discipline()
+        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
         return self.__convert_from_origin(
             self._discipline.io.get_output_data(), self._output_mapping
         )
-
-    def _set_data_from_cache(
-        self, input_data: StrKeyMapping, cache_entry: CacheEntry
-    ) -> None:
-        super()._set_data_from_cache(input_data, cache_entry)
-        # The original discipline is up to date if this cache entry
-        # is the one of its last execution, as compared by the cache.
-        self.__original_discipline_is_outdated = (
-            self.__last_input_data is None
-            or not self.cache.compare_dict_of_arrays(
-                input_data, self.__last_input_data, self.cache.tolerance
-            )
-        )
-
-    def __execute_original_discipline(self) -> None:
-        """Execute the original discipline at the current input data."""
-        # Forget the last input data in case the execution fails,
-        # as the original discipline would then hold other input data.
-        self.__last_input_data = None
-        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
-        # A deep copy, because the caller can modify the input arrays in place.
-        self.__last_input_data = (
-            None if self.cache is None else deepcopy(dict(self.io.input_data))
-        )
-        self.__original_discipline_is_outdated = False
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        if self.__original_discipline_is_outdated:
-            # The output data of this discipline were loaded from its cache,
-            # so the original discipline was last executed at other input data.
-            self.__execute_original_discipline()
+        original_discipline = self._discipline
+        original_input_data = original_discipline.io.prepare_input_data(
+            self.__convert_to_origin(self.io.get_input_data())
+        )
+        # The original discipline can hold other input data,
+        # e.g. when the output data of this discipline come from its cache
+        # or when another object executed the original discipline.
+        # Within the cache tolerance,
+        # so that an MDA linearizing without executing does not execute it.
+        cache = self.cache
+        if cache is None:
+            is_up_to_date = compare_dict_of_arrays(
+                original_input_data, original_discipline.io.input_data
+            )
+        else:
+            is_up_to_date = cache.compare_dict_of_arrays(
+                original_input_data, original_discipline.io.input_data, cache.tolerance
+            )
+
+        if not is_up_to_date:
+            original_discipline.execute(original_input_data)
 
         input_mapping = self._input_mapping
         original_input_names = {input_mapping[n][0] for n in input_names}
