@@ -440,6 +440,7 @@ def test_linearize_executes_original_once(square_remapping) -> None:
     which shall not be executed again to compute the Jacobian.
     """
     original_discipline = square_remapping.original_discipline
+    original_discipline.cache = None
     with patch.object(
         original_discipline, "_run", wraps=original_discipline._run
     ) as run:
@@ -460,15 +461,17 @@ def test_linearize_after_execute(square_remapping) -> None:
 
 
 @pytest.mark.parametrize(
-    "cache_type",
-    [RemappingDiscipline.default_cache_type, RemappingDiscipline.CacheType.NONE],
+    ("cache_type", "call_counts"),
+    [
+        (RemappingDiscipline.default_cache_type, (0, 0)),
+        # Without cache, the original discipline is executed again
+        # when its last input data differ from the converged ones.
+        (RemappingDiscipline.CacheType.NONE, (1, 0)),
+    ],
     ids=["default_cache", "no_cache"],
 )
-def test_linearize_mda_with_cache_tolerance(cache_type) -> None:
-    """Check that an MDA linearizing within the cache tolerance does not execute.
-
-    This also holds without cache.
-    """
+def test_linearize_mda_with_cache_tolerance(cache_type, call_counts) -> None:
+    """Check the executions of an MDA linearizing within the cache tolerance."""
     original_disciplines = [
         AnalyticDiscipline({"a": "0.5*b + x"}),
         AnalyticDiscipline({"c": "0.3*d + 1"}),
@@ -494,7 +497,7 @@ def test_linearize_mda_with_cache_tolerance(cache_type) -> None:
     ]
     with runs[0] as run_0, runs[1] as run_1:
         mda.linearize({"x": array([1.0])}, compute_all_jacobians=True)
-    assert run_0.call_count == run_1.call_count == 0
+    assert (run_0.call_count, run_1.call_count) == call_counts
 
 
 def test_linearize_after_successive_cache_hits(square_remapping) -> None:
@@ -575,6 +578,28 @@ def test_linearize_with_shared_cache(square_remapping) -> None:
     discipline.cache = square_remapping.cache
     discipline.original_discipline.execute({"a": array([3.0])})
     jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+def test_linearize_after_execution_by_another_remapping(square_remapping) -> None:
+    """Check the Jacobian when another remapping executes the original discipline."""
+    original_discipline = square_remapping.original_discipline
+    other_remapping = RemappingDiscipline(original_discipline, {"y": "a"}, {"w": "z"})
+    square_remapping.execute({"x": array([1.0])})
+    other_remapping.execute({"y": array([3.0])})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+def test_linearize_after_direct_execution(square_remapping) -> None:
+    """Check the Jacobian when the original discipline is executed directly."""
+    square_remapping.execute({"x": array([1.0])})
+    square_remapping.original_discipline.execute({"a": array([3.0])})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True
+    )
     assert_equal(jacobian["z"]["x"], array([[2.0]]))
 
 
