@@ -712,8 +712,36 @@ def test_homonym_with_suffixed_subdirectories(dm_settings):
     for _ in range(4):
         discipline.linearize(compute_all_jacobians=True)
 
-    names = {path.name for path in root_path.iterdir() if path.is_dir()}
-    assert {f"AnalyticDiscipline_linearization#{i}" for i in range(4)} <= names
+    names = {
+        path.name
+        for path in root_path.iterdir()
+        if path.name.startswith("AnalyticDiscipline_linearization")
+    }
+    assert names == {f"AnalyticDiscipline_linearization#{i}" for i in range(4)}
+
+
+def test_sibling_sharing_name_prefix(dm_settings):
+    """Check that a sibling whose name only starts with the same text is no homonym.
+
+    The directory ``Foo_execution`` must not be suffixed
+    because of the siblings ``Foo_execution_execution#0`` and ``#1``.
+    """
+    root_path = dm_settings.execution_root_path
+    discipline = create_discipline(
+        "AnalyticDiscipline", name="Foo_execution", expressions={"y": "x**2"}
+    )
+    discipline.execute()
+    discipline.execute({"x": array([1.0])})
+    create_discipline(
+        "AnalyticDiscipline", name="Foo", expressions={"y": "x**2"}
+    ).execute()
+
+    names = {path.name for path in root_path.iterdir() if path.name.startswith("Foo")}
+    assert names == {
+        "Foo_execution",
+        "Foo_execution_execution#0",
+        "Foo_execution_execution#1",
+    }
 
 
 def test_scenario_discipline_with_files(dm_settings):
