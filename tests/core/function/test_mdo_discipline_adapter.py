@@ -26,6 +26,7 @@ from typing import ClassVar
 import pytest
 from numpy import array
 from numpy import dtype
+from numpy import float64
 from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
@@ -431,48 +432,18 @@ def test_integer_input_declared_as_python_scalar(type_) -> None:
     assert type(discipline.n) is type_
 
 
-class SeriesDiscipline(Discipline):
-    """A discipline whose input is a pandas Series."""
+class ContainerDiscipline(Discipline):
+    """A discipline whose input `n` is a container built by user converters."""
 
     default_grammar_type = Discipline.GrammarType.SIMPLE
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(self, type_: type) -> None:
+        """
+        Args:
+            type_: The type of the input `n`.
+        """  # noqa: D205, D212
         super().__init__()
-        self.io.input_grammar.update_from_types({"x": ndarray, "n": Series})
-        self.io.output_grammar.update_from_types({"y": ndarray})
-        self.n = None
-
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
-        self.n = input_data["n"]
-        return {"y": input_data["x"] * self.n.sum()}
-
-
-def test_integer_input_converted_by_user(monkeypatch) -> None:
-    """Check that a typed input converted by a user converter keeps its own type."""
-    monkeypatch.setattr(
-        BaseDataConverter, "value_to_array_converters", {"n": Series.to_numpy}
-    )
-    monkeypatch.setattr(BaseDataConverter, "array_to_value_converters", {"n": Series})
-    monkeypatch.setattr(
-        BaseDataConverter, "value_size_getters", {"n": operator.attrgetter("size")}
-    )
-    discipline = SeriesDiscipline()
-    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 2})
-    x_vect = array([2.0, 3.0, 4.0])
-    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
-    assert_allclose(function.evaluate(x_vect), array([14.0]))
-    assert isinstance(discipline.n, Series)
-    assert discipline.n.dtype == int64
-
-
-class ListDiscipline(Discipline):
-    """A discipline whose input is a list."""
-
-    default_grammar_type = Discipline.GrammarType.SIMPLE
-
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__()
-        self.io.input_grammar.update_from_types({"x": ndarray, "n": list})
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": type_})
         self.io.output_grammar.update_from_types({"y": ndarray})
         self.n = None
 
@@ -481,16 +452,28 @@ class ListDiscipline(Discipline):
         return {"y": input_data["x"] * sum(self.n)}
 
 
-def test_integer_input_converted_to_list_by_user(monkeypatch) -> None:
-    """Check that a typed input converted to a list by a user converter is kept."""
-    monkeypatch.setattr(BaseDataConverter, "value_to_array_converters", {"n": array})
-    monkeypatch.setattr(
-        BaseDataConverter, "array_to_value_converters", {"n": ndarray.tolist}
-    )
-    monkeypatch.setattr(BaseDataConverter, "value_size_getters", {"n": len})
-    discipline = ListDiscipline()
+@pytest.mark.parametrize(
+    ("type_", "to_array", "to_value", "get_size", "expected_dtype"),
+    [
+        # A value with an astype method is cast to the type of the variable.
+        (Series, Series.to_numpy, Series, operator.attrgetter("size"), int64),
+        # A value without an astype method is left as is.
+        (list, array, ndarray.tolist, len, float64),
+    ],
+    ids=["Series", "list"],
+)
+def test_integer_input_converted_by_user(
+    monkeypatch, type_, to_array, to_value, get_size, expected_dtype
+) -> None:
+    """Check that an integer input converted by a user converter keeps its type."""
+    monkeypatch.setattr(BaseDataConverter, "value_to_array_converters", {"n": to_array})
+    monkeypatch.setattr(BaseDataConverter, "array_to_value_converters", {"n": to_value})
+    monkeypatch.setattr(BaseDataConverter, "value_size_getters", {"n": get_size})
+    discipline = ContainerDiscipline(type_)
     function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 2})
     x_vect = array([2.0, 3.0, 4.0])
     x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
     assert_allclose(function.evaluate(x_vect), array([14.0]))
-    assert discipline.n == [3.0, 4.0]
+    assert type(discipline.n) is type_
+    assert_equal(array(discipline.n), array([3, 4]))
+    assert array(discipline.n).dtype == expected_dtype
