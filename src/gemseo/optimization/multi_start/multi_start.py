@@ -62,6 +62,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             handle_integer_variables=True,
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
+            handle_unbounded_variables=False,
             settings_class=MultiStart_Settings,
         )
     }

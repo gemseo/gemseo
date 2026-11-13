@@ -363,6 +363,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
             algorithm_name="Dual annealing",
             description="Dual annealing",
+            handle_unbounded_variables=False,
             internal_algorithm_name="dual_annealing",
             website=f"{__doc}scipy.optimize.dual_annealing.html",
             settings_class=DUAL_ANNEALING_Settings,
@@ -372,6 +373,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             description="Simplicial homology global optimization",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
+            handle_unbounded_variables=False,
             internal_algorithm_name="shgo",
             positive_constraints=True,
             website=f"{__doc}scipy.optimize.shgo.html",
@@ -383,6 +385,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             handle_integer_variables=True,
+            handle_unbounded_variables=False,
             internal_algorithm_name="differential_evolution",
             website=f"{__doc}scipy.optimize.differential_evolution.html",
             settings_class=DIFFERENTIAL_EVOLUTION_Settings,

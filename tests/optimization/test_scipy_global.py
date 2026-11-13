@@ -1289,16 +1289,36 @@ def test_basinhopping_accept_test(scipy_spies) -> None:
     assert spy.call_args.kwargs["accept_test"] is accept_test
 
 
-def test_direct_rejects_infinite_bounds(snapshot) -> None:
-    """Check that DIRECT rejects a design space with infinite bounds."""
+@pytest.mark.parametrize(
+    "settings_class",
+    [
+        DIFFERENTIAL_EVOLUTION_Settings,
+        DIRECT_Settings,
+        DUAL_ANNEALING_Settings,
+        SHGO_Settings,
+    ],
+)
+@pytest.mark.parametrize(
+    ("lower_bound", "upper_bound"),
+    [(-inf, 1.0), (-1.0, inf), (-inf, inf)],
+    ids=["lower", "upper", "both"],
+)
+def test_rejects_infinite_bounds(
+    settings_class, lower_bound, upper_bound, snapshot
+) -> None:
+    """Check that an algorithm requiring finite bounds rejects infinite ones."""
     design_space = DesignSpace()
-    design_space.add_real_variable("x", lower_bound=-inf, upper_bound=1.0, value=0.0)
+    design_space.add_real_variable(
+        "x", lower_bound=lower_bound, upper_bound=upper_bound, value=0.0
+    )
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x**2, name="f")
+    settings = settings_class(normalize_design_space=False)
+    assert not ScipyGlobalOpt.is_algorithm_suited(
+        ScipyGlobalOpt.ALGORITHM_INFOS[settings.target_class_name], problem
+    )
     with assert_exception(ValueError, snapshot):
-        optimization_library_factory.execute(
-            problem, settings=DIRECT_Settings(normalize_design_space=False)
-        )
+        optimization_library_factory.execute(problem, settings=settings)
 
 
 @pytest.mark.parametrize("locally_biased", [True, False], ids=["DIRECT-L", "DIRECT"])
