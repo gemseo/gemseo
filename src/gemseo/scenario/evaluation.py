@@ -441,19 +441,15 @@ class EvaluationScenario(BaseMonitoredProcess, Generic[_SpaceT]):
             self.formulation.problem.database.clear()
 
         self.formulation.pre_execute()
-        n_x = len(self.formulation.problem.database)
-
         self._execute_monitored()
 
         # The last call to the functions may not trigger the listener
-        # so some values may be missing in the database.
+        # so some values may be missing in the backup file.
         # This ensures that the listener is called after the last iteration.
         if self._backup_evaluations:
             database = self.formulation.problem.database
-            n_x_a = len(database)
-            if 0 < n_x < n_x_a:
-                x_vect = database.get_x_vect(n_x_a)
-                self._write_backup_file(x_vect)
+            if len(database):
+                self._write_backup_file(database.get_x_vect(-1))
 
         execution_statistics = self.execution_statistics
         if execution_statistics.is_enabled:
