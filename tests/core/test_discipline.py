@@ -24,6 +24,7 @@ import contextlib
 import logging
 import os
 import platform
+from enum import StrEnum
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
@@ -1612,22 +1613,46 @@ def test_local_data_deprecated() -> None:
         assert discipline.local_data == {"x": array([3.0])}
 
 
-class _DisciplineWithUnknownOutput(Discipline):
-    """A discipline whose `_run` returns a name not in its output grammar."""
+class _WriteMode(StrEnum):
+    """The way `_run` writes its output data."""
 
-    def __init__(self) -> None:
+    RETURN = "return"
+    IO_OUTPUT_DATA = "io.output_data"
+    LOCAL_DATA = "local_data"
+
+
+class _DisciplineWithUnknownOutput(Discipline):
+    """A discipline whose `_run` writes a name not in its output grammar."""
+
+    def __init__(self, write_mode: _WriteMode = _WriteMode.RETURN) -> None:
+        """
+        Args:
+            write_mode: The way `_run` writes its output data.
+        """  # noqa: D205, D212
         super().__init__()
         self.io.output_grammar.update_from_names(["y"])
+        self.__write_mode = write_mode
 
     def _run(self, input_data):
-        return {"y": array([1.0]), "z": array([2.0])}
+        output_data = {"y": array([1.0]), "z": array([2.0])}
+        if self.__write_mode == _WriteMode.RETURN:
+            return output_data
+        if self.__write_mode == _WriteMode.IO_OUTPUT_DATA:
+            self.io.output_data.update(output_data)
+        else:
+            with pytest.warns(DeprecationWarning, match="local_data"):
+                self.local_data = {**input_data, **output_data}
+        return None
 
 
-def test_forbid_extra_output_names_default():
+@pytest.mark.parametrize("write_mode", _WriteMode)
+def test_forbid_extra_output_names_default(write_mode):
     """Check that the names not in the output grammar are ignored by default."""
-    discipline = _DisciplineWithUnknownOutput()
+    discipline = _DisciplineWithUnknownOutput(write_mode)
     assert not discipline.forbid_extra_output_names
     assert_equal(dict(discipline.execute()), {"y": array([1.0])})
+    assert discipline.io.get_output_data().keys() == {"y"}
+    assert discipline.cache.last_entry.outputs.keys() == {"y"}
 
 
 def test_forbid_extra_output_names(snapshot):
@@ -1657,36 +1682,3 @@ def test_forbid_extra_output_names_status(monkeypatch):
     with pytest.raises(InvalidDataError):
         discipline.execute()
     assert discipline.execution_status.value == ExecutionStatus.Status.FAILED
-
-
-class _DisciplineWritingExtraOutput(Discipline):
-    """A discipline writing an output data that is not an output."""
-
-    def __init__(self, use_local_data: bool) -> None:
-        """
-        Args:
-            use_local_data: Whether to write the output data with the deprecated
-                `local_data` setter, otherwise in `io.output_data`.
-        """  # noqa: D205, D212
-        super().__init__()
-        self.io.input_grammar.update_from_names(["x"])
-        self.io.output_grammar.update_from_names(["y"])
-        self.io.input_grammar.defaults = {"x": array([1.0])}
-        self.__use_local_data = use_local_data
-
-    def _run(self, input_data):
-        output_data = {"y": input_data["x"], "extra": array([3.0])}
-        if self.__use_local_data:
-            with pytest.warns(DeprecationWarning, match="local_data"):
-                self.local_data = {**input_data, **output_data}
-        else:
-            self.io.output_data.update(output_data)
-
-
-@pytest.mark.parametrize("use_local_data", [False, True])
-def test_extra_output_data_are_removed(use_local_data) -> None:
-    """Check that the output data that are not outputs are removed."""
-    discipline = _DisciplineWritingExtraOutput(use_local_data)
-    discipline.execute()
-    assert discipline.io.get_output_data().keys() == {"y"}
-    assert discipline.cache.last_entry.outputs.keys() == {"y"}
