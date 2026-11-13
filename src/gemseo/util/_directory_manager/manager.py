@@ -237,61 +237,57 @@ class DirectoryManager(metaclass=BaseMultiton):
             raise ValueError(msg)
 
         directory_path = parent_path / filename
+        observer_ = self.__path_to_observer.get(directory_path)
+        if observer_ is not None:
+            # Add an indexed suffix to the previous homonymic unsuffixed directory.
+            new_path = directory_path.with_name(f"{filename}{self.__suffix_separator}0")
+            self.__path_to_observer.pop(directory_path)
+            self.__path_to_observer[new_path] = observer_
 
-        # Go reverse since a potential homonymic directory could be the last one.
-        # Iterate on a copy because we could modify the data structure during iteration.
-        for path, observer_ in reversed(tuple(self.__path_to_observer.items())):
-            if path == directory_path:
-                # Add an indexed suffix to the previous homonymic
-                # unsuffixed directory.
-                previous_suffix = 0
-                new_path = path.with_name(
-                    path.name + self.__suffix_separator + str(previous_suffix)
-                )
-                self.__path_to_observer.pop(path)
-                self.__path_to_observer[new_path] = observer_
+            # Get all the subdirectories with the current name.
+            old_sub_directory_paths = [Path(x[0]) for x in walk(directory_path)]
+            old_sub_directory_paths.pop(0)
 
-                # Get all the subdirectories with the current name.
-                old_sub_directory_paths = [Path(x[0]) for x in walk(path)]
-                old_sub_directory_paths.pop(0)
+            # Rename the directory.
+            # (On Windows the current working directory cannot be renamed.)
+            chdir(parent_path)
+            directory_path.rename(new_path)
+            chdir(new_path)
 
-                # Rename the directory.
-                # (On Windows the current working directory cannot be renamed.)
-                chdir(path.parent)
-                path.rename(new_path)
-                chdir(new_path)
+            # Get the subdirectories under the renamed directory.
+            new_sub_directory_paths = [Path(x[0]) for x in walk(new_path)]
+            new_sub_directory_paths.pop(0)
 
-                # Get the subdirectories under the renamed directory.
-                new_sub_directory_paths = [Path(x[0]) for x in walk(new_path)]
-                new_sub_directory_paths.pop(0)
-
-                # Update the paths to observers with the new paths.
-                # The walk may also return directories that are not tracked
-                # by the manager (e.g. created by an executed command line):
-                # those have no observer and shall be left untouched.
-                for old_sub_folder_path, new_sub_folder_path in zip(
-                    old_sub_directory_paths, new_sub_directory_paths, strict=False
-                ):
-                    sub_observer = self.__path_to_observer.pop(
-                        old_sub_folder_path, None
-                    )
-                    if sub_observer is not None:
-                        self.__path_to_observer[new_sub_folder_path] = sub_observer
-            elif (
-                # Is it a homonymic directory that has been suffixed?
-                str(path).startswith(str(directory_path))
-                # Yes, then is it suffixed with the separator and an index?
-                and (
-                    previous_suffix := path.name.rsplit(self.__suffix_separator, 1)[-1]
-                )
-                != path.name
+            # Update the paths to observers with the new paths.
+            # The walk may also return directories that are not tracked
+            # by the manager (e.g. created by an executed command line):
+            # those have no observer and shall be left untouched.
+            for old_sub_folder_path, new_sub_folder_path in zip(
+                old_sub_directory_paths, new_sub_directory_paths, strict=False
             ):
-                previous_suffix = int(previous_suffix)
-            else:
-                continue
+                sub_observer = self.__path_to_observer.pop(old_sub_folder_path, None)
+                if sub_observer is not None:
+                    self.__path_to_observer[new_sub_folder_path] = sub_observer
 
+            return directory_path.with_name(f"{filename}{self.__suffix_separator}1")
+
+        # Look for the homonymic directories suffixed with the separator and an index,
+        # and take the largest index:
+        # the order of the registered paths is not the creation order
+        # since the renaming above re-registers the subdirectories in walk order.
+        # A subdirectory of such a directory must not match.
+        # Iterate on a copy because another thread could modify the data structure.
+        suffixed_name_prefix = f"{filename}{self.__suffix_separator}"
+        suffixes = [
+            int(suffix)
+            for path in tuple(self.__path_to_observer)
+            if path.parent == parent_path
+            and (suffix := path.name.removeprefix(suffixed_name_prefix)) != path.name
+            and suffix.isdigit()
+        ]
+        if suffixes:
             return directory_path.with_name(
-                directory_path.name + self.__suffix_separator + str(previous_suffix + 1)
+                f"{suffixed_name_prefix}{max(suffixes) + 1}"
             )
 
         return directory_path

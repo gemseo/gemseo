@@ -35,6 +35,7 @@ from gemseo.core.grammar.factory import GrammarFactory
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -698,6 +699,46 @@ def test_discipline_files_with_untracked_subdirectory(dm_settings):
 
     assert (root_path / "DisciplineWithFiles_execution#0" / "untracked").exists()
     assert (root_path / "DisciplineWithFiles_execution#1").exists()
+
+
+def test_homonym_with_suffixed_subdirectories(dm_settings):
+    """Check the suffix of a directory whose suffixed homonyms have subdirectories.
+
+    Each linearization directory contains suffixed execution directories,
+    whose suffixes must not be taken for the one of a linearization directory.
+    """
+    root_path = dm_settings.execution_root_path
+    discipline = AnalyticDiscipline({"y": "x**2"})
+    discipline.set_jacobian_approximation()
+    for _ in range(4):
+        discipline.linearize(compute_all_jacobians=True)
+
+    names = {
+        path.name
+        for path in root_path.iterdir()
+        if path.name.startswith("AnalyticDiscipline_linearization")
+    }
+    assert names == {f"AnalyticDiscipline_linearization#{i}" for i in range(4)}
+
+
+def test_sibling_sharing_name_prefix(dm_settings):
+    """Check that a sibling whose name only starts with the same text is no homonym.
+
+    The directory ``Foo_execution`` must not be suffixed
+    because of the siblings ``Foo_execution_execution#0`` and ``#1``.
+    """
+    root_path = dm_settings.execution_root_path
+    discipline = AnalyticDiscipline({"y": "x**2"}, name="Foo_execution")
+    discipline.execute()
+    discipline.execute({"x": array([1.0])})
+    AnalyticDiscipline({"y": "x**2"}, name="Foo").execute()
+
+    names = {path.name for path in root_path.iterdir() if path.name.startswith("Foo")}
+    assert names == {
+        "Foo_execution",
+        "Foo_execution_execution#0",
+        "Foo_execution_execution#1",
+    }
 
 
 def test_scenario_discipline_with_files(dm_settings):
