@@ -35,9 +35,11 @@ from typing import Generic
 from typing import TypeVar
 
 from numpy import array
+from numpy import full
 from numpy import hstack
 from numpy import isnan
 from numpy import linspace
+from numpy import nan
 from numpy import nanmax
 from numpy import nansum
 from numpy import newaxis
@@ -67,8 +69,8 @@ from gemseo.util.pydantic import create_model
 from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import filter_names
-from gemseo.util.string import get_name_and_component
 from gemseo.util.string import get_variables_with_components
+from gemseo.util.string import pretty_repr
 from gemseo.util.string import pretty_str
 from gemseo.util.string import repr_variable
 from gemseo.util.typing import RealArray
@@ -355,12 +357,187 @@ class BaseGenericSensitivityAnalysis(
             self._input_names,
         )
 
+    def _check_output(
+        self, name: str, component: int | None = None, analysis: str = ""
+    ) -> None:
+        """Check that an output, or one of its components, exists.
+
+        Args:
+            name: The name of the output.
+            component: The component of the output.
+                If `None`, only check the name.
+            analysis: The description of the analysis used in the error message.
+                If empty, use the class name of the analysis.
+
+        Raises:
+            ValueError: When `name` is not an output of the analysis
+                or when `component` is not in `[0, size)`,
+                where `size` is the size of the output;
+                a negative component is not counted from the last one.
+        """
+        output_indices = self.main_indices.get(name)
+        if output_indices is None:
+            raise self._create_unknown_output_error(name, analysis)
+
+        analysis = analysis or self.__get_analysis_description()
+        if component is not None and not 0 <= component < len(output_indices):
+            msg = f"The output {name!r} of {analysis} has no component {component}."
+            raise ValueError(msg)
+
+    def _create_unknown_output_error(self, name: str, analysis: str = "") -> ValueError:
+        """Create the error of an output that is not an output of the analysis.
+
+        Args:
+            name: The name of the output.
+            analysis: The description of the analysis used in the error message.
+                If empty, use the class name of the analysis.
+
+        Returns:
+            The error.
+        """
+        analysis = analysis or self.__get_analysis_description()
+        return ValueError(f"The output {name!r} is not an output of {analysis}.")
+
+    def __get_analysis_description(self) -> str:
+        """Return the default description of the analysis in the error messages.
+
+        Returns:
+            The default description of the analysis.
+        """
+        return f"the sensitivity analysis ({self.__class__.__name__})"
+
+    def _get_output_component_indices(
+        self,
+        indices: FirstOrderIndicesType | SecondOrderIndicesType,
+        output_name: str,
+        output_component: int,
+        use_nan: bool = False,
+    ) -> dict[str, RealArray] | dict[str, dict[str, RealArray]]:
+        """Return the sensitivity indices of an output component.
+
+        Args:
+            indices: The sensitivity indices of a method.
+            output_name: The name of the output.
+            output_component: The component of the output.
+            use_nan: Whether to return `nan` indices
+                for a constant output component
+                (first-order indices only).
+                Otherwise, raise an error.
+
+        Returns:
+            The sensitivity indices of the output component indexed by input name.
+
+        Raises:
+            ValueError: When the sensitivity indices are undefined,
+                as the output component is constant,
+                and `use_nan` is `False`.
+        """
+        component_indices = indices[output_name][output_component]
+        if component_indices is not None:
+            return component_indices
+
+        if use_nan:
+            sizes = self.dataset.variable_name_to_n_components
+            return {name: full(sizes[name], nan) for name in self._input_names}
+
+        raise self._create_undefined_indices_error([(output_name, output_component)])
+
+    def _create_undefined_indices_error(
+        self, outputs: Iterable[tuple[str, int]]
+    ) -> ValueError:
+        """Create the error of undefined sensitivity indices.
+
+        Args:
+            outputs: The (name, component) pairs of the constant output components.
+
+        Returns:
+            The error stating that the variance of these outputs is zero.
+        """
+        name_to_components: dict[str, list[int]] = {}
+        for name, component in outputs:
+            name_to_components.setdefault(name, []).append(component)
+
+        labels = []
+        for name, components in name_to_components.items():
+            size = self._get_output_n_components(name)
+            if sorted(components) == list(range(size)):
+                # All the components are constant; the output is named once.
+                labels.append(repr(name))
+            else:
+                labels.extend(
+                    repr(repr_variable(name, component, size=size))
+                    for component in components
+                )
+
+        msg = (
+            f"The sensitivity indices of {pretty_str(labels, sort=False)} "
+            "are undefined, as the variance of "
+            f"{'these outputs' if len(labels) > 1 else 'the output'} is zero."
+        )
+        return ValueError(msg)
+
+    def _get_output_component_and_indices(
+        self,
+        output: VariableOrComponent | Sequence[str | int],
+        indices: FirstOrderIndicesType | SecondOrderIndicesType,
+        components: Iterable[int] = (),
+    ) -> tuple[str, int, dict[str, RealArray] | dict[str, dict[str, RealArray]]]:
+        """Return an output component and its sensitivity indices.
+
+        Args:
+            output: Either the name of an output,
+                a `(name, component)` pair
+                or a `[name, component]` sequence.
+            indices: The sensitivity indices of a method.
+            components: The components of the output to choose from
+                when `output` is a name.
+                If empty, all the components of the output are considered.
+
+        Returns:
+            The name of the output,
+            either its component if `output` is a pair
+            or its first non-constant component among `components`
+            if `output` is a name,
+            and the sensitivity indices of this output component.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when `output` is a pair whose output component does not exist
+                (a negative component is not counted from the last one)
+                or is constant
+                or when `output` is a name
+                and all the components of this output among `components`
+                are constant.
+        """
+        if not isinstance(output, str):
+            name, component = output
+            self._check_output(name, component)
+            return (
+                name,
+                component,
+                self._get_output_component_indices(indices, name, component),
+            )
+
+        name = output
+        self._check_output(name)
+        output_indices = indices[name]
+        components = list(components) or range(len(output_indices))
+        for component in components:
+            component_indices = output_indices[component]
+            if component_indices is not None:
+                return name, component, component_indices
+
+        raise self._create_undefined_indices_error([
+            (name, component) for component in components
+        ])
+
     def sort_input_variables(self, output: VariableOrComponent) -> list[str]:
         """Return the inputs sorted in descending order.
 
         Args:
             output: Either a tuple as `(output_name, output_component)`
-                or an output name; in the second case, use the first output component.
+                or an output name;
+                in the second case, use its first non-constant component.
 
         Returns:
             The names of the inputs sorted by cumulative sensitivity index,
@@ -368,15 +545,45 @@ class BaseGenericSensitivityAnalysis(
             associated to the different components of an input,
             skipping the components whose index is `nan`;
             an input whose every component has a `nan` index is ranked last.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the output component is constant,
+                or when all the components of the output are constant
+                if it is a name.
         """
-        output_name, output_component = get_name_and_component(output)
+        _, _, component_indices = self._get_output_component_and_indices(
+            output, self.main_indices
+        )
+        return self._sort_input_names(component_indices)
+
+    @staticmethod
+    def _sort_input_names(
+        component_indices: Mapping[str, RealArray], use_absolute_values: bool = True
+    ) -> list[str]:
+        """Return the inputs sorted in descending order.
+
+        Args:
+            component_indices: The sensitivity indices of an output component
+                indexed by input name.
+            use_absolute_values: Whether the cumulative sensitivity index
+                sums the absolute values of the sensitivity indices.
+                Otherwise, it sums the sensitivity indices.
+
+        Returns:
+            The names of the inputs sorted by cumulative sensitivity index,
+            skipping the components whose index is `nan`;
+            an input whose every component has a `nan` index is ranked last.
+        """
         return [
             input_name
             for input_name, _ in sorted(
-                self.main_indices[output_name][output_component].items(),
+                component_indices.items(),
                 key=lambda indices: (
                     not isnan(indices[1]).all(),
-                    nansum(abs(indices[1])),
+                    nansum(abs(indices[1]) if use_absolute_values else indices[1]),
                 ),
                 reverse=True,
             )
@@ -400,7 +607,7 @@ class BaseGenericSensitivityAnalysis(
             output: The output
                 for which to display sensitivity indices,
                 either a name or a tuple of the form `(name, component)`.
-                If name, its first component is considered.
+                If it is a name, all its non-constant components are considered.
             input_names: The inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
@@ -421,6 +628,14 @@ class BaseGenericSensitivityAnalysis(
 
         Returns:
             The plot figure.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the output component is constant,
+                or when all the components of the output are constant
+                if it is a name.
         """
         return self.plot_bar(
             outputs=output,
@@ -436,7 +651,7 @@ class BaseGenericSensitivityAnalysis(
 
     def plot_field(
         self,
-        output: VariableOrComponent,
+        output: VariableOrComponent | Sequence[str | int],
         mesh: RealArray | None = None,
         input_names: Iterable[str] = (),
         standardize: bool = False,
@@ -453,13 +668,18 @@ class BaseGenericSensitivityAnalysis(
 
         The output is considered as a 1D or 2D functional variable,
         according to the shape of the mesh on which it is represented.
+        Each input component is a curve or a surface.
+        The mesh points where an output component is constant
+        have no sensitivity index (`nan`), which shows as a gap.
 
         Args:
             output: The output
                 for which to display sensitivity indices,
-                either a name or a tuple of the form `(name, component)`
-                where `(name, component)` is used to sort the inputs.
-                If it is a name, its first component is considered.
+                either a name,
+                a tuple of the form `(name, component)`
+                or a sequence of the form `[name, component]`,
+                where the output component is used to sort the inputs.
+                If it is a name, its first non-constant component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
                 or a (p, 2) array for a 2D one.
@@ -489,24 +709,58 @@ class BaseGenericSensitivityAnalysis(
 
         Raises:
             NotImplementedError: If the dimension of the mesh is greater than 2.
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the sorting output component is constant,
+                when all the components of the output are constant
+                if it is a name,
+                or when none of the input names are inputs.
         """
-        output_name, output_component = get_name_and_component(output)
-        input_names = self._filter_sorted_input_names(
-            (output_name, output_component), input_names
+        main_indices = self.main_indices
+        output_name, output_component, _ = self._get_output_component_and_indices(
+            output, main_indices
         )
+        requested_input_names = list(input_names)
+        input_names = self._filter_sorted_input_names(
+            (output_name, output_component), requested_input_names
+        )
+        if not input_names:
+            msg = (
+                f"None of the input names {pretty_repr(requested_input_names)} "
+                "is an input of the sensitivity analysis, "
+                f"whose inputs are {pretty_repr(self._input_names)}."
+            )
+            raise ValueError(msg)
+
+        output_indices = main_indices[output_name]
         if standardize:
-            main_indices = self.standardize_indices(self.main_indices)
-        else:
-            main_indices = self.main_indices
+            output_indices = self.standardize_indices({output_name: output_indices})[
+                output_name
+            ]
 
-        data = [
-            [main_index[input_name] for main_index in main_indices[output_name]]
-            for input_name in input_names
+        # A constant output component has no index,
+        # which is a gap in the plot.
+        all_component_indices = [
+            self._get_output_component_indices(
+                {output_name: output_indices}, output_name, component, True
+            )
+            for component in range(len(output_indices))
         ]
+        labels = []
+        data = []
+        for input_name in input_names:
+            labels.extend(self.dataset.get_columns([input_name]))
+            data.extend(
+                array([
+                    component_indices[input_name]
+                    for component_indices in all_component_indices
+                ]).T.tolist()
+            )
 
-        data = array(data)[:, :, 0]
+        data = array(data)
         dataset = Dataset.from_array(data, [output_name], {output_name: data.shape[1]})
-        dataset.index = input_names
+        dataset.index = labels
         mesh = linspace(0, 1, data.shape[1]) if mesh is None else mesh
         dataset.misc["mesh"] = mesh
         mesh_dimension = len(dataset.misc["mesh"].shape)
@@ -565,6 +819,8 @@ class BaseGenericSensitivityAnalysis(
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
                 If empty, all the outputs are considered.
+                The constant output components are left out,
+                as their sensitivity indices are undefined.
             input_names: The names of the inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
@@ -587,7 +843,11 @@ class BaseGenericSensitivityAnalysis(
             sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
                 associated with the sorting output.
-            sorting_output: The sorting output
+            sorting_output: The sorting output,
+                either a name or a tuple of the form `(name, component)`,
+                among the plotted output components.
+                If it is a name,
+                its first non-constant component among the plotted ones is considered.
                 If empty, use the first one.
             bar_plot_settings: The settings of the bar plot.
                 If `None`,
@@ -599,7 +859,13 @@ class BaseGenericSensitivityAnalysis(
             A bar plot representing the sensitivity indices.
 
         Raises:
-            ValueError: When no input component has sensitivity indices.
+            ValueError: When an output or the sorting output is unknown
+                or has no such component
+                (a negative component is not counted from the last one),
+                when no input component has sensitivity indices,
+                when all the output components are constant,
+                when the sorting output is constant
+                or when the sorting output is not among the plotted outputs.
         """
         if bar_plot_settings is None:
             bar_plot_settings = BarPlot_Settings()
@@ -655,23 +921,60 @@ class BaseGenericSensitivityAnalysis(
             sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
                 associated with the sorting output.
-            sorting_output: The sorting output
+            sorting_output: The sorting output,
+                either a name or a tuple of the form `(name, component)`,
+                among the plotted output components.
+                If it is a name,
+                its first non-constant component among the plotted ones is considered.
                 If empty, use the first one.
 
         Returns:
             The dataset to plot,
-            without the input components that have no sensitivity indices.
+            without the input components that have no sensitivity indices
+            and without the constant output components.
 
         Raises:
-            ValueError: When no input component has sensitivity indices.
+            ValueError: When an output is unknown
+                or has no such component
+                (a negative component is not counted from the last one),
+                when no input component has sensitivity indices,
+                when all the output components are constant,
+                when the sorting output is constant
+                or when the sorting output is not among the plotted outputs.
         """
-        sizes = {k: len(v) for k, v in self.main_indices.items()}
-        if standardize:
-            main_indices = self.standardize_indices(self.main_indices)
-        else:
-            main_indices = self.main_indices
+        raw_main_indices = self.main_indices
+        sizes = {k: len(v) for k, v in raw_main_indices.items()}
+        try:
+            # An output component listed twice is plotted once.
+            all_outputs = list(
+                dict.fromkeys(get_variables_with_components(outputs, sizes))
+            )
+        except KeyError as error:
+            # An output given by an unknown name has no size.
+            raise self._create_unknown_output_error(error.args[0]) from None
 
-        outputs = list(get_variables_with_components(outputs, sizes))
+        for name, component in all_outputs:
+            self._check_output(name, component)
+
+        # The sensitivity indices of a constant output component are undefined.
+        outputs = [
+            (name, component)
+            for name, component in all_outputs
+            if raw_main_indices[name][component] is not None
+        ]
+        if not outputs:
+            raise self._create_undefined_indices_error(all_outputs)
+
+        if standardize:
+            main_indices = self.standardize_indices({
+                name: raw_main_indices[name] for name, _ in outputs
+            })
+        else:
+            main_indices = raw_main_indices
+
+        if sort and sorting_output:
+            sorting_output = self.__get_sorting_output(sorting_output, all_outputs)
+
         input_names = self._filter_sorted_input_names(outputs[0], input_names)
         data = {name: [] for name in input_names}
         for output_name, output_component in outputs:
@@ -712,7 +1015,7 @@ class BaseGenericSensitivityAnalysis(
         dataset.index = output_labels
         if sort:
             if sorting_output:
-                name, component = get_name_and_component(sorting_output)
+                name, component = sorting_output
                 by = repr_variable(
                     name,
                     component,
@@ -723,6 +1026,52 @@ class BaseGenericSensitivityAnalysis(
             dataset = dataset.sort_values(by=by, ascending=False, axis=1)
 
         return dataset
+
+    def __get_sorting_output(
+        self,
+        sorting_output: VariableOrComponent,
+        outputs: Sequence[tuple[str, int]],
+    ) -> tuple[str, int]:
+        """Return the output component to sort the inputs.
+
+        Args:
+            sorting_output: The sorting output,
+                either a name or a tuple of the form `(name, component)`.
+            outputs: The output components to plot, including the constant ones.
+
+        Returns:
+            Either the sorting output if it is a tuple
+            or the first non-constant component to plot of this output if it is a name.
+
+        Raises:
+            ValueError: When the sorting output is unknown or has no such component
+                (a negative component is not counted from the last one),
+                is constant
+                or is not among the output components to plot.
+        """
+        if isinstance(sorting_output, str):
+            self._check_output(sorting_output)
+            name = sorting_output
+            is_plotted = any(output[0] == name for output in outputs)
+            label = name
+        else:
+            name, component = sorting_output
+            self._check_output(name, component)
+            is_plotted = (name, component) in outputs
+            label = repr_variable(
+                name, component, size=self._get_output_n_components(name)
+            )
+
+        if not is_plotted:
+            msg = f"The sorting output {label!r} is not among the plotted outputs."
+            raise ValueError(msg)
+
+        name, component, _ = self._get_output_component_and_indices(
+            sorting_output,
+            self.main_indices,
+            [output[1] for output in outputs if output[0] == name],
+        )
+        return name, component
 
     def plot_radar(
         self,
@@ -758,6 +1107,8 @@ class BaseGenericSensitivityAnalysis(
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
                 If empty, all the outputs are considered.
+                The constant output components are left out,
+                as their sensitivity indices are undefined.
             input_names: The names of the inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
@@ -780,7 +1131,11 @@ class BaseGenericSensitivityAnalysis(
             sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
                 associated with the sorting output.
-            sorting_output: The sorting output
+            sorting_output: The sorting output,
+                either a name or a tuple of the form `(name, component)`,
+                among the plotted output components.
+                If it is a name,
+                its first non-constant component among the plotted ones is considered.
                 If empty, use the first one.
             radar_chart_settings: The settings of the radar chart.
                 If `None`, use the default settings of the radar chart.
@@ -789,7 +1144,13 @@ class BaseGenericSensitivityAnalysis(
             A radar chart representing the sensitivity indices.
 
         Raises:
-            ValueError: When no input component has sensitivity indices.
+            ValueError: When an output or the sorting output is unknown
+                or has no such component
+                (a negative component is not counted from the last one),
+                when no input component has sensitivity indices,
+                when all the output components are constant,
+                when the sorting output is constant
+                or when the sorting output is not among the plotted outputs.
         """
         if radar_chart_settings is None:
             radar_chart_settings = RadarChart_Settings()
@@ -821,13 +1182,76 @@ class BaseGenericSensitivityAnalysis(
         """Filter the input names sorted in descending order of influence.
 
         Args:
-            output: An output for which to display the sensitivity indices.
+            output: A non-constant output component to sort the inputs.
             inputs_to_keep: The inputs to keep. If empty, keep all.
 
         Returns:
             The filtered input names sorted in descending order of influence.
         """
         return filter_names(self.sort_input_variables(output), inputs_to_keep)
+
+    @staticmethod
+    def __describe_analysis(
+        analysis: BaseGenericSensitivityAnalysis, position: int
+    ) -> str:
+        """Describe an analysis of [plot_comparison()][.plot_comparison].
+
+        Args:
+            analysis: The analysis.
+            position: The position of the analysis,
+                0 for the current analysis
+                and `i + 1` for the `i`-th compared analysis.
+
+        Returns:
+            The description of the analysis.
+        """
+        class_name = analysis.__class__.__name__
+        if position == 0:
+            return f"the current sensitivity analysis ({class_name})"
+
+        return (
+            f"the compared sensitivity analysis at position {position - 1} "
+            f"({class_name})"
+        )
+
+    def __create_no_common_component_error(
+        self,
+        output_name: str,
+        analyses: Sequence[BaseGenericSensitivityAnalysis],
+    ) -> ValueError:
+        """Create the error of an output without component defined for all analyses.
+
+        Args:
+            output_name: The name of the output.
+            analyses: The compared analyses, the current one first.
+
+        Returns:
+            The error naming, for each component,
+            the analyses for which it is constant.
+        """
+        all_output_indices = [
+            analysis.main_indices[output_name] for analysis in analyses
+        ]
+        size = self._get_output_n_components(output_name)
+        sentences = []
+        for component in range(min(map(len, all_output_indices))):
+            descriptions = [
+                self.__describe_analysis(analysis, position)
+                for position, (analysis, output_indices) in enumerate(
+                    zip(analyses, all_output_indices, strict=True)
+                )
+                if output_indices[component] is None
+            ]
+            label = repr(repr_variable(output_name, component, size=size))
+            verb = "is constant for" if not sentences else "for"
+            sentences.append(f"{label} {verb} {pretty_str(descriptions, sort=False)}")
+
+        msg = (
+            f"No component of the output {output_name!r} has sensitivity indices "
+            "defined for all the compared analyses: "
+            f"{pretty_str(sentences, sort=False)}."
+        )
+        return ValueError(msg)
 
     def plot_comparison(
         self,
@@ -856,7 +1280,10 @@ class BaseGenericSensitivityAnalysis(
             output: The output
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component).
-                If name, its first component is considered.
+                If it is a name,
+                its first component that is not constant
+                for the current analysis and the compared ones
+                is considered.
             input_names: The inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
@@ -877,18 +1304,75 @@ class BaseGenericSensitivityAnalysis(
 
         Returns:
             A graph comparing sensitivity indices.
+
+        Raises:
+            ValueError: When the output is not an output of one of the analyses,
+                when the output component does not exist
+                for one of the analyses if it is a tuple
+                (a negative component is not counted from the last one),
+                when the output component is constant
+                for one of the analyses
+                or when none of the components of the output is non-constant
+                for all the analyses if it is a name.
         """
-        output = get_name_and_component(output)
         if isinstance(indices, BaseGenericSensitivityAnalysis):
             indices = [indices]
         methods = [self, *indices]
+        if isinstance(output, str):
+            output_name, output_component = output, None
+        else:
+            output_name, output_component = output
+
+        for position, method in enumerate(methods):
+            method._check_output(
+                output_name,
+                output_component,
+                self.__describe_analysis(method, position),
+            )
+
+        all_output_indices = [method.main_indices[output_name] for method in methods]
+        if output_component is None:
+            # A bare name means the first component defined for every analysis.
+            output_component = next(
+                (
+                    component
+                    for component in range(min(map(len, all_output_indices)))
+                    if all(
+                        output_indices[component] is not None
+                        for output_indices in all_output_indices
+                    )
+                ),
+                None,
+            )
+            if output_component is None:
+                raise self.__create_no_common_component_error(output_name, methods)
+        else:
+            for position, (method, output_indices) in enumerate(
+                zip(methods, all_output_indices, strict=True)
+            ):
+                if output_indices[output_component] is None:
+                    error = method._create_undefined_indices_error([
+                        (output_name, output_component)
+                    ])
+                    if position == 0:
+                        raise error
+
+                    description = self.__describe_analysis(method, position)
+                    msg = f"{error} This is the case for {description}."
+                    raise ValueError(msg)
+
+        component_indices = [
+            output_indices[output_component] for output_indices in all_output_indices
+        ]
+
         dataset = Dataset()
-        input_names = self._filter_sorted_input_names(output, input_names)
+        input_names = self._filter_sorted_input_names(
+            (output_name, output_component), input_names
+        )
         for input_name in input_names:
             data = abs(
                 array([
-                    method.main_indices[output[0]][output[1]][input_name]
-                    for method in methods
+                    method_indices[input_name] for method_indices in component_indices
                 ])
             )
             dataset.add_variable(input_name, data)
@@ -920,6 +1404,7 @@ class BaseGenericSensitivityAnalysis(
 
         Returns:
             The sensitivity indices as a dataset.
+            The sensitivity indices of a constant output component are `nan`.
         """
         sizes = self.dataset.variable_name_to_n_components
 
@@ -930,7 +1415,7 @@ class BaseGenericSensitivityAnalysis(
                     repr_variable(
                         input_name,
                         input_component,
-                        size=self.dataset.variable_name_to_n_components[input_name],
+                        size=sizes[input_name],
                     )
                 )
 
@@ -946,9 +1431,15 @@ class BaseGenericSensitivityAnalysis(
             for output, components in indices.items():
                 variables.append(output)
                 sizes[output] = len(components)
-                for component in components:
-                    data.append([component[name].tolist() for name in self.input_names])
-                    data[-1] = [item for sublist in data[-1] for item in sublist]
+                for component in range(len(components)):
+                    component_indices = self._get_output_component_indices(
+                        indices, output, component, True
+                    )
+                    data.append([
+                        item
+                        for name in self.input_names
+                        for item in component_indices[name].tolist()
+                    ])
             data = array(data).T
             dataset.add_group(
                 method,
@@ -968,7 +1459,8 @@ class BaseGenericSensitivityAnalysis(
         Each index is replaced by its absolute value divided by the largest index.
         Thus, the standardized indices belong to the interval $[0,1]$.
         The indices that are `nan` do not contribute to the largest index
-        and are left as they are.
+        and are left as they are,
+        and so are the undefined indices (`None`) of a constant output component.
 
         Args:
             indices: The indices to be standardized.
@@ -979,6 +1471,9 @@ class BaseGenericSensitivityAnalysis(
         new_indices = deepcopy(indices)
         for output_name, output_indices in indices.items():
             for output_component, output_component_indices in enumerate(output_indices):
+                if output_component_indices is None:
+                    continue
+
                 values = abs(hstack(list(output_component_indices.values())))
                 if isnan(values).all():
                     # No index is a number,

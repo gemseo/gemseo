@@ -1,0 +1,220 @@
+# serializer version: 1
+# name: test_methods_with_invalid_output[negative-plot]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[negative-plot_bar]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[negative-plot_comparison]
+  "The output 'y2' of the current sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[negative-plot_field]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[negative-plot_radar]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[negative-sort_input_variables]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_methods_with_invalid_output[too-large-plot]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[too-large-plot_bar]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[too-large-plot_comparison]
+  "The output 'y2' of the current sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[too-large-plot_field]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[too-large-plot_radar]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[too-large-sort_input_variables]
+  "The output 'y2' of the sensitivity analysis (MockSensitivityAnalysis) has no component 2."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-plot]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-plot_bar]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-plot_comparison]
+  "The output 'typo' is not an output of the current sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-plot_field]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-plot_radar]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-component-sort_input_variables]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-plot]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-plot_bar]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-plot_comparison]
+  "The output 'typo' is not an output of the current sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-plot_field]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-plot_radar]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_methods_with_invalid_output[unknown-name-sort_input_variables]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_plot_bar_with_constant_sorting_output[component]
+  "The sensitivity indices of 'y2[1]' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_bar_with_constant_sorting_output[name]
+  "The sensitivity indices of 'y1' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_bar_with_multi_component_constant_output[all_components]
+  "The sensitivity indices of 'c' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_bar_with_multi_component_constant_output[components]
+  "The sensitivity indices of 'c[2]' and 'c[10]' are undefined, as the variance of these outputs is zero."
+# ---
+# name: test_plot_bar_with_multi_component_constant_output[duplicate_components]
+  "The sensitivity indices of 'c[2]' and 'c[10]' are undefined, as the variance of these outputs is zero."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[name-mock]
+  "The sorting output 'y2' is not among the plotted outputs."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[name-scalar_mock]
+  "The sorting output 'y2' is not among the plotted outputs."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[tuple-mock]
+  "The sorting output 'y2[0]' is not among the plotted outputs."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[tuple-scalar_mock]
+  "The sorting output 'y2' is not among the plotted outputs."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[unknown_name-mock]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[unknown_name-scalar_mock]
+  "The output 'typo' is not an output of the sensitivity analysis (ScalarMockSensitivityAnalysis)."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[unknown_tuple-mock]
+  "The output 'typo' is not an output of the sensitivity analysis (MockSensitivityAnalysis)."
+# ---
+# name: test_plot_bar_with_sorting_output_not_plotted[unknown_tuple-scalar_mock]
+  "The output 'typo' is not an output of the sensitivity analysis (ScalarMockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_with_component_out_of_range[compared]
+  "The output 'y2' of the compared sensitivity analysis at position 0 (OneComponentMockSensitivityAnalysis) has no component 1."
+# ---
+# name: test_plot_comparison_with_component_out_of_range[current]
+  "The output 'y2' of the current sensitivity analysis (OneComponentMockSensitivityAnalysis) has no component 1."
+# ---
+# name: test_plot_comparison_with_component_out_of_range[negative-beyond-compared]
+  "The output 'y2' of the current sensitivity analysis (MockSensitivityAnalysis) has no component -2."
+# ---
+# name: test_plot_comparison_with_component_out_of_range[negative]
+  "The output 'y2' of the current sensitivity analysis (MockSensitivityAnalysis) has no component -1."
+# ---
+# name: test_plot_comparison_with_constant_output[component]
+  "The sensitivity indices of 'y1' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_comparison_with_constant_output[name]
+  "No component of the output 'y1' has sensitivity indices defined for all the compared analyses: 'y1' is constant for the current sensitivity analysis (ConstantMockSensitivityAnalysis) and the compared sensitivity analysis at position 0 (ConstantMockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_with_missing_output[component-compared]
+  "The output 'y2' is not an output of the compared sensitivity analysis at position 1 (WithoutY2MockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_with_missing_output[component-current]
+  "The output 'y2' is not an output of the current sensitivity analysis (WithoutY2MockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_with_missing_output[name-compared]
+  "The output 'y2' is not an output of the compared sensitivity analysis at position 1 (WithoutY2MockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_with_missing_output[name-current]
+  "The output 'y2' is not an output of the current sensitivity analysis (WithoutY2MockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_without_common_defined_component[component]
+  "The sensitivity indices of 'y2[0]' are undefined, as the variance of the output is zero. This is the case for the compared sensitivity analysis at position 0 (FirstComponentConstantMockSensitivityAnalysis)."
+# ---
+# name: test_plot_comparison_without_common_defined_component[name]
+  "No component of the output 'y2' has sensitivity indices defined for all the compared analyses: 'y2[0]' is constant for the compared sensitivity analysis at position 0 (FirstComponentConstantMockSensitivityAnalysis) and 'y2[1]' for the current sensitivity analysis (ConstantMockSensitivityAnalysis)."
+# ---
+# name: test_plot_constant_output[CorrelationAnalysis]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_constant_output[MorrisAnalysis]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_constant_output[SobolAnalysis]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_constant_output[mock]
+  "The sensitivity indices of 'y1' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_field_with_constant_output[all_components]
+  "The sensitivity indices of 'y1' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_field_with_constant_output[sorting_component]
+  "The sensitivity indices of 'y2[1]' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_field_without_input
+  "None of the input names 'nope' is an input of the sensitivity analysis, whose inputs are 'x1' and 'x2'."
+# ---
+# name: test_plot_only_constant_outputs[CorrelationAnalysis-plot_bar]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_only_constant_outputs[CorrelationAnalysis-plot_radar]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_only_constant_outputs[SobolAnalysis-plot_bar]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_only_constant_outputs[SobolAnalysis-plot_radar]
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
+# ---
+# name: test_plot_only_constant_outputs[mock-plot_bar]
+  "The sensitivity indices of 'y1' and 'y2[1]' are undefined, as the variance of these outputs is zero."
+# ---
+# name: test_plot_only_constant_outputs[mock-plot_radar]
+  "The sensitivity indices of 'y1' and 'y2[1]' are undefined, as the variance of these outputs is zero."
+# ---
+# name: test_plot_with_invalid_output[large-CorrelationAnalysis]
+  "The output 'out' of the sensitivity analysis (CorrelationAnalysis) has no component 1."
+# ---
+# name: test_plot_with_invalid_output[large-MorrisAnalysis]
+  "The output 'out' of the sensitivity analysis (MorrisAnalysis) has no component 1."
+# ---
+# name: test_plot_with_invalid_output[large-SobolAnalysis]
+  "The output 'out' of the sensitivity analysis (SobolAnalysis) has no component 1."
+# ---
+# name: test_plot_with_invalid_output[negative-CorrelationAnalysis]
+  "The output 'out' of the sensitivity analysis (CorrelationAnalysis) has no component -1."
+# ---
+# name: test_plot_with_invalid_output[negative-MorrisAnalysis]
+  "The output 'out' of the sensitivity analysis (MorrisAnalysis) has no component -1."
+# ---
+# name: test_plot_with_invalid_output[negative-SobolAnalysis]
+  "The output 'out' of the sensitivity analysis (SobolAnalysis) has no component -1."
+# ---
+# name: test_plot_with_invalid_output[typo-CorrelationAnalysis]
+  "The output 'typo' is not an output of the sensitivity analysis (CorrelationAnalysis)."
+# ---
+# name: test_plot_with_invalid_output[typo-MorrisAnalysis]
+  "The output 'typo' is not an output of the sensitivity analysis (MorrisAnalysis)."
+# ---
+# name: test_plot_with_invalid_output[typo-SobolAnalysis]
+  "The output 'typo' is not an output of the sensitivity analysis (SobolAnalysis)."
+# ---
+# name: test_sort_input_variables_with_constant_output[component]
+  "The sensitivity indices of 'y2[1]' are undefined, as the variance of the output is zero."
+# ---
+# name: test_sort_input_variables_with_constant_output[name]
+  "The sensitivity indices of 'y1' are undefined, as the variance of the output is zero."
+# ---

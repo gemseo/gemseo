@@ -6,5 +6,5 @@
   'The threshold must be non-negative; got -0.1.'
 # ---
 # name: test_plot_variance_decomposition_of_constant_output
-  "The Sobol' indices of 'constant' are undefined, as the variance of the output is zero."
+  "The sensitivity indices of 'constant' are undefined, as the variance of the output is zero."
 # ---

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+from numpy import isfinite
 
 from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
 from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
@@ -30,7 +31,13 @@ if TYPE_CHECKING:
 
 
 class Surfaces(MatplotlibPlot[Surfaces_Settings]):
-    """Surfaces based on matplotlib."""
+    """Surfaces based on matplotlib.
+
+    The triangles of the mesh with a non-finite value at a vertex are left out,
+    which shows as a gap;
+    when every triangle is left out,
+    the figure has neither surface nor colorbar.
+    """
 
     def _create_figures(
         self,
@@ -45,7 +52,11 @@ class Surfaces(MatplotlibPlot[Surfaces_Settings]):
         y_data = self._common_dataset.misc[mesh][:, 1]
         data = self._common_dataset.get_view(variable_names=variable).to_numpy()
 
-        samples = data[samples, :] if samples else data
+        sample_names = self._common_dataset.index
+        if samples:
+            samples = list(samples)
+            data = data[samples, :]
+            sample_names = sample_names[samples]
 
         options = {"cmap": settings.colormap}
         levels = settings.levels
@@ -53,13 +64,20 @@ class Surfaces(MatplotlibPlot[Surfaces_Settings]):
             options["levels"] = levels
 
         figs = []
-        for sample, sample_name in zip(
-            samples, self._common_dataset.index, strict=False
-        ):
+        triangulation = mtri.Triangulation(x_data, y_data)
+        for sample, sample_name in zip(data, sample_names, strict=True):
             fig = plt.figure(figsize=settings.fig_size)
             ax = fig.add_subplot(1, 1, 1)
             func = ax.tricontourf if settings.fill else ax.tricontour
-            tcf = func(mtri.Triangulation(x_data, y_data), sample, **options)
+            # matplotlib rejects non-finite values in the triangulation;
+            # masking the triangles with such a vertex leaves a gap.
+            # The mask replaces the one of the previous sample.
+            mask = (~isfinite(sample))[triangulation.triangles].any(axis=1)
+            triangulation.set_mask(mask)
+            is_drawable = not mask.all()
+            if is_drawable:
+                tcf = func(triangulation, sample, **options)
+
             if settings.add_points:
                 ax.scatter(x_data, y_data, color=settings.color or None)
 
@@ -67,7 +85,9 @@ class Surfaces(MatplotlibPlot[Surfaces_Settings]):
             ax.set_ylabel(settings.ylabel)
             main_title = settings.title or settings.zlabel or variable
             ax.set_title(f"{main_title} - {sample_name}")
-            fig.colorbar(tcf)
+            if is_drawable:
+                fig.colorbar(tcf)
+
             figs.append(fig)
 
         return figs

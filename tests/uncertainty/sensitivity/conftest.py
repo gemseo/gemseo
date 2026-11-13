@@ -23,13 +23,32 @@ from gemseo.uncertainty.distribution.openturns.normal_settings import (
 )
 
 
+def _create_random_space() -> RandomSpace:
+    """Create a random space with two independent standard normal variables.
+
+    Returns:
+        The random space with the variables `x1` and `x2`.
+    """
+    random_space = RandomSpace()
+    random_space.add_variable("x1", OTNormalDistribution_Settings())
+    random_space.add_variable("x2", OTNormalDistribution_Settings())
+    return random_space
+
+
+@pytest.fixture(scope="module")
+def random_space() -> RandomSpace:
+    """A random space with two independent standard normal variables `x1` and `x2`."""
+    return _create_random_space()
+
+
 @pytest.fixture(scope="module")
 def discipline_with_constant_output_and_space() -> tuple[
     AnalyticDiscipline, RandomSpace
 ]:
-    """A discipline with a constant output and its random space."""
+    """A discipline with a constant output and its random space.
+
+    The random space is created here rather than taken from the fixture
+    `random_space`, which some test modules override.
+    """
     discipline = AnalyticDiscipline({"varying": "x1+x2", "constant": "1"})
-    random_space = RandomSpace()
-    random_space.add_variable("x1", OTNormalDistribution_Settings())
-    random_space.add_variable("x2", OTNormalDistribution_Settings())
-    return discipline, random_space
+    return discipline, _create_random_space()

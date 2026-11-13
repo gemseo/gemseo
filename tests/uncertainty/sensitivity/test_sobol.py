@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -305,6 +306,20 @@ def test_plot(name, sobol, sort, sort_by_total, kwargs, snapshot_matplotlib) -> 
     """Check the main visualization method."""
     fig = sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
     assert isinstance(fig, Figure)
+
+
+def test_plot_ranks_nan_indices_last(sobol, monkeypatch) -> None:
+    """Check that plot() ranks last an input whose indices are `nan`."""
+    first_order_indices = {
+        "y": [{**sobol.indices.first["y"][0], "x1": array([nan])}],
+        "z": sobol.indices.first["z"],
+    }
+    monkeypatch.setattr(
+        sobol, "_indices", replace(sobol.indices, first=first_order_indices)
+    )
+    figure = sobol.plot("y", save=False, sort_by_total=False)
+    labels = [label.get_text() for label in figure.axes[0].get_xticklabels()]
+    assert labels == ["x23[0]", "x23[1]", "x1"]
 
 
 @pytest.mark.parametrize(

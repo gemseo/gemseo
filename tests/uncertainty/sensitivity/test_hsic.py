@@ -39,6 +39,7 @@ from openturns import RandomGenerator
 from openturns import Sample
 from openturns import SquaredExponential
 
+from gemseo.discipline import AutoPyDiscipline
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
@@ -307,6 +308,44 @@ def test_constant_output(discipline_with_constant_output_and_space):
     indices = analysis.compute_indices()
     assert indices.hsic["constant"][0] is None
     assert indices.hsic["varying"][0] is not None
+
+
+def test_filter_with_constant_output(discipline_with_constant_output_and_space):
+    """Check that HSICAnalysis.filter keeps None for a constant output component."""
+    discipline, random_space = discipline_with_constant_output_and_space
+    analysis = HSICAnalysis()
+    analysis.compute_samples([discipline], random_space, 100)
+    analysis.compute_indices()
+    significant_inputs = analysis.filter()
+    assert significant_inputs["constant"] == [None]
+    assert significant_inputs["varying"][0] is not None
+
+
+def _compute_y(x1=0.0, x2=array([0.0, 0.0])):  # noqa: B008
+    """Compute an output depending on an input with two components.
+
+    Args:
+        x1: The first input.
+        x2: The second input.
+
+    Returns:
+        The output.
+    """
+    y = x1 + x2.sum()
+    return y  # noqa: RET504
+
+
+def test_filter_with_multi_component_input():
+    """Check that HSICAnalysis.filter supports an input with several components."""
+    random_space = RandomSpace()
+    settings = OTNormalDistribution_Settings()
+    random_space.add_variable("x1", settings)
+    random_space.add_variable("x2", settings, settings)
+    analysis = HSICAnalysis()
+    analysis.compute_samples([AutoPyDiscipline(_compute_y)], random_space, 100)
+    analysis.compute_indices()
+    significant_inputs = analysis.filter()
+    assert_equal(significant_inputs["y"][0], {"x1": array([0]), "x2": array([0, 1])})
 
 
 def test_plot(hsic_analysis, tmp_wd):

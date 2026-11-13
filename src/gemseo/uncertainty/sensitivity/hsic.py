@@ -411,7 +411,7 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
 
     def filter(
         self, level: float = 0.05, use_asymptotic: bool = True
-    ) -> dict[str, list[dict[str, IntegerArray]]]:
+    ) -> dict[str, list[dict[str, IntegerArray] | None]]:
         r"""Filter the significant input components.
 
         You must first call the
@@ -428,7 +428,9 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
                 Asymptotic p-values are not available for conditional HSIC.
 
         Returns:
-            The significant input components for each output component.
+            The significant input components for each output component,
+            or `None` for a constant output component,
+            whose p-values are undefined.
 
         Raises:
             ValueError: When the requested p-values have not been computed,
@@ -452,10 +454,12 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
 
         return {
             output_name: [
-                {
+                None
+                if output_component is None
+                else {
                     input_name: nonzero(input_components_are_significant)[0]
                     for input_name, p_values in output_component.items()
-                    if (input_components_are_significant := p_values < level)
+                    if (input_components_are_significant := p_values < level).any()
                 }
                 for output_component in output_components
             ]
