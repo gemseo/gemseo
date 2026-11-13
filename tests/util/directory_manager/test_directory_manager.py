@@ -35,6 +35,7 @@ from gemseo.core.grammar.factory import GrammarFactory
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -707,7 +708,7 @@ def test_homonym_with_suffixed_subdirectories(dm_settings):
     whose suffixes must not be taken for the one of a linearization directory.
     """
     root_path = dm_settings.execution_root_path
-    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
+    discipline = AnalyticDiscipline({"y": "x**2"})
     discipline.set_jacobian_approximation()
     for _ in range(4):
         discipline.linearize(compute_all_jacobians=True)
@@ -727,14 +728,10 @@ def test_sibling_sharing_name_prefix(dm_settings):
     because of the siblings ``Foo_execution_execution#0`` and ``#1``.
     """
     root_path = dm_settings.execution_root_path
-    discipline = create_discipline(
-        "AnalyticDiscipline", name="Foo_execution", expressions={"y": "x**2"}
-    )
+    discipline = AnalyticDiscipline({"y": "x**2"}, name="Foo_execution")
     discipline.execute()
     discipline.execute({"x": array([1.0])})
-    create_discipline(
-        "AnalyticDiscipline", name="Foo", expressions={"y": "x**2"}
-    ).execute()
+    AnalyticDiscipline({"y": "x**2"}, name="Foo").execute()
 
     names = {path.name for path in root_path.iterdir() if path.name.startswith("Foo")}
     assert names == {
