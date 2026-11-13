@@ -17,6 +17,9 @@
 # name: test_no_objective_evaluation_without_skipping
   "Multi-start optimization: the sub-optimization from the starting point 1 ([0.2 0.5 0.4]) evaluated no value of the objective 'pow2'; set skip_failed_starting_points back to its default value True to skip it."
 # ---
+# name: test_rejects_infinite_bounds
+  'The algorithm MultiStart is not adapted to the problem because it does not handle unbounded variables.'
+# ---
 # name: test_skip_failed_starting_points_disabled[1]
   'The discipline diverged.'
 # ---

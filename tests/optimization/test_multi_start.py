@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import allclose
 from numpy import array
+from numpy import inf
 from numpy import nan
 from numpy import vstack
 from numpy.testing import assert_almost_equal
@@ -149,6 +150,19 @@ def test_database_length(
     algo.execute(problem, settings=MultiStart_Settings(max_iter=max_iter, **settings))
     assert len(problem.database) == expected_length
     assert problem.objective.n_calls == 1
+
+
+def test_rejects_infinite_bounds(snapshot):
+    """Check that MultiStart rejects infinite bounds, required to draw the points."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=-1.0, upper_bound=inf, value=0.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
+    assert not MultiStart.is_algorithm_suited(
+        MultiStart.ALGORITHM_INFOS["MultiStart"], problem
+    )
+    with assert_exception(ValueError, snapshot):
+        MultiStart().execute(problem, settings=MultiStart_Settings())
 
 
 @pytest.mark.parametrize("max_iter", [4, 5])
