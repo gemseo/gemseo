@@ -38,7 +38,6 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
 from gemseo.util.string import filter_names
-from gemseo.util.string import get_name_and_component
 from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
@@ -180,12 +179,31 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
     ) -> RadarChart:
         """
         Args:
+            output: The output
+                for which to display sensitivity indices,
+                either a name or a tuple of the form `(name, component)`.
+                If it is a name, its first non-constant component is considered.
             directory_path: The path to the directory where to save the plots.
             file_name: The name of the file.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the output component is constant,
+                or when all the components of the output are constant
+                if it is a name.
         """  # noqa: D212, D205
-        output_name, output_index = get_name_and_component(output)
+        output_name, output_index, _ = self._get_output_component_and_indices(
+            output, self.main_indices
+        )
 
         all_indices = tuple(CorrelationAnalysisMethod)
+        # The constant output components are the same for all the methods.
+        component_indices = [
+            getattr(self.indices, method.lower())[output_name][output_index]
+            for method in all_indices
+        ]
         dataset = Dataset()
         for input_name in filter_names(self._input_names, input_names):
             # Store all the sensitivity indices
@@ -193,12 +211,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
             # in a 2D NumPy array shaped as (n_indices, input_dimension).
             dataset.add_variable(
                 input_name,
-                vstack([
-                    getattr(self.indices, method.lower())[output_name][output_index][
-                        input_name
-                    ]
-                    for method in all_indices
-                ]),
+                vstack([indices[input_name] for indices in component_indices]),
             )
 
         dataset.index = all_indices

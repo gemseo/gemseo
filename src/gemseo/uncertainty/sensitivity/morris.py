@@ -49,7 +49,6 @@ from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import filter_names
-from gemseo.util.string import get_name_and_component
 from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
@@ -558,6 +557,10 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         where $X_i$ has coordinates $(\mu_i^*,\sigma_i)$.
 
         Args:
+            output: The output
+                for which to display sensitivity indices,
+                either a name or a tuple of the form `(name, component)`.
+                If it is a name, its first non-constant component is considered.
             directory_path: The path to the directory where to save the plots.
             file_name: The name of the file.
             offset: The offset to display the inputs names,
@@ -566,12 +569,20 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
                 If `None`, use a default value.
             lower_sigma: The lower bound for $\sigma$.
                 If `None`, use a default value.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the output component is constant,
+                or when all the components of the output are constant
+                if it is a name.
         """  # noqa: D415 D417
-        output_name, output_component = get_name_and_component(output)
+        output_name, output_component, mu_star = self._get_output_component_and_indices(
+            output, self._indices.mu_star
+        )
         names = filter_names(self._input_names, input_names)
-        x_val = hstack([
-            self._indices.mu_star[output_name][output_component][name] for name in names
-        ])
+        x_val = hstack([mu_star[name] for name in names])
         sigma = self._indices.sigma[output_name]
         y_val = hstack([sigma[output_component][name] for name in names])
         fig, ax = plt.subplots()
@@ -600,7 +611,6 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         x_offset = _compute_offset(x_val, offset)
         y_offset = _compute_offset(y_val, offset)
         index_memory = 0
-        mu_star = self._indices.mu_star[output_name][output_component]
         for input_name in names:
             size = mu_star[input_name].size
             for i in range(size):

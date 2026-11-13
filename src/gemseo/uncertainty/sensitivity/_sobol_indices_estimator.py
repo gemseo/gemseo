@@ -63,7 +63,6 @@ from gemseo.util.matplotlib_figure import _get_colors
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.util.pydantic import log_replaced_setting
 from gemseo.util.string import filter_names
-from gemseo.util.string import get_name_and_component
 from gemseo.util.string import get_variables_with_components
 from gemseo.util.string import repr_variable
 
@@ -632,6 +631,10 @@ class SobolIndicesEstimatorMixin:
         and their confidence intervals with vertical lines.
 
         Args:
+            output: The output
+                for which to display sensitivity indices,
+                either a name or a tuple of the form `(name, component)`.
+                If it is a name, its first non-constant component is considered.
             directory_path: The path to the directory where to save the plots.
             file_name: The name of the file.
             title: The title of the plot.
@@ -643,32 +646,37 @@ class SobolIndicesEstimatorMixin:
 
         Returns:
             The plot figure.
+
+        Raises:
+            ValueError: When the output is unknown,
+                when the output component does not exist
+                (a negative component is not counted from the last one),
+                when the output component is constant,
+                or when all the components of the output are constant
+                if it is a name.
         """  # noqa: D417
-        if not isinstance(output, tuple):
-            output = (output, 0)
+        output_name, output_component, first_order_indices = (
+            self._get_output_component_and_indices(output, self.indices.first)
+        )
+        if self.indices.total:
+            # The constant output components are the same for all the orders.
+            total_order_indices = self.indices.total[output_name][output_component]
+        else:
+            total_order_indices = None
+
+        if sort_by_total and total_order_indices is not None:
+            indices = total_order_indices
+        else:
+            indices = first_order_indices
 
         fig, ax = plt.subplots()
-
-        indices = (
-            self.indices.total
-            if sort_by_total and self.indices.total
-            else self.indices.first
-        )
-        output_name, output_component = output
-        indices = indices[output_name][output_component]
         if sort:
-            names = [
-                name
-                for name, _ in sorted(
-                    indices.items(), key=lambda item: item[1].sum(), reverse=True
-                )
-            ]
+            names = self._sort_input_names(indices, use_absolute_values=False)
         else:
             names = indices.keys()
 
         names = filter_names(names, input_names)
 
-        first_order_indices = self.indices.first[output_name][output_component]
         name_to_size = {name: value.size for name, value in first_order_indices.items()}
         values_first_order = [
             first_order_indices[name][index]
@@ -676,8 +684,7 @@ class SobolIndicesEstimatorMixin:
             for index in range(name_to_size[name])
         ]
 
-        if self.indices.total:
-            total_order_indices = self.indices.total[output_name][output_component]
+        if total_order_indices is not None:
             values_total_order = [
                 total_order_indices[name][index]
                 for name in names
@@ -722,7 +729,7 @@ class SobolIndicesEstimatorMixin:
             **errorbar_options,
         )
 
-        if self.indices.total:
+        if total_order_indices is not None:
             all_intervals = self.get_intervals(False, output_names=output_name)
             intervals = all_intervals[output_name][output_component]
             yerr = array([
@@ -856,7 +863,7 @@ class SobolIndicesEstimatorMixin:
         Args:
             output: The output of interest.
                 Either a name or a tuple of the form (name, component).
-                If name, its first component is considered.
+                If it is a name, its first non-constant component is considered.
             settings: The settings of the heat map.
                 The `"symmetric"` option will be set to `True`.
 
@@ -865,24 +872,23 @@ class SobolIndicesEstimatorMixin:
 
         Raises:
             ValueError: When the second-order Sobol' indices
-                of the output are not computed
-                or are undefined because the variance of the output is zero.
+                of the output are not computed,
+                when the output component does not exist
+                (a negative component is not counted from the last one)
+                or when the second-order Sobol' indices
+                are undefined because the variance of the output is zero.
         """
-        output_name, output_component = get_name_and_component(output)
-        output_indices = self.indices.second.get(output_name)
-        if not output_indices:
+        output_name = output if isinstance(output, str) else output[0]
+        second_order_indices = self.indices.second
+        if not second_order_indices.get(output_name):
             msg = (
                 f"The second-order Sobol' indices of {output_name!r} are not computed."
             )
             raise ValueError(msg)
 
-        indices = output_indices[output_component]
-        if indices is None:
-            msg = (
-                f"The second-order Sobol' indices of {output_name!r} "
-                "are undefined, as the variance of the output is zero."
-            )
-            raise ValueError(msg)
+        _, _, indices = self._get_output_component_and_indices(
+            output, second_order_indices
+        )
 
         components, variables = self.__get_components_and_variables(indices)
         n = len(variables)
@@ -1028,7 +1034,7 @@ class SobolIndicesEstimatorMixin:
         Args:
             output: The output of interest.
                 Either a name or a tuple of the form (name, component).
-                If name, its first component is considered.
+                If it is a name, its first non-constant component is considered.
             settings: The settings of the treemap.
                 If `None`, use the default ones,
                 with the title `"Variance decomposition of <output>"`
@@ -1074,14 +1080,9 @@ class SobolIndicesEstimatorMixin:
             msg = f"The threshold must be non-negative; got {threshold}."
             raise ValueError(msg)
 
-        output_name, output_component = get_name_and_component(output)
-        first_order_indices = self.indices.first[output_name][output_component]
-        if first_order_indices is None:
-            msg = (
-                f"The Sobol' indices of {output_name!r} "
-                "are undefined, as the variance of the output is zero."
-            )
-            raise ValueError(msg)
+        output_name, output_component, first_order_indices = (
+            self._get_output_component_and_indices(output, self.indices.first)
+        )
 
         user_settings = settings if settings is not None else Treemap_Settings()
         components, variables = self.__get_components_and_variables(first_order_indices)
