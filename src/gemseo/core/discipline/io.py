@@ -214,7 +214,9 @@ class IO:
         On read, returns a fresh union of the two stores (output overrides
         input on overlap).
         On write, splits the assigned mapping into the two stores by grammar
-        membership; names in neither grammar are stored on the output side.
+        membership; names in neither grammar are stored on the output side,
+        and [finalize][gemseo.core.discipline.io.IO.finalize] removes them
+        at the end of an execution.
         """
         warnings.warn(_data_deprecation_msg, DeprecationWarning, stacklevel=2)
         return self.get_merged_data(as_dict=False)
@@ -230,7 +232,9 @@ class IO:
         Names in the input grammar go to `input_data`; names in the output
         grammar go to `output_data`; names in neither grammar go to
         `output_data` as a permissive catch-all matching the legacy
-        behavior of the merged `data` attribute. Emits no warning so it can
+        behavior of the merged `data` attribute;
+        [finalize][gemseo.core.discipline.io.IO.finalize] removes them at the end
+        of an execution. Emits no warning so it can
         be reused by other deprecated public entry points without
         double-warning.
         """
@@ -243,7 +247,9 @@ class IO:
 
         Names in the input grammar go to `input_data`; names in the output
         grammar go to `output_data`; names in neither grammar fall into
-        `output_data` as a catch-all.
+        `output_data` as a catch-all, and
+        [finalize][gemseo.core.discipline.io.IO.finalize] removes them at the end
+        of an execution.
 
         Args:
             data: The data to route. The two stores are assumed to be empty or to
@@ -402,13 +408,24 @@ class IO:
     def finalize(self, validate: bool) -> None:
         """Remove the output data that are not outputs and validate the others.
 
+        As in
+        [update_output_data][gemseo.core.discipline.io.IO.update_output_data],
+        an output written without its namespace prefix is an output:
+        its value is moved to the name with the namespace prefix,
+        unless the output data already have this name.
+
         Args:
             validate: Whether to validate the (eventually post-processed) cleaned data.
         """
         output_data = self.output_data
         output_grammar = self.output_grammar
-        for name in [name for name in output_data if name not in output_grammar]:
-            del output_data[name]
+        extra_names = output_data.keys() - output_grammar.keys()
+        if extra_names:
+            to_namespaced = output_grammar.to_namespaced
+            for name in extra_names:
+                value = output_data.pop(name)
+                if (name_with_ns := to_namespaced.get(name)) is not None:
+                    output_data.setdefault(name_with_ns, value)
 
         if validate:
             self.output_grammar.validate(self.output_data)

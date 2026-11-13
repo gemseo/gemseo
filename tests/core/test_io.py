@@ -194,18 +194,27 @@ def test_get_extra_output_names_namespace(io: IO):
     assert not io.get_extra_output_names({"output": 0, "n:output": 0})
 
 
-def test_finalize_removes_extra_output_data(io: IO):
-    """Check that finalize removes the output data that are not outputs."""
-    io.output_grammar.update_from_data({"o": 0})
-    io.output_data.update({"o": 1, "extra": 2})
-    io.finalize(False)
-    assert io.output_data == {"o": 1}
+@pytest.mark.parametrize(
+    ("namespace", "output_data", "expected"),
+    [
+        ("", {"o": 1, "extra": 2}, {"o": 1}),
+        ("n", {"n:o": 1, "extra": 2}, {"n:o": 1}),
+        ("n", {"o": 1, "extra": 2}, {"n:o": 1}),
+        ("n", {"n:o": 1, "o": 3, "extra": 2}, {"n:o": 1}),
+    ],
+    ids=["no_namespace", "prefixed", "unprefixed", "prefixed_and_unprefixed"],
+)
+def test_finalize_removes_extra_output_data(io: IO, namespace, output_data, expected):
+    """Check that finalize removes the output data that are not outputs.
 
-    # With namespace.
-    io.output_grammar.add_namespace("o", "n")
-    io.output_data = DisciplineData({"n:o": 1, "extra": 2})
+    An output written without its namespace prefix is kept under its prefixed name.
+    """
+    io.output_grammar.update_from_data({"o": 0})
+    if namespace:
+        io.output_grammar.add_namespace("o", namespace)
+    io.output_data = DisciplineData(output_data)
     io.finalize(False)
-    assert io.output_data == {"n:o": 1}
+    assert io.output_data == expected
 
 
 def test_update_output_data_no_mirror_for_auto_coupled():
