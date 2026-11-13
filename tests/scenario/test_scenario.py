@@ -281,6 +281,68 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
         assert file_exists if plot else not file_exists
 
 
+def _create_backup_scenario(expressions: StrKeyMapping) -> tuple[MDOScenario, Path]:
+    """Create a scenario minimizing ``y`` and backing up only at each iteration.
+
+    Args:
+        expressions: The expressions of the outputs of the discipline,
+            including ``y``, depending on the design variable ``x``.
+
+    Returns:
+        The scenario and the path to its backup file.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([AnalyticDiscipline(expressions)], design_space)
+    scenario.add_objective("y")
+    file_path = Path("backup.h5")
+    scenario.set_backup_settings(
+        file_path, at_each_iteration=True, at_each_function_call=False
+    )
+    return scenario, file_path
+
+
+def test_backup_last_point_on_first_execution(tmp_wd) -> None:
+    """Check that the backup stores all the outputs at the last point of a first run.
+
+    The constraint is evaluated at the last point after the new iteration
+    notification which updates the backup file.
+    """
+    scenario, file_path = _create_backup_scenario({"y": "2*x", "c": "x-0.5"})
+    scenario.add_constraint("c", constraint_type="ineq")
+    scenario.execute(CustomDOE_Settings(samples=array([[0.1], [0.2], [0.3]])))
+
+    database = scenario.formulation.problem.database
+    backup_database = OptimizationProblem.from_hdf(file_path).database
+    last_x = database.get_x_vect(-1)
+    assert backup_database[last_x].keys() == database[last_x].keys() == {"y", "c"}
+
+
+def test_backup_new_outputs_at_existing_points(tmp_wd) -> None:
+    """Check that the backup stores the outputs added at already evaluated points.
+
+    The second run evaluates no new point, so it triggers no new iteration.
+    """
+    scenario, file_path = _create_backup_scenario({"y": "2*x", "o": "3*x"})
+    settings = CustomDOE_Settings(samples=array([[0.1], [0.2], [0.3]]))
+    scenario.execute(settings)
+    scenario.add_observable("o")
+    scenario.execute(settings)
+
+    backup_database = OptimizationProblem.from_hdf(file_path).database
+    for x_vect, outputs in scenario.formulation.problem.database.items():
+        assert backup_database[x_vect.wrapped_array].keys() == outputs.keys()
+
+
+def test_backup_empty_database(tmp_wd) -> None:
+    """Check that no backup file is created when the run evaluates no point."""
+    scenario, file_path = _create_backup_scenario({"y": "2*x"})
+    with patch.object(scenario, "_execute"):
+        scenario.execute(CustomDOE_Settings(samples=array([[0.1]])))
+
+    assert not file_path.exists()
+
+
 @pytest.mark.parametrize(
     "mdf_variable_grammar_scenario",
     [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON],
