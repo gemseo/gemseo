@@ -16,20 +16,28 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
+from numbers import Real
 from typing import TYPE_CHECKING
 from typing import Annotated
 from typing import Any
 from typing import Final
+from typing import NamedTuple
 
 import numpy
 from numpy import array
 from numpy import array_equal
+from numpy import asarray
+from numpy import errstate
 from numpy import flatnonzero
+from numpy import float64
+from numpy import isfinite
 from numpy import ndarray
 from pandas import DataFrame
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import PrivateAttr
 from pydantic import WithJsonSchema
 from pydantic import model_validator
 
@@ -57,13 +65,32 @@ from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from typing import Self
 
     from h5py import Group
+    from numpy.typing import ArrayLike
 
+    from gemseo.util.typing import RealArray
+
+
+logger = logging.getLogger(__name__)
 
 _max_formatted_labels: Final[int] = 6
 """The number of labels above which a rendering is elided."""
+
+
+class _NumericalProperties(NamedTuple):
+    """The numerical properties of a catalog, i.e. those of integers and floats."""
+
+    names: tuple[str, ...]
+    """The names of the numerical properties, in the order of the catalog."""
+
+    values: RealArray
+    """The values of the numerical properties, as floats.
+
+    One row per property and one column per alternative.
+    """
 
 
 class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbid"):
@@ -148,6 +175,12 @@ class Catalog(BaseModel, arbitrary_types_allowed=True, frozen=True, extra="forbi
     while the constructor also accepts the input types described above.
     The names of the properties, in order, are the keys of `properties`.
 
+    **Weighting.** The numerical properties of the alternatives,
+    i.e. those of integers and floats,
+    can be
+    [weighted][gemseo.space.catalog.catalog.Catalog.compute_weighted_properties]
+    with a weight per alternative.
+
     **Immutability.** A catalog is immutable:
     the input is copied, deeply for a property of Python objects,
     its arrays are frozen and handed out as fresh views on every read,
@@ -194,6 +227,9 @@ single label, not as a sequence of its characters, bytes or, for a
 zero-dimensional array, of its one element; an empty string is one
 label naming a single row, not an absence of labels.""",
     )
+
+    _numerical_properties: _NumericalProperties | None = PrivateAttr(default=None)
+    """The numerical properties, computed on the first combination."""
 
     @model_validator(mode="before")
     @classmethod
@@ -338,6 +374,185 @@ label naming a single row, not an absence of labels.""",
             "Pass the position of an alternative to choose it by row."
         )
         raise ValueError(msg)
+
+    def compute_weighted_properties(
+        self,
+        weights: ArrayLike,
+        normalize: bool = True,
+        compute_jacobian: bool = False,
+    ) -> tuple[dict[str, float], dict[str, RealArray]]:
+        r"""Compute the weighted numerical properties of the alternatives.
+
+        By default,
+        the weighted properties are the barycenter of the alternatives:
+
+        $$p = \frac{\sum_{k=1}^K w_k p_k}{\sum_{j=1}^K w_j}$$
+
+        where $p_k$ is the vector of the numerical properties
+        of the $k$-th alternative,
+        $w_k$ is its weight
+        and $K$ is the number of alternatives.
+        The weights being non-negative, it is a convex combination,
+        so each property lies between its minimum and its maximum.
+        Its Jacobian with respect to the weights is
+
+        $$\frac{\partial p}{\partial w_k} = \frac{p_k - p}{\sum_{j=1}^K w_j}.$$
+
+        Without normalization,
+        the weighted properties are the weighted sum $p = \sum_{k=1}^K w_k p_k$
+        and the Jacobian is $\frac{\partial p}{\partial w_k} = p_k$.
+
+        Only the properties of integers and floats are weighted,
+        as floats;
+        the others, e.g. strings or booleans, are ignored,
+        as well as those holding non-finite values, e.g. a missing value read as NaN.
+        The first call warns about the ignored properties holding numbers,
+        e.g. complex numbers, floats mixed with `None`,
+        integers beyond the range of `int64` or non-finite values.
+
+        Args:
+            weights: The weights of the alternatives, one per alternative.
+            normalize: Whether to divide the weighted sum by the sum of the weights.
+            compute_jacobian: Whether to also return the Jacobian.
+
+        Returns:
+            The weighted properties, by name,
+            and the gradients of the weighted properties with respect to the weights,
+            by name, each with one component per alternative,
+            or an empty mapping if `compute_jacobian` is `False`.
+
+        Raises:
+            ValueError: If the weights cannot be converted to floats,
+                if they are not one-dimensional,
+                if their number differs from the number of alternatives,
+                if they are not finite,
+                if they are negative,
+                if their sum overflows or is zero when `normalize` is `True`,
+                or if the weighted sum overflows when `normalize` is `False`.
+        """
+        names, values = self.__get_numerical_properties()
+        try:
+            weights = asarray(weights, dtype=float64)
+        except (TypeError, ValueError):
+            error_messages = ["The weights cannot be converted to floats."]
+        else:
+            with errstate(over="ignore"):
+                weights_sum = weights.sum()
+
+            error_messages = list(self.__check_weights(weights, weights_sum, normalize))
+
+        raise_errors(
+            "The properties cannot be combined from these weights:", error_messages
+        )
+        if normalize:
+            # Normalizing the weights first bounds the products by the properties.
+            weighted_values = values @ (weights / weights_sum)
+        else:
+            with errstate(over="ignore"):
+                weighted_values = values @ weights
+
+            if not isfinite(weighted_values).all():
+                msg = "The weighted sum of the properties overflows."
+                raise ValueError(msg)
+
+        properties = dict(zip(names, weighted_values.tolist(), strict=True))
+        if not compute_jacobian:
+            return properties, {}
+
+        if normalize:
+            jacobian = (values - weighted_values[:, None]) / weights_sum
+        else:
+            jacobian = values.copy()
+
+        return properties, dict(zip(names, jacobian, strict=True))
+
+    def __get_numerical_properties(self) -> _NumericalProperties:
+        """Return the numerical properties, computed on the first call.
+
+        The first call also warns about the ignored properties holding numbers
+        and about the properties holding non-finite values, which are ignored too.
+
+        Returns:
+            The numerical properties.
+        """
+        if self._numerical_properties is not None:
+            return self._numerical_properties
+
+        names = []
+        ignored_names = []
+        for name, values in self.properties.items():
+            kind = values.dtype.kind
+            # The kinds of the signed integers, the unsigned integers and the floats.
+            if kind in "iuf":
+                names.append(name)
+            elif kind == "c" or (
+                kind == "O"
+                and any(
+                    isinstance(value, Real) and not isinstance(value, bool)
+                    for value in values
+                )
+            ):
+                ignored_names.append(name)
+
+        if ignored_names:
+            logger.warning(
+                "The following properties of the catalog hold numbers "
+                "that are not stored as integers or floats and are not combined: %s.",
+                pretty_str(ignored_names, sort=False),
+            )
+
+        properties = self.properties
+        values = array([properties[name] for name in names], dtype=float64).reshape(
+            len(names), len(self)
+        )
+        are_finite = isfinite(values).all(axis=1)
+        non_finite_names = [
+            name
+            for name, is_finite in zip(names, are_finite, strict=True)
+            if not is_finite
+        ]
+        if non_finite_names:
+            logger.warning(
+                "The following properties of the catalog hold non-finite values "
+                "and are not combined: %s.",
+                pretty_str(non_finite_names, sort=False),
+            )
+
+        self._numerical_properties = _NumericalProperties(
+            tuple(name for name in names if name not in non_finite_names),
+            values[are_finite],
+        )
+        return self._numerical_properties
+
+    def __check_weights(
+        self, weights: RealArray, weights_sum: float, normalize: bool
+    ) -> Iterator[str]:
+        """Check the weights of the alternatives.
+
+        Args:
+            weights: The weights of the alternatives.
+            weights_sum: The sum of the weights.
+            normalize: Whether the weighted sum is divided by the sum of the weights.
+
+        Yields:
+            The error messages, none when the weights are valid.
+        """
+        if weights.ndim != 1:
+            yield f"The weights must be one-dimensional; got {weights.ndim} dimensions."
+        elif weights.size != len(self):
+            yield (
+                f"The catalog has {len(self)} alternatives; got {weights.size} weights."
+            )
+
+        if not isfinite(weights).all():
+            yield "The weights must be finite."
+        elif (weights < 0).any():
+            yield "The weights must be non-negative."
+        elif normalize:
+            if not isfinite(weights_sum):
+                yield "The sum of the weights overflows."
+            elif weights_sum == 0:
+                yield "The sum of the weights is zero."
 
     def __eq__(self, other: object) -> bool:
         # The default implementation of pydantic compares the __dict__ of the models,

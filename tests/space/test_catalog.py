@@ -27,9 +27,13 @@ import h5py
 import pytest
 from numpy import array
 from numpy import dtype
+from numpy import eye
 from numpy import float64
+from numpy import inf
+from numpy import isfinite
 from numpy import nan
 from numpy import ndarray
+from numpy.random import default_rng
 from numpy.testing import assert_array_equal
 from pandas import Categorical
 from pandas import DataFrame
@@ -46,6 +50,8 @@ from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from _pytest.mark.structures import ParameterSet
 
 
@@ -1849,3 +1855,205 @@ def test_numeric_property_keeps_its_dtype() -> None:
     catalog = Catalog(properties={"mass": array([1, 2], dtype="int8")})
 
     assert catalog.properties["mass"].dtype == dtype("int8")
+
+
+@pytest.fixture
+def mixed_catalog() -> Catalog:
+    """A catalog with numerical and non-numerical properties."""
+    return Catalog(
+        properties={
+            "mass": [2.0, 8.0, 4.0],
+            "cost": [1, 3, 8],
+            "supplier": ["ACME", "Foundry", "Mill"],
+            "recyclable": [True, False, True],
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("weights", "normalize", "expected"),
+    [
+        pytest.param([0, 1, 0], True, {"mass": 8.0, "cost": 3.0}, id="one-hot"),
+        pytest.param([1, 1, 1], True, {"mass": 14 / 3, "cost": 4.0}, id="uniform"),
+        pytest.param([2, 0, 2], True, {"mass": 3.0, "cost": 4.5}, id="unnormalized"),
+        pytest.param([2, 0, 2], False, {"mass": 12.0, "cost": 18.0}, id="weighted-sum"),
+        pytest.param(
+            [0, 0, 0], False, {"mass": 0.0, "cost": 0.0}, id="weighted-sum-zero"
+        ),
+    ],
+)
+def test_compute_weighted_properties(
+    mixed_catalog, weights, normalize, expected
+) -> None:
+    """Check the weighting of the numerical properties."""
+    properties, jacobian = mixed_catalog.compute_weighted_properties(
+        weights, normalize=normalize
+    )
+    assert properties == pytest.approx(expected)
+    assert jacobian == {}
+
+
+@pytest.mark.parametrize("normalize", [True, False])
+def test_compute_weighted_properties_jacobian(mixed_catalog, normalize) -> None:
+    """Check the Jacobian of the weighted properties against finite differences."""
+    weights = default_rng(1).uniform(0.1, 1.0, 3)
+    _, jacobian = mixed_catalog.compute_weighted_properties(
+        weights, normalize=normalize, compute_jacobian=True
+    )
+    assert jacobian.keys() == {"mass", "cost"}
+    step = 1e-6
+    for k, perturbation in enumerate(eye(3) * step):
+        forward, _ = mixed_catalog.compute_weighted_properties(
+            weights + perturbation, normalize=normalize
+        )
+        backward, _ = mixed_catalog.compute_weighted_properties(
+            weights - perturbation, normalize=normalize
+        )
+        for name, gradient in jacobian.items():
+            assert gradient[k] == pytest.approx(
+                (forward[name] - backward[name]) / (2 * step), abs=1e-7
+            )
+
+
+def test_compute_weighted_properties_jacobian_scale_invariance(mixed_catalog) -> None:
+    """Check that the Jacobian of the barycenter is orthogonal to the weights."""
+    weights = default_rng(1).uniform(0.1, 1.0, 3)
+    _, jacobian = mixed_catalog.compute_weighted_properties(
+        weights, compute_jacobian=True
+    )
+    for gradient in jacobian.values():
+        assert gradient @ weights == pytest.approx(0, abs=1e-14)
+
+
+def test_compute_weighted_properties_jacobian_is_a_copy(mixed_catalog) -> None:
+    """Check that changing the Jacobian of the weighted sum changes no later one."""
+    _, jacobian = mixed_catalog.compute_weighted_properties(
+        [1, 1, 1], normalize=False, compute_jacobian=True
+    )
+    jacobian["mass"][0] = 0.0
+    _, jacobian = mixed_catalog.compute_weighted_properties(
+        [1, 1, 1], normalize=False, compute_jacobian=True
+    )
+    assert_array_equal(jacobian["mass"], [2.0, 8.0, 4.0])
+
+
+def test_compute_weighted_large_properties() -> None:
+    """Check that large properties combined from large weights do not overflow."""
+    catalog = Catalog(properties={"mass": [1e300, 2e300, 1e300]})
+    properties, jacobian = catalog.compute_weighted_properties(
+        [1e10, 1e10, 0], compute_jacobian=True
+    )
+    assert properties == pytest.approx({"mass": 1.5e300})
+    assert isfinite(jacobian["mass"]).all()
+
+
+def test_compute_weighted_properties_without_numerical_property() -> None:
+    """Check that a catalog without numerical property combines nothing."""
+    catalog = Catalog(properties={"supplier": ["ACME", "Mill"]})
+    assert catalog.compute_weighted_properties([1, 1], compute_jacobian=True) == (
+        {},
+        {},
+    )
+
+
+_ignored_masses = {
+    "objects": [2.0, None, 4.0],
+    "complex": [2.0, 1j, 4.0],
+    "large-integers": [2**70, 2**71, 2**70],
+    "non-finite": [2.0, nan, 4.0],
+}
+"""The masses that cannot be combined, by case."""
+
+_not_stored_as_numbers = "hold numbers that are not stored as integers or floats"
+"""The reason why masses that are not stored as integers or floats are ignored."""
+
+_reasons_for_ignoring_masses = {
+    "objects": _not_stored_as_numbers,
+    "complex": _not_stored_as_numbers,
+    "large-integers": _not_stored_as_numbers,
+    "non-finite": "hold non-finite values",
+}
+"""The reason why the masses are ignored, by case."""
+
+
+def _create_catalog_with_ignored_masses(masses: list[Any]) -> Catalog:
+    """Create a catalog whose masses are not combined.
+
+    Args:
+        masses: The masses of the alternatives.
+
+    Returns:
+        The catalog.
+    """
+    return Catalog(
+        properties={
+            "mass": masses,
+            "supplier": ["ACME", None, "Mill"],
+            "cost": [1, 3, 8],
+        }
+    )
+
+
+@pytest.mark.parametrize("case", _ignored_masses)
+def test_compute_weighted_properties_ignores_masses(case) -> None:
+    """Check that the masses that cannot be combined are ignored."""
+    catalog = _create_catalog_with_ignored_masses(_ignored_masses[case])
+    properties, _ = catalog.compute_weighted_properties([1, 0, 1])
+    assert properties == pytest.approx({"cost": 4.5})
+
+
+@pytest.mark.parametrize("case", _ignored_masses)
+def test_compute_weighted_properties_warns_about_ignored_masses(caplog, case) -> None:
+    """Check the warning naming the ignored masses, logged once per catalog."""
+    catalog = _create_catalog_with_ignored_masses(_ignored_masses[case])
+    with caplog.at_level(logging.WARNING):
+        catalog.compute_weighted_properties([1, 0, 1])
+        catalog.compute_weighted_properties([1, 0, 1])
+
+    assert len(caplog.records) == 1
+    assert caplog.records[0].getMessage() == (
+        "The following properties of the catalog "
+        f"{_reasons_for_ignoring_masses[case]} and are not combined: mass."
+    )
+
+
+def test_compute_weighted_properties_warns_before_raising(caplog) -> None:
+    """Check that the warning is logged even if the combination fails."""
+    catalog = Catalog(properties={"mass": [2.0, None]})
+    with caplog.at_level(logging.WARNING), pytest.raises(ValueError):
+        catalog.compute_weighted_properties([0, 0])
+
+    assert len(caplog.records) == 1
+
+
+@pytest.mark.parametrize(
+    "weights",
+    [
+        pytest.param(["a", 1, 0], id="not-floats"),
+        pytest.param([[1, 0, 0]], id="2d"),
+        pytest.param([inf, 1, 0], id="not-finite"),
+        pytest.param([1, -1, 1], id="negative"),
+        pytest.param([1e308, 1e308, 0], id="sum-overflow"),
+        pytest.param([0, 0], id="too-few-and-zero-sum"),
+    ],
+)
+def test_compute_weighted_properties_error(mixed_catalog, weights, snapshot) -> None:
+    """Check the errors raised by the weighting of the properties."""
+    with assert_exception(ValueError, snapshot):
+        mixed_catalog.compute_weighted_properties(weights)
+
+
+@pytest.mark.parametrize(
+    "weights",
+    [
+        pytest.param([1, -1, 1], id="negative"),
+        pytest.param([0, 0], id="too-few"),
+        pytest.param([1e308, 1e308, 0], id="weighted-sum-overflow"),
+    ],
+)
+def test_compute_weighted_properties_error_without_normalization(
+    mixed_catalog, weights, snapshot
+) -> None:
+    """Check the errors raised by the weighted sum of the properties."""
+    with assert_exception(ValueError, snapshot):
+        mixed_catalog.compute_weighted_properties(weights, normalize=False)

@@ -386,6 +386,15 @@ nor through the read-only properties that
 `variable.catalog.properties` hands out.
 Changing a catalog means declaring a new variable.
 
+[compute_weighted_properties()][gemseo.space.catalog.catalog.Catalog.compute_weighted_properties]
+**weights** the numerical properties of the alternatives,
+one non-negative weight per alternative.
+By default, the result is the barycenter of the alternatives,
+so each weighted property lies between its minimum and its maximum;
+with `normalize=False`, it is the weighted sum.
+Only the properties of integers and floats are weighted,
+except those holding non-finite values, e.g. missing values.
+
 !!! warning
     A catalog variable is **not yet solvable**:
     every optimizer and every DOE algorithm rejects a problem including such a variable,
@@ -431,6 +440,7 @@ Changing a catalog means declaring a new variable.
     - [Catalog][gemseo.space.catalog.catalog.Catalog]
     - [CatalogVariable.encode()][gemseo.space.variable.CatalogVariable.encode]
     - [Catalog.clean()][gemseo.space.catalog.catalog.Catalog.clean]
+    - [Catalog.compute_weighted_properties()][gemseo.space.catalog.catalog.Catalog.compute_weighted_properties]
 
 ## Integer relaxation { #concept-integer-relaxation }
 

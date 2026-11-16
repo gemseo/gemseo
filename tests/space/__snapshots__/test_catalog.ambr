@@ -87,6 +87,37 @@
   - The following labels of the catalog differ only by their leading and trailing whitespace, so cleaning the catalog would make them duplicates: 'a' and 'a '.
   '''
 # ---
+# name: test_compute_weighted_properties_error[2d]
+  'The weights must be one-dimensional; got 2 dimensions.'
+# ---
+# name: test_compute_weighted_properties_error[negative]
+  'The weights must be non-negative.'
+# ---
+# name: test_compute_weighted_properties_error[not-finite]
+  'The weights must be finite.'
+# ---
+# name: test_compute_weighted_properties_error[not-floats]
+  'The weights cannot be converted to floats.'
+# ---
+# name: test_compute_weighted_properties_error[sum-overflow]
+  'The sum of the weights overflows.'
+# ---
+# name: test_compute_weighted_properties_error[too-few-and-zero-sum]
+  '''
+  The properties cannot be combined from these weights:
+  - The catalog has 3 alternatives; got 2 weights.
+  - The sum of the weights is zero.
+  '''
+# ---
+# name: test_compute_weighted_properties_error_without_normalization[negative]
+  'The weights must be non-negative.'
+# ---
+# name: test_compute_weighted_properties_error_without_normalization[too-few]
+  'The catalog has 3 alternatives; got 2 weights.'
+# ---
+# name: test_compute_weighted_properties_error_without_normalization[weighted-sum-overflow]
+  'The weighted sum of the properties overflows.'
+# ---
 # name: test_duplicate_column_labels
   '''
   1 validation error for Catalog
