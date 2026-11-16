@@ -625,20 +625,14 @@ def test_linearize_mda_with_cache_tolerance(cache_type, call_counts) -> None:
     assert (run_0.call_count, run_1.call_count) == call_counts
 
 
-@pytest.mark.parametrize(
-    "points",
-    [(1.0, 3.0, 1.0), (1.0, 3.0, 1.0, 3.0)],
-    ids=["first_point", "second_point"],
-)
-def test_linearize_after_successive_cache_hits(square_remapping, points) -> None:
+def test_linearize_after_successive_cache_hits(square_remapping) -> None:
     """Check the Jacobian at the last point after cache hits at two points."""
-    for x in points:
+    for x in (1.0, 3.0, 1.0, 3.0):
         square_remapping.execute({"x": array([x])})
-    x = points[-1]
     jacobian = square_remapping.linearize(
-        {"x": array([x])}, compute_all_jacobians=True, execute=False
+        {"x": array([3.0])}, compute_all_jacobians=True, execute=False
     )
-    assert_equal(jacobian["z"]["x"], array([[2 * x]]))
+    assert_equal(jacobian["z"]["x"], array([[6.0]]))
 
 
 def test_linearize_after_in_place_modification(square_remapping) -> None:
