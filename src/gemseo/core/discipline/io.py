@@ -234,7 +234,8 @@ class IO:
         `output_data` as a permissive catch-all matching the legacy
         behavior of the merged `data` attribute;
         [finalize][gemseo.core.discipline.io.IO.finalize] removes them at the end
-        of an execution. Emits no warning so it can
+        of an execution.
+        Emits no warning so it can
         be reused by other deprecated public entry points without
         double-warning.
         """
