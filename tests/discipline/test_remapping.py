@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import array
 from numpy import zeros
+from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo.core.discipline import Discipline
@@ -106,6 +107,20 @@ class NewDiscipline(Discipline):
                 "in_3": zeros((1, 1)),
             },
         }
+
+
+class VectorDiscipline(Discipline):
+    """A discipline computing `z = a[0] + 2 * a[1]`."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        default_input_data = {"a": array([1.0, 2.0])}
+        self.io.input_grammar.update_from_data(default_input_data)
+        self.io.output_grammar.update_from_data({"z": array([0.0])})
+        self.io.input_grammar.defaults = default_input_data
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"z": array([input_data["a"] @ array([1.0, 2.0])])}
 
 
 input_mapping = {
@@ -317,7 +332,8 @@ def test_no_outputs_discipline():
     assert_equal(discipline.io.input_data["foo"], array([10.0]))
 
 
-def test_linearize():
+@pytest.mark.parametrize("approximation", [None, "complex_step"])
+def test_linearize(approximation) -> None:
     """Check if the linearize method is correctly handled in a RemappingDiscipline."""
     old_discipline = AnalyticDiscipline({"old_a": "0.5 * old_b + old_c"})
     old_jac = old_discipline.linearize(
@@ -328,8 +344,79 @@ def test_linearize():
         input_mapping={"new_b": "old_b", "new_c": "old_c"},
         output_mapping={"new_a": "old_a"},
     )
+    if approximation is not None:
+        new_discipline.set_jacobian_approximation(approximation)
     new_jac = new_discipline.linearize(
         {"new_b": array([2.0]), "new_c": array([1.0])}, compute_all_jacobians=True
     )
-    assert_equal(old_jac["old_a"]["old_b"], new_jac["new_a"]["new_b"])
-    assert_equal(old_jac["old_a"]["old_c"], new_jac["new_a"]["new_c"])
+    assert_allclose(new_jac["new_a"]["new_b"], old_jac["old_a"]["old_b"])
+    assert_allclose(new_jac["new_a"]["new_c"], old_jac["old_a"]["old_c"])
+
+
+def test_complex_step_partial_mapping() -> None:
+    """Check the complex step approximation with a component-wise mapping."""
+    discipline = RemappingDiscipline(VectorDiscipline(), {"x": ("a", 0), "y": ("a", 1)})
+    discipline.set_jacobian_approximation("complex_step")
+    jacobian = discipline.linearize(compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[1.0]]))
+    assert_equal(jacobian["z"]["y"], array([[2.0]]))
+
+
+@pytest.fixture
+def sum_discipline() -> AnalyticDiscipline:
+    """The discipline computing `z = a + b` with default values."""
+    discipline = AnalyticDiscipline({"z": "a + b"})
+    discipline.io.input_grammar.defaults.update({
+        "a": array([1.0]),
+        "b": array([100.0]),
+    })
+    return discipline
+
+
+@pytest.mark.parametrize(
+    "value",
+    [pytest.param(array([2.0]), id="array"), pytest.param([2.0], id="list")],
+)
+def test_unmapped_input(sum_discipline, value) -> None:
+    """Check that an input that is not mapped keeps its default value."""
+    discipline = RemappingDiscipline(sum_discipline, input_mapping={"x": "a"})
+    discipline.execute({"x": value})
+    assert_equal(sum_discipline.io.input_data["b"], array([100.0]))
+    assert_equal(discipline.io.output_data["z"], array([102.0]))
+
+
+def test_partially_mapped_input() -> None:
+    """Check that the components of an input that are not mapped keep their defaults."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"x": ("in_2", 0)})
+    discipline.execute({"x": array([5.0])})
+    assert_equal(original_discipline.io.input_data["in_2"], array([5.0, 3.0]))
+
+
+def test_defaults_not_modified() -> None:
+    """Check that the default values of the wrapped discipline are not modified."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"x": ("in_2", 0)})
+    discipline.execute({"x": array([5.0])})
+    assert_equal(
+        original_discipline.io.input_grammar.defaults["in_2"], array([2.0, 3.0])
+    )
+
+
+def test_input_data_not_shared(sum_discipline) -> None:
+    """Check that an execution does not modify the input data of a previous one."""
+    discipline = RemappingDiscipline(sum_discipline, {"x": "a", "y": "b"})
+    discipline.execute({"x": array([1.0]), "y": array([2.0])})
+    first_input_data = sum_discipline.io.input_data
+    discipline.execute({"x": array([50.0]), "y": array([2.0])})
+    assert_equal(first_input_data["a"], array([1.0]))
+
+
+def test_complex_value_after_real_one() -> None:
+    """Check a complex component of a variable whose first component is real."""
+    original_discipline = VectorDiscipline()
+    discipline = RemappingDiscipline(
+        original_discipline, {"x": ("a", 0), "y": ("a", 1)}
+    )
+    discipline.execute({"x": array([1.0]), "y": array([2.0 + 1j])})
+    assert_equal(original_discipline.io.input_data["a"], array([1.0, 2.0 + 1j]))
