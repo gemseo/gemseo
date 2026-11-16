@@ -1,3 +1,0 @@
-digraph {
-	A -> B [color=black dir=forward fontcolor=black penwidth=1.0]
-}

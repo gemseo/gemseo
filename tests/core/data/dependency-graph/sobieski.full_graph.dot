@@ -1,30 +1,35 @@
 digraph {
-	SobieskiAerodynamics -> SobieskiStructure [label=y_21 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiStructure'
+	node [fillcolor=white style=filled]
+	d0 [label=SobieskiAerodynamics]
+	d1 [label=SobieskiStructure]
+	d2 [label=SobieskiPropulsion]
+	d3 [label=SobieskiMission]
+	d0 -> d1 [label=y_21 labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiStructure'
 
-y_21, y_21, y_21" penwidth=1.0]
-	SobieskiAerodynamics -> SobieskiPropulsion [label=y_23 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiPropulsion'
+y_21, y_21, y_21"]
+	d0 -> d2 [label=y_23 labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiPropulsion'
 
-y_23, y_23, y_23" penwidth=1.0]
-	SobieskiAerodynamics -> SobieskiMission [label=y_24 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiMission'
+y_23, y_23, y_23"]
+	d0 -> d3 [label=y_24 labeltooltip="Global name, Name in discipline 'SobieskiAerodynamics', Name in discipline 'SobieskiMission'
 
-y_24, y_24, y_24" penwidth=1.0]
-	SobieskiStructure -> SobieskiAerodynamics [label=y_12 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiStructure', Name in discipline 'SobieskiAerodynamics'
+y_24, y_24, y_24"]
+	d1 -> d0 [label=y_12 labeltooltip="Global name, Name in discipline 'SobieskiStructure', Name in discipline 'SobieskiAerodynamics'
 
-y_12, y_12, y_12" penwidth=1.0]
-	SobieskiStructure -> SobieskiMission [label=y_14 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiStructure', Name in discipline 'SobieskiMission'
+y_12, y_12, y_12"]
+	d1 -> d3 [label=y_14 labeltooltip="Global name, Name in discipline 'SobieskiStructure', Name in discipline 'SobieskiMission'
 
-y_14, y_14, y_14" penwidth=1.0]
-	SobieskiPropulsion -> SobieskiAerodynamics [label=y_32 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiAerodynamics'
+y_14, y_14, y_14"]
+	d2 -> d0 [label=y_32 labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiAerodynamics'
 
-y_32, y_32, y_32" penwidth=1.0]
-	SobieskiPropulsion -> SobieskiStructure [label=y_31 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiStructure'
+y_32, y_32, y_32"]
+	d2 -> d1 [label=y_31 labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiStructure'
 
-y_31, y_31, y_31" penwidth=1.0]
-	SobieskiPropulsion -> SobieskiMission [label=y_34 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiMission'
+y_31, y_31, y_31"]
+	d2 -> d3 [label=y_34 labeltooltip="Global name, Name in discipline 'SobieskiPropulsion', Name in discipline 'SobieskiMission'
 
-y_34, y_34, y_34" penwidth=1.0]
-	SobieskiMission -> _SobieskiMission [label=y_4 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SobieskiMission'
+y_34, y_34, y_34"]
+	d3 -> h3 [label=y_4 labeltooltip="Global name, Name in discipline 'SobieskiMission'
 
-y_4, y_4" penwidth=1.0]
-	_SobieskiMission [style=invis]
+y_4, y_4"]
+	h3 [style=invis]
 }

@@ -26,6 +26,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from graphviz import Digraph
 from numpy import array
 from numpy import cos
 from numpy import linspace
@@ -109,7 +110,6 @@ from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_S
 from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.post.graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
@@ -188,12 +188,12 @@ def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines, clean_up) -
     # TODO: reuse data and checks from test_dependency_graph
     clean_up = True if clean_up is None else clean_up
     file_path = "coupl.pdf"
-    graph_view = generate_coupling_graph(
+    graph = generate_coupling_graph(
         sobieski_disciplines, file_path=file_path, full=full, clean_up=clean_up
     )
-    assert isinstance(graph_view, GraphView)
+    assert isinstance(graph, Digraph)
     assert Path(file_path).exists()
-    assert Path("coupl.dot").exists() is not clean_up
+    assert Path("coupl.gv").exists() is not clean_up
 
 
 @pytest.mark.parametrize("full", [False, True])
@@ -201,8 +201,8 @@ def test_generate_coupling_graph_without_saving(
     tmp_wd, full, sobieski_disciplines
 ) -> None:
     """Check the coupling graph without saving the files."""
-    graph_view = generate_coupling_graph(sobieski_disciplines, file_path="", full=full)
-    assert isinstance(graph_view, GraphView)
+    graph = generate_coupling_graph(sobieski_disciplines, file_path="", full=full)
+    assert isinstance(graph, Digraph)
     assert not list(tmp_wd.iterdir())
 
 

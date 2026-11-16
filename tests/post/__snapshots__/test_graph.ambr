@@ -1,0 +1,226 @@
+# serializer version: 1
+# name: test_condensed_graph[get_edges]
+  "The argument 'get_edges' is only supported by the full graph because the condensed graph merges disciplines; use full=True."
+# ---
+# name: test_condensed_graph[get_node_attributes]
+  "The argument 'get_node_attributes' is only supported by the full graph because the condensed graph merges disciplines; use full=True."
+# ---
+# name: test_condensed_graph[input_names]
+  "The argument 'input_names' is only supported by the full graph because the condensed graph merges disciplines; use full=True."
+# ---
+# name: test_condensed_graph[output_names]
+  "The argument 'output_names' is only supported by the full graph because the condensed graph merges disciplines; use full=True."
+# ---
+# name: test_get_edges_one_edge_per_mapping
+  '''
+  digraph {
+  	node [fillcolor=white style=filled]
+  	d0 [label=Sellar1]
+  	d1 [label=Sellar2]
+  	d2 [label=SellarSystem]
+  	d0 -> d1 [label="y_1[0]" labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+  
+  y_1, y_1, y_1" penwidth=2]
+  	d0 -> d1 [label="y_1[1]" labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+  
+  y_1, y_1, y_1"]
+  	d0 -> d2 [label="y_1[0]" labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+  
+  y_1, y_1, y_1" penwidth=2]
+  	d0 -> d2 [label="y_1[1]" labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+  
+  y_1, y_1, y_1"]
+  	d1 -> d0 [label="y_2[0]" labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+  
+  y_2, y_2, y_2" penwidth=2]
+  	d1 -> d0 [label="y_2[1]" labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+  
+  y_2, y_2, y_2"]
+  	d1 -> d2 [label="y_2[0]" labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+  
+  y_2, y_2, y_2" penwidth=2]
+  	d1 -> d2 [label="y_2[1]" labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+  
+  y_2, y_2, y_2"]
+  	d2 -> h2 [label="c_1[0]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_1, c_1" penwidth=2]
+  	d2 -> h2 [label="c_1[1]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_1, c_1"]
+  	d2 -> h2 [label="c_2[0]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_2, c_2" penwidth=2]
+  	d2 -> h2 [label="c_2[1]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_2, c_2"]
+  	d2 -> h2 [label="obj[0]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  obj, obj" penwidth=2]
+  	d2 -> h2 [label="obj[1]" labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  obj, obj"]
+  	h2 [style=invis]
+  }
+  
+  '''
+# ---
+# name: test_get_edges_returning_no_sequence[integer]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'int'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_returning_no_sequence[list_of_none]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'list' containing an object of type 'NoneType'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_returning_no_sequence[list_of_strings]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'list' containing an object of type 'str'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_returning_no_sequence[mapping]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'dict'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_returning_no_sequence[none]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'NoneType'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_returning_no_sequence[string]
+  "The function 'get_edges' must return a sequence of mappings, one per edge, not an object of type 'str'; return [{...}] to draw one edge or [] to draw no edge."
+# ---
+# name: test_get_edges_tooltips[labelled]
+  '''
+  digraph {
+  	node [fillcolor=white style=filled]
+  	d0 [label=Sellar1]
+  	d1 [label=Sellar2]
+  	d2 [label=SellarSystem]
+  	d0 -> d1 [label=y_1 labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+  
+  y_1, y_1, y_1"]
+  	d0 -> d2 [label=y_1 labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+  
+  y_1, y_1, y_1"]
+  	d1 -> d0 [label=y_2 labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+  
+  y_2, y_2, y_2"]
+  	d1 -> d2 [label=y_2 labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+  
+  y_2, y_2, y_2"]
+  	d2 -> h2 [label=c_1 labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_1, c_1"]
+  	d2 -> h2 [label=c_2 labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_2, c_2"]
+  	d2 -> h2 [label=obj labeltooltip="Global name, Name in discipline 'SellarSystem'
+  
+  obj, obj"]
+  	h2 [style=invis]
+  }
+  
+  '''
+# ---
+# name: test_get_edges_tooltips[unlabelled]
+  '''
+  digraph {
+  	node [fillcolor=white style=filled]
+  	d0 [label=Sellar1]
+  	d1 [label=Sellar2]
+  	d2 [label=SellarSystem]
+  	d0 -> d1 [edgetooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+  
+  y_1, y_1, y_1"]
+  	d0 -> d2 [edgetooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+  
+  y_1, y_1, y_1"]
+  	d1 -> d0 [edgetooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+  
+  y_2, y_2, y_2"]
+  	d1 -> d2 [edgetooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+  
+  y_2, y_2, y_2"]
+  	d2 -> h2 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_1, c_1"]
+  	d2 -> h2 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_2, c_2"]
+  	d2 -> h2 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  obj, obj"]
+  	h2 [style=invis]
+  }
+  
+  '''
+# ---
+# name: test_input_and_output_nodes
+  '''
+  digraph {
+  	node [fillcolor=white style=filled]
+  	d0 [label=Sellar1]
+  	d1 [label=Sellar2]
+  	d2 [label=SellarSystem]
+  	subgraph source_nodes {
+  		rank=source
+  		in0 [label=x_1 shape=plaintext]
+  		in1 [label=x_shared shape=plaintext]
+  	}
+  	subgraph sink_nodes {
+  		rank=sink
+  		out0 [label=c_1 shape=plaintext]
+  		out1 [label=obj shape=plaintext]
+  	}
+  	d0 -> d1 [label=y_1 labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+  
+  y_1, y_1, y_1"]
+  	d0 -> d2 [label=y_1 labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+  
+  y_1, y_1, y_1"]
+  	d1 -> d0 [label=y_2 labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+  
+  y_2, y_2, y_2"]
+  	d1 -> d2 [label=y_2 labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+  
+  y_2, y_2, y_2"]
+  	in0 -> d0 [edgetooltip="Global name, Name in discipline 'Sellar1'
+  
+  x_1, x_1"]
+  	in0 -> d2 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  x_1, x_1"]
+  	in1 -> d0 [edgetooltip="Global name, Name in discipline 'Sellar1'
+  
+  x_shared, x_shared"]
+  	in1 -> d1 [edgetooltip="Global name, Name in discipline 'Sellar2'
+  
+  x_shared, x_shared"]
+  	in1 -> d2 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  x_shared, x_shared"]
+  	d2 -> out0 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  c_1, c_1"]
+  	d2 -> out1 [edgetooltip="Global name, Name in discipline 'SellarSystem'
+  
+  obj, obj"]
+  }
+  
+  '''
+# ---
+# name: test_save_with_wrong_suffix[gtk]
+  "The extension of the file path 'coupling_graph.gtk' is that of a Graphviz format opening a window instead of writing a file; use another one of graphviz.FORMATS, e.g. '.pdf'."
+# ---
+# name: test_save_with_wrong_suffix[no_suffix]
+  "The file path 'coupling_graph' has no extension; add one to set the format, e.g. 'coupling_graph.pdf'."
+# ---
+# name: test_save_with_wrong_suffix[unknown_suffix]
+  "The extension of the file path 'coupling_graph.v2' is not a Graphviz format; use one of graphviz.FORMATS, e.g. '.pdf'."
+# ---
+# name: test_save_with_wrong_suffix[x11]
+  "The extension of the file path 'coupling_graph.x11' is that of a Graphviz format opening a window instead of writing a file; use another one of graphviz.FORMATS, e.g. '.pdf'."
+# ---
+# name: test_save_with_wrong_suffix[xlib]
+  "The extension of the file path 'coupling_graph.XLIB' is that of a Graphviz format opening a window instead of writing a file; use another one of graphviz.FORMATS, e.g. '.pdf'."
+# ---
+# name: test_unknown_names[input_names]
+  'The following names are not inputs of any discipline: a and obj.'
+# ---
+# name: test_unknown_names[output_names]
+  'The following names are not outputs of any discipline: b and x_1.'
+# ---

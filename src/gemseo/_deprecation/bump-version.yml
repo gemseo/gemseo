@@ -116,7 +116,7 @@ modules:
   gemseo.algos.doe.openturns._algos: gemseo.doe.openturns._algorithm
   gemseo.algos.opt.mnbi._utils: gemseo.optimization.mnbi._util
   gemseo.core._process_flow.execution_sequences: gemseo.core._process_flow.execution_sequence
-  gemseo.post._graph_view: gemseo.post.graph_view
+  gemseo.post._graph_view: gemseo.post.graph
   gemseo.post.dataset._trend: gemseo.post.dataset.trend
   gemseo.post.dataset.plots._matplotlib.color_evolution: gemseo.post.dataset.plot._matplotlib.heatmap
   gemseo.post.dataset.plots._matplotlib.scatter_plot_matrix: gemseo.post.dataset.plot._matplotlib.pair_plot
@@ -557,6 +557,7 @@ attributes:
   gemseo.post.dataset.color_evolution.ColorEvolution: gemseo.post.dataset.Heatmap
   gemseo.post.dataset.radviz.Radar: gemseo.post.dataset.RadViz
   gemseo.post.dataset.plots._matplotlib.radviz.Radar: gemseo.post.dataset.plot._matplotlib.radviz.RadViz
+  gemseo.post._graph_view.GraphView: TODO use graphviz.Digraph instead, whose render() replaces visualize() and node(name, style="invis") replaces hide_node(name)
   gemseo.post.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings
   gemseo.post.radar_chart.RadarChart: gemseo.post.ConstraintRadar
   gemseo.post.radar_chart_settings.RadarChart_Settings: gemseo.post.ConstraintRadar_Settings

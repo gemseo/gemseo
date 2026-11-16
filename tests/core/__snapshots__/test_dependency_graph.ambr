@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_render_with_wrong_suffix[dot-render_condensed_graph]
+  "The file path '.' has no extension; add one to set the format, e.g. 'coupling_graph.pdf'."
+# ---
+# name: test_render_with_wrong_suffix[dot-render_full_graph]
+  "The file path '.' has no extension; add one to set the format, e.g. 'coupling_graph.pdf'."
+# ---
+# name: test_render_with_wrong_suffix[no_suffix-render_condensed_graph]
+  "The file path 'coupling_graph' has no extension; add one to set the format, e.g. 'coupling_graph.pdf'."
+# ---
+# name: test_render_with_wrong_suffix[no_suffix-render_full_graph]
+  "The file path 'coupling_graph' has no extension; add one to set the format, e.g. 'coupling_graph.pdf'."
+# ---
+# name: test_render_with_wrong_suffix[unknown_suffix-render_condensed_graph]
+  "The extension of the file path 'coupling_graph.v2' is not a Graphviz format; use one of graphviz.FORMATS, e.g. '.pdf'."
+# ---
+# name: test_render_with_wrong_suffix[unknown_suffix-render_full_graph]
+  "The extension of the file path 'coupling_graph.v2' is not a Graphviz format; use one of graphviz.FORMATS, e.g. '.pdf'."
+# ---

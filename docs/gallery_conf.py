@@ -79,6 +79,21 @@ def _patch_gallery():
 
 _patch_gallery()
 
+
+def _add_graphviz_html_representation() -> None:
+    """Display the graphviz graphs of the examples as SVG images.
+
+    mkdocs-gallery displays the last expression of a code block
+    with its `_repr_html_()` method or else as text,
+    whereas graphviz only provides the IPython mimebundle used by Jupyter.
+    """
+    from graphviz import Digraph
+
+    Digraph._repr_html_ = lambda self: self.pipe(format="svg", encoding="utf-8")
+
+
+_add_graphviz_html_representation()
+
 examples_dir_relative = [
     str(subdir.relative_to(file_dir_path)) for subdir in examples_subdirs
 ]

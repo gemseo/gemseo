@@ -29,6 +29,7 @@ from matplotlib import font_manager
 from numpy import array
 
 from gemseo import set_data_converters
+from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
@@ -117,6 +118,12 @@ def sellar_disciplines() -> SellarDisciplines:
         * A SellarSystem discipline.
     """
     return SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
+
+
+@pytest.fixture
+def sellar_dependency_graph(sellar_disciplines) -> DependencyGraph:
+    """The dependency graph of the Sellar disciplines."""
+    return DependencyGraph(sellar_disciplines)
 
 
 @pytest.fixture

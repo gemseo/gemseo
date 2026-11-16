@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from importlib.util import find_spec
+from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Final
 from typing import cast
@@ -31,22 +32,20 @@ from networkx import condensation
 from networkx import strongly_connected_components
 
 from gemseo.core.discipline.base_discipline import BaseDiscipline
-from gemseo.util.discipline import get_discipline_variable_properties
-from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
-    from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.post.graph_view import GraphView
-    from gemseo.util.discipline import DisciplineVariableProperties
+    from graphviz import Digraph
+
     from gemseo.util.typing import StrPath
 
 # graphviz is an optional dependency;
-# the gemseo.post.graph_view import happens lazily where GraphView is used
-# so that gemseo.core does not depend on gemseo.post at module level.
+# the gemseo.post.graph import (which imports graphviz) happens
+# lazily where the graph is drawn so that gemseo.core does not depend on gemseo.post
+# at module level.
 graphviz_is_missing: Final[bool] = find_spec("graphviz") is None
 
 logger = logging.getLogger(__name__)
@@ -80,34 +79,6 @@ class DependencyGraph:
             disciplines: The disciplines to build the graph with.
         """  # noqa: D205, D212, D415
         self.__graph = self.__create_graph(disciplines)
-        if len({d.name for d in disciplines}) == len(disciplines):
-            self.__get_node_name_from_discipline = self._get_node_name_from_disc_name
-        else:
-            self.__get_node_name_from_discipline = self._get_node_name_from_disc_id
-
-    @staticmethod
-    def _get_node_name_from_disc_name(discipline: BaseDiscipline) -> str:
-        """Return the name of a node from the name of the associated discipline.
-
-        Args:
-            discipline: The discipline.
-
-        Returns:
-            The name of the node.
-        """
-        return discipline.name
-
-    @staticmethod
-    def _get_node_name_from_disc_id(discipline: BaseDiscipline) -> str:
-        """Return the name of a node from the id of the associated discipline.
-
-        Args:
-            discipline: The discipline.
-
-        Returns:
-            The name of the node.
-        """
-        return str(id(discipline))
 
     @property
     def disciplines(self) -> Iterator[BaseDiscipline]:
@@ -125,7 +96,7 @@ class DependencyGraph:
         Returns:
             The execution sequence.
         """
-        condensed_graph = self.__create_condensed_graph()
+        condensed_graph = self.create_condensed_graph()
         execution_sequence = []
 
         while True:
@@ -148,15 +119,44 @@ class DependencyGraph:
 
         return list(reversed(execution_sequence))
 
-    def __create_condensed_graph(self) -> DiGraph:
-        """Return the condensed graph."""
+    def create_condensed_graph(self) -> DiGraph:
+        """Create the condensed graph.
+
+        The condensed graph merges each strongly connected component
+        of the graph of the disciplines into a single node.
+
+        Returns:
+            The condensed graph,
+            whose nodes are the indices of the strongly connected components,
+            from 0,
+            and whose `members` node attribute is the list of the disciplines
+            of the component,
+            in the order of the disciplines passed at instantiation.
+            The `mapping` graph attribute maps each discipline
+            to the index of its component.
+            The `io` edge attribute is the set of the names of the coupling variables
+            from the disciplines of the tail component
+            to those of the head component.
+        """
         # scc = nx.kosaraju_strongly_connected_components(self.__graph)
         # scc = nx.strongly_connected_components_recursive(self.__graph)
         # fastest routine
-        return condensation(
+        condensed_graph = condensation(
             self.__graph,
             scc=self.__get_ordered_scc(strongly_connected_components(self.__graph)),
         )
+        mapping = condensed_graph.graph["mapping"]
+        # Each edge of the condensed graph gathers the edges of the full graph
+        # between the disciplines of two different components.
+        edges = condensed_graph.edges
+        for tail, head, names in self.__graph.edges(data=self.io):
+            tail_component = mapping[tail]
+            head_component = mapping[head]
+            if tail_component != head_component:
+                edge = edges[tail_component, head_component]
+                edge.setdefault(self.io, set()).update(names)
+
+        return condensed_graph
 
     def __get_ordered_scc(
         self, scc: Iterator[set[BaseDiscipline]]
@@ -232,297 +232,124 @@ class DependencyGraph:
 
         return graph
 
-    def __get_node_name(self, graph: DiGraph, node: int | BaseDiscipline) -> str:
-        """Return the name of a node for the representation of a graph.
-
-        Args:
-            graph: A full or condensed graph.
-            node: A node of the graph.
-
-        Returns:
-            The name of the node.
-        """
-        if isinstance(node, BaseDiscipline):
-            # not a scc node
-            return self.__get_node_name_from_discipline(node)
-
-        # networkx stores the scc nodes under the members node attribute
-        condensed_discs = graph.nodes[node]["members"]
-
-        if len(condensed_discs) == 1:
-            # not a scc node in a scc graph
-            return str(next(iter(condensed_discs)))
-
-        # scc node
-        return "MDA of {}".format(", ".join(map(str, condensed_discs)))
-
-    @staticmethod
-    def __get_scc_edge_names(
-        graph: DiGraph,
-        node_from: int,
-        node_to: int | None = None,
-    ) -> set[str]:
-        """Return the names of an edge in a condensed graph.
-
-        Args:
-            graph: A condensed graph.
-            node_from: The predecessor node in the graph.
-            node_to: The successor node in the graph.
-
-        Returns:
-            The names of the edge.
-        """
-        output_names = set()
-        for disc in graph.nodes[node_from]["members"]:
-            output_names.update(disc.io.output_grammar)
-
-        if node_to is None:
-            return output_names
-
-        input_names = set()
-        for disc in graph.nodes[node_to]["members"]:
-            input_names.update(disc.io.input_grammar)
-        return output_names & input_names
-
     def __render_graph(
         self,
-        graph: DiGraph,
+        full: bool,
         file_path: StrPath,
-        is_full: bool,
         clean_up: bool,
-        show_edge_labels: bool = True,
-    ) -> GraphView | None:
+        show_edge_labels: bool,
+    ) -> Digraph | None:
         """Render the graph when graphviz is installed.
 
         Args:
-            graph: A graph.
+            full: Whether to render the full graph, otherwise the condensed one.
             file_path: The file path to save the graphical representation of the graph.
+                Its suffix sets the format, e.g. `".pdf"`.
                 If empty, the graphical representation is not saved.
-            is_full: Whether the graph is full.
-            clean_up: Whether to remove the DOT source file.
+            clean_up: Whether to remove the DOT source file;
+                otherwise, keep it at `file_path` with the suffix `.gv`,
+                or `.dot` when that of `file_path` is `.gv`.
             show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the graph or `None` when graphviz is not installed.
+
+        Raises:
+            ValueError: When graphviz is installed
+                and `file_path` is not empty and has no suffix,
+                a suffix that is not a Graphviz format
+                or that of a Graphviz format opening a window.
         """
         if graphviz_is_missing:
-            logger.warning(
-                "Cannot render graph: "
-                "GraphView cannot be imported because graphviz is not installed."
-            )
+            logger.warning("Cannot render graph: graphviz is not installed.")
             return None
 
-        from gemseo.post.graph_view import GraphView
+        from gemseo.post.graph import _check_coupling_graph_file_path
+        from gemseo.post.graph import draw_coupling_graph
+        from gemseo.post.graph import save_coupling_graph
 
-        graph_view = GraphView()
-        get_node_name_from_discipline = self.__get_node_name_from_discipline
-        add_tooltip = (
-            # This is a full graph.
-            is_full
-            # There are no homonymous disciplines.
-            and get_node_name_from_discipline != self._get_node_name_from_disc_id
+        # An empty path means that nothing is saved:
+        # "" as a string, Path("") as a path-like object,
+        # which cannot be told apart from Path(".")
+        # whereas "." as a string is a path without extension.
+        if isinstance(file_path, str):
+            save = file_path != ""
+        else:
+            save = Path(file_path) != Path()
+
+        if save:
+            # Check the file path before drawing the graph, which can take long.
+            _check_coupling_graph_file_path(file_path)
+
+        digraph = draw_coupling_graph(
+            self, full=full, show_edge_labels=show_edge_labels
         )
-        if add_tooltip:
-            get_properties = get_discipline_variable_properties
-            discipline_name_to_properties = {
-                discipline.name: get_properties(discipline)
-                for discipline in self.__graph.nodes
-            }
-        else:
-            discipline_name_to_properties = {}
+        if save:
+            save_coupling_graph(digraph, file_path, clean_up=clean_up)
 
-        if get_node_name_from_discipline == self._get_node_name_from_disc_id:
-            for discipline in graph.nodes:
-                graph_view.node(
-                    get_node_name_from_discipline(discipline), discipline.name
-                )
-
-        # 1. Add the edges with different head and tail nodes
-        #    (case: some outputs of a discipline are inputs of another one)
-        for tail_node, head_node, coupling_names in graph.edges(data=self.io):
-            tail_name = self.__get_node_name(graph, tail_node)
-            head_name = self.__get_node_name(graph, head_node)
-            if not isinstance(head_node, BaseDiscipline):
-                # a scc edge
-                coupling_names = self.__get_scc_edge_names(graph, tail_node, head_node)
-
-            self.__add_edge(
-                graph_view,
-                coupling_names,
-                discipline_name_to_properties,
-                tail_name,
-                head_name,
-                add_tooltip,
-                show_edge_labels=show_edge_labels,
-            )
-
-        # 2. Add the edges with same head and tail nodes
-        #    (case: some outputs of a discipline are inputs of itself)
-        if is_full:
-            for discipline in self.__graph.nodes:
-                coupling_names = set(discipline.io.input_grammar).intersection(
-                    discipline.io.output_grammar
-                )
-                if coupling_names:
-                    name = get_node_name_from_discipline(discipline)
-                    self.__add_edge(
-                        graph_view,
-                        coupling_names,
-                        discipline_name_to_properties,
-                        name,
-                        name,
-                        add_tooltip,
-                        show_edge_labels=show_edge_labels,
-                    )
-
-        # 3. Add the edges without head node
-        #    (case: some output variables of discipline are not coupling variables).
-        for leaf_node in self.__get_leaves(graph):
-            if isinstance(leaf_node, BaseDiscipline):
-                output_names = tuple(leaf_node.io.output_grammar)
-                node_name = get_node_name_from_discipline(leaf_node)
-            else:
-                # a scc edge
-                output_names = tuple(self.__get_scc_edge_names(graph, leaf_node))
-                node_name = self.__get_node_name(graph, leaf_node)
-
-            if not output_names:
-                continue
-
-            self.__add_edge(
-                graph_view,
-                output_names,
-                discipline_name_to_properties,
-                node_name,
-                f"_{leaf_node}",
-                add_tooltip,
-                hide_head=True,
-                show_edge_labels=show_edge_labels,
-            )
-
-        if file_path:
-            # 4. Write the dot and target files.
-            graph_view.visualize(file_path=file_path, clean_up=clean_up)
-
-        return graph_view
-
-    @staticmethod
-    def __add_edge(
-        graph_view: GraphView,
-        coupling_names: Iterable[str],
-        discipline_name_to_properties: Mapping[
-            str,
-            tuple[
-                Mapping[str, DisciplineVariableProperties],
-                Mapping[str, DisciplineVariableProperties],
-            ],
-        ],
-        tail_name: str,
-        head_name: str,
-        add_tooltip: bool,
-        hide_head: bool = False,
-        show_edge_labels: bool = True,
-    ) -> None:
-        """Add an edge to a graph view.
-
-        Args:
-            graph_view: The graph view.
-            coupling_names: The names of the coupling variables.
-            discipline_name_to_properties: The variables properties
-                associated with the discipline names.
-            tail_name: The name of the tail discipline.
-            head_name: The name of the head discipline.
-            add_tooltip: Whether to display
-                the original and current names of the coupling variables
-                when hovered over.
-            hide_head: Whether to hide the head node.
-            show_edge_labels: Whether to display the coupling variable names on edges.
-        """
-        if add_tooltip:
-            lines = []
-            sep = ", "
-            if hide_head:
-                lines.append(f"Global name{sep}Name in discipline {tail_name!r}\n")
-            else:
-                lines.append(
-                    f"Global name{sep}"
-                    f"Name in discipline {tail_name!r}{sep}"
-                    f"Name in discipline {head_name!r}\n"
-                )
-
-            tail_properties = discipline_name_to_properties[tail_name][1]
-            if hide_head:
-                for coupling_name in coupling_names:
-                    tail_original_name = tail_properties[coupling_name].original_name
-                    lines.append(f"{coupling_name}{sep}{tail_original_name}")
-            else:
-                head_properties = discipline_name_to_properties[head_name][0]
-                for coupling_name in coupling_names:
-                    head_original_name = head_properties[coupling_name].original_name
-                    tail_original_name = tail_properties[coupling_name].original_name
-                    lines.append(
-                        f"{coupling_name}{sep}"
-                        f"{tail_original_name}{sep}"
-                        f"{head_original_name}"
-                    )
-
-            key = "labeltooltip" if show_edge_labels else "edgetooltip"
-            kwargs = {key: "\n".join(lines)}
-        else:
-            kwargs = {}
-
-        label = pretty_str(coupling_names, use_and=False) if show_edge_labels else None
-        graph_view.edge(tail_name, head_name, label, **kwargs)
-        if hide_head:
-            graph_view.hide_node(head_name)
+        return digraph
 
     def render_full_graph(
         self,
         file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
-    ) -> GraphView | None:
+    ) -> Digraph | None:
         """Render the full graph.
 
         Args:
             file_path: The file path
                 to save the graphical representation of the full graph.
+                Its suffix sets the format, e.g. `".pdf"`.
                 If empty, the graphical representation is not saved.
-            clean_up: Whether to remove the DOT source file.
+            clean_up: Whether to remove the DOT source file;
+                otherwise, keep it at `file_path` with the suffix `.gv`,
+                or `.dot` when that of `file_path` is `.gv`.
             show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the full graph or `None` when graphviz is not installed.
+            The nodes of the graph are named as described in
+            [draw_coupling_graph()][gemseo.post.graph.draw_coupling_graph].
+
+        Raises:
+            ValueError: When graphviz is installed
+                and `file_path` is not empty and has no suffix,
+                a suffix that is not a Graphviz format
+                or that of a Graphviz format opening a window.
         """
-        return self.__render_graph(
-            self.__graph, file_path, True, clean_up, show_edge_labels
-        )
+        return self.__render_graph(True, file_path, clean_up, show_edge_labels)
 
     def render_condensed_graph(
         self,
         file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
-    ) -> GraphView | None:
+    ) -> Digraph | None:
         """Render the condensed graph.
 
         Args:
             file_path: The file path
                 to save the graphical representation of the condensed graph.
+                Its suffix sets the format, e.g. `".pdf"`.
                 If empty, the graphical representation is not saved.
-            clean_up: Whether to remove the DOT source file.
+            clean_up: Whether to remove the DOT source file;
+                otherwise, keep it at `file_path` with the suffix `.gv`,
+                or `.dot` when that of `file_path` is `.gv`.
             show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the condensed graph or `None` when graphviz is not installed.
+            The nodes of the graph are named as described in
+            [draw_coupling_graph()][gemseo.post.graph.draw_coupling_graph].
+
+        Raises:
+            ValueError: When graphviz is installed
+                and `file_path` is not empty and has no suffix,
+                a suffix that is not a Graphviz format
+                or that of a Graphviz format opening a window.
         """
-        return self.__render_graph(
-            self.__create_condensed_graph(),
-            file_path,
-            False,
-            clean_up,
-            show_edge_labels,
-        )
+        return self.__render_graph(False, file_path, clean_up, show_edge_labels)
 
     @staticmethod
     def __get_leaves(graph: DiGraph) -> list[BaseDiscipline] | list[int]:

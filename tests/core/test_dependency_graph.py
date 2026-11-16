@@ -27,11 +27,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from graphviz import Digraph
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.post.graph_view import GraphView
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
@@ -40,8 +40,13 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.util.testing.helper import assert_exception
 
 data_path = Path(__file__).absolute().parent / "data" / "dependency-graph"
+
+parametrize_render_method = pytest.mark.parametrize(
+    "method_name", ["render_full_graph", "render_condensed_graph"]
+)
 
 disc_descriptions = {
     "3-weak": {
@@ -102,16 +107,16 @@ def name_and_graph(request):
 
 
 def assert_dot_file(file_name) -> None:
-    """Assert the contents of the dot file given a pdf file."""
-    assert_file(Path(file_name).with_suffix(".dot"))
+    """Assert the contents of the DOT source file given a pdf file.
 
-
-def assert_file(file_path: Path) -> None:
-    """Assert the contents of the file against its reference."""
+    The DOT source file has the suffix `.gv`
+    and its reference the suffix `.dot`.
+    """
+    file_path = Path(file_name)
     # strip because some reference files are stripped by our pre-commit hooks
     assert (
-        file_path.read_text().strip()
-        == (data_path / file_path.name).read_text().strip()
+        file_path.with_suffix(".gv").read_text().strip()
+        == (data_path / file_path.with_suffix(".dot").name).read_text().strip()
     )
 
 
@@ -126,30 +131,49 @@ def test_render_full_graph(tmp_wd, name_and_graph) -> None:
     assert_dot_file(file_name)
 
 
-@pytest.mark.parametrize("method_name", ["render_full_graph", "render_condensed_graph"])
-def test_render_without_saving(tmp_wd, method_name) -> None:
+@parametrize_render_method
+@pytest.mark.parametrize("file_path", ["", Path()], ids=["str", "path"])
+def test_render_without_saving(
+    tmp_wd, sellar_dependency_graph, method_name, file_path
+) -> None:
     """Test rendering the graph without saving."""
-    graph = DependencyGraph((Sellar1(), Sellar2(), SellarSystem()))
-    graph_view = getattr(graph, method_name)(file_path="")
-    assert isinstance(graph_view, GraphView)
+    digraph = getattr(sellar_dependency_graph, method_name)(file_path=file_path)
+    assert isinstance(digraph, Digraph)
     assert not os.listdir(tmp_wd)
 
 
-@pytest.mark.parametrize("method_name", ["render_full_graph", "render_condensed_graph"])
-@pytest.mark.parametrize("show_edge_labels", [False, True])
-def test_render_show_edge_labels(method_name, show_edge_labels) -> None:
-    """Check that show_edge_labels controls the coupling variable names on edges."""
-    graph = DependencyGraph((Sellar1(), Sellar2(), SellarSystem()))
-    source = getattr(graph, method_name)(
+@pytest.mark.parametrize(
+    ("show_edge_labels", "tooltip_key"),
+    [(False, "edgetooltip="), (True, "labeltooltip=")],
+    ids=["hide_edge_labels", "show_edge_labels"],
+)
+def test_render_full_graph_show_edge_labels(
+    sellar_dependency_graph, show_edge_labels, tooltip_key
+) -> None:
+    """Check that show_edge_labels controls the labels and tooltips of the edges."""
+    source = sellar_dependency_graph.render_full_graph(
         file_path="", show_edge_labels=show_edge_labels
     ).source
-    assert ("label=" in source) is show_edge_labels
-    if method_name == "render_condensed_graph":
-        assert "labeltooltip=" not in source
-        assert "edgetooltip=" not in source
-    else:
-        key = "labeltooltip=" if show_edge_labels else "edgetooltip"
-        assert key in source
+    # The nodes are always labelled, the edges only when show_edge_labels.
+    assert bool(re.search(r"-> \w+ \[label=", source)) is show_edge_labels
+    # The tooltip is on the label if any, otherwise on the edge.
+    assert tooltip_key in source
+
+
+@pytest.mark.parametrize(
+    "show_edge_labels", [False, True], ids=["hide_edge_labels", "show_edge_labels"]
+)
+def test_render_condensed_graph_show_edge_labels(
+    sellar_dependency_graph, show_edge_labels
+) -> None:
+    """Check that show_edge_labels controls the labels of the edges, without tooltip."""
+    source = sellar_dependency_graph.render_condensed_graph(
+        file_path="", show_edge_labels=show_edge_labels
+    ).source
+    # The nodes are always labelled, the edges only when show_edge_labels.
+    assert bool(re.search(r"-> \w+ \[label=", source)) is show_edge_labels
+    assert "labeltooltip=" not in source
+    assert "edgetooltip=" not in source
 
 
 def test_render_condensed_graph(tmp_wd, name_and_graph) -> None:
@@ -229,28 +253,102 @@ def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
         assert graph_with_self_coupling.render_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING
-        assert log_message == (
-            "Cannot render graph: "
-            "GraphView cannot be imported because graphviz is not installed."
-        )
+        assert log_message == ("Cannot render graph: graphviz is not installed.")
 
 
 def test_homonymous_disciplines(tmp_wd) -> None:
-    """Check the rendering of the coupling graph with homonymous disciplines."""
-    regex = r"""^digraph {
-\t\d+ \[label=AnalyticDiscipline color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
-\t\d+ \[label=foo color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
-\t\d+ \[label=AnalyticDiscipline color=black fillcolor=white fontcolor=black penwidth=1\.0 style=filled\]
-\t\d+ -> \d+ \[label=b color=black dir=forward fontcolor=black penwidth=1\.0\]
-\t\d+ -> \d+ \[label=c color=black dir=forward fontcolor=black penwidth=1\.0\]
-\t\d+ -> _AnalyticDiscipline \[label=d color=black dir=forward fontcolor=black penwidth=1\.0\]
-\t_AnalyticDiscipline \[style=invis\]
-}$"""  # noqa: E501
+    """Check the rendering of the coupling graph with homonymous disciplines.
+
+    Each discipline has its own node
+    and the homonymous leaves have distinct hidden head nodes.
+    """
+    expected = """digraph {
+	node [fillcolor=white style=filled]
+	d0 [label=AnalyticDiscipline]
+	d1 [label=foo]
+	d2 [label=AnalyticDiscipline]
+	d3 [label=AnalyticDiscipline]
+	d0 -> d1 [label=b labeltooltip="Global name, Name in discipline 'AnalyticDiscipline', Name in discipline 'foo'
+
+b, b, b"]
+	d1 -> d2 [label=c labeltooltip="Global name, Name in discipline 'foo', Name in discipline 'AnalyticDiscipline'
+
+c, c, c"]
+	d1 -> d3 [label=c labeltooltip="Global name, Name in discipline 'foo', Name in discipline 'AnalyticDiscipline'
+
+c, c, c"]
+	d2 -> h2 [label=d labeltooltip="Global name, Name in discipline 'AnalyticDiscipline'
+
+d, d"]
+	h2 [style=invis]
+	d3 -> h3 [label=e labeltooltip="Global name, Name in discipline 'AnalyticDiscipline'
+
+e, e"]
+	h3 [style=invis]
+}"""  # noqa: E501
     graph = DependencyGraph([
         AnalyticDiscipline({"b": "a"}),
         AnalyticDiscipline({"c": "b"}, name="foo"),
         AnalyticDiscipline({"d": "c"}),
+        AnalyticDiscipline({"e": "c"}),
     ])
     file_path = Path("homonymous_disciplines.pdf")
     graph.render_full_graph(file_path, clean_up=False)
-    assert re.match(regex, file_path.with_suffix(".dot").read_text().strip())
+    assert file_path.with_suffix(".gv").read_text().strip() == expected
+
+
+@parametrize_render_method
+@pytest.mark.parametrize(
+    "file_path",
+    ["coupling_graph", "coupling_graph.v2", "."],
+    ids=["no_suffix", "unknown_suffix", "dot"],
+)
+def test_render_with_wrong_suffix(
+    tmp_wd, graph_with_self_coupling, method_name, file_path, snapshot
+):
+    """Check the error raised before drawing when the suffix is not a format."""
+    with (
+        patch("gemseo.post.graph.draw_coupling_graph") as draw_coupling_graph,
+        assert_exception(ValueError, snapshot),
+    ):
+        getattr(graph_with_self_coupling, method_name)(file_path)
+
+    draw_coupling_graph.assert_not_called()
+    assert not os.listdir(tmp_wd)
+
+
+@parametrize_render_method
+def test_render_parent_directory(tmp_wd, graph_with_self_coupling, method_name):
+    """Check the error raised when the file path is the parent directory."""
+    # The example of the message uses the separator of the platform.
+    example = Path("..") / "coupling_graph.pdf"
+    msg = (
+        "The file path '..' has no extension; "
+        f"add one to set the format, e.g. '{example}'."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        getattr(graph_with_self_coupling, method_name)("..")
+
+
+def test_create_condensed_graph() -> None:
+    """Check the nodes and the attributes of the condensed graph."""
+    # Reverse the disciplines to check that the order of the members
+    # is that of the disciplines passed at instantiation, not alphabetical.
+    disciplines = create_disciplines_from_desc(disc_descriptions["5"])[::-1]
+    e, d, c, b, a = disciplines
+    condensed_graph = DependencyGraph(disciplines).create_condensed_graph()
+    assert set(condensed_graph.nodes) == {0, 1, 2}
+    members = [condensed_graph.nodes[node]["members"] for node in condensed_graph]
+    assert sorted(members, key=lambda m: m[0].name) == [[b, a], [d, c], [e]]
+    mapping = condensed_graph.graph["mapping"]
+    assert mapping == {
+        discipline: node
+        for node in condensed_graph
+        for discipline in condensed_graph.nodes[node]["members"]
+    }
+    # The edges of the condensed graph bear the names of the coupling variables
+    # between the disciplines of their components.
+    assert {
+        (tail, head): names
+        for tail, head, names in condensed_graph.edges(data=DependencyGraph.io)
+    } == {(mapping[a], mapping[c]): {"c"}, (mapping[c], mapping[e]): {"f"}}
