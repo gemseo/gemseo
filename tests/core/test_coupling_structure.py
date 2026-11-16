@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
+from graphviz import Digraph
 from numpy import array
 
 from gemseo import create_discipline
@@ -32,7 +33,6 @@ from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.post.graph_view import GraphView
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
@@ -295,16 +295,19 @@ def test_from_base_discipline():
     and not only from Discipline objects.
     """
     coupling_structure = CouplingStructure((D1(), D2()))
-    graph_view = coupling_structure.graph.render_full_graph("")
-    assert isinstance(graph_view, GraphView)
+    graph = coupling_structure.graph.render_full_graph("")
+    assert isinstance(graph, Digraph)
     expected = """digraph {
-	D1 -> D2 [label=b color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
+	node [fillcolor=white style=filled]
+	d0 [label=D1]
+	d1 [label=D2]
+	d0 -> d1 [label=b labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
 
-b, b, b" penwidth=1.0]
-	D2 -> _D2 [label=c color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2'
+b, b, b"]
+	d1 -> h1 [label=c labeltooltip="Global name, Name in discipline 'D2'
 
-c, c" penwidth=1.0]
-	_D2 [style=invis]
+c, c"]
+	h1 [style=invis]
 }
 """  # noqa: E501
-    assert str(graph_view) == expected
+    assert str(graph) == expected

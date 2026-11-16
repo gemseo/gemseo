@@ -1,21 +1,25 @@
 digraph {
-	D1 -> D0 [label=y10 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D0'
+	node [fillcolor=white style=filled]
+	d0 [label=D0]
+	d1 [label=D1]
+	d2 [label=D2]
+	d1 -> d0 [label=y10 labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D0'
 
-y10, y10, y10" penwidth=1.0]
-	D1 -> D2 [label=y10 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
+y10, y10, y10"]
+	d1 -> d2 [label=y10 labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
 
-y10, y10, y10" penwidth=1.0]
-	D2 -> D0 [label=y2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D0'
+y10, y10, y10"]
+	d2 -> d0 [label=y2 labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D0'
 
-y2, y2, y2" penwidth=1.0]
-	D2 -> D1 [label=y2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D1'
+y2, y2, y2"]
+	d2 -> d1 [label=y2 labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D1'
 
-y2, y2, y2" penwidth=1.0]
-	D1 -> D1 [label=y11 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D1'
+y2, y2, y2"]
+	d1 -> d1 [label=y11 labeltooltip="Global name, Output name in discipline 'D1', Input name in discipline 'D1'
 
-y11, y11, y11" penwidth=1.0]
-	D0 -> _D0 [label=y0 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D0'
+y11, y11, y11"]
+	d0 -> h0 [label=y0 labeltooltip="Global name, Name in discipline 'D0'
 
-y0, y0" penwidth=1.0]
-	_D0 [style=invis]
+y0, y0"]
+	h0 [style=invis]
 }

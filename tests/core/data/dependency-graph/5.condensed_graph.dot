@@ -1,4 +1,8 @@
 digraph {
-	"MDA of C, D" -> E [label=f color=black dir=forward fontcolor=black penwidth=1.0]
-	"MDA of A, B" -> "MDA of C, D" [label=c color=black dir=forward fontcolor=black penwidth=1.0]
+	node [fillcolor=white style=filled]
+	d4 [label=E]
+	scc1 [label="MDA of C, D"]
+	scc2 [label="MDA of A, B"]
+	scc1 -> d4 [label=f]
+	scc2 -> scc1 [label=c]
 }

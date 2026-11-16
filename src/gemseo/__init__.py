@@ -93,6 +93,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
 
+    from graphviz import Digraph
     from pydantic import BaseModel
 
     from gemseo.core.algorithm.base_driver_library import DriverSettingType
@@ -121,7 +122,6 @@ if TYPE_CHECKING:
     from gemseo.optimization.result import OptimizationResult
     from gemseo.post.core.base_post import BasePost
     from gemseo.post.core.base_post_settings import BasePostSettings
-    from gemseo.post.graph_view import GraphView
     from gemseo.problem.mdo.scalable.data_driven.discipline import (
         DataDrivenScalableDiscipline,
     )
@@ -199,21 +199,32 @@ def generate_coupling_graph(
     full: bool = True,
     clean_up: bool = True,
     show_edge_labels: bool = True,
-) -> GraphView | None:
+) -> Digraph | None:
     """Generate a graph of the couplings between disciplines.
 
     Args:
         disciplines: The disciplines from which the graph is generated.
         file_path: The path of the file to save the figure.
+            Its suffix sets the format, e.g. `".pdf"`.
             If empty, the figure is not saved.
         full: Whether to generate the full coupling graph.
             Otherwise, the condensed coupling graph is generated.
-        clean_up: Whether to remove the DOT source file.
+        clean_up: Whether to remove the DOT source file;
+            otherwise, keep it at `file_path` with the suffix `.gv`,
+            or `.dot` when that of `file_path` is `.gv`.
         show_edge_labels: Whether to display the coupling variable names on edges.
 
     Returns:
         Either the graph of the couplings between disciplines
         or `None` when graphviz is not installed.
+        The nodes of the graph are named as described in
+        [draw_coupling_graph()][gemseo.post.graph.draw_coupling_graph].
+
+    Raises:
+        ValueError: When graphviz is installed
+            and `file_path` is not empty and has no suffix,
+            a suffix that is not a Graphviz format
+            or that of a Graphviz format opening a window.
     """
     from gemseo.core.coupling_structure import CouplingStructure
 

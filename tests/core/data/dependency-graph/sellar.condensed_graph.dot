@@ -1,5 +1,8 @@
 digraph {
-	"MDA of Sellar1, Sellar2" -> SellarSystem [label="y_1, y_2" color=black dir=forward fontcolor=black penwidth=1.0]
-	SellarSystem -> _0 [label="c_1, c_2, obj" color=black dir=forward fontcolor=black penwidth=1.0]
-	_0 [style=invis]
+	node [fillcolor=white style=filled]
+	d2 [label=SellarSystem]
+	scc1 [label="MDA of Sellar1, Sellar2"]
+	scc1 -> d2 [label="y_1, y_2"]
+	d2 -> h0 [label="c_1, c_2, obj"]
+	h0 [style=invis]
 }
