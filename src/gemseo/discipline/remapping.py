@@ -23,7 +23,9 @@ from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import NoReturn
 
-from numpy import empty
+from numpy import complex128
+from numpy import iscomplexobj
+from numpy import result_type
 
 from gemseo.core.discipline import Discipline
 from gemseo.util.constant import read_only_empty_dict
@@ -80,10 +82,6 @@ class RemappingDiscipline(Discipline):
             raise ValueError(msg)
 
         self._discipline = discipline
-        self._empty_original_input_data = {
-            k: empty(v.shape, dtype=v.dtype)
-            for k, v in discipline.io.input_grammar.defaults.items()
-        }
         original_input_grammar = discipline.io.input_grammar
         original_output_grammar = discipline.io.output_grammar
         input_mapping = input_mapping or {n: n for n in original_input_grammar}
@@ -223,11 +221,28 @@ class RemappingDiscipline(Discipline):
         Returns:
             The original input data
             mapping the original input names to the corresponding values.
+            The original input variables that are not mapped are omitted,
+            so that the original discipline uses its default values.
         """
-        original_input_data = self._empty_original_input_data.copy()
+        original_defaults = self._discipline.io.input_grammar.defaults
+        original_input_data = {}
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
-            original_input_data[original_name][args] = value
+            original_value = original_input_data.get(original_name)
+            is_first_value = original_value is None
+            if is_first_value:
+                original_value = original_defaults[original_name]
+            if iscomplexobj(value) and not iscomplexobj(original_value):
+                # E.g. the complex step approximation of the derivatives.
+                # astype returns a copy, so the default value is not modified.
+                original_value = original_value.astype(
+                    result_type(original_value, complex128)
+                )
+            elif is_first_value:
+                # Copy the default value to keep the components that are not mapped.
+                original_value = original_value.copy()
+            original_value[args] = value
+            original_input_data[original_name] = original_value
         return original_input_data
 
     @staticmethod
