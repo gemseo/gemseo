@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 from numpy import array
@@ -28,6 +29,8 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.remapping import RemappingDiscipline
+from gemseo.mda import MDAGaussSeidel
+from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
@@ -420,3 +423,256 @@ def test_complex_value_after_real_one() -> None:
     )
     discipline.execute({"x": array([1.0]), "y": array([2.0 + 1j])})
     assert_equal(original_discipline.io.input_data["a"], array([1.0, 2.0 + 1j]))
+
+
+@pytest.fixture
+def square_remapping() -> RemappingDiscipline:
+    """A remapping of `z = a**2` with a cache storing all the evaluations."""
+    discipline = RemappingDiscipline(AnalyticDiscipline({"z": "a**2"}), {"x": "a"})
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
+    return discipline
+
+
+def _hit_cache(remapping: RemappingDiscipline) -> RemappingDiscipline:
+    """Execute the remapping discipline at another point.
+
+    Args:
+        remapping: The remapping discipline.
+
+    Returns:
+        The remapping discipline,
+        whose output data at the first point come from its cache.
+    """
+    remapping.execute({"x": array([3.0])})
+    return remapping
+
+
+def _toggle_cache(remapping: RemappingDiscipline) -> RemappingDiscipline:
+    """Execute the remapping discipline at another point without its cache.
+
+    Args:
+        remapping: The remapping discipline.
+
+    Returns:
+        The remapping discipline, with its cache restored.
+    """
+    cache = remapping.cache
+    remapping.cache = None
+    remapping.execute({"x": array([3.0])})
+    remapping.cache = cache
+    return remapping
+
+
+def _share_cache(remapping: RemappingDiscipline) -> RemappingDiscipline:
+    """Create a remapping discipline sharing the cache of another one.
+
+    Args:
+        remapping: The remapping discipline whose cache is shared.
+
+    Returns:
+        A new remapping discipline,
+        whose original discipline is executed at another point.
+    """
+    discipline = RemappingDiscipline(AnalyticDiscipline({"z": "a**2"}), {"x": "a"})
+    discipline.cache = remapping.cache
+    discipline.original_discipline.execute({"a": array([3.0])})
+    return discipline
+
+
+def _execute_by_other_remapping(
+    remapping: RemappingDiscipline,
+) -> RemappingDiscipline:
+    """Execute the original discipline at another point through another remapping.
+
+    Args:
+        remapping: The remapping discipline.
+
+    Returns:
+        The remapping discipline.
+    """
+    other_remapping = RemappingDiscipline(
+        remapping.original_discipline, {"y": "a"}, {"w": "z"}
+    )
+    other_remapping.execute({"y": array([3.0])})
+    return remapping
+
+
+def _execute_directly(remapping: RemappingDiscipline) -> RemappingDiscipline:
+    """Execute the original discipline directly at another point.
+
+    Args:
+        remapping: The remapping discipline.
+
+    Returns:
+        The remapping discipline.
+    """
+    remapping.original_discipline.execute({"a": array([3.0])})
+    return remapping
+
+
+def _fail_execution(remapping: RemappingDiscipline) -> RemappingDiscipline:
+    """Execute the remapping discipline at another point where the original one fails.
+
+    Args:
+        remapping: The remapping discipline.
+
+    Returns:
+        The remapping discipline.
+    """
+    with (
+        patch.object(remapping.original_discipline, "_run", side_effect=ValueError),
+        pytest.raises(ValueError),
+    ):
+        remapping.execute({"x": array([3.0])})
+    return remapping
+
+
+@pytest.mark.parametrize(
+    "move_original_discipline",
+    [
+        _hit_cache,
+        _toggle_cache,
+        _share_cache,
+        _execute_by_other_remapping,
+        _execute_directly,
+        _fail_execution,
+    ],
+    ids=[
+        "cache_hit",
+        "cache_toggled",
+        "shared_cache",
+        "other_remapping",
+        "direct_execution",
+        "failed_execution",
+    ],
+)
+def test_linearize_after_original_discipline_moved(
+    square_remapping, move_original_discipline
+) -> None:
+    """Check the Jacobian when the original discipline was last used at another point.
+
+    The remapping discipline is executed at `x = 1`,
+    then its original discipline is executed or fails at `a = 3`,
+    or another remapping discipline linearizes from a cache filled at `x = 1`.
+    """
+    square_remapping.execute({"x": array([1.0])})
+    discipline = move_original_discipline(square_remapping)
+    jacobian = discipline.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+@pytest.mark.parametrize(
+    ("execute_first", "expected_count"),
+    [(False, 1), (True, 0)],
+    ids=["new_point", "after_execute"],
+)
+def test_linearize_executes_original_once(
+    square_remapping, execute_first, expected_count
+) -> None:
+    """Check that linearizing executes the original discipline at most once.
+
+    The execution of the remapping discipline executes the original one,
+    which shall not be executed again to compute the Jacobian.
+    """
+    original_discipline = square_remapping.original_discipline
+    original_discipline.cache = None
+    if execute_first:
+        square_remapping.execute({"x": array([1.0])})
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        square_remapping.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert run.call_count == expected_count
+
+
+@pytest.mark.parametrize(
+    ("cache_type", "call_counts"),
+    [
+        (RemappingDiscipline.default_cache_type, (0, 0)),
+        # Without cache, the original discipline is executed again
+        # when its last input data differ from the converged ones.
+        (RemappingDiscipline.CacheType.NONE, (1, 0)),
+    ],
+    ids=["default_cache", "no_cache"],
+)
+def test_linearize_mda_with_cache_tolerance(cache_type, call_counts) -> None:
+    """Check the executions of an MDA linearizing within the cache tolerance."""
+    original_disciplines = [
+        AnalyticDiscipline({"a": "0.5*b + x"}),
+        AnalyticDiscipline({"c": "0.3*d + 1"}),
+    ]
+    remapping_disciplines = [
+        RemappingDiscipline(
+            original_disciplines[0], {"y2": "b", "x": "x"}, {"y1": "a"}
+        ),
+        RemappingDiscipline(original_disciplines[1], {"y1": "d"}, {"y2": "c"}),
+    ]
+    for discipline in remapping_disciplines:
+        discipline.set_cache(cache_type)
+
+    mda = MDAGaussSeidel(
+        remapping_disciplines,
+        settings=MDAGaussSeidel_Settings(tolerance=1e-10),
+    )
+    mda.lin_cache_tol_fact = 1e3
+    mda.execute({"x": array([1.0])})
+    runs = [
+        patch.object(discipline, "_run", wraps=discipline._run)
+        for discipline in original_disciplines
+    ]
+    with runs[0] as run_0, runs[1] as run_1:
+        mda.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert (run_0.call_count, run_1.call_count) == call_counts
+
+
+def test_linearize_after_successive_cache_hits(square_remapping) -> None:
+    """Check the Jacobian at the last point after cache hits at two points."""
+    for x in (1.0, 3.0, 1.0, 3.0):
+        square_remapping.execute({"x": array([x])})
+    jacobian = square_remapping.linearize(
+        {"x": array([3.0])}, compute_all_jacobians=True, execute=False
+    )
+    assert_equal(jacobian["z"]["x"], array([[6.0]]))
+
+
+def test_linearize_after_in_place_modification(square_remapping) -> None:
+    """Check the Jacobian when the caller modifies the input array in place."""
+    x = array([1.0])
+    square_remapping.execute({"x": x})
+    x[0] = 3.0
+    square_remapping.execute({"x": x})
+    x[0] = 1.0
+    square_remapping.execute({"x": x})
+    jacobian = square_remapping.linearize(
+        {"x": array([1.0])}, compute_all_jacobians=True, execute=False
+    )
+    assert_equal(jacobian["z"]["x"], array([[2.0]]))
+
+
+class ObjectInputDiscipline(Discipline):
+    """A discipline computing `z = a**2` with an input of objects."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a", "s"])
+        self.io.output_grammar.update_from_names(["z"])
+        self.io.input_grammar.defaults = {
+            "a": array([1.0]),
+            "s": array(["foo"], dtype=object),
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"z": input_data["a"] ** 2}
+
+
+def test_execute_twice_with_object_input() -> None:
+    """Check that a cache hit with an input of objects does not execute again."""
+    original_discipline = ObjectInputDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"x": "a", "t": "s"})
+    input_data = {"x": array([1.0]), "t": array(["foo"], dtype=object)}
+    discipline.execute(input_data)
+    with patch.object(
+        original_discipline, "_run", wraps=original_discipline._run
+    ) as run:
+        discipline.execute(input_data)
+    assert run.call_count == 0
