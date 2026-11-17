@@ -38,8 +38,8 @@ def project_onto_declared_domain(
     see
     [SpaceRelaxation][gemseo.space.transformation.relaxation.SpaceRelaxation].
     This projects it back,
-    without building the working space of a
-    [working transformation][gemseo.space.transformation._working.get_default_transformation_factories],
+    without building the working space of a working transformation
+    (see `get_default_transformation_factories`),
     a copy of the space that the projection never reads.
 
     Args:

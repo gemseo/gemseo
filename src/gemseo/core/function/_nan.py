@@ -98,7 +98,7 @@ def check_blocks_for_nan(
     exactly as a non-vectorized check names the point it evaluated.
 
     Reading the blocks is the business of
-    [read_blocks][gemseo.core.function._blocks.read_blocks],
+    `gemseo.core.function._blocks.read_blocks`,
     which the map to the coordinates of an algorithm shares.
 
     A sparse matrix is ignored,

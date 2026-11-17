@@ -238,7 +238,7 @@ label naming a single row, not an absence of labels.""",
 
         The input is first checked against the input types of the fields,
         then formatted into the values the fields hold
-        by [CatalogFormatter][gemseo.space.catalog._input.CatalogFormatter].
+        by `gemseo.space.catalog._input.CatalogFormatter`.
 
         Args:
             data: The input of the catalog.
@@ -802,7 +802,7 @@ class _PropertiesViewField(ArrayViewField):
     cannot view the arrays it holds when one of them is looked up,
     so the mapping is rebuilt on every read,
     for the reason
-    [ArrayViewField][gemseo.space.variable._view_field.ArrayViewField]
+    `gemseo.space.variable._view_field.ArrayViewField`
     gives for viewing an array on every read.
     """
 

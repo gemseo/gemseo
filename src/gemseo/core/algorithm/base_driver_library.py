@@ -1042,7 +1042,7 @@ class BaseDriverLibrary(
         """Check that the algorithm handles the variables of the working space.
 
         The transformations are chosen by
-        [_get_default_transformation_factories][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary._get_default_transformation_factories],
+        `_get_default_transformation_factories`,
         which a driver may override,
         so the variables are checked on the working space they lead to,
         whatever the relaxation settings,

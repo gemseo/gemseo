@@ -64,7 +64,7 @@ package; the rename map that also drives the external codemod):
   may be the complete dotted path of a GEMSEO object, e.g.
   `gemseo.uncertainty.sensitivity.sobol.SobolAnalysisMethod`, for an attribute moved
   out of the class (see
-  [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]).
+  `is_moved_class_attribute`).
 
 Accumulation across releases is achieved by keeping the old entries in
 `bump-version.yml` until their scheduled removal.
@@ -371,8 +371,8 @@ def _parse_classes_section(text: str) -> dict[str, dict[str, str]]:
       attribute rename for the current class, unless there is none, and the entry is
       aliasable, once a `TODO <text>` tail of `new_name` is cut, as for the other
       sections (see
-      [_split_rename_todo][gemseo._deprecation.aliases._split_rename_todo]; see
-      [_is_aliasable_class_entry][gemseo._deprecation.aliases._is_aliasable_class_entry];
+      `_split_rename_todo`; see
+      `_is_aliasable_class_entry`;
       a YAML anchor or alias reference, and a codemod-only value-conversion note, are
       not, and are dropped like a removal is).
     - A 4-space line with an empty (or anchor-only) value (e.g. `__init__:`) opens a
@@ -472,7 +472,7 @@ def _find_dissolved_packages(
     - neither `P` nor one of its ancestors is a key,
     - `P` is not the root package,
     - no module or regular package `P` is found (see
-      [_find_module_spec][gemseo._deprecation.aliases._find_module_spec]).
+      `_find_module_spec`).
 
     Args:
         module_renames: The old module name -> new module name mapping, fully resolved.

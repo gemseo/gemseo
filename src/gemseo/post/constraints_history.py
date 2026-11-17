@@ -66,7 +66,7 @@ def _fade(colormap: Colormap) -> ListedColormap:
 
     Returns:
         The colormap blended with white, as if drawn with an opacity of
-        [_band_opacity][gemseo.post.constraints_history._band_opacity].
+        `_band_opacity`.
     """
     colors = colormap(linspace(0.0, 1.0, colormap.N))
     return ListedColormap(_band_opacity * colors + 1.0 - _band_opacity)

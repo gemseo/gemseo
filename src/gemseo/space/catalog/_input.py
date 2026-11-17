@@ -58,7 +58,7 @@ CatalogPropertiesType = DataFrame | Mapping[str, Any]
 """The type of the input properties of a catalog."""
 
 
-CatalogLabelsType = Sequence[Any] | ndarray | Index
+_CatalogLabelsType = Sequence[Any] | ndarray | Index
 """The type of the input labels of a catalog."""
 
 
@@ -72,7 +72,7 @@ class CatalogInput(BaseModel, arbitrary_types_allowed=True):
 
     properties: CatalogPropertiesType = Field(description="The input properties.")
 
-    labels: CatalogLabelsType = Field(default=(), description="The input labels.")
+    labels: _CatalogLabelsType = Field(default=(), description="The input labels.")
 
 
 class CatalogFormatter:
@@ -80,7 +80,7 @@ class CatalogFormatter:
 
     The data are read as they are:
     cleaning them is the job of
-    [clean_catalog_data][gemseo.space.catalog._input.clean_catalog_data].
+    `clean_catalog_data`.
 
     The steps are applied in this order,
     which is part of the contract
@@ -164,7 +164,7 @@ class CatalogFormatter:
 
     @classmethod
     def format(
-        cls, properties: CatalogPropertiesType, raw_labels: CatalogLabelsType
+        cls, properties: CatalogPropertiesType, raw_labels: _CatalogLabelsType
     ) -> tuple[ndarray, ReadOnlyMapping[str, ndarray]]:
         """Format the input of a catalog and freeze it.
 
@@ -245,13 +245,13 @@ class CatalogFormatter:
 
     @staticmethod
     def __convert(
-        properties: CatalogPropertiesType, raw_labels: CatalogLabelsType
+        properties: CatalogPropertiesType, raw_labels: _CatalogLabelsType
     ) -> tuple[list[Any] | None, dict[str, Any], list[str]]:
         """Read the labels and the properties from the input.
 
         A `str`, `bytes`, `bytearray` or zero-dimensional array given as the
         labels is read as a single label, using the same rule
-        [_is_scalar][gemseo.space.catalog._input._is_scalar] uses for a property, so
+        `_is_scalar` uses for a property, so
         that neither is silently exploded into one row per character, per
         byte or, for a zero-dimensional array, read through a bare `len`
         that raises on it.
@@ -673,7 +673,7 @@ def _normalize_strings(property_values: Any) -> Any:
 
     Returns:
         The property with its strings normalized,
-        see [_normalize_string][gemseo.space.catalog._input._normalize_string].
+        see `_normalize_string`.
     """
     if property_values is None:
         return None
@@ -732,7 +732,7 @@ def is_blank_property(property_values: Iterable[Any]) -> bool:
     or a string that is empty once stripped of its leading and trailing whitespace;
     `0` and `False` are values, so their properties hold values.
     This is the notion
-    [clean_catalog_data][gemseo.space.catalog._input.clean_catalog_data]
+    `clean_catalog_data`
     drops a property by.
 
     Args:
@@ -753,7 +753,7 @@ def clean_catalog_data(
     of their leading and trailing whitespace,
     then the properties holding no value are dropped
     and named in a log warning,
-    see [is_blank_property][gemseo.space.catalog._input.is_blank_property].
+    see `is_blank_property`.
 
     The data of a catalog are already valid,
     and cleaning them keeps them so,
@@ -946,7 +946,7 @@ def _freeze(property_values: Any, dtype: type | None = None) -> ndarray:
             unless the property mixes a string and a missing value, in which
             case the array is kept as `object` so that the missing value is
             not silently turned into the literal string `"nan"`, see
-            [_mixes_string_and_missing][gemseo.space.catalog._input._mixes_string_and_missing].
+            `_mixes_string_and_missing`.
 
     Returns:
         The frozen array.

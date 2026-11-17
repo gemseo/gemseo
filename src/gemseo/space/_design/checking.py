@@ -57,7 +57,7 @@ a design space holding such a variable asks each variable about its own domain.
 """
 
 
-def is_numeric(value: Any) -> bool:
+def _is_numeric(value: Any) -> bool:
     """Check that a value is numeric.
 
     Args:
@@ -69,7 +69,7 @@ def is_numeric(value: Any) -> bool:
     return value is None or isinstance(value, Complex)
 
 
-def is_not_nan(value: NumberArray) -> bool:
+def _is_not_nan(value: NumberArray) -> bool:
     """Check that a value is not a nan.
 
     Args:
@@ -119,7 +119,7 @@ def check_addable_value(
     if all(equal(value, None)):
         return True
 
-    test = vectorize(is_numeric)(value)
+    test = vectorize(_is_numeric)(value)
     indices = all_indices - set(test.nonzero()[0])
     if indices:
         plural = len(indices) > 1
@@ -131,7 +131,7 @@ def check_addable_value(
         )
         raise ValueError(msg)
 
-    test = vectorize(is_not_nan)(value)
+    test = vectorize(_is_not_nan)(value)
     indices = all_indices - set(test.nonzero()[0])
     if indices:
         plural = len(indices) > 1
@@ -178,7 +178,7 @@ def check_membership(
         TypeError: If `value` is neither an array nor a mapping.
     """
     if isinstance(value, Mapping):
-        check_membership_dict(variables, value, names)
+        _check_membership_dict(variables, value, names)
         return
 
     if isinstance(value, ndarray):
@@ -193,7 +193,7 @@ def check_membership(
             # Fall back to the per-variable path,
             # which asks each variable about its own domain.
             if value.ndim > 1:
-                if are_full_values_surely_valid(variables, bounds, value):
+                if _are_full_values_surely_valid(variables, bounds, value):
                     # The values are all valid:
                     # a failure is reported by the loop below,
                     # which names the variable and the component at fault.
@@ -207,13 +207,13 @@ def check_membership(
 
         if names:
             name_to_size = {name: variables[name].size for name in names}
-            check_membership_dict(
+            _check_membership_dict(
                 variables,
                 split_array_to_dict_of_arrays(value, name_to_size, names),
                 names,
             )
         else:
-            check_membership_array(bounds, value)
+            _check_membership_array(bounds, value)
 
         return
 
@@ -224,7 +224,7 @@ def check_membership(
     raise TypeError(msg)
 
 
-def are_full_values_surely_valid(
+def _are_full_values_surely_valid(
     variables: DesignVariables, bounds: Bounds, full_values: NumberArray
 ) -> bool:
     """Check quickly that full values stay within the bounds and the labels.
@@ -258,7 +258,7 @@ def are_full_values_surely_valid(
     )
 
 
-def check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
+def _check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
     """Check that the full value stays within the bounds.
 
     Args:
@@ -270,7 +270,7 @@ def check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
     """
     if full_value.ndim > 1:
         for value_i in full_value:
-            check_membership_array(bounds, value_i)
+            _check_membership_array(bounds, value_i)
         return
 
     lower_bound = bounds.full_lower_bound
@@ -298,7 +298,7 @@ def check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
         raise ValueError(msg)
 
 
-def check_index_in_domain(
+def _check_index_in_domain(
     variable: BaseDeterministicVariable,
     name: str,
     index: int,
@@ -350,10 +350,10 @@ def check_domain(variables: DesignVariables, name: str, value: NumberArray) -> N
     real_value = value.real
     out_of_domain_indices = variable.find_components_outside_domain(real_value)
     for i in sorted(out_of_domain_indices):
-        check_index_in_domain(variable, name, i, real_value[i], out_of_domain_indices)
+        _check_index_in_domain(variable, name, i, real_value[i], out_of_domain_indices)
 
 
-def check_membership_dict(
+def _check_membership_dict(
     variables: DesignVariables,
     name_to_value: Mapping[str, NumberArray | None],
     names: Sequence[str],
@@ -391,7 +391,9 @@ def check_membership_dict(
             value_i = value[i].real
             if not is_numeric_variable:
                 # A variable without bounds is checked against its domain only.
-                check_index_in_domain(variable, name, i, value_i, out_of_domain_indices)
+                _check_index_in_domain(
+                    variable, name, i, value_i, out_of_domain_indices
+                )
                 continue
 
             lower_bound = variable.lower_bound[i]
@@ -412,4 +414,4 @@ def check_membership_dict(
                 )
                 raise ValueError(msg)
 
-            check_index_in_domain(variable, name, i, value_i, out_of_domain_indices)
+            _check_index_in_domain(variable, name, i, value_i, out_of_domain_indices)

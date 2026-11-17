@@ -39,7 +39,7 @@ class ArrayViewField:
     and a property cannot take the name of a field,
     so this descriptor is set on a model class once pydantic has built it,
     with
-    [expose_fields_as_views][gemseo.space.variable._view_field.expose_fields_as_views],
+    `expose_fields_as_views`,
     and reads the value of the field from that `__dict__`.
     Read from the class itself, it raises an `AttributeError`,
     as a field does once pydantic has collected it,

@@ -32,9 +32,9 @@ if TYPE_CHECKING:
 
 ot_version: Final[Version] = parse_version(version("openturns"))
 
-ot_1_27: Final[Version] = parse_version("1.27")
+_ot_1_27: Final[Version] = parse_version("1.27")
 
-if ot_version >= ot_1_27:
+if ot_version >= _ot_1_27:
     from openturns import GaussianProcessConditionalCovariance
     from openturns import GaussianProcessFitter
     from openturns import GaussianProcessRegression
@@ -43,7 +43,7 @@ if ot_version >= ot_1_27:
     gpr_algo_class = GaussianProcessFitter
     """The OpenTURNS class fitting the covariance model of a Gaussian process."""
 
-    gpr_conditional_covariance_class = GaussianProcessConditionalCovariance
+    _gpr_conditional_covariance_class = GaussianProcessConditionalCovariance
     """The OpenTURNS class owning `getConditionalCovariance`."""
 
     linear_algebra_resource_key = "GaussianProcessFitter-LinearAlgebra"
@@ -138,7 +138,7 @@ else:
     gpr_algo_class = KrigingAlgorithm
     """The OpenTURNS class fitting the covariance model of a Gaussian process."""
 
-    gpr_conditional_covariance_class = KrigingResult
+    _gpr_conditional_covariance_class = KrigingResult
     """The OpenTURNS class owning `getConditionalCovariance`."""
 
     linear_algebra_resource_key = "KrigingAlgorithm-LinearAlgebra"

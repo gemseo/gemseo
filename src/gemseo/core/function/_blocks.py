@@ -66,7 +66,7 @@ as it does for a BSR one.
 """
 
 
-def get_block_indices(
+def _get_block_indices(
     n_samples: int, output_dimension: int, input_dimension: int
 ) -> tuple[NumberArray, NumberArray]:
     """Return the indices of the diagonal blocks of a block diagonal matrix.
@@ -113,11 +113,11 @@ def read_blocks(
     Returns:
         The blocks, of shape `(n_samples, output_dimension, input_dimension)`.
     """
-    rows, columns = get_block_indices(n_samples, output_dimension, input_dimension)
+    rows, columns = _get_block_indices(n_samples, output_dimension, input_dimension)
     return asarray(matrix)[rows, columns]
 
 
-def assemble_blocks(blocks: NumberArray, like: NumberArray) -> NumberArray:
+def _assemble_blocks(blocks: NumberArray, like: NumberArray) -> NumberArray:
     """Assemble a dense block diagonal matrix from its diagonal blocks.
 
     Args:
@@ -129,7 +129,7 @@ def assemble_blocks(blocks: NumberArray, like: NumberArray) -> NumberArray:
         The block diagonal matrix.
     """
     n_samples, output_dimension, input_dimension = blocks.shape
-    rows, columns = get_block_indices(n_samples, output_dimension, input_dimension)
+    rows, columns = _get_block_indices(n_samples, output_dimension, input_dimension)
     matrix = zeros(
         (n_samples * output_dimension, n_samples * input_dimension), dtype=blocks.dtype
     )
@@ -141,7 +141,7 @@ def assemble_blocks(blocks: NumberArray, like: NumberArray) -> NumberArray:
     return asmatrix(matrix) if isinstance(like, np_matrix) else matrix
 
 
-def stack_sparse_blocks(
+def _stack_sparse_blocks(
     matrix: NumberArray, output_dimension: int, input_dimension: int
 ) -> csr_matrix:
     """Stack the diagonal blocks of a sparse block diagonal matrix vertically.
@@ -172,7 +172,7 @@ def stack_sparse_blocks(
     )
 
 
-def unstack_sparse_blocks(
+def _unstack_sparse_blocks(
     stacked: csr_matrix,
     output_dimension: int,
     sparse_format: str,
@@ -180,7 +180,7 @@ def unstack_sparse_blocks(
     """Rebuild a sparse block diagonal matrix from its stacked diagonal blocks.
 
     This is the inverse of
-    [stack_sparse_blocks][gemseo.core.function._blocks.stack_sparse_blocks].
+    `_stack_sparse_blocks`.
 
     Args:
         stacked: The blocks stacked vertically, of shape
@@ -209,7 +209,7 @@ def iter_blocks(
     """Iterate over the diagonal blocks of a block diagonal matrix.
 
     This is what a caller storing one Jacobian per sample needs,
-    where [read_blocks][gemseo.core.function._blocks.read_blocks] is what a caller
+    where `read_blocks` is what a caller
     reading them all at once needs.
     A block is cut from the matrix,
     so a dense one yields views and keeps its type,
@@ -285,11 +285,11 @@ def transform_blocks(
 
     output_dimension = matrix.shape[0] // n_samples
     if is_sparse:
-        return unstack_sparse_blocks(
-            transform(stack_sparse_blocks(matrix, output_dimension, input_dimension)),
+        return _unstack_sparse_blocks(
+            transform(_stack_sparse_blocks(matrix, output_dimension, input_dimension)),
             output_dimension,
             matrix.format,
         )
 
     blocks = read_blocks(matrix, n_samples, output_dimension, input_dimension)
-    return assemble_blocks(transform(blocks), matrix)
+    return _assemble_blocks(transform(blocks), matrix)

@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 class UpdaterFactory:
     """A factory of trust-region updaters.
 
-    See [TrustUpdater][gemseo.optimization._trust_region.trust_updater.TrustUpdater].
+    See `gemseo.optimization._trust_region.trust_updater.TrustUpdater`.
     """
 
     radius: Final[str] = "radius"
@@ -59,7 +59,7 @@ class UpdaterFactory:
         """Create a trust updater.
 
         See
-        [TrustUpdater][gemseo.optimization._trust_region.trust_updater.TrustUpdater].
+        `gemseo.optimization._trust_region.trust_updater.TrustUpdater`.
 
         Args:
             name: The name of the updater.

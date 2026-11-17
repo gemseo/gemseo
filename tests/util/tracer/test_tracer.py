@@ -55,8 +55,8 @@ from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.space.design import DesignSpace
 from gemseo.util._directory_manager.settings import Settings
 from gemseo.util._tracer import _yaml
+from gemseo.util._tracer._yaml import _load_yaml_trace
 from gemseo.util._tracer._yaml import _max_inline_array_size
-from gemseo.util._tracer._yaml import load_yaml_trace
 from gemseo.util._tracer.base import BaseTracer
 from gemseo.util._tracer.discipline import DisciplineExecutionTracer
 from gemseo.util._tracer.discipline import DisciplineLinearizationTracer
@@ -684,13 +684,13 @@ def test_yaml_conversion_keeps_an_object_array_inline_whatever_its_size(
     ids=["float", "int", "complex", "datetime64", "2d", "structured"],
 )
 def test_load_yaml_trace_round_trips_a_large_array(tracer, tmp_path, array_value):
-    """Verify that `load_yaml_trace` reads back a referenced array unchanged."""
+    """Verify that `_load_yaml_trace` reads back a referenced array unchanged."""
     call_arguments = {"end_trace": {"value": array_value}}
 
     tracer.start(call_arguments, tmp_path)
     tracer.end(call_arguments, None, tmp_path)
 
-    loaded = load_yaml_trace(tmp_path / ".gemseo-trace.yml")
+    loaded = _load_yaml_trace(tmp_path / ".gemseo-trace.yml")
     assert array_equal(loaded["value"], array_value)
     assert loaded["value"].dtype == array_value.dtype
 
@@ -793,7 +793,7 @@ def test_end_leaves_no_trace_file_when_the_dump_raises(tracer, tmp_path, monkeyp
         msg = "cannot represent an object"
         raise yaml.representer.RepresenterError(msg)
 
-    monkeypatch.setattr(_yaml, "dump_yaml", _raise_on_dump)
+    monkeypatch.setattr(_yaml, "_dump_yaml", _raise_on_dump)
     call_arguments = {}
 
     tracer.start(call_arguments, tmp_path)

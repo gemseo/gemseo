@@ -16,14 +16,14 @@
 
 Many modules, packages and classes have been renamed or moved (see the `modules:` and
 `attributes:` sections of `bump-version.yml` in this package, and the tables computed
-from them in [aliases][gemseo._deprecation.aliases]). To keep scripts written against a
+from them in `gemseo._deprecation.aliases`). To keep scripts written against a
 previous release working for one deprecation cycle,
-[install][gemseo._deprecation.install] registers a [importlib.abc.MetaPathFinder][] that
+`install` registers a [importlib.abc.MetaPathFinder][] that
 intercepts imports of the old names, redirects them to the new location, applies any
 class rename, and emits a `DeprecationWarning` pointing at the new name.
 
 When only a class was renamed and its module kept its own name, there is no import to
-intercept; [install][gemseo._deprecation.install] then adds a module-level `__getattr__`
+intercept; `install` then adds a module-level `__getattr__`
 resolving the old attribute names in that module's own namespace.
 
 The names whose `attributes:` value is `TODO <text>` are the exception: their migration
@@ -34,8 +34,8 @@ instead of silently resolving to a name of a different meaning. The text of a
 raised when importing the new module through the old one.
 
 Renamed class attributes (see the `classes:` section of `bump-version.yml` and
-[class_attribute_renames][gemseo._deprecation.aliases.class_attribute_renames]) are
-aliased too: [install][gemseo._deprecation.install] sets a data descriptor for each
+`gemseo._deprecation.aliases.class_attribute_renames`) are
+aliased too: `install` sets a data descriptor for each
 old attribute name on the class defining it, so both `Cls.OLD` and `instance.OLD`
 keep working with a `DeprecationWarning`, and a subclass body that still assigns the
 old name (e.g. `OLD = value` in the class statement) is remapped to the new name. The
@@ -55,7 +55,7 @@ instead.
 
 An old package that was dissolved, i.e. that has no rename of its own but whose
 submodules were renamed, is derived from the `modules:` section (see
-[dissolved_packages][gemseo._deprecation.aliases.dissolved_packages]). Importing it
+`gemseo._deprecation.aliases.dissolved_packages`). Importing it
 gives an empty stand-in that warns and lists the new locations of its former
 submodules; it resolves no name of its own, as the old package defined none, while its
 submodules are redirected as any renamed module.
@@ -65,7 +65,7 @@ The old name under which a package re-exported a module, e.g.
 as in the previous release, so that the old names of the module resolve through the
 package too.
 
-`gemseo/__init__.py` calls [install][gemseo._deprecation.install] on import, so
+`gemseo/__init__.py` calls `install` on import, so
 `from gemseo.old.path import OldName` keeps working even though the old module no longer
 exists on disk.
 
@@ -132,7 +132,7 @@ _module_rename_message: Final[str] = r"The module 'gemseo\..*' is deprecated"
 def _resolve_new_name(old_name: str) -> str | None:
     """Return the new module name for an old one, or `None` if it is not renamed.
 
-    The [module_renames][gemseo._deprecation.aliases.module_renames] entry whose old
+    The `gemseo._deprecation.aliases.module_renames` entry whose old
     name is the longest prefix of `old_name` is used, so a specific module rename wins
     over a broader package rename.
 
@@ -287,10 +287,10 @@ def _get_renamed_attribute(
     """Return the object a rename points to.
 
     The object is looked up by
-    [_get_new_object][gemseo._deprecation._get_new_object]. When it is a module
+    `_get_new_object`. When it is a module
     re-exported by a package, the stand-in of the old path of the module is returned
     instead, if any (see
-    [get_reexported_old_modules][gemseo._deprecation.aliases.get_reexported_old_modules]),
+    `gemseo._deprecation.aliases.get_reexported_old_modules`),
     as the old package re-exported the old module, whose old names the new module
     does not resolve.
 
@@ -338,12 +338,12 @@ def _get_new_object(
     """Return the object a new name designates.
 
     `new_name` comes from
-    [attribute_renames][gemseo._deprecation.aliases.attribute_renames], where it is
+    `gemseo._deprecation.aliases.attribute_renames`, where it is
     always fully qualified, in any package, e.g. GEMSEO or a plugin. The lookup goes
     through `module` rather than a fresh [import_module][importlib.import_module] when
     the module part of `new_name` is `module` itself: `module` may be a stand-in whose
     attribute access is not a plain import (e.g.
-    [_DeprecatedModule][gemseo._deprecation._DeprecatedModule] delegating to a
+    `_DeprecatedModule` delegating to a
     monkeypatched target), and re-importing by name would silently bypass that.
 
     `new_name` may also be that of a module, e.g. for a module re-exported by a
@@ -405,7 +405,7 @@ def _resolve_old_attribute(
 
     A `from module import name` statement looks the name up twice, first to check that
     it exists, which would warn twice. The object is therefore remembered, in
-    [_resolved_old_attributes][gemseo._deprecation._resolved_old_attributes], and the
+    `_resolved_old_attributes`, and the
     later lookups of the name return it without warning, as the names of the lazy
     re-export of a package do.
 
@@ -624,7 +624,7 @@ def _install_attribute_aliases(module: ModuleType) -> None:
     entries of the `attributes:` section) an `ImportError`.
 
     The old name warns once, on its first access (see
-    [_resolve_old_attribute][gemseo._deprecation._resolve_old_attribute]); the objects
+    `_resolve_old_attribute`); the objects
     it resolves to are not kept in the namespace of the module, so that the old names
     never show up in `dir` nor in a star import.
 
@@ -758,7 +758,7 @@ def _class_declares_attribute(cls: type, name: str) -> bool:
 
     An attribute moved out of the class, whose name is the complete dotted path of
     an object (see
-    [is_moved_class_attribute][gemseo._deprecation.aliases.is_moved_class_attribute]),
+    `gemseo._deprecation.aliases.is_moved_class_attribute`),
     counts as declared when the path of the object is in the module defining the
     class or in one of its parent packages, e.g. one re-exporting the object, and
     that module, which is imported already, binds or lazily exports the name of the
@@ -796,7 +796,7 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
 
     A data descriptor is set on the class for each renamed attribute whose old name
     is not still in use and whose new name `cls` actually declares (see
-    [_class_declares_attribute][gemseo._deprecation._class_declares_attribute]), so
+    `_class_declares_attribute`), so
     it is reached only when nothing closer shadows it, and a table entry meant for a
     different class of the same name is not applied to `cls`. A subclass whose body
     still assigns an old name is handled by chaining `__init_subclass__`: the old
@@ -804,7 +804,7 @@ def _alias_class_attributes(cls: type, renames: Mapping[str, str]) -> None:
     (defined on `cls` or inherited) runs, subject to the same declared-new-name
     condition. The old name of a member of an enumeration is also resolved by the
     lookup of a member by name, e.g. `VariableType["FLOAT"]`, through an
-    [_AliasingMemberMap][gemseo._deprecation._AliasingMemberMap], even when it is
+    `_AliasingMemberMap`, even when it is
     not aliased as an attribute because it resolves to an attribute inherited from a
     base class, e.g. the method `str.center` of a `StrEnum`, which a descriptor would
     shadow on the members.
@@ -877,7 +877,7 @@ def _get_class_statement_stacklevel(subclass: type) -> int:
     """Return the stack level of the statement defining a class being created.
 
     It is the stack level that a chained `__init_subclass__` (see
-    [_chain_init_subclass][gemseo._deprecation._chain_init_subclass]) gives to
+    `_chain_init_subclass`) gives to
     [warnings.warn][], so that the warning points at the class statement of the
     subclass, not at the code creating the class. The frames in between are those of
     the `__new__` of the metaclass of the subclass, e.g. `ABCMeta.__new__`, and of the
@@ -1014,7 +1014,7 @@ class _AliasLoader(Loader):
     """Load a module normally, then alias the old names of its renamed attributes.
 
     Both the module's own renamed attributes (when it is one of
-    [live_aliased_modules][gemseo._deprecation.aliases.live_aliased_modules]) and the
+    `gemseo._deprecation.aliases.live_aliased_modules`) and the
     renamed attributes of the classes it defines are aliased; a live module may have
     either, both or neither.
     """

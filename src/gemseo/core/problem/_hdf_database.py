@@ -535,7 +535,7 @@ class HDFDatabase:
                 [Catalog.check_hdf_writable][gemseo.space.catalog.catalog.Catalog.check_hdf_writable],
                 or, when appending, if it differs from the catalog stored in
                 the file, see
-                [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
+                `gemseo.space._design.io.check_catalogs_are_unchanged`.
         """
         input_space = database.input_space
         if input_space:
@@ -655,7 +655,7 @@ class HDFDatabase:
         Raises:
             ValueError: If the catalog of a catalog variable of the input space
                 of the database differs from the catalog stored in the file, see
-                [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
+                `gemseo.space._design.io.check_catalogs_are_unchanged`.
         """
         with h5py.File(file_path) as h5file:
             h5file = get_hdf5_group(h5file, hdf_node_path)

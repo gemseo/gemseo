@@ -401,7 +401,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 to be defined if the function has a multidimensional output.
                 If `None` and if the output is multidimensional, an error is raised.
             save_matrix: Whether to store the approximations of the Hessian in
-                [b_mat_history][gemseo.post._engine.hessian.HessianApproximation.b_mat_history].
+                `b_mat_history`.
             scaling: do scaling step
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
@@ -569,7 +569,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             func_index: The output index of the function
                 to be provided if the function output is a vector.
             save_matrix: Whether to store the approximations of the inverse Hessian in
-                [h_mat_history][gemseo.post._engine.hessian.HessianApproximation.h_mat_history].
+                `h_mat_history`.
             factorize: Whether to factorize the approximations of the Hessian matrix
                 and its inverse, as $A=A_{1/2}A_{1/2}^T$ for a matrix $A$.
             scaling: do scaling step

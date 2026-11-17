@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
-minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
+_minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
 """The minimal fields required in a design space CSV file."""
 
 _csv_variable_types: Final[tuple[VariableType, ...]] = (
@@ -95,7 +95,7 @@ since the name of its HDF group does not read as one:
 """
 
 
-def to_real(data: NumberArray) -> NumberArray:
+def _to_real(data: NumberArray) -> NumberArray:
     """Cast a possibly-complex array to a real `float64` array.
 
     Args:
@@ -107,7 +107,7 @@ def to_real(data: NumberArray) -> NumberArray:
     return array(array(data, copy=False).real, dtype=float64)
 
 
-def get_dataset(group: h5py.Group, name: str) -> ndarray | None:
+def _get_dataset(group: h5py.Group, name: str) -> ndarray | None:
     """Retrieve the dataset stored in an HDF group.
 
     Args:
@@ -123,7 +123,7 @@ def get_dataset(group: h5py.Group, name: str) -> ndarray | None:
     return dataset
 
 
-def get_strings(group: h5py.Group, name: str) -> list[str] | None:
+def _get_strings(group: h5py.Group, name: str) -> list[str] | None:
     """Retrieve the strings stored in a dataset of an HDF group.
 
     Args:
@@ -152,11 +152,11 @@ def _get_label(variable_group: h5py.Group) -> str | None:
     Returns:
         The label, or `None` if the variable has no value.
     """
-    labels = get_strings(variable_group, value_group)
+    labels = _get_strings(variable_group, value_group)
     return None if labels is None else labels[0]
 
 
-def check_structure_is_unchanged(
+def _check_structure_is_unchanged(
     design_space: DesignSpace, space_group: h5py.Group, file_path: str | Path
 ) -> None:
     """Check that a design space is consistent with that of an HDF file.
@@ -207,7 +207,7 @@ def check_structure_is_unchanged(
             elif variable.type == VariableType.CATEGORICAL:
                 # The stored values and the database rows are positions
                 # in the list of labels, so its order matters.
-                stored_labels = get_strings(variable_group, labels_group)
+                stored_labels = _get_strings(variable_group, labels_group)
                 if stored_labels != list(variable.labels):
                     error_messages.append(
                         f"The labels of the design variable {name!r} "
@@ -223,7 +223,7 @@ def check_structure_is_unchanged(
         raise ValueError(msg)
 
 
-def write_dataset(group: h5py.Group, name: str, data: ndarray) -> None:
+def _write_dataset(group: h5py.Group, name: str, data: ndarray) -> None:
     """Write a dataset of an HDF group, creating it if needed.
 
     The data are written in place when the dataset can hold them,
@@ -332,7 +332,7 @@ def check_stored_catalogs_are_unchanged(
     Raises:
         ValueError: If the catalog of a catalog variable differs
             from the stored one, see
-            [check_catalogs_are_unchanged][gemseo.space._design.io.check_catalogs_are_unchanged].
+            `check_catalogs_are_unchanged`.
     """
     if not Path(file_path).exists() or not space.variables.has_variables_of_type(
         VariableType.CATALOG
@@ -404,7 +404,7 @@ def to_hdf(
         else:
             # Both checks run before anything is written,
             # so a failing one leaves the file untouched.
-            check_structure_is_unchanged(design_space, space_group, file_path)
+            _check_structure_is_unchanged(design_space, space_group, file_path)
             check_catalogs_are_unchanged(design_space, space_group, file_path)
 
         for name, variable in design_space.variables.items():
@@ -412,8 +412,8 @@ def to_hdf(
 
             if isinstance(variable, DiscreteVariable):
                 # A variable cannot lose its choices from one export to the next:
-                # check_structure_is_unchanged() rejects a change of type.
-                write_dataset(
+                # _check_structure_is_unchanged() rejects a change of type.
+                _write_dataset(
                     variable_group,
                     choices_group,
                     array(variable.choices, copy=False),
@@ -434,24 +434,24 @@ def to_hdf(
             # which is stored above.
             if variable.type == VariableType.CATEGORICAL:
                 # The labels may be non-ASCII, hence variable-length UTF-8 strings.
-                write_dataset(
+                _write_dataset(
                     variable_group,
                     labels_group,
                     array(variable.labels, dtype=h5py.string_dtype()),
                 )
 
-            write_dataset(
+            _write_dataset(
                 variable_group, size_group, array(variable.size, dtype=int64_dtype)
             )
             if isinstance(variable, BaseNumericVariable):
-                write_dataset(
+                _write_dataset(
                     variable_group, lb_group, array(variable.lower_bound, copy=False)
                 )
-                write_dataset(
+                _write_dataset(
                     variable_group, ub_group, array(variable.upper_bound, copy=False)
                 )
 
-            write_dataset(
+            _write_dataset(
                 variable_group,
                 var_type_group,
                 array([variable.type] * variable.size, dtype="bytes"),
@@ -463,7 +463,7 @@ def to_hdf(
                     del variable_group[value_group]
             elif isinstance(variable, BaseCategoricalVariable):
                 # The file stores the label, not its position among the labels.
-                write_dataset(
+                _write_dataset(
                     variable_group,
                     value_group,
                     array(
@@ -472,7 +472,7 @@ def to_hdf(
                     ),
                 )
             else:
-                write_dataset(variable_group, value_group, to_real(value))
+                _write_dataset(variable_group, value_group, _to_real(value))
 
 
 def _check_domain_payload(
@@ -550,12 +550,12 @@ def from_hdf(
         for name in variable_names:
             name = name.decode()
             variable_group = get_hdf5_group(space_group, name)
-            var_type = get_dataset(variable_group, var_type_group)[0]
+            var_type = _get_dataset(variable_group, var_type_group)[0]
             decoded_var_type = (
                 var_type.decode() if isinstance(var_type, bytes) else var_type
             )
-            labels = get_strings(variable_group, labels_group)
-            choices = get_dataset(variable_group, choices_group)
+            labels = _get_strings(variable_group, labels_group)
+            choices = _get_dataset(variable_group, choices_group)
             catalog_hdf_group = variable_group.get(catalog_group)
             _check_domain_payload(
                 file_path,
@@ -581,7 +581,7 @@ def from_hdf(
                 )
                 continue
 
-            value = get_dataset(variable_group, value_group)
+            value = _get_dataset(variable_group, value_group)
             if choices is not None:
                 # The bounds of a discrete variable are derived from its choices,
                 # so the persisted ones are informational.
@@ -591,8 +591,8 @@ def from_hdf(
                     value,
                 )
             else:
-                l_b = get_dataset(variable_group, lb_group)
-                u_b = get_dataset(variable_group, ub_group)
+                l_b = _get_dataset(variable_group, lb_group)
+                u_b = _get_dataset(variable_group, ub_group)
                 size = get_hdf5_group(variable_group, size_group)[()]
                 design_space.add_variable(
                     name,
@@ -688,7 +688,7 @@ def _get_fields_sentences(fields: Sequence[str]) -> tuple[str, ...]:
     # As in the past releases, a file without bounds is written,
     # although from_csv cannot read it back;
     # a file without names would not even name its variables.
-    name_field = minimal_fields[0]
+    name_field = _minimal_fields[0]
     missing_sentence = ""
     if name_field not in fields:
         missing_sentence = f"A design space CSV file requires the field {name_field!r}."
@@ -836,7 +836,7 @@ def _check_minimal_fields(file_path: str | Path, header: tuple[str, ...]) -> Non
         ValueError: If the header does not have the minimal fields.
     """
     missing_fields = tuple(
-        repr(field) for field in minimal_fields if field not in header
+        repr(field) for field in _minimal_fields if field not in header
     )
     if missing_fields:
         msg = (
@@ -926,7 +926,7 @@ def from_csv(
         return design_space
 
     col_map = {field: i for i, field in enumerate(header)}
-    name_field = minimal_fields[0]
+    name_field = _minimal_fields[0]
     var_names = str_data[:, col_map[name_field]].tolist()
     # The map from a variable name to its first row and its number of rows.
     name_to_rows: dict[str, tuple[int, int]] = {}
@@ -1011,7 +1011,7 @@ def from_csv(
     # The rows and the descriptions of the cells that are not numbers.
     invalid_cells: list[tuple[int, str]] = []
     no_value_rows = None
-    for field in (*minimal_fields[1:], value_field):
+    for field in (*_minimal_fields[1:], value_field):
         column = col_map.get(field)
         if column is None:
             continue
@@ -1097,8 +1097,8 @@ def from_csv(
     if msg:
         raise ValueError(msg)
 
-    lower_bounds = field_to_floats[minimal_fields[1]]
-    upper_bounds = field_to_floats[minimal_fields[2]]
+    lower_bounds = field_to_floats[_minimal_fields[1]]
+    upper_bounds = field_to_floats[_minimal_fields[2]]
     values = field_to_floats.get(value_field)
     for name, (k, size) in name_to_rows.items():
         rows = slice(k, k + size)

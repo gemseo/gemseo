@@ -204,7 +204,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
         self.__dict__[bound_name] = freeze_array(bound.astype(self.coordinate_type))
 
     @staticmethod
-    def get_default_component_value(
+    def _get_default_component_value(
         lower_bound_i: float, upper_bound_i: float
     ) -> float:
         """Return the default value of a component from its bounds.
@@ -236,7 +236,7 @@ class BaseIntervalVariable(BaseDeterministicVariable, BaseNumericVariable, ABC):
         return array(
             list(
                 starmap(
-                    self.get_default_component_value,
+                    self._get_default_component_value,
                     zip(self.lower_bound, self.upper_bound, strict=True),
                 )
             ),

@@ -35,7 +35,7 @@ def isolated_tree(monkeypatch):
 
 
 def test_parent_is_none_when_empty(isolated_tree):
-    assert isolated_tree.parent is None
+    assert isolated_tree._parent is None
 
 
 def test_parent_returns_top_of_current_pid_queue(monkeypatch):
@@ -44,7 +44,7 @@ def test_parent_returns_top_of_current_pid_queue(monkeypatch):
     queue.put(object())
     queue.put(sentinel)
     monkeypatch.setattr(ObserverTree, _state_attr, {getpid(): queue})
-    assert ObserverTree().parent is sentinel
+    assert ObserverTree()._parent is sentinel
 
 
 def test_parent_raises_when_no_id_matches(monkeypatch, snapshot):
@@ -52,7 +52,7 @@ def test_parent_raises_when_no_id_matches(monkeypatch, snapshot):
     queue.put(object())
     monkeypatch.setattr(ObserverTree, _state_attr, {-1: queue})
     with assert_exception(RuntimeError, snapshot):
-        _ = ObserverTree().parent
+        _ = ObserverTree()._parent
 
 
 def test_parent_uses_thread_parent_id_when_set(monkeypatch):
@@ -68,7 +68,7 @@ def test_parent_uses_thread_parent_id_when_set(monkeypatch):
     monkeypatch.setattr(
         "gemseo.util._worker_context.current_thread", lambda: _FakeThread()
     )
-    assert ObserverTree().parent is sentinel
+    assert ObserverTree()._parent is sentinel
 
 
 def test_put_adds_observer_to_current_pid_queue(isolated_tree):

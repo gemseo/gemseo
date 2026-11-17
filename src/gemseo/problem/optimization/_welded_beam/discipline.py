@@ -122,7 +122,7 @@ class WeldedBeam(Discipline):
     This discipline computes the cost and the normalized constraints of the beam
     from its dimensions and from the properties of its material,
     which are inputs named after the properties of the
-    [catalog][gemseo.problem.optimization._welded_beam.data.catalog].
+    `gemseo.problem.optimization._welded_beam.data.catalog`.
     Its default inputs are the initial point of the design space,
     with the properties of the initial material
     instead of the catalog variable `material`,
@@ -157,7 +157,7 @@ class WeldedBeam(Discipline):
 
         Raises:
             ValueError: When the welding is not a value of
-                [Welding][gemseo.problem.optimization._welded_beam.Welding].
+                `gemseo.problem.optimization._welded_beam.Welding`.
         """  # noqa: D205 D212 D415
         try:
             welding = Welding(welding)

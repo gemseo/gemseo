@@ -40,16 +40,16 @@ complex128_dtype: Final = dtype("complex128")
 float64_dtype: Final = dtype("float64")
 """The NumPy double-precision floating-point number type."""
 
-int32_dtype: Final = dtype("int32")
+_int32_dtype: Final = dtype("int32")
 """The NumPy signed integer type with 32 bits."""
 
 int64_dtype: Final = dtype("int64")
 """The NumPy signed integer type with 64 bits."""
 
-uint32_dtype: Final = dtype("uint32")
+_uint32_dtype: Final = dtype("uint32")
 """The NumPy unsigned integer type with 32 bits."""
 
-uint64_dtype: Final = dtype("uint64")
+_uint64_dtype: Final = dtype("uint64")
 """The NumPy unsigned integer type with 64 bits."""
 
 
@@ -75,7 +75,7 @@ def _is_frozen(array: ndarray) -> bool:
 
     Returns:
         Whether the array is a view of an immutable buffer,
-        e.g. an array frozen by [freeze_array][gemseo.util._numpy.freeze_array].
+        e.g. an array frozen by `freeze_array`.
     """
     base = array.base
     while isinstance(base, ndarray):
@@ -202,7 +202,7 @@ def _canonicalize(value: ndarray) -> ndarray:
     and [compare_dict_of_arrays][gemseo.util.comparison.compare_dict_of_arrays]
     consider them equal.
     Their canonical forms have the same raw bytes,
-    so that [hash_array][gemseo.util._numpy.hash_array],
+    so that `hash_array`,
     which digests the raw bytes,
     hashes equal the arrays compared equal.
 
@@ -306,10 +306,10 @@ def hash_array(array: ndarray, canonicalize: bool = True) -> str:
     """
     if canonicalize:
         array = _canonicalize(array)
-    elif array.dtype == int32_dtype:
+    elif array.dtype == _int32_dtype:
         array = array.astype(int64_dtype)
-    elif array.dtype == uint32_dtype:
-        array = array.astype(uint64_dtype)
+    elif array.dtype == _uint32_dtype:
+        array = array.astype(_uint64_dtype)
 
     # xxh3_64 requires C-contiguous data and view() requires at least one dimension;
     # ravel() returns a flat C-contiguous array and copies only when required.

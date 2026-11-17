@@ -44,7 +44,7 @@ class ObserverTree:
     """The map from parent ids to parent observer queues."""
 
     @property
-    def parent(self) -> BaseWorkflowObserver | None:
+    def _parent(self) -> BaseWorkflowObserver | None:
         """The parent observer or `None` if there is no parent."""
         if not self.__parent_id_to_observer:
             return None
