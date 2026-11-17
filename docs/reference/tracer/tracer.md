@@ -266,7 +266,7 @@ Both writers go through `_yaml.py`:
   variable names, a Pydantic model field by field (plus `target_class_name`
   for a `BaseSettings`), a sequence or a set by a list; anything else falls
   back to `str()`.
-- `dump_yaml()` dumps with `_TracerDumper`, which emits a multi-line string
+- `_dump_yaml()` dumps with `_TracerDumper`, which emits a multi-line string
   with the literal block style (`|`) instead of a quoted scalar mangled with
   escaped newlines. The representer is registered on that subclass only, so no
   other user of PyYAML in the process is affected. Trailing whitespace is
@@ -409,7 +409,7 @@ guarding the registry write, so that a conversion error still aborts the
 tracer construction exactly as any other conversion error would; the arrays
 are written inside that guarded block, before the entry's own YAML file.
 
-`load_yaml_trace(file_path)` reads a trace file back with `yaml.safe_load` and
+`_load_yaml_trace(file_path)` reads a trace file back with `yaml.safe_load` and
 resolves such references into NumPy arrays with `numpy.load(..., allow_pickle=False)`,
 by recursively replacing every mapping whose keys are exactly `npy`, `dtype`
 and `shape` — the convention also means a user mapping happening to have

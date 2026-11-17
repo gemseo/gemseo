@@ -1070,7 +1070,7 @@ def test_renamed_attribute_of_live_package():
 def test_renamed_attribute_of_live_module_imported_after_install(monkeypatch):
     """A live module imported after `install` is aliased by the finder.
 
-    [install][gemseo._deprecation.install] only aliases the live modules already
+    `gemseo._deprecation.install` only aliases the live modules already
     imported; the others go through the finder, which wraps their real loader.
     """
     module_name = "gemseo.post.dataset.radviz"
@@ -1191,7 +1191,7 @@ def test_warning_shown_under_default_filters(tmp_path):
     """The deprecation is shown even when triggered from library code (not __main__).
 
     The default warning filters silence `DeprecationWarning` outside `__main__`;
-    [install][gemseo._deprecation.install] adds a filter that overrides this.
+    `gemseo._deprecation.install` adds a filter that overrides this.
     """
     helper = tmp_path / "helper_deprecated_import.py"
     helper.write_text("from gemseo.scenarios.mdo_scenario import MDOScenario\n")

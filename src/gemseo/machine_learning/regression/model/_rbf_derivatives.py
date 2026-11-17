@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 
-class BaseKernelDerivative(metaclass=ABCGoogleDocstringInheritanceMeta):
+class _BaseKernelDerivative(metaclass=ABCGoogleDocstringInheritanceMeta):
     r"""The derivative of a radial basis function (RBF) kernel.
 
     For a kernel of the form $\phi(\epsilon r)$ with $r$ a scalar,
@@ -84,7 +84,7 @@ class BaseKernelDerivative(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
 
-class LinearDerivative(BaseKernelDerivative):
+class _LinearDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=-\epsilon r$.
 
     If $x=0$, the derivative is 0 (determined up to a tolerance).
@@ -99,7 +99,7 @@ class LinearDerivative(BaseKernelDerivative):
         )
 
 
-class ThinPlateSplineDerivative(BaseKernelDerivative):
+class _ThinPlateSplineDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=(\epsilon r)^2\log(\epsilon r)$.
 
     If $x=0$, the derivative is 0 (determined up to a tolerance).
@@ -114,21 +114,21 @@ class ThinPlateSplineDerivative(BaseKernelDerivative):
         )
 
 
-class CubicDerivative(BaseKernelDerivative):
+class _CubicDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=(\epsilon r)^3$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
         return 3 * self._epsilon**3 * norm_input_data * input_data
 
 
-class QuinticDerivative(BaseKernelDerivative):
+class _QuinticDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=-(\epsilon r)^5$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
         return -5 * self._epsilon**5 * norm_input_data**3 * input_data
 
 
-class MultiquadricDerivative(BaseKernelDerivative):
+class _MultiquadricDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=-\sqrt{(\epsilon r)^2+1}$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
@@ -139,7 +139,7 @@ class MultiquadricDerivative(BaseKernelDerivative):
         )
 
 
-class InverseMultiquadricDerivative(BaseKernelDerivative):
+class _InverseMultiquadricDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=1/\sqrt{(\epsilon r)^2+1}$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
@@ -150,7 +150,7 @@ class InverseMultiquadricDerivative(BaseKernelDerivative):
         )
 
 
-class InverseQuadraticDerivative(BaseKernelDerivative):
+class _InverseQuadraticDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=1/((\epsilon r)^2+1)$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
@@ -162,7 +162,7 @@ class InverseQuadraticDerivative(BaseKernelDerivative):
         )
 
 
-class GaussianDerivative(BaseKernelDerivative):
+class _GaussianDerivative(_BaseKernelDerivative):
     r"""The derivative of $\phi(\epsilon r)=\exp(-(\epsilon r)^2)$."""
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
@@ -174,16 +174,18 @@ class GaussianDerivative(BaseKernelDerivative):
         )
 
 
-kernel_derivatives: Final[Mapping[RBF, type[BaseKernelDerivative]]] = MappingProxyType({
-    RBF.LINEAR: LinearDerivative,
-    RBF.THIN_PLATE_SPLINE: ThinPlateSplineDerivative,
-    RBF.CUBIC: CubicDerivative,
-    RBF.QUINTIC: QuinticDerivative,
-    RBF.MULTIQUADRIC: MultiquadricDerivative,
-    RBF.INVERSE_MULTIQUADRIC: InverseMultiquadricDerivative,
-    RBF.INVERSE_QUADRATIC: InverseQuadraticDerivative,
-    RBF.GAUSSIAN: GaussianDerivative,
-})
+_kernel_derivatives: Final[Mapping[RBF, type[_BaseKernelDerivative]]] = (
+    MappingProxyType({
+        RBF.LINEAR: _LinearDerivative,
+        RBF.THIN_PLATE_SPLINE: _ThinPlateSplineDerivative,
+        RBF.CUBIC: _CubicDerivative,
+        RBF.QUINTIC: _QuinticDerivative,
+        RBF.MULTIQUADRIC: _MultiquadricDerivative,
+        RBF.INVERSE_MULTIQUADRIC: _InverseMultiquadricDerivative,
+        RBF.INVERSE_QUADRATIC: _InverseQuadraticDerivative,
+        RBF.GAUSSIAN: _GaussianDerivative,
+    })
+)
 """The derivative of each radial basis function kernel."""
 
 
@@ -196,7 +198,7 @@ class RBFDerivatives:
     __kernel_coefficients: RealArray
     """The coefficients of the kernels, shaped as `(n_centers, n_outputs)`."""
 
-    __kernel_derivative: BaseKernelDerivative
+    __kernel_derivative: _BaseKernelDerivative
     """The derivative of the kernel."""
 
     __polynomial_coefficients: RealArray
@@ -218,7 +220,7 @@ class RBFDerivatives:
         """  # noqa: D205 D212
         self.__centers = interpolator.y
         self.__powers = interpolator.powers
-        kernel_derivative_class = kernel_derivatives[interpolator.kernel]
+        kernel_derivative_class = _kernel_derivatives[interpolator.kernel]
         self.__kernel_derivative = kernel_derivative_class(interpolator.epsilon)
         # These SciPy attributes are private but stable since scipy 1.7;
         # the numerical Jacobian tests guard against upstream changes.

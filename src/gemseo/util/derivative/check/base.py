@@ -31,10 +31,10 @@ if TYPE_CHECKING:
 
     from gemseo.util.typing import StrPath
 
-T = TypeVar("T", bound=int | str)
+_T = TypeVar("_T", bound=int | str)
 
 
-class BaseJacobianChecker(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseJacobianChecker(Generic[_T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for Jacobian correctness checkers."""
 
     @abstractmethod
@@ -43,8 +43,8 @@ class BaseJacobianChecker(Generic[T], metaclass=ABCGoogleDocstringInheritanceMet
         input_value: Any,
         atol: float = 1e-8,
         rtol: float = 1e-8,
-        inputs: Iterable[T] = (),
-        outputs: Iterable[T] = (),
+        inputs: Iterable[_T] = (),
+        outputs: Iterable[_T] = (),
         reference_jacobian_path: StrPath = "",
         save_reference_jacobian: bool = False,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,

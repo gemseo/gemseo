@@ -52,7 +52,7 @@ class RandomVariables(Variables[RandomVariable]):
     Note:
         A random space exposes this registry to its users
         as a
-        [RandomVariablesView][gemseo.space._random.variables_view.RandomVariablesView],
+        `gemseo.space._random.variables_view.RandomVariablesView`,
         which is read-only.
     """
 

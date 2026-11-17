@@ -15,12 +15,12 @@
 """The YAML conversion and dumping shared by the tracer package's writers.
 
 Both the per-call trace writer
-([BaseTracer][gemseo.util._tracer.base.BaseTracer]) and the registry writer
-([TraceRegistry][gemseo.util._tracer.registry.TraceRegistry]) dump their data
+(`gemseo.util._tracer.base.BaseTracer`) and the registry writer
+(`gemseo.util._tracer.registry.TraceRegistry`) dump their data
 through
-[dump_yaml_to_file][gemseo.util._tracer._yaml.dump_yaml_to_file], which
+`dump_yaml_to_file`, which
 writes a complete file or none at all and goes through
-[dump_yaml][gemseo.util._tracer._yaml.dump_yaml], so that a
+`_dump_yaml`, so that a
 multi-line string, e.g. a class documentation, is emitted using the literal
 block style (``|``) rather than PyYAML's default folded or double-quoted
 styles, which would otherwise mangle it with escaped newline sequences and
@@ -35,15 +35,15 @@ literal block. No GEMSEO source triggers this today, but user-supplied text
 can.
 
 The data is prepared by
-[convert_to_yaml_data][gemseo.util._tracer._yaml.convert_to_yaml_data], which
+`convert_to_yaml_data`, which
 maps the objects met in traced data, e.g. a NumPy array or a settings model,
 onto the types PyYAML can represent.
 
 A NumPy array of more than `_max_inline_array_size` elements, of a dtype kind
 other than object, is not converted inline: it is handed to an
-[_NpyArrayStore][gemseo.util._tracer._yaml._NpyArrayStore], which writes it to
+`_NpyArrayStore`, which writes it to
 a sibling ``.npy`` file and replaces it in the YAML data with a small mapping
-referencing that file. [load_yaml_trace][gemseo.util._tracer._yaml.load_yaml_trace]
+referencing that file. `_load_yaml_trace`
 reads a trace file back and resolves such references into NumPy arrays.
 """
 
@@ -168,10 +168,10 @@ _dump_kwargs: Final[Mapping[str, Any]] = MappingProxyType({
     "allow_unicode": True,
     "width": _width,
 })
-"""The keyword arguments passed to `yaml.dump` by `dump_yaml`."""
+"""The keyword arguments passed to `yaml.dump` by `_dump_yaml`."""
 
 
-def dump_yaml(data: Any, stream: IO[str]) -> None:
+def _dump_yaml(data: Any, stream: IO[str]) -> None:
     """Dump data as YAML, using a literal block style for multi-line strings.
 
     Args:
@@ -202,7 +202,7 @@ def dump_yaml_to_file(data: Any, file_path: Path) -> None:
     temporary_file_path = file_path.with_name(f"{file_path.name}.tmp")
     try:
         with temporary_file_path.open("w", encoding="utf-8") as stream:
-            dump_yaml(data, stream)
+            _dump_yaml(data, stream)
         temporary_file_path.replace(file_path)
     except BaseException:
         # The leftover of a failed dump, or of a failed move, e.g. a
@@ -307,7 +307,7 @@ unpickling executes arbitrary code; the array is converted inline instead.
 _array_reference_keys: Final[frozenset[str]] = frozenset({"npy", "dtype", "shape"})
 """The mapping keys identifying an array reference written by `_NpyArrayStore`.
 
-`load_yaml_trace` replaces every mapping matching exactly this set of keys by
+`_load_yaml_trace` replaces every mapping matching exactly this set of keys by
 the array its `npy` entry points to. A user mapping that happens to have
 exactly these three keys, and no other, would be read back as an array
 reference too; this convention trades that unlikely collision for not needing
@@ -319,9 +319,9 @@ class _NpyArrayStore:
     """A store for the large NumPy arrays met while converting one trace.
 
     Created once per conversion cycle (e.g. one per pair of
-    [BaseTracer.start][gemseo.util._tracer.base.BaseTracer.start] and
-    [BaseTracer.end][gemseo.util._tracer.base.BaseTracer.end] calls, or one per
-    [TraceRegistry.register][gemseo.util._tracer.registry.TraceRegistry.register]
+    `gemseo.util._tracer.base.BaseTracer.start` and
+    `gemseo.util._tracer.base.BaseTracer.end` calls, or one per
+    `gemseo.util._tracer.registry.TraceRegistry.register`
     call), and handed to `convert_to_yaml_data`. Every array larger than
     `_max_inline_array_size` met during the conversion is added to the store,
     which assigns it the next index, keeps a reference to it, and returns the
@@ -391,7 +391,7 @@ class _NpyArrayStore:
 
 
 def convert_to_yaml_data(value: Any, array_store: _NpyArrayStore | None = None) -> Any:
-    """Convert a value into a representation writable by `dump_yaml`.
+    """Convert a value into a representation writable by `_dump_yaml`.
 
     Args:
         value: The value to convert.
@@ -409,7 +409,7 @@ def convert_to_yaml_data(value: Any, array_store: _NpyArrayStore | None = None) 
 def _convert_to_yaml_data(
     value: Any, ancestor_ids: set[int], array_store: _NpyArrayStore | None
 ) -> Any:
-    """Convert a value into a representation writable by `dump_yaml`.
+    """Convert a value into a representation writable by `_dump_yaml`.
 
     Args:
         value: The value to convert.
@@ -557,7 +557,7 @@ def _convert_to_yaml_data(
 def _convert_key_to_yaml_data(
     key: Any, ancestor_ids: set[int], array_store: _NpyArrayStore | None
 ) -> Any:
-    """Convert a mapping key into a representation writable by `dump_yaml`.
+    """Convert a mapping key into a representation writable by `_dump_yaml`.
 
     A key goes through the same conversion as a value: PyYAML has no more a
     representer for a `Path`, an enum member or a NumPy scalar used as a key
@@ -588,7 +588,7 @@ def _convert_key_to_yaml_data(
     return converted_key
 
 
-def load_yaml_trace(file_path: Path) -> Any:
+def _load_yaml_trace(file_path: Path) -> Any:
     """Load a trace file, resolving every array reference into a NumPy array.
 
     A mapping matching exactly the `npy`, `dtype` and `shape` keys, see

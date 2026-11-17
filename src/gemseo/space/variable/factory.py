@@ -130,7 +130,7 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
         self.__resolve_variable_types()
         return self.__interval_variable_types
 
-    def get_class_from_variable_type(
+    def _get_class_from_variable_type(
         self, variable_type: VariableType | str | bytes
     ) -> type[BaseDeterministicVariable]:
         """Return the variable class pinning a variable type.
@@ -184,7 +184,7 @@ class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
             ValueError: If `variable_type` is not a variable type
                 or if no variable class pins it.
         """
-        cls = self.get_class_from_variable_type(variable_type)
+        cls = self._get_class_from_variable_type(variable_type)
         return super().create(cls.__name__, *args, **kwargs)
 
     def update(self) -> None:  # noqa: D102

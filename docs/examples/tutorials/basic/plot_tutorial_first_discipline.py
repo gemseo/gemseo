@@ -320,7 +320,7 @@ discipline.linearize(compute_all_jacobians=True)
 # Now you know the [Discipline][gemseo.core.discipline.discipline.Discipline] basics:
 # - the role of a grammar, used for inputs and outputs
 # - the computation method `_run()` that you need to overload,
-# - the jacobian method [_compute_jacobian()][gemseo.core.discipline.discipline.Discipline._compute_jacobian] that you can overload (optional).
+# - the jacobian method `_compute_jacobian()` that you can overload (optional).
 #
 # You can develop all your disciplines that way.
 # However, for performance and convenience pruposes,

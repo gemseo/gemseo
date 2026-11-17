@@ -252,7 +252,7 @@ def test_register_leaves_no_temporary_file_when_the_dump_raises(
         msg = "cannot represent an object"
         raise yaml.representer.RepresenterError(msg)
 
-    monkeypatch.setattr(_yaml, "dump_yaml", _raise_on_dump)
+    monkeypatch.setattr(_yaml, "_dump_yaml", _raise_on_dump)
 
     object_id = registry.register("Foo", name="", documentation="", init_arguments={})
 

@@ -50,8 +50,8 @@ from gemseo.machine_learning.regression.model.ot_gpr_settings import (
 from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
+from gemseo.util._compatibility.openturns import _gpr_conditional_covariance_class
 from gemseo.util._compatibility.openturns import gpr_algo_class
-from gemseo.util._compatibility.openturns import gpr_conditional_covariance_class
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -213,15 +213,15 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     kriging = OTGaussianProcessRegressor(
         dataset, OTGaussianProcessRegressor_Settings(transformer=transformer)
     )
-    original_method = gpr_conditional_covariance_class.getConditionalCovariance
+    original_method = _gpr_conditional_covariance_class.getConditionalCovariance
     v1 = 4.0 + x1 + x2
     v2 = 9.0 + x1 + x2
-    gpr_conditional_covariance_class.getConditionalCovariance = Mock(
+    _gpr_conditional_covariance_class.getConditionalCovariance = Mock(
         return_value=CovarianceMatrix(2, [v1, 0.5, 0.5, v2])
     )
     kriging.learn()
     assert_allclose(kriging.predict_std(array([x1, x2])), array([v1, v2]) ** 0.5)
-    gpr_conditional_covariance_class.getConditionalCovariance = original_method
+    _gpr_conditional_covariance_class.getConditionalCovariance = original_method
 
 
 @pytest.mark.parametrize(

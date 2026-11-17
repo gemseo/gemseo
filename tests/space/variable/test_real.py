@@ -98,7 +98,7 @@ def test_cast() -> None:
 def test_get_default_component_value(lower_bound, upper_bound, expected) -> None:
     """Check the default value of a component."""
     assert (
-        RealVariable.get_default_component_value(lower_bound, upper_bound) == expected
+        RealVariable._get_default_component_value(lower_bound, upper_bound) == expected
     )
 
 

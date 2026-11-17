@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from packaging.version import Version
 
 scipy_version: Final[Version] = parse_version(version("scipy"))
-scipy_greater_than_1_16: Final[bool] = parse_version("1.16") <= scipy_version
+_scipy_greater_than_1_16: Final[bool] = parse_version("1.16") <= scipy_version
 
 
 sparse_classes = (spmatrix, sparray)

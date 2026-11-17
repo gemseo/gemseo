@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
 
 
-def cast_coordinates(
+def _cast_coordinates(
     variable: BaseDeterministicVariable, value: NumberArray
 ) -> NumberArray:
     """Cast a value of a variable to the NumPy type of its coordinates.
@@ -298,7 +298,7 @@ class Value(RegistryDerivedData):
         self.__name_to_value_view = ReadOnlyMapping(self.__name_to_value)
         for name, val in self.__name_to_value.items():
             if val is not None:
-                self.__name_to_value[name] = cast_coordinates(
+                self.__name_to_value[name] = _cast_coordinates(
                     self._variables[name], val
                 )
 
@@ -327,7 +327,7 @@ class Value(RegistryDerivedData):
         # A variable with no value keeps its None marker; a genuine value is cast
         # so that the caller does not keep a hand on the stored array.
         self.__name_to_value[name] = (
-            None if value is None else cast_coordinates(variable, value)
+            None if value is None else _cast_coordinates(variable, value)
         )
         self.__update_metadata()
 
@@ -562,7 +562,7 @@ class Value(RegistryDerivedData):
         ) in self._variables.name_to_normalization_mask.items():
             if not to_normalize.any():
                 # A value left unnormalized keeps the NumPy type of its variable.
-                self.__name_to_normalized_value[name] = cast_coordinates(
+                self.__name_to_normalized_value[name] = _cast_coordinates(
                     self._variables[name], self.__name_to_normalized_value[name]
                 )
 

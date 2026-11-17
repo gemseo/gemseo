@@ -257,7 +257,7 @@ class TraceRegistry(metaclass=BaseMultiton):
         A worker is recognized either from `multiprocessing`, whichever start
         method created it, or from a change of process id since this registry
         was constructed, which also covers a bare `os.fork`, see
-        [is_in_worker_process][gemseo.util._worker_context.is_in_worker_process].
+        `gemseo.util._worker_context.is_in_worker_process`.
 
         Args:
             index: The per-class index of the observee.

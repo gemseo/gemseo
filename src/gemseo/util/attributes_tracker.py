@@ -136,7 +136,7 @@ class _ModelTrackerMixin:
 
     This mixin is combined with the class of the model to be tracked via
     `types.new_class` and the resulting class is assigned in place to a
-    deep copy of the model (see `track_model`).
+    deep copy of the model (see `_track_model`).
     """
 
     __slots__ = ()
@@ -603,7 +603,7 @@ def _is_tracking(obj: Any) -> bool:
     return isinstance(obj, _BaseTracker) and "parent_tracker" in obj.__dict__
 
 
-def track_model(model: BaseModel) -> BaseModel:
+def _track_model(model: BaseModel) -> BaseModel:
     """Convert a model in place into a tracked subclass instance.
 
     Unlike
@@ -665,7 +665,7 @@ def _wrap_value(
         return value
     if isinstance(value, BaseModel):
         if _state_key not in value.__dict__:
-            track_model(value)
+            _track_model(value)
         return value
     if isinstance(value, ndarray):
         mixin_class = _NDArrayTracker
@@ -938,7 +938,7 @@ def wrap_with_attributes_tracking(obj: BaseModel) -> BaseModel:
         A tracked deep copy of *obj*.
     """
     _check_model_type(obj)
-    return track_model(obj.model_copy(deep=True))
+    return _track_model(obj.model_copy(deep=True))
 
 
 def _check_model_type(obj: Any) -> None:

@@ -440,7 +440,7 @@ def derive_policy_tree(
     """Derive the directory tree expected under a cleanup policy.
 
     This is an oracle, independent from
-    [DirectoryManager][gemseo.util._directory_manager.manager.DirectoryManager]:
+    `gemseo.util._directory_manager.manager.DirectoryManager`:
     it is written from the cleanup policy definitions (see the module
     docstring of `gemseo.util._directory_manager.settings`), not from the
     manager's implementation, so that comparing its prediction against an

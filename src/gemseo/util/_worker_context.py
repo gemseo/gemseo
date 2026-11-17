@@ -121,7 +121,7 @@ def get_thread_cwd() -> Path | None:
 
     Returns:
         The working directory recorded by
-        [set_thread_cwd][gemseo.util._worker_context.set_thread_cwd],
+        `set_thread_cwd`,
         or ``None`` if none was recorded.
     """
     return getattr(current_thread(), "cwd", None)

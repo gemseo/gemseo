@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from openturns import RandomGeneratorState
 
 
-def is_initialized(state: RandomGeneratorState) -> bool:
+def _is_initialized(state: RandomGeneratorState) -> bool:
     """Check whether a state of the OpenTURNS random generator is initialized.
 
     The generator is initialized at its first use,
@@ -72,7 +72,7 @@ def seed_ot_random_generator(seed: int | None) -> Generator[bool, None, None]:
     try:
         yield True
     finally:
-        if is_initialized(state):
+        if _is_initialized(state):
             RandomGenerator.SetState(state)
         else:
             # The initial seed of the ResourceMap gives the state

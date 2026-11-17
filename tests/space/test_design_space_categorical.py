@@ -393,7 +393,7 @@ def test_check_membership_of_many_points_is_vectorized(
     def fail(*args, **kwargs) -> None:
         raise AssertionError
 
-    monkeypatch.setattr("gemseo.space._design.checking.check_membership_dict", fail)
+    monkeypatch.setattr("gemseo.space._design.checking._check_membership_dict", fail)
     categorical_design_space.check_membership(array([[0.0, 0.5], [2.0, 2.0]]))
     # The integer variables are vectorized too.
     design_space = DesignSpace()

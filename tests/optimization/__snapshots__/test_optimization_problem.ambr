@@ -14,7 +14,7 @@
 # name: test_constraints_dim
   'The function output dimension is not available yet, please call function ineq1(x): 0.5 -x[0] ** 3 <= -1 once.'
 # ---
-# name: test_discrete_opt_problem[False-Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.\nSet 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
+# name: test_discrete_opt_problem[False-expected_message1]
   '''
   Algorithm SLSQP is not adapted to the problem, it does not handle discrete variables.
   Set 'relax_discrete_variables' to 'True' to relax them to float ones, or use an algorithm handling them.
@@ -38,7 +38,7 @@
 # name: test_init_with_a_random_space
   'An OptimizationProblem requires a design space; got a RandomSpace; use an EvaluationProblem to sample a random space.'
 # ---
-# name: test_int_opt_problem[False-Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.\nSet 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.]
+# name: test_int_opt_problem[False-expected_message1]
   '''
   Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.
   Set 'relax_integer_variables' to 'True' to relax them to float ones, or use an algorithm handling them.

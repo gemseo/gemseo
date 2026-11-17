@@ -23,7 +23,7 @@ from numpy.testing import assert_allclose
 from scipy.sparse import block_diag
 from scipy.sparse import csr_matrix
 
-from gemseo.core.function._blocks import assemble_blocks
+from gemseo.core.function._blocks import _assemble_blocks
 from gemseo.core.function._blocks import iter_blocks
 from gemseo.core.function._blocks import read_blocks
 from gemseo.core.function._blocks import transform_blocks
@@ -82,9 +82,9 @@ def test_read_blocks(densify) -> None:
 def test_assemble_blocks_keeps_the_type_of_the_matrix() -> None:
     """Check that a matrix rebuilt from blocks is carried as the original one."""
     dense = block_diag(BLOCKS).toarray()
-    assert isinstance(assemble_blocks(array(BLOCKS), dense), type(dense))
-    assert isinstance(assemble_blocks(array(BLOCKS), np_matrix(dense)), np_matrix)
-    assert_allclose(to_dense(assemble_blocks(array(BLOCKS), dense)), dense)
+    assert isinstance(_assemble_blocks(array(BLOCKS), dense), type(dense))
+    assert isinstance(_assemble_blocks(array(BLOCKS), np_matrix(dense)), np_matrix)
+    assert_allclose(to_dense(_assemble_blocks(array(BLOCKS), dense)), dense)
 
 
 def test_iter_blocks(matrix) -> None:

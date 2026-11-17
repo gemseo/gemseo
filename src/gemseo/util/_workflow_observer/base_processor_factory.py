@@ -26,17 +26,17 @@ if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
     from gemseo.util.typing import StrKeyMapping
 
-T = TypeVar("T", bound=BaseProcessor)
+_T = TypeVar("_T", bound=BaseProcessor)
 
 
-class BaseProcessorFactory(BaseFactory[T]):
+class BaseProcessorFactory(BaseFactory[_T]):
     """Factory to create processors."""
 
     def create(
         self,
         observer: BaseWorkflowObserver,
         init_arguments: StrKeyMapping,
-    ) -> T:
+    ) -> _T:
         """
         Args:
             observer: The observer to use.

@@ -43,7 +43,7 @@ from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util._compatibility.scipy import scipy_greater_than_1_16
+from gemseo.util._compatibility.scipy import _scipy_greater_than_1_16
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.opt_lib_test_base import OptLibraryTestBase
@@ -353,8 +353,8 @@ def test_cobyla() -> None:
         problem, settings=COBYLA_Settings(max_iter=500, enable_progress_bar=False)
     )
     x_opt, f_opt = problem.get_solution()
-    xtol = 2.0e-1 if scipy_greater_than_1_16 else 6.0e-1
-    ftol = 1.0e-2 if scipy_greater_than_1_16 else 1.1e-1
+    xtol = 2.0e-1 if _scipy_greater_than_1_16 else 6.0e-1
+    ftol = 1.0e-2 if _scipy_greater_than_1_16 else 1.1e-1
     assert opt.x_opt == pytest.approx(x_opt, abs=xtol)
     assert opt.f_opt == pytest.approx(f_opt, abs=ftol)
 

@@ -53,10 +53,10 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.util._numpy import int32_dtype
+from gemseo.util._numpy import _int32_dtype
+from gemseo.util._numpy import _uint32_dtype
+from gemseo.util._numpy import _uint64_dtype
 from gemseo.util._numpy import int64_dtype
-from gemseo.util._numpy import uint32_dtype
-from gemseo.util._numpy import uint64_dtype
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.singleton import SingleInstancePerFileAttribute
 from gemseo.util.testing.helper import assert_exception
@@ -308,7 +308,8 @@ def test_hash_data_dict() -> None:
 
 
 @pytest.mark.parametrize(
-    ("dtype_32", "dtype_64"), [(int32_dtype, int64_dtype), (uint32_dtype, uint64_dtype)]
+    ("dtype_32", "dtype_64"),
+    [(_int32_dtype, int64_dtype), (_uint32_dtype, _uint64_dtype)],
 )
 def test_hash_data_32_bit_integers(dtype_32, dtype_64) -> None:
     """Check that a 32-bit integer array is hashed as its 64-bit equivalent."""

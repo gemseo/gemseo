@@ -109,7 +109,7 @@ def _nested_values_are_equal(value: Any, other_value: Any) -> bool | None:
     The arrays, the pandas `Series`, the mappings and the sequences
     are compared element-wise,
     each element with
-    [_values_are_equal][gemseo.space.catalog._equality._values_are_equal];
+    `_values_are_equal`;
     two `Series` must also have equal indices,
     and two sequences the same type.
     A string or a byte string is not compared as a sequence.

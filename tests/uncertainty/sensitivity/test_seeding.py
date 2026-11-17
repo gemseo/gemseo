@@ -25,7 +25,7 @@ from openturns import RandomGenerator
 from openturns import ResourceMap
 from openturns import Uniform
 
-from gemseo.uncertainty.sensitivity._seeding import is_initialized
+from gemseo.uncertainty.sensitivity._seeding import _is_initialized
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ def restore_random_generator() -> Iterator[None]:
     """
     state = RandomGenerator.GetState()
     yield
-    if is_initialized(state):
+    if _is_initialized(state):
         RandomGenerator.SetState(state)
     else:
         RandomGenerator.SetSeed(
@@ -90,10 +90,10 @@ def test_restore_unused_generator() -> None:
 from numpy import array
 from openturns import RandomGenerator
 from openturns import Uniform
-from gemseo.uncertainty.sensitivity._seeding import is_initialized
+from gemseo.uncertainty.sensitivity._seeding import _is_initialized
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 
-assert not is_initialized(RandomGenerator.GetState())
+assert not _is_initialized(RandomGenerator.GetState())
 with seed_ot_random_generator(1):
     Uniform(0.0, 1.0).getSample(10)
 
@@ -110,11 +110,11 @@ def test_unused_generator_is_seeded_with_initial_seed(monkeypatch) -> None:
 
     Unlike the test above, it runs in the current process,
     where the generator is already used,
-    so `is_initialized` is patched to report its state as not initialized.
+    so `_is_initialized` is patched to report its state as not initialized.
     The initial seed of the `ResourceMap` is set to a non-default value.
     """
     monkeypatch.setattr(
-        "gemseo.uncertainty.sensitivity._seeding.is_initialized", lambda state: False
+        "gemseo.uncertainty.sensitivity._seeding._is_initialized", lambda state: False
     )
     key = "RandomGenerator-InitialSeed"
     initial_seed = ResourceMap.GetAsUnsignedInteger(key)
@@ -136,7 +136,7 @@ def test_unused_generator_is_seeded_with_initial_seed(monkeypatch) -> None:
 def test_initialized_state() -> None:
     """Check that the state of a seeded generator is initialized."""
     RandomGenerator.SetSeed(1)
-    assert is_initialized(RandomGenerator.GetState())
+    assert _is_initialized(RandomGenerator.GetState())
 
 
 @pytest.mark.usefixtures("restore_random_generator")

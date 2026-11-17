@@ -36,7 +36,7 @@ def create_design_space() -> DesignSpace:
     the discrete values being spaced by 0.0625.
     Their values are the initial point,
     see `initial_material` and `initial_dimensions` of the module
-    [data][gemseo.problem.optimization._welded_beam.data].
+    `gemseo.problem.optimization._welded_beam.data`.
 
     The catalog variable `material` needs a driver encoding the catalog variables,
     whereas the discipline takes the properties of the material instead;

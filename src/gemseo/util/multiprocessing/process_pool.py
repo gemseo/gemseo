@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any
 
-max_windows_processes: Final[int] = 61
+_max_windows_processes: Final[int] = 61
 """The maximum number of worker processes of a `ProcessPoolExecutor` on Windows.
 
 It mirrors `concurrent.futures.process._MAX_WINDOWS_WORKERS`,
@@ -76,7 +76,7 @@ def get_number_of_processes(n_processes: int, n_tasks: int) -> int:
     """
     n_processes = min(n_tasks, n_processes)
     if platform_is_windows:
-        n_processes = min(n_processes, max_windows_processes)
+        n_processes = min(n_processes, _max_windows_processes)
 
     return n_processes
 

@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealOrComplexArrayT
 logger = logging.getLogger(__name__)
 
-sparse_point_message: Final[str] = (
+_sparse_point_message: Final[str] = (
     "A point of a design space with categorical variables cannot be a sparse array, "
     "as each of its categorical components is mapped to the cell of a label."
 )
@@ -175,7 +175,7 @@ class Normalizer(RegistryDerivedData):
             and self.__categorical_indices.size
             and isinstance(full_value, sparse_classes)
         ):
-            raise TypeError(sparse_point_message)
+            raise TypeError(_sparse_point_message)
 
         current_x_dtype = common_dtype
         if current_x_dtype.kind == "i":
@@ -241,7 +241,7 @@ class Normalizer(RegistryDerivedData):
             and self.__categorical_indices.size
             and isinstance(full_value, sparse_classes)
         ):
-            raise TypeError(sparse_point_message)
+            raise TypeError(_sparse_point_message)
 
         normalization_indices = self.__normalization_indices
         lower_bounds = self.__bounds.full_lower_bound

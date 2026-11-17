@@ -158,7 +158,7 @@ class SobolIndicesEstimator(Protocol):
     """The results of a Sobol' indices estimator for one output component.
 
     The sensitivity analyses of
-    [SobolIndicesEstimatorMixin][gemseo.uncertainty.sensitivity._sobol_indices_estimator.SobolIndicesEstimatorMixin]
+    `SobolIndicesEstimatorMixin`
     only read these attributes,
     whatever the estimator behind them
     (OpenTURNS, control variates or importance sampling).

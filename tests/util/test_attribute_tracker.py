@@ -37,8 +37,8 @@ from gemseo.util.attributes_tracker import _ModelTrackerMixin
 from gemseo.util.attributes_tracker import _NDArrayTracker
 from gemseo.util.attributes_tracker import _SequenceTracker
 from gemseo.util.attributes_tracker import _state_key
+from gemseo.util.attributes_tracker import _track_model
 from gemseo.util.attributes_tracker import copy_untracked_value
-from gemseo.util.attributes_tracker import track_model
 from gemseo.util.attributes_tracker import wrap_with_attributes_tracking
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
 from gemseo.util.testing.helper import assert_exception
@@ -236,7 +236,7 @@ def test_wrap_non_model_raises() -> None:
     with pytest.raises(TypeError, match="shall be a Pydantic BaseModel"):
         wrap_with_attributes_tracking([1, 2, 3])
     with pytest.raises(TypeError, match="shall be a Pydantic BaseModel"):
-        track_model(42)
+        _track_model(42)
 
 
 def test_method_call_not_tracked_as_read(tracker) -> None:
