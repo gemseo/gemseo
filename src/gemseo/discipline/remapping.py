@@ -28,6 +28,7 @@ from numpy import iscomplexobj
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
+from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
@@ -176,6 +177,28 @@ class RemappingDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
+        original_discipline = self._discipline
+        original_input_data = original_discipline.io.prepare_input_data(
+            self.__convert_to_origin(self.io.get_input_data())
+        )
+        # The original discipline can hold other input data,
+        # e.g. when the output data of this discipline come from its cache
+        # or when another object executed the original discipline.
+        # Within the cache tolerance,
+        # so that an MDA linearizing without executing does not execute it.
+        cache = self.cache
+        if cache is None:
+            is_up_to_date = compare_dict_of_arrays(
+                original_input_data, original_discipline.io.input_data
+            )
+        else:
+            is_up_to_date = cache.compare_dict_of_arrays(
+                original_input_data, original_discipline.io.input_data, cache.tolerance
+            )
+
+        if not is_up_to_date:
+            original_discipline.execute(original_input_data)
+
         input_mapping = self._input_mapping
         original_input_names = {input_mapping[n][0] for n in input_names}
         output_mapping = self._output_mapping
