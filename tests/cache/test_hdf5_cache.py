@@ -19,27 +19,64 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
+import subprocess
+import sys
+from contextlib import contextmanager
+from multiprocessing.util import _finalizer_registry
 from pathlib import Path
+from textwrap import dedent
 from typing import TYPE_CHECKING
 from typing import Any
 
+import h5py
 import pytest
 from numpy import array
 from numpy import ndarray
 from numpy import ones
 from numpy.testing import assert_array_equal
 from pydantic import BaseModel
+from scipy.sparse import csr_array
 
+from gemseo.core.cache._hdf5_file_singleton import HDF5FileSingleton
+from gemseo.core.cache._hdf5_file_singleton import _close_files
+from gemseo.core.cache._hdf5_file_singleton import _close_idle_files
+from gemseo.core.cache._hdf5_file_singleton import _forget_parent_process_state
+from gemseo.core.cache._hdf5_file_singleton import _open_files
 from gemseo.core.cache.factory import CacheFactory
+from gemseo.core.cache.util import hash_data
 from gemseo.core.data_converter.base import BaseDataConverter
 from gemseo.core.grammar.simple import SimpleGrammar
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline import Discipline
+from gemseo.discipline import ParallelDisciplineChain
+from gemseo.doe import PYDOE_LHS_Settings
+from gemseo.enum import CacheType
+from gemseo.formulation import DisciplinaryOpt_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Generator
+    from collections.abc import Iterator
+    from contextlib import AbstractContextManager
+
     from gemseo.core.cache.hdf5 import HDF5Cache
+
+
+@pytest.fixture(autouse=True)
+def close_files() -> Iterator[None]:
+    """Close the HDF files left open by a test, e.g. with file_kept_open.
+
+    An open file would leak into the next tests
+    and prevent the removal of the temporary directory on Windows.
+    """
+    yield
+    _close_files()
 
 
 def create_cache(hdf_node_path="Dummy") -> HDF5Cache:
@@ -306,3 +343,753 @@ def test_failed_write_keeps_entry_with_same_hash(tmp_wd, monkeypatch) -> None:
         )
     assert len(cache) == 1
     assert_array_equal(cache[{"x": array([1.0])}].outputs["y"], array([1.0]))
+
+
+def reopen_cache(
+    forget_file_singletons: Callable[[], None], hdf_node_path: str = "Dummy"
+) -> HDF5Cache:
+    """Create an HDF5 cache from an existing file, with a brand new singleton.
+
+    Args:
+        forget_file_singletons: The function replacing the registry of the singletons.
+        hdf_node_path: The name of the HDF node.
+
+    Returns:
+        An HDF5 cache reading the entries already stored in the file.
+    """
+    forget_file_singletons()
+    return create_cache(hdf_node_path)
+
+
+def _create_doe_scenario() -> tuple[AnalyticDiscipline, MDOScenario]:
+    """Create a DOE scenario whose discipline has an HDF5 cache.
+
+    Returns:
+        The discipline and the scenario.
+    """
+    discipline = AnalyticDiscipline({"y": "2*x"})
+    discipline.set_cache(CacheType.HDF5, hdf_file_path="dummy.h5", hdf_node_path="doe")
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    scenario = MDOScenario(
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
+    )
+    scenario.add_objective("y")
+    return discipline, scenario
+
+
+def test_doe_multiprocessing_with_shared_cache(tmp_wd, forget_file_singletons) -> None:
+    """Check a DOE using multiprocessing with a cache shared by the processes."""
+    n_samples = 100
+    _, scenario = _create_doe_scenario()
+    scenario.execute(PYDOE_LHS_Settings(n_samples=n_samples, seed=1, n_processes=2))
+
+    # The entries have been written by the two processes in the same node.
+    new_cache = reopen_cache(forget_file_singletons, "doe")
+    assert len(new_cache) == n_samples
+    for input_data, cache_entry in new_cache.items():
+        assert_array_equal(cache_entry.outputs["y"], 2 * input_data["x"])
+
+
+def _keep_open_context(cache: HDF5Cache) -> AbstractContextManager[None]:
+    """Keep the file of a cache open with the dedicated context manager.
+
+    Args:
+        cache: The cache.
+
+    Returns:
+        The context manager keeping the file open.
+    """
+    return cache.hdf_file.keep_open()
+
+
+@contextmanager
+def _keep_file_open(cache: HDF5Cache) -> Generator[None, None, None]:
+    """Keep the file of a cache open with the dedicated option.
+
+    Args:
+        cache: The cache.
+
+    Yields:
+        Nothing.
+    """
+    cache.file_kept_open = True
+    try:
+        yield
+    finally:
+        cache.file_kept_open = False
+        cache.close_file()
+
+
+@pytest.mark.parametrize(
+    "keep_open",
+    [_keep_open_context, _keep_file_open],
+    ids=["keep_open() context", "file_kept_open option"],
+)
+@pytest.mark.parametrize(
+    "execute_first", [False, True], ids=["DOE only", "execution then DOE"]
+)
+def test_doe_multiprocessing_with_file_kept_open(
+    tmp_wd, keep_open, execute_first, forget_file_singletons
+) -> None:
+    """Check a DOE using multiprocessing while the parent keeps the file open.
+
+    The worker processes shall not keep the file open,
+    otherwise they would lock it out of each other
+    and lose the points evaluated by the other ones,
+    and the parent process closes the file before forking them,
+    otherwise they would inherit the open file and its HDF5 lock.
+    """
+    n_samples = 6
+    discipline, scenario = _create_doe_scenario()
+    with keep_open(discipline.cache):
+        if execute_first:
+            discipline.execute({"x": array([5.0])})
+
+        scenario.execute(PYDOE_LHS_Settings(n_samples=n_samples, seed=1, n_processes=2))
+
+    assert len(reopen_cache(forget_file_singletons, "doe")) == n_samples + execute_first
+
+
+def test_close_idle_files_before_fork(tmp_wd) -> None:
+    """Check that the files no operation uses are closed before forking."""
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    _close_idle_files()
+
+    assert cache.hdf_file not in _open_files
+
+
+def test_close_idle_files_before_fork_keeps_file_in_use(tmp_wd) -> None:
+    """Check that a file an operation uses is not closed before forking."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    hdf_file = cache.hdf_file
+    with hdf_file._HDF5FileSingleton__open():
+        _close_idle_files()
+
+        assert hdf_file in _open_files
+        assert hdf_file.has_group(1, cache.Group.INPUTS, "Dummy")
+
+
+def test_forget_open_file_in_forked_process(tmp_wd, monkeypatch) -> None:
+    """Check that a forked process drops the file of its parent without closing it."""
+    parent_files_kept_alive = []
+    monkeypatch.setattr(
+        "gemseo.core.cache._hdf5_file_singleton._parent_files_kept_alive",
+        parent_files_kept_alive,
+    )
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    handle = cache.hdf_file._HDF5FileSingleton__file
+
+    _forget_parent_process_state()
+
+    assert cache.hdf_file not in _open_files
+    assert parent_files_kept_alive == [handle]
+    assert handle.id.valid
+    handle.close()
+
+
+def test_forget_open_file_of_a_copy_in_forked_process(tmp_wd, monkeypatch) -> None:
+    """Check that a forked process drops the open file of a copy of a singleton.
+
+    A copy, e.g. unpickled, is not in the registry of the singletons.
+    """
+    parent_files_kept_alive = []
+    monkeypatch.setattr(
+        "gemseo.core.cache._hdf5_file_singleton._parent_files_kept_alive",
+        parent_files_kept_alive,
+    )
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    copy = pickle.loads(pickle.dumps(cache.hdf_file))
+    copy._file_kept_open = True
+    assert copy.has_group(1, cache.Group.INPUTS, "Dummy")
+    handle = copy._HDF5FileSingleton__file
+
+    _forget_parent_process_state()
+
+    assert copy not in _open_files
+    assert not copy._file_kept_open
+    assert parent_files_kept_alive == [handle]
+    handle.close()
+
+
+@pytest.mark.parametrize(
+    "keep_open",
+    [_keep_open_context, _keep_file_open],
+    ids=["keep_open() context", "file_kept_open option"],
+)
+def test_forget_keeping_file_open_in_forked_process(tmp_wd, keep_open) -> None:
+    """Check that a forked process does not keep the file open as its parent."""
+    cache = create_cache()
+    with keep_open(cache):
+        _forget_parent_process_state()
+        cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+        assert cache.hdf_file not in _open_files
+
+
+def test_parallel_chain_multiprocessing_with_shared_cache(
+    tmp_wd, forget_file_singletons
+) -> None:
+    """Check a parallel chain using multiprocessing with a shared cache file."""
+    n_disciplines = 4
+    disciplines = []
+    for index in range(n_disciplines):
+        discipline = AnalyticDiscipline({f"y_{index}": f"{index + 1}*x"})
+        discipline.set_cache(
+            CacheType.HDF5, hdf_file_path="dummy.h5", hdf_node_path=f"node_{index}"
+        )
+        disciplines.append(discipline)
+
+    chain = ParallelDisciplineChain(disciplines, use_threading=False, n_processes=2)
+    for x in (1.0, 2.0):
+        chain.execute({"x": array([x])})
+
+    # The entries have been written by the sub-processes;
+    # re-read them from the file with brand new caches.
+    for index in range(n_disciplines):
+        new_cache = reopen_cache(forget_file_singletons, f"node_{index}")
+        assert len(new_cache) == 2, f"node_{index}"
+        for x in (1.0, 2.0):
+            assert_array_equal(
+                new_cache[{"x": array([x])}].outputs[f"y_{index}"],
+                array([(index + 1) * x]),
+            )
+
+
+_input_data = {"i": ones(1)}
+"""The input data of the entry of a cache keeping its file open."""
+
+_output_data = {"o": ones(2)}
+"""The output data of the entry of a cache keeping its file open."""
+
+
+@pytest.fixture
+def cache_keeping_file_open(tmp_wd) -> HDF5Cache:
+    """An HDF5 cache keeping its file open, with an entry."""
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs(_input_data, _output_data)
+    return cache
+
+
+def test_keep_file_open_after_write(cache_keeping_file_open) -> None:
+    """Check that the file is kept open after a write."""
+    assert cache_keeping_file_open.hdf_file in _open_files
+
+
+def test_keep_file_open_read(cache_keeping_file_open) -> None:
+    """Check that an entry is read while the file is kept open."""
+    outputs = cache_keeping_file_open[_input_data].outputs
+
+    assert_array_equal(outputs["o"], _output_data["o"])
+    assert cache_keeping_file_open.hdf_file in _open_files
+
+
+def test_keep_file_open_close(cache_keeping_file_open) -> None:
+    """Check that a file kept open can be closed."""
+    cache_keeping_file_open.hdf_file.close()
+
+    assert cache_keeping_file_open.hdf_file not in _open_files
+
+
+def test_keep_file_open_close_twice(cache_keeping_file_open) -> None:
+    """Check that closing a file already closed does nothing."""
+    cache_keeping_file_open.hdf_file.close()
+
+    cache_keeping_file_open.hdf_file.close()
+
+    assert cache_keeping_file_open.hdf_file not in _open_files
+
+
+def test_keep_file_open_read_after_close(cache_keeping_file_open) -> None:
+    """Check that a file kept open and closed is opened again by the next read."""
+    cache_keeping_file_open.hdf_file.close()
+
+    outputs = cache_keeping_file_open[_input_data].outputs
+
+    assert_array_equal(outputs["o"], _output_data["o"])
+    assert cache_keeping_file_open.hdf_file in _open_files
+
+
+def test_file_closed_by_default(tmp_wd) -> None:
+    """Check that the file is closed after an operation by default."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    assert cache.hdf_file not in _open_files
+
+
+def test_close_files(tmp_wd) -> None:
+    """Check that the function run at the end of the process closes the open files."""
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    handle = cache.hdf_file._HDF5FileSingleton__file
+    assert handle.id.valid
+
+    _close_files()
+
+    assert cache.hdf_file not in _open_files
+    # The HDF5 file itself is closed, not only forgotten.
+    assert not handle.id.valid
+
+
+def test_close_on_exception(tmp_wd, forget_file_singletons) -> None:
+    """Check that the file is closed when the process raises an exception."""
+    script_path = tmp_wd / "raise_after_caching.py"
+    script_path.write_text(
+        dedent(
+            """
+            from __future__ import annotations
+
+            from numpy import ones
+
+            from gemseo.core.cache.hdf5 import HDF5Cache
+
+            # The cache relies on multiprocessing features,
+            # which require this guard on Windows.
+            if __name__ == "__main__":
+                cache = HDF5Cache(hdf_file_path="dummy.h5", hdf_node_path="Dummy")
+                cache.file_kept_open = True
+                cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+                raise ValueError("Something went wrong.")
+            """
+        )
+    )
+    process = subprocess.run(  # noqa: S603
+        [sys.executable, str(script_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=tmp_wd,
+    )
+    assert process.returncode != 0
+    assert "Something went wrong." in process.stderr
+
+    # The file has been closed, so it can be read and the entry is there.
+    cache = reopen_cache(forget_file_singletons)
+    assert len(cache) == 1
+    assert_array_equal(cache[{"i": ones(1)}].outputs["o"], ones(1))
+
+
+def test_open_retries_while_locked(tmp_wd, monkeypatch) -> None:
+    """Check that opening a file locked by another process is retried."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    open_file = h5py.File
+    n_calls = 0
+
+    def fail_twice(*args, **kwargs):
+        nonlocal n_calls
+        n_calls += 1
+        if n_calls <= 2:
+            msg = "Unable to open file (unable to lock file, errno = 11)"
+            raise OSError(msg)
+        return open_file(*args, **kwargs)
+
+    monkeypatch.setattr(h5py, "File", fail_twice)
+
+    # A single read, hence a single opening of the file, is retried twice.
+    assert cache.hdf_file.read_data(1, cache.Group.OUTPUTS, "Dummy")
+    assert n_calls == 3
+
+
+def test_open_gives_up_when_locked(tmp_wd, monkeypatch, caplog) -> None:
+    """Check the error raised when a file stays locked by another process."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    def always_locked(*args, **kwargs):
+        msg = "Unable to open file (unable to lock file, errno = 11)"
+        raise OSError(msg)
+
+    monkeypatch.setattr(h5py, "File", always_locked)
+    cache.timeout = 0.0
+
+    with pytest.raises(OSError, match=r"unable to lock file"):
+        cache.hdf_file.read_data(1, cache.Group.OUTPUTS, "Dummy")
+
+    assert "is still locked after 0.0 seconds" in caplog.text
+
+
+def test_open_does_not_retry_other_errors(tmp_wd, monkeypatch) -> None:
+    """Check that an error other than a lock one is not retried."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    n_calls = 0
+
+    def fail(*args, **kwargs):
+        nonlocal n_calls
+        n_calls += 1
+        msg = "No space left on device"
+        raise OSError(msg)
+
+    monkeypatch.setattr(h5py, "File", fail)
+
+    with pytest.raises(OSError, match=r"No space left on device"):
+        cache.hdf_file.read_data(1, cache.Group.OUTPUTS, "Dummy")
+
+    assert n_calls == 1
+
+
+def test_keep_file_open_switches_to_append_mode(tmp_wd) -> None:
+    """Check that a file kept open for reading is reopened to be written."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    assert cache.hdf_file not in _open_files
+
+    cache.file_kept_open = True
+    # The file is read, hence opened in read-only mode, and kept open.
+    assert cache[{"i": ones(1)}].outputs
+    assert cache.hdf_file in _open_files
+
+    # Writing requires the append mode, so the file is opened again.
+    cache.cache_outputs({"i": ones(2)}, {"o": ones(2)})
+    assert cache.hdf_file in _open_files
+    assert len(cache) == 2
+    assert_array_equal(cache[{"i": ones(2)}].outputs["o"], ones(2))
+
+
+def test_index_allocated_from_file(tmp_wd) -> None:
+    """Check that an entry is written at the index allocated from the file.
+
+    The counter of a cache is not shared between the processes, so another process
+    may have already used the index it counted; this is simulated here by resetting
+    the counter of the cache after a first entry has been written.
+    """
+    cache = create_cache()
+    first_input_data = {"i": ones(1)}
+    cache.cache_outputs(first_input_data, {"o": ones(1)})
+    assert cache.hdf_file.has_group(1, cache.Group.INPUTS, "Dummy")
+
+    # Another process would count this entry from 0 and pick the index 1 again.
+    cache._max_index.value = 0
+    cache._last_accessed_index.value = 0
+
+    second_input_data = {"i": ones(2)}
+    cache.cache_outputs(second_input_data, {"o": ones(3)})
+
+    # The file allocated the index 2 and the cache took it into account.
+    assert cache.hdf_file.has_group(2, cache.Group.INPUTS, "Dummy")
+    assert cache._max_index.value == 2
+    assert cache._last_accessed_index.value == 2
+    assert cache._hash_to_indices[hash_data(second_input_data)].tolist() == [2]
+    assert len(cache) == 2
+    assert_array_equal(cache[first_input_data].outputs["o"], ones(1))
+    assert_array_equal(cache[second_input_data].outputs["o"], ones(3))
+
+
+def test_keep_open_context(tmp_wd) -> None:
+    """Check that the file is kept open in the dedicated context, and closed after."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    assert cache.hdf_file not in _open_files
+
+    with cache.hdf_file.keep_open():
+        assert_array_equal(cache[{"i": ones(1)}].outputs["o"], ones(1))
+        assert cache.hdf_file in _open_files
+
+    assert cache.hdf_file not in _open_files
+
+
+def test_keep_open_context_on_exception(tmp_wd) -> None:
+    """Check that the file is closed when the dedicated context raises."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    def read_then_raise() -> None:
+        """Read the cache in the context and raise."""
+        with cache.hdf_file.keep_open():
+            assert cache[{"i": ones(1)}].outputs
+            msg = "Something went wrong."
+            raise ValueError(msg)
+
+    with pytest.raises(ValueError, match=r"Something went wrong"):
+        read_then_raise()
+
+    assert cache.hdf_file not in _open_files
+
+
+def test_pickle(tmp_wd) -> None:
+    """Check that a cache can be pickled and keeps its entries."""
+    cache = create_cache()
+    input_data = {"i": ones(1)}
+    output_data = {"o": ones(2)}
+    cache.cache_outputs(input_data, output_data)
+
+    cache.file_kept_open = True
+    assert cache[input_data].outputs
+    assert cache.hdf_file in _open_files
+
+    new_cache = pickle.loads(pickle.dumps(cache))
+
+    # The file of the original cache has been closed when it was pickled,
+    # so that the process using the copy can open it.
+    assert cache.hdf_file not in _open_files
+    assert len(new_cache) == 1
+    assert_array_equal(new_cache[input_data].outputs["o"], output_data["o"])
+    # The copy, e.g. in a worker process, does not keep the file open,
+    # otherwise the worker processes would lock it out of each other.
+    assert not new_cache.file_kept_open
+    assert new_cache.hdf_file not in _open_files
+
+
+@pytest.mark.parametrize("file_kept_open", [False, True], ids=["closed", "kept open"])
+def test_no_flush(tmp_wd, monkeypatch, file_kept_open) -> None:
+    """Check that a write does not flush the file, which closing it does."""
+    flushes = []
+    flush = h5py.File.flush
+    monkeypatch.setattr(
+        h5py.File, "flush", lambda file: flushes.append(None) or flush(file)
+    )
+    cache = create_cache()
+    cache.file_kept_open = file_kept_open
+
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    assert not flushes
+
+
+def test_keep_open_context_with_keep_file_open(tmp_wd) -> None:
+    """Check that leaving keep_open() does not close a file kept open."""
+    cache = create_cache()
+    cache.file_kept_open = True
+    with cache.hdf_file.keep_open():
+        cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    assert cache.hdf_file in _open_files
+    cache.hdf_file.close()
+
+
+def test_close_files_at_process_exit(tmp_wd, monkeypatch) -> None:
+    """Check that a process opening a file closes it with a finalizer at exit.
+
+    A worker process forked by multiprocessing does not run atexit but these ones.
+    """
+    monkeypatch.setattr(
+        "gemseo.core.cache._hdf5_file_singleton._processes_closing_files", set()
+    )
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    finalizers = [
+        finalizer
+        for finalizer in list(_finalizer_registry.values())
+        if finalizer._callback is _close_files
+    ]
+    assert finalizers
+    assert cache.hdf_file in _open_files
+
+    finalizers[-1]()
+
+    assert cache.hdf_file not in _open_files
+
+
+def test_allocate_index_reads_no_entry_names(tmp_wd, monkeypatch) -> None:
+    """Check that allocating an index does not read the names of all the entries."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    n_iterations = []
+    iterate = h5py.Group.__iter__
+    monkeypatch.setattr(
+        h5py.Group,
+        "__iter__",
+        lambda group: n_iterations.append(None) or iterate(group),
+    )
+
+    cache.cache_outputs({"i": ones(2)}, {"o": ones(1)})
+
+    assert not n_iterations
+    with h5py.File("dummy.h5", "r") as h5_file:
+        assert h5_file["Dummy"].attrs[HDF5FileSingleton.last_index_tag] == 2
+
+
+@pytest.mark.parametrize(
+    ("written_index", "remove_last_index", "expected_index"),
+    [(3, True, 4), (2, False, 3)],
+    ids=["node without last index", "index taken without allocation"],
+)
+def test_allocate_index(
+    tmp_wd, written_index, remove_last_index, expected_index
+) -> None:
+    """Check the allocation of an index.
+
+    The last index is missing from a node written by an older version,
+    and an index can be taken by an entry written without allocation.
+    """
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    cache.hdf_file.write_data(
+        {"i": ones(2)}, cache.Group.INPUTS, written_index, "Dummy"
+    )
+    if remove_last_index:
+        with h5py.File("dummy.h5", "a") as h5_file:
+            del h5_file["Dummy"].attrs[HDF5FileSingleton.last_index_tag]
+
+    index = cache.hdf_file.write_new_entry({"i": ones(4)}, "Dummy")
+
+    assert index == expected_index
+
+
+def test_pickle_during_an_operation(tmp_wd) -> None:
+    """Check that pickling the file while an operation uses it does not close it."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    hdf_file = cache.hdf_file
+    with hdf_file._HDF5FileSingleton__open():
+        pickle.dumps(hdf_file)
+        assert hdf_file in _open_files
+        assert hdf_file.has_group(1, cache.Group.INPUTS, "Dummy")
+        # The nested operation does not close the file either.
+        assert hdf_file in _open_files
+
+    assert hdf_file not in _open_files
+
+
+def test_len_with_another_cache_writing_in_the_node(tmp_wd) -> None:
+    """Check that the length is the number of entries, not the largest index."""
+    cache = create_cache()
+    other_cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    other_cache.cache_outputs({"i": ones(2)}, {"o": ones(1)})
+
+    # The file allocated the index 2 to the only entry of the other cache.
+    assert other_cache.hdf_file.has_group(2, other_cache.Group.INPUTS, "Dummy")
+    assert len(other_cache) == 1
+    assert len(list(other_cache)) == 1
+
+
+def test_write_while_reading(tmp_wd, snapshot) -> None:
+    """Check that the file cannot be opened again to be written while it is read."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    hdf_file = cache.hdf_file
+    with (
+        hdf_file._HDF5FileSingleton__open(),
+        assert_exception(RuntimeError, snapshot),
+    ):
+        hdf_file.write_data({"i": ones(2)}, cache.Group.INPUTS, 2, "Dummy")
+
+    assert hdf_file not in _open_files
+
+
+def test_keep_open_context_during_an_operation(tmp_wd) -> None:
+    """Check that leaving keep_open() does not close a file an operation uses."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    hdf_file = cache.hdf_file
+    with hdf_file._HDF5FileSingleton__open():
+        with hdf_file.keep_open():
+            pass
+
+        assert hdf_file in _open_files
+        assert hdf_file.has_group(1, cache.Group.INPUTS, "Dummy")
+
+    assert hdf_file not in _open_files
+
+
+def test_nested_keep_open_contexts(tmp_wd) -> None:
+    """Check that leaving a nested keep_open() keeps the file open for the outer one."""
+    cache = create_cache()
+    hdf_file = cache.hdf_file
+    with hdf_file.keep_open():
+        with hdf_file.keep_open():
+            cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+        assert hdf_file in _open_files
+        cache.cache_outputs({"i": ones(2)}, {"o": ones(1)})
+        assert hdf_file in _open_files
+
+    assert hdf_file not in _open_files
+
+
+def test_failed_write_of_a_new_entry(tmp_wd, monkeypatch) -> None:
+    """Check that a failed write of a new entry leaves no partial entry."""
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    def fail(*args):
+        raise OSError
+
+    monkeypatch.setattr(
+        HDF5FileSingleton, "_HDF5FileSingleton__write_sparse_array", fail
+    )
+    with pytest.raises(RuntimeError):
+        cache.hdf_file.write_new_entry({"i": csr_array(ones((1, 1)))}, "Dummy", 1)
+
+    with h5py.File("dummy.h5", "r") as h5_file:
+        node = h5_file["Dummy"]
+        assert list(node) == ["1"]
+        assert node.attrs[HDF5FileSingleton.last_index_tag] == 1
+
+
+def test_keep_file_open_from_the_cache(tmp_wd) -> None:
+    """Check that the cache keeps its file open and closes it."""
+    cache = create_cache()
+    assert not cache.file_kept_open
+
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+
+    assert cache.hdf_file._file_kept_open
+    assert cache.hdf_file in _open_files
+
+    cache.close_file()
+
+    assert cache.hdf_file not in _open_files
+
+
+def test_timeout_from_the_cache(tmp_wd) -> None:
+    """Check that the timeout set from a cache applies to the file and its copies."""
+    cache = create_cache()
+    assert cache.timeout == 30.0
+
+    cache.timeout = 1.5
+
+    assert cache.hdf_file._timeout == 1.5
+    assert create_cache().timeout == 1.5
+    assert pickle.loads(pickle.dumps(cache.hdf_file))._timeout == 1.5
+
+
+def test_close_failure_forgets_the_file(tmp_wd, monkeypatch) -> None:
+    """Check that a file failing to close is forgotten all the same."""
+    cache = create_cache()
+    cache.file_kept_open = True
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    handle = cache.hdf_file._HDF5FileSingleton__file
+
+    def fail(file):
+        raise OSError
+
+    with monkeypatch.context() as context:
+        context.setattr(h5py.File, "close", fail)
+        with pytest.raises(OSError):
+            cache.close_file()
+
+    assert cache.hdf_file not in _open_files
+    assert cache.hdf_file._HDF5FileSingleton__file is None
+    handle.close()
+
+
+def test_read_hashes_of_entries_sharing_a_hash(
+    tmp_wd, monkeypatch, forget_file_singletons
+) -> None:
+    """Check that a reopened cache indexes all the entries sharing a hash."""
+    for module in ("base_full", "hdf5"):
+        monkeypatch.setattr(f"gemseo.core.cache.{module}.hash_data", lambda _: 1)
+    cache = create_cache()
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    cache.cache_outputs({"i": ones(2)}, {"o": ones(2)})
+
+    new_cache = reopen_cache(forget_file_singletons)
+
+    assert new_cache._hash_to_indices[1].tolist() == [1, 2]
+    assert_array_equal(new_cache[{"i": ones(2)}].outputs["o"], ones(2))

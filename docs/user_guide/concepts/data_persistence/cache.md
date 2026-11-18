@@ -151,11 +151,28 @@ GEMSEO ships with three cache implementations:
       [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache]
       must be protected by an
       `if __name__ == '__main__':` statement.
-      The use of an HDF5 cache is currently not supported in parallel on Windows
-      platforms because of the way subprocesses are forked in this architecture;
-      the method
-      [set_backup_settings()][gemseo.scenario.evaluation.EvaluationScenario.set_backup_settings]
-      is recommended as an alternative.
+      Several processes can write to the same node of the same file,
+      e.g. when a DOE evaluates a discipline with several processes.
+
+!!! tip
+    An [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache]
+    opens and closes its file at every read and write,
+    which costs a lot of time.
+    Keeping the file open between two operations is about twice faster:
+
+    ```python
+    discipline.set_cache(Discipline.CacheType.HDF5, hdf_file_path="cache.h5")
+    discipline.cache.file_kept_open = True
+    ```
+
+    The file is closed at the end of the process,
+    whether or not it raises an exception,
+    and can be closed earlier with
+    [close_file()][gemseo.core.cache.hdf5.HDF5Cache.close_file].
+    HDF5 forbids a process to open a file that another one has open,
+    so the worker processes of a parallel execution,
+    e.g. of a DOE evaluating a discipline with several processes,
+    do not keep the file open.
 
 !!! note
     The cache types can be extended

@@ -85,7 +85,13 @@ class BaseFullCache(BaseCache):
     """The map from a hash to the indices of the associated cache entries."""
 
     _max_index: Synchronized[int]
-    """The maximum index of the data stored in the cache."""
+    """The maximum index of the data stored in the cache.
+
+    This is not the number of entries,
+    as a cache storing its entries outside its process,
+    e.g. in a file shared by several processes,
+    can index them differently.
+    """
 
     _last_accessed_index: Synchronized[int]
     """The index of the last accessed data."""
@@ -102,55 +108,6 @@ class BaseFullCache(BaseCache):
         self._max_index = cast("Synchronized[int]", Value("i", 0))
         self._last_accessed_index = cast("Synchronized[int]", Value("i", 0))
 
-    def __ensure_input_data_exists(
-        self,
-        input_data: StrKeyMapping,
-    ) -> bool:
-        """Ensure `input_data` associated with `data_hash` exists.
-
-        If `input_data` is cached,
-        return `True`.
-        If `data_hash` is missing,
-        store this hash and index `input_data` before caching later at this index.
-        If `data_hash` exists but `input_data` is not cached,
-        add `data_hash` and then index `input_data`.
-
-        Args:
-            input_data: The input data to cache.
-
-        Returns:
-            Whether `input_data` exists.
-        """
-        data_hash = self._hash_input_data(input_data)
-
-        # Check if there is an entry with this hash in the cache.
-        indices = self._hash_to_indices.get(data_hash)
-
-        # If no, initialize a new entry.
-        if indices is None:
-            self._max_index.value += 1
-            self._last_accessed_index.value = self._max_index.value
-            self._hash_to_indices[data_hash] = array([self._max_index.value])
-            self._initialize_entry(self._max_index.value)
-            return False
-
-        # If yes, look if there is a corresponding input data equal to `input_data`.
-        for index in indices:
-            if self.compare_dict_of_arrays(
-                input_data, self._read_data(index, self.Group.INPUTS)
-            ):
-                # The input data is already cached => we don't store it again.
-                self._last_accessed_index.value = index
-                return True
-
-        # If there is no an input data equal `input_data`,
-        # update the indices related to the `data_hash`.
-        self._max_index.value += 1
-        self._last_accessed_index.value = self._max_index.value
-        self._hash_to_indices[data_hash] = append(indices, self._max_index.value)
-        self._initialize_entry(self._max_index.value)
-        return False
-
     def _hash_input_data(
         self,
         input_data: StrKeyMapping,
@@ -164,20 +121,6 @@ class BaseFullCache(BaseCache):
             The hash of the input data.
         """
         return hash_data(input_data)
-
-    def __forget_last_entry(self, input_data: StrKeyMapping) -> None:
-        """Remove the last index from the indices associated with the input hash.
-
-        Args:
-            input_data: The input data of the entry.
-        """
-        data_hash = self._hash_input_data(input_data)
-        indices = self._hash_to_indices[data_hash]
-        indices = indices[indices != self._max_index.value]
-        if len(indices):
-            self._hash_to_indices[data_hash] = indices
-        else:
-            del self._hash_to_indices[data_hash]
 
     def _initialize_entry(
         self,
@@ -220,6 +163,29 @@ class BaseFullCache(BaseCache):
             index: The index of the entry in the cache.
         """
 
+    def _write_input_data(
+        self,
+        input_data: StrKeyMapping,
+        index: int,
+        data_hash: int,
+    ) -> int:
+        """Write the input data of a new entry.
+
+        Args:
+            input_data: The input data.
+            index: The index of the entry, as counted by this cache.
+            data_hash: The hash of the input data.
+
+        Returns:
+            The index of the entry,
+            which a cache storing its entries outside its process
+            can choose differently from `index`,
+            e.g. so that two processes do not write at the same index.
+        """
+        self._initialize_entry(index)
+        self._write_data(input_data, self.Group.INPUTS, index)
+        return index
+
     def _cache_inputs(
         self,
         input_data: StrKeyMapping,
@@ -239,19 +205,26 @@ class BaseFullCache(BaseCache):
         Returns:
             Whether `group` exists.
         """
-        previous_index = self._last_accessed_index.value
-        previous_max_index = self._max_index.value
-        if not self.__ensure_input_data_exists(input_data):
-            try:
-                self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
-            except Exception:
-                # Forget the new entry, which has not been written.
-                self.__forget_last_entry(input_data)
-                self._max_index.value = previous_max_index
-                self._last_accessed_index.value = previous_index
-                raise
-        elif self._has_group(self._last_accessed_index.value, group):
-            return True
+        data_hash = self._hash_input_data(input_data)
+        indices = self._hash_to_indices.get(data_hash)
+        if indices is not None:
+            for index in indices:
+                if self.compare_dict_of_arrays(
+                    input_data, self._read_data(index, self.Group.INPUTS)
+                ):
+                    # The input data are already cached, so not stored again.
+                    self._last_accessed_index.value = index
+                    return self._has_group(index, group)
+
+        # The new entry is indexed only once written,
+        # so that a failed write leaves the cache unchanged,
+        # and with the index chosen by the cache writing it.
+        index = self._write_input_data(input_data, self._max_index.value + 1, data_hash)
+        self._max_index.value = index
+        self._last_accessed_index.value = index
+        self._hash_to_indices[data_hash] = (
+            array([index]) if indices is None else append(indices, index)
+        )
         return False
 
     @synchronized
@@ -310,7 +283,13 @@ class BaseFullCache(BaseCache):
 
     @synchronized
     def __len__(self) -> int:
-        return self._max_index.value
+        return sum(len(indices) for indices in self._hash_to_indices.values())
+
+    @synchronized
+    def __bool__(self) -> bool:
+        # The number of hashes does not copy the indices of the entries,
+        # unlike __len__ for a map shared through a multiprocessing manager.
+        return len(self._hash_to_indices) > 0
 
     @overload
     def _read_data(
