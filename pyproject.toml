@@ -82,7 +82,8 @@ doc = [
     "griffe-fieldz",
     "griffe-inherited-docstrings",
     "mike",
-    # The citations and the gallery, navigation and credits generation (docs-tools prebuild).
+    # The citations and the docs-tools prebuild: gallery, navigation, changelog, learning paths,
+    # credits, reading times, home data and the scripts of [tool.docs-tools].
     "docs-tools",
     "mkdocstrings[python]",
     "mkdocs-autorefs",
@@ -122,6 +123,14 @@ requires = [
     "setuptools_scm[toml]",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.docs-tools]
+# Run by the docs-tools prebuild after the gallery, the changelog, the navigation and
+# the credits are written, and before the learning paths and the home data.
+scripts = ["docs/_scripts/global_configuration.py"]
+
+[tool.docs-tools.changelog]
+first-individual-minor = "6.0"
 
 [tool.setuptools_scm]
 

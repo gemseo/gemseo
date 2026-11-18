@@ -21,6 +21,7 @@ import warnings
 from pathlib import Path
 
 from gemseo import _configure_logger
+from gemseo.core.algorithm._progress_bar.custom import CustomTqdmProgressBar
 from gemseo.core.base_factory import BaseFactory
 from gemseo.util.constant import _logging_date_format
 from gemseo.util.constant import _logging_file_mode
@@ -80,6 +81,9 @@ def reset_logging(gallery_conf, fname):
             _logging_file_mode,
             stream,
         )
+    # Log one progress bar status per percentage instead of one per iteration,
+    # to keep the gallery pages under the size limit of the search index.
+    CustomTqdmProgressBar._log_one_status_per_percentage = True
     # Reapply the deprecation filters in case an example or another plugin
     # reset warnings.filters between examples.
     warnings.filterwarnings("ignore", category=DeprecationWarning)

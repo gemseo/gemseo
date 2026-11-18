@@ -9,7 +9,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 /*
 Documentation home orientation panel. Renders a master/detail learning-path
-widget from the JSON produced at build time by docs/_scripts/learning_paths.py.
+widget from the JSON produced at build time by the docs-tools prebuild.
 Runs only on the home page (guarded by the presence of #gemseo-lp) and is
 compatible with the mkdocs-material instant-navigation observable `document$`.
 
@@ -23,10 +23,10 @@ where that element is missing.
   "use strict";
 
   var DATA_FILE = "assets/learning_paths.json";
-  // Reading times computed before the build by docs/_scripts/prebuild.py, keyed
+  // Reading times computed before the build by the docs-tools prebuild, keyed
   // by page url. Pages that opt out (reading_time: false) are absent from it.
   var TIMES_FILE = "assets/reading_times.json";
-  // Complexity levels computed before the build by docs/_scripts/prebuild.py, keyed
+  // Complexity levels computed before the build by the docs-tools prebuild, keyed
   // by page url. Pages that do not opt in (no valid `complexity` frontmatter)
   // are absent from it.
   var LEVELS_FILE = "assets/complexities.json";

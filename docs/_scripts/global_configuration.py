@@ -14,7 +14,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Write the list of the global configuration options of its user guide page.
 
-The list is built before the build (see ``prebuild.py``) from the fields of
+The list is built before the build
+(see the option ``scripts`` of ``[tool.docs-tools]`` in ``pyproject.toml``)
+from the fields of
 [GlobalConfiguration][gemseo.util.global_configuration.GlobalConfiguration],
 so that it cannot drift from the code.
 It is written to [_output_path][],
