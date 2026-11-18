@@ -650,50 +650,65 @@ belongs to this story; the second is worth its own one-line fix.
 1. **Original-problem invariant**: after any driver run, the user's problem has its raw
    functions, its database and its input space intact. Verified by comparing the problem's
    function identities before and after `execute`.
+
 2. **Coordinates**: the shared database is keyed on **original** vectors on every path;
    stored gradients are original. A transformation that changes the space maps back before
    recording.
+
 3. **Approximated Jacobians**: the database grows by exactly **one** gradient entry per
    approximated Jacobian, and by **zero** entries per finite-difference perturbation.
    Asserted, not assumed.
+
 4. **Termination criteria**: `ftol_*`, `xtol_*` and the KKT tolerances are compared in the
    user's scales, on the original problem. Asserted by a test showing identical tolerance
    behaviour with and without normalization.
+
 5. **`use_database` scopes to the original database only**: it governs the store and lookup
    of the original problem's database, nothing else. Call counting, derivative approximation
    and the working-coordinate store are all unaffected by it, and the four combinations of
    the two flags are all valid.
+
 6. **Debug mode is inert when off**: with `enable_working_database` unset, outputs, call
    counts and memory are identical to today. Asserted on a gradient-based run, a DOE and a
    bi-level case.
+
 7. **Numbers are preserved**: finite-difference gradients are computed in working coordinates
    when the algorithm normalizes, so the absolute step is not scaled by the variable range.
    Snapshot re-pinning is allowed within finite-difference noise, not bitwise.
+
 8. **Integer variables still reach the discipline as integers**: today
    `denormalize_vect → round_vect → func` runs on every evaluation, so a discipline that
    indexes, counts or selects on an `IntegerVariable` never sees a fractional value. This
    delivery must not change that. Rounding only in `project` would hand such a discipline
    `3.4` where it gets `3` today — a silent breakage in user code, not in GEMSEO. Asserted
    by a test on an integer problem checking the values the discipline receives.
+
 9. **Linear fast path**: superseded by the decision recorded in section 8. There is no
    chain to fold: `ScipyLinprog` and `ScipyMILP` set `_transforms_the_problem = False`
    and read the coefficients of the problem the user declared, so no benchmark is owed.
+
 10. **Dimension changes**: allowed by the contract, refused by a guard at chain construction,
 
     so a follow-up story lifts a guard instead of changing a contract.
+
 11. **Non-design input spaces**: `ReliabilityProblem`, an `EvaluationProblem[RandomSpace]`,
 
     builds a derived problem with an empty coordinate chain. Both existing `ValueError`s for a
     space that cannot be normalized still fire on the same trigger.
+
 12. **Re-execution**: a second driver run on the same problem honours the second driver's
     settings. Covered for bi-level, `MDOScenarioAdapter` and augmented-Lagrangian sub-problems.
+
 13. **Nested drivers**: each derived problem is discarded at the end of its run; with the debug
     mode on, its working database is released with it, and its name identifies its driver.
+
 14. **Parallel DOE**: wrappers are pickled to workers; bound methods and closures in the chain
     must survive pickling. The working-coordinate database is documented as single-process in
     this delivery.
+
 15. **No semantic transformations**: sign change, aggregation, scaling and penalty stay
     problem-definition operations and never enter the series.
+
 16. **Migration**: no deprecation shims. The four plugin MRs land with the 7.0.0 bump.
 
 ## Open points, not blocking
