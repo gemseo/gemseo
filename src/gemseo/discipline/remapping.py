@@ -21,10 +21,18 @@ from __future__ import annotations
 from collections.abc import Iterable
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
+from typing import Final
 from typing import NoReturn
 
+from numpy import array
+from numpy import array_equal
+from numpy import asarray
+from numpy import can_cast
 from numpy import complex128
+from numpy import empty
 from numpy import iscomplexobj
+from numpy import isfinite
+from numpy import ndarray
 from numpy import result_type
 
 from gemseo.core.discipline import Discipline
@@ -32,11 +40,16 @@ from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
 Indices = tuple[str, int | Iterable[int]]
 NameMapping = dict[str, str | Indices]
+
+_full_slice: Final[slice] = slice(None)
+"""The slice selecting all the components of a variable."""
 
 
 class RemappingDiscipline(Discipline):
@@ -246,15 +259,31 @@ class RemappingDiscipline(Discipline):
             mapping the original input names to the corresponding values.
             The original input variables that are not mapped are omitted,
             so that the original discipline uses its default values.
+
+        Raises:
+            ValueError: When a value mapped to some components of an original input
+                variable cannot be stored in it without loss of information,
+                e.g. a float in an integer variable or a string longer than the
+                strings of the variable.
         """
         original_defaults = self._discipline.io.input_grammar.defaults
         original_input_data = {}
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
+            default_value = original_defaults[original_name]
+            if (
+                isinstance(default_value, ndarray)
+                and isinstance(args, slice)
+                and args == _full_slice
+            ):
+                # An array variable mapped as a whole is passed without cast.
+                original_input_data[original_name] = array(value)
+                continue
+
             original_value = original_input_data.get(original_name)
             is_first_value = original_value is None
             if is_first_value:
-                original_value = original_defaults[original_name]
+                original_value = default_value
             if iscomplexobj(value) and not iscomplexobj(original_value):
                 # E.g. the complex step approximation of the derivatives.
                 # astype returns a copy, so the default value is not modified.
@@ -265,8 +294,56 @@ class RemappingDiscipline(Discipline):
                 # Copy the default value to keep the components that are not mapped.
                 original_value = original_value.copy()
             original_value[args] = value
+            if isinstance(
+                original_value, ndarray
+            ) and not self.__is_stored_without_loss(value, original_value, args):
+                msg = (
+                    f"The value of {new_name!r} cannot be stored "
+                    f"in the variable {original_name!r} of the original discipline "
+                    f"without loss of information, as its dtype is "
+                    f"{original_value.dtype}."
+                )
+                raise ValueError(msg)
+
             original_input_data[original_name] = original_value
         return original_input_data
+
+    @staticmethod
+    def __is_stored_without_loss(
+        value: ArrayLike, original_value: ndarray, components: slice | Iterable[int]
+    ) -> bool:
+        """Whether a value stored in some components of a variable kept its information.
+
+        Rounding a float or complex value to a lower precision is not a loss,
+        but its overflow, a float stored in an integer variable or a string longer
+        than the strings of the variable is.
+
+        Args:
+            value: The value written in the components.
+            original_value: The variable after this writing.
+            components: The components where the value was written.
+
+        Returns:
+            Whether the value was stored without loss of information.
+        """
+        value = asarray(value)
+        dtype = original_value.dtype
+        if value.dtype == dtype or can_cast(value.dtype, dtype, "safe"):
+            return True
+
+        stored_value = original_value[components]
+        # Same broadcasting rules as the assignment of the value in the variable.
+        expected_value = empty(stored_value.shape, value.dtype)
+        expected_value[...] = value
+        if value.dtype.kind in "fc" and dtype.kind in "fc":
+            # A rounding is accepted, but not an overflow.
+            return array_equal(isfinite(stored_value), isfinite(expected_value))
+
+        if value.dtype.kind in "SU" and dtype.kind in "SU":
+            # A str stored as bytes or vice versa is not a loss, but a truncation is.
+            stored_value = stored_value.astype(value.dtype)
+
+        return array_equal(stored_value, expected_value)
 
     @staticmethod
     def __get_new_data_names(

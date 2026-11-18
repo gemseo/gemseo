@@ -21,6 +21,10 @@ from unittest.mock import patch
 
 import pytest
 from numpy import array
+from numpy import complex64
+from numpy import float32
+from numpy import int8
+from numpy import int64
 from numpy import zeros
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
@@ -38,6 +42,8 @@ from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from numpy import ndarray
 
     from gemseo.util.typing import StrKeyMapping
 
@@ -676,3 +682,144 @@ def test_execute_twice_with_object_input() -> None:
     ) as run:
         discipline.execute(input_data)
     assert run.call_count == 0
+
+
+class TypedDiscipline(Discipline):
+    """A discipline with an integer input `n` and a string input `s` of size 2."""
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_names(["n", "s"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults = {
+            "n": array([1, 2], dtype=int64),
+            "s": array(["ab", "cd"]),
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": array([0.0])}
+
+
+def test_whole_variable_not_cast() -> None:
+    """Check that a variable mapped as a whole is passed without cast."""
+    original_discipline = TypedDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"m": "n", "t": "s"})
+    discipline.execute({"m": array([2.5, 3.5]), "t": array(["three", "four"])})
+    assert_equal(original_discipline.io.input_data["n"], array([2.5, 3.5]))
+    assert_equal(original_discipline.io.input_data["s"], array(["three", "four"]))
+
+
+def create_component_remapping(
+    default: ndarray | None, mapping: tuple[str, int]
+) -> tuple[TypedDiscipline, RemappingDiscipline]:
+    """Create a remapping of a variable `v` to a component of a `TypedDiscipline`.
+
+    Args:
+        default: The default value of the original variable,
+            if `None`, the one of `TypedDiscipline`.
+        mapping: The original variable and the index of the component.
+
+    Returns:
+        The original discipline and the remapping discipline.
+    """
+    original_discipline = TypedDiscipline()
+    if default is not None:
+        original_discipline.io.input_grammar.defaults[mapping[0]] = default
+    return original_discipline, RemappingDiscipline(original_discipline, {"v": mapping})
+
+
+@pytest.mark.parametrize(
+    ("default", "mapping", "value", "expected"),
+    [
+        (None, ("n", 0), array([3.0]), array([3, 2])),
+        (None, ("n", 0), array([[3.0]]), array([3, 2])),
+        (None, ("s", 1), array(["xy"]), array(["ab", "xy"])),
+        (
+            array([1.0, 2.0], dtype=float32),
+            ("n", 0),
+            array([0.1]),
+            array([0.1, 2.0], dtype=float32),
+        ),
+        (
+            array([1.0, 2.0], dtype=complex64),
+            ("n", 0),
+            array([0.1]),
+            array([0.1, 2.0], dtype=complex64),
+        ),
+        (array([b"ab", b"cd"]), ("s", 1), array(["xy"]), array([b"ab", b"xy"])),
+        (array(["ab", "cd"]), ("s", 1), array([b"xy"]), array(["ab", "xy"])),
+    ],
+    ids=[
+        "integral-float-into-int",
+        "leading-unit-dimension",
+        "str-into-str",
+        "float64-into-float32",
+        "float64-into-complex64",
+        "str-into-bytes",
+        "bytes-into-str",
+    ],
+)
+def test_component_lossless_cast(default, mapping, value, expected) -> None:
+    """Check that a value mapped to a component can be cast without loss."""
+    original_discipline, discipline = create_component_remapping(default, mapping)
+    discipline.execute({"v": value})
+    assert_equal(original_discipline.io.input_data[mapping[0]], expected)
+
+
+@pytest.mark.parametrize(
+    ("default", "mapping", "value"),
+    [
+        (None, ("n", 0), array([2.5])),
+        (array([1, 2], dtype=int8), ("n", 0), array([300])),
+        (None, ("s", 1), array(["xyz"])),
+        (None, ("s", 1), array([2.5])),
+        (array([1.0, 2.0], dtype=float32), ("n", 0), array([1e300])),
+        (array([b"ab", b"cd"]), ("s", 1), array(["xyz"])),
+    ],
+    ids=[
+        "float-into-int",
+        "int-overflow",
+        "str-truncation",
+        "float-into-str",
+        "float-overflow",
+        "bytes-truncation",
+    ],
+)
+def test_component_lossy_cast(default, mapping, value, snapshot) -> None:
+    """Check that a value mapped to a component cannot be stored with a loss."""
+    _, discipline = create_component_remapping(default, mapping)
+    with assert_exception(ValueError, snapshot):
+        discipline.execute({"v": value})
+
+
+class ListDiscipline(Discipline):
+    """A discipline whose input `x` is a list."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": list})
+        self.io.output_grammar.update_from_types({"y": list})
+        self.io.input_grammar.defaults = {"x": [1, 2]}
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": input_data["x"]}
+
+
+@pytest.mark.parametrize(
+    ("mapping", "value", "expected"),
+    [
+        ("x", [3, 4], [3, 4]),
+        ("x", array([3, 4]), [3, 4]),
+        ("x", (3, 4), [3, 4]),
+        (("x", 0), [3], [3, 2]),
+    ],
+    ids=["whole-from-list", "whole-from-ndarray", "whole-from-tuple", "component"],
+)
+def test_list_variable(mapping, value, expected) -> None:
+    """Check that a list variable remapped as a whole or by component stays a list."""
+    original_discipline = ListDiscipline()
+    discipline = RemappingDiscipline(original_discipline, {"a": mapping})
+    discipline.execute({"a": value})
+    assert original_discipline.io.input_data["x"] == expected
