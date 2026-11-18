@@ -22,14 +22,21 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import contextmanager
 from enum import StrEnum
 from genericpath import exists
 from importlib import metadata
+from multiprocessing.util import Finalize
+from os import getpid
 from pathlib import Path
+from time import perf_counter
+from time import sleep
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
+from weakref import WeakSet
 
 import h5py
 import numpy
@@ -44,6 +51,7 @@ from gemseo.core.cache.util import hash_data
 from gemseo.core.cache.util import to_real
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.multiprocessing.manager import get_multi_processing_manager
+from gemseo.util.platform import platform_is_windows
 from gemseo.util.singleton import SingleInstancePerFileAttribute
 
 if TYPE_CHECKING:
@@ -60,6 +68,97 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+_open_files: Final[set[HDF5FileSingleton]] = set()
+"""The HDF files that are open."""
+
+_file_singletons: Final[WeakSet[HDF5FileSingleton]] = WeakSet()
+"""The HDF file singletons of the process.
+
+This includes the copies of the singletons, e.g. unpickled or deep-copied,
+which the registry of the singletons does not hold.
+"""
+
+_parent_files_kept_alive: Final[list[File]] = []
+"""The HDF file handles inherited from the parent process, never closed.
+
+The parent process closes its files before forking,
+except the ones that an operation uses, e.g. in another thread.
+A forked process shall not close them,
+otherwise HDF5 could write stale metadata in the files of the parent process;
+they are referenced here so that the garbage collector does not close them either.
+"""
+
+_processes_closing_files: Final[set[int]] = set()
+"""The identifiers of the processes that close their open HDF files at exit."""
+
+
+def _close_files() -> None:
+    """Close the HDF files still open."""
+    # Closing a file removes it from _open_files,
+    # which shall not change size while being iterated over.
+    for file in list(_open_files):
+        try:
+            file.close()
+        except Exception:  # noqa: BLE001, PERF203 # pragma: no cover
+            # Closing a file shall not prevent closing the other ones,
+            # and an exception raised at interpreter shutdown is of no use.
+            logger.debug("Failed to close the HDF file %s.", file.hdf_file_path)
+
+
+def _close_files_at_process_exit() -> None:
+    """Close the HDF files still open at the end of the current process.
+
+    The files are closed by a finalizer of `multiprocessing`,
+    which runs at the end of the process,
+    including when an exception is raised by the process:
+    from `atexit` in a main or spawned process,
+    and when a worker process forked by `multiprocessing` exits with `os._exit`,
+    which does not run `atexit`.
+    A forked process clears the finalizers inherited from its parent though,
+    so a finalizer is registered once in each process opening a file.
+    """
+    process_id = getpid()
+    if process_id not in _processes_closing_files:
+        _processes_closing_files.add(process_id)
+        Finalize(None, _close_files, exitpriority=0)
+
+
+def _forget_parent_process_state() -> None:
+    """Make the HDF file singletons forget the state of the parent process.
+
+    A forked process inherits the singletons of its parent
+    without going through their pickling.
+    """
+    # This loop does not change _file_singletons,
+    # and a WeakSet defers the removals made by the garbage collector
+    # until the end of its iteration;
+    # the copy only keeps the singletons alive until the end of the loop.
+    for singleton in list(_file_singletons):
+        singleton._forget_parent_process_state()
+
+
+def _close_idle_files() -> None:
+    """Close the HDF files that no operation uses, before forking the process.
+
+    A forked process would inherit the open files and their HDF5 locks,
+    which would prevent the worker processes from opening them;
+    the parent process opens them again at its next operation.
+    """
+    # Closing a file removes it from _open_files,
+    # which shall not change size while being iterated over.
+    for singleton in list(_open_files):
+        singleton._close_if_idle()
+
+
+if not platform_is_windows:  # pragma: no cover
+    # Windows cannot fork a process.
+    # mypy does not narrow the platform from platform_is_windows,
+    # so it does not know that os.register_at_fork exists here
+    # when it checks the code on Windows.
+    os.register_at_fork(  # type: ignore[attr-defined, unused-ignore]
+        before=_close_idle_files, after_in_child=_forget_parent_process_state
+    )
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
@@ -82,6 +181,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     hash_tag: ClassVar[str] = "hash"
     """The label for the hash."""
 
+    last_index_tag: ClassVar[str] = "last_index"
+    """The label of the attribute of a node storing the last index allocated."""
+
     file_format_version: ClassVar[int] = 3
     """The version of the file format.
 
@@ -95,8 +197,25 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     which are computed again when such a file is opened.
     """
 
-    __keep_open: bool
-    """Whether to keep the file open when leaving `_open()` context manager."""
+    __retry_period: ClassVar[float] = 0.01
+    """The number of seconds between two attempts to open a locked file."""
+
+    _file_kept_open: bool
+    """Whether to keep the file open between two operations.
+
+    Set it through `HDF5Cache.file_kept_open`.
+    It is reset to `False` in a worker process,
+    which unpickles or inherits the singleton.
+    """
+
+    _timeout: float
+    """The maximum number of seconds to wait for a file locked by another process.
+
+    Set it through `HDF5Cache.timeout`.
+    """
+
+    __n_keep_open: int
+    """The number of nested `keep_open()` contexts keeping the file open."""
 
     __file: File | None
     """The hdf5 file handle."""
@@ -107,6 +226,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     This is the case of a file of an older version that cannot be updated,
     whose stored hashes may have been computed by another hash function.
     """
+
+    __n_operations: int
+    """The number of operations using the file, which shall not close it."""
 
     class __SparseMatricesAttribute(StrEnum):  # noqa: N801
         """Attribute name required to store sparse matrices in CSR format."""
@@ -124,10 +246,14 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Args:
             hdf_file_path: The path to the HDF file.
         """  # noqa: D205, D212, D415
-        self.__keep_open = False
+        self.__n_keep_open = 0
+        self._file_kept_open = False
+        self._timeout = 30.0
         self.__file = None
         self.__compute_hashes = False
+        self.__n_operations = 0
         self.hdf_file_path = hdf_file_path
+        _file_singletons.add(self)
         if self.__get_file_format_version() < self.file_format_version:
             self.__update_file_format()
 
@@ -163,6 +289,69 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 e.g. `None`.
             RuntimeError: If the data cannot be written in the file.
         """
+        self.__write_data(data, group, index, hdf_node_path, data_hash)
+
+    def write_new_entry(
+        self,
+        data: StrKeyMapping,
+        hdf_node_path: str,
+        data_hash: int | None = None,
+    ) -> int:
+        """Write the input data of a new entry, at an index allocated from the file.
+
+        The caches of the different processes
+        cannot allocate a unique index on their own,
+        so the write creating an entry lets the file do it.
+
+        Args:
+            data: The input data.
+            hdf_node_path: The name of the HDF group to store the entries,
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
+            data_hash: The hash of the input data;
+                if `None`,
+                computed from `data`.
+
+        Returns:
+            The index of the entry.
+
+        Raises:
+            TypeError: If a value is an array of Python objects,
+                e.g. `None`.
+            RuntimeError: If the data cannot be written in the file.
+        """
+        return self.__write_data(
+            data, BaseCache.Group.INPUTS, None, hdf_node_path, data_hash
+        )
+
+    def __write_data(
+        self,
+        data: StrKeyMapping,
+        group: BaseCache.Group,
+        index: int | None,
+        hdf_node_path: str,
+        data_hash: int | None,
+    ) -> int:
+        """Write data in the file.
+
+        Args:
+            data: The data containing the values of the names to cache.
+            group: The group.
+            index: The index of the entry in the cache;
+                if `None`, allocate a new one from the file.
+            hdf_node_path: The name of the HDF group to store the entries,
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
+            data_hash: The hash of the input data;
+                if `None`,
+                computed from `data` when the entry has no hash yet.
+
+        Returns:
+            The index of the entry.
+
+        Raises:
+            TypeError: If a value is an array of Python objects,
+                e.g. `None`.
+            RuntimeError: If the data cannot be written in the file.
+        """
         # Convert and validate all the values before touching the file,
         # so that a failure leaves no partial entry.
         converted_data = self.__convert_data(data)
@@ -174,7 +363,12 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                 self.__set_file_format_version(self.__file)
 
             root = self.__file.require_group(hdf_node_path)
+            is_allocated = index is None
+            if index is None:
+                index = self.__allocate_index(root)
+
             entry = root.get(str(index))
+            is_new_entry = entry is None
             if (entry is None or entry.get(self.hash_tag) is None) and (
                 data_hash is None
             ):
@@ -197,6 +391,10 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                         entry_group[name] = value
 
             except (RuntimeError, OSError, ValueError):
+                if is_new_entry:
+                    # A partial entry would be read as a real one.
+                    del root[str(index)]
+
                 msg = "Failed to cache dataset %s.%s.%s in file: %s"
                 raise RuntimeError(
                     msg,
@@ -205,6 +403,41 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                     entry_group,
                     self.hdf_file_path,
                 ) from None
+
+            if is_allocated:
+                # The index is recorded once the entry is written,
+                # so that a failed write does not leave a gap.
+                root.attrs[self.last_index_tag] = index
+
+        return index
+
+    def __allocate_index(self, node: h5py.Group) -> int:
+        """Allocate the index of a new entry of a node.
+
+        The last index allocated is stored in an attribute of the node,
+        once the entry is written,
+        so that the names of all its entries are not read at each allocation.
+
+        Args:
+            node: The node.
+
+        Returns:
+            The index of the new entry.
+        """
+        last_index = node.attrs.get(self.last_index_tag)
+        if last_index is None:
+            # The node has been written without this attribute,
+            # so its entries are read once.
+            # It can also hold the nodes of other caches,
+            # which are not named after an index.
+            last_index = max((int(name) for name in node if name.isdigit()), default=0)
+
+        index = int(last_index) + 1
+        # An entry can have been written at a given index without allocation.
+        while str(index) in node:
+            index += 1
+
+        return index
 
     @staticmethod
     def __convert_data(data: StrKeyMapping) -> dict[str, Any]:
@@ -405,7 +638,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
                 if indices is None:
                     hash_to_indices[hash_] = array([index])
-                else:
+                elif index not in indices:
+                    # The map can be shared with a cache that has read it already,
+                    # e.g. by the copy of a cache unpickled by a worker process.
                     hash_to_indices[hash_] = append(indices, array([index]))
 
                 max_index = max(max_index, index)
@@ -596,30 +831,140 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
         Args:
             mode: The opening mode, see `h5py.File`.
+
+        Raises:
+            RuntimeError: When the file shall be opened again in append mode
+                while an operation reads it,
+                as this would invalidate the handles of this operation.
         """
-        if self.__keep_open and self.__file is not None:
+        # A file opened in append mode can also be read.
+        if self.__file is None or (mode == "a" and self.__file.mode != "r+"):
+            if self.__n_operations:
+                msg = (
+                    f"The HDF file {self.hdf_file_path} cannot be written "
+                    "while it is read."
+                )
+                raise RuntimeError(msg)
+
+            self.close()
+            self.__file = self.__create_file(mode)
+            _open_files.add(self)
+            _close_files_at_process_exit()
+
+        # The file shall be closed whatever happens in the body of the caller,
+        # including when it returns or raises an exception,
+        # otherwise HDF5 keeps a lock preventing another process
+        # from opening the file,
+        # but only by the last operation using it,
+        # e.g. when another thread or an enclosing operation still uses it.
+        self.__n_operations += 1
+        try:
             yield
-        else:
-            self.__file = h5py.File(self.hdf_file_path, mode=mode)
-            yield  # noqa: RUF075
-            if not self.__keep_open:
-                self.__close()
+        finally:
+            self.__n_operations -= 1
+            if not self.__n_operations and not self.__keeps_open:
+                self.close()
+
+    @property
+    def __keeps_open(self) -> bool:
+        """Whether the file is kept open when leaving `__open()`."""
+        return bool(self.__n_keep_open) or self._file_kept_open
+
+    def __create_file(self, mode: str) -> File:
+        """Open the HDF file, waiting for the other processes to release it.
+
+        Unlike a database engine, HDF5 has no way of waiting for a lock:
+        a process opening a file that another one is using fails immediately.
+        The opening is therefore retried until `_timeout` is exceeded,
+        so that the processes writing in the same file
+        do not have to open it at different times.
+
+        Args:
+            mode: The opening mode, see `h5py.File`.
+
+        Returns:
+            The HDF file object.
+
+        Raises:
+            OSError: If the file is still locked by another process
+                after `_timeout` seconds.
+        """
+        deadline = perf_counter() + self._timeout
+        while True:
+            try:
+                return h5py.File(self.hdf_file_path, mode=mode)
+            except OSError as error:  # noqa: PERF203
+                if "unable to lock file" not in str(error):
+                    raise
+
+                if perf_counter() >= deadline:
+                    logger.warning(
+                        "The HDF file %s is still locked after %s seconds.",
+                        self.hdf_file_path,
+                        self._timeout,
+                    )
+                    raise
+
+                sleep(self.__retry_period)
 
     @contextmanager
     def keep_open(self) -> Generator[None, None, None]:
         """Keep the file open for all file operations done in this context manager."""
-        self.__keep_open = True
-        yield  # noqa: RUF075
-        self.__keep_open = False
-        self.__close()
+        self.__n_keep_open += 1
+        try:
+            yield
+        finally:
+            self.__n_keep_open -= 1
+            # An enclosing context keeps the file open
+            # and an operation still using the file closes it when it ends.
+            if not self.__keeps_open and not self.__n_operations:
+                self.close()
 
-    def __close(self) -> None:
-        """Close the file handle."""
-        assert self.__file is not None
-        self.__file.close()
-        self.__file = None
+    def _forget_parent_process_state(self) -> None:
+        """Forget the state of the parent process, in a worker process.
+
+        Keeping the file open is a choice of the parent process
+        that would make the worker processes lock the file out of each other.
+        """
+        self.__n_keep_open = 0
+        self._file_kept_open = False
+        # The operations of the parent process do not run in this one.
+        self.__n_operations = 0
+        if self.__file is not None:
+            # The handle of the parent process is dropped without being closed.
+            _parent_files_kept_alive.append(self.__file)
+            self.__file = None
+            _open_files.discard(self)
+
+    def _close_if_idle(self) -> None:
+        """Close the file handle if no operation uses it."""
+        if not self.__n_operations:
+            self.close()
+
+    def close(self) -> None:
+        """Close the file handle.
+
+        Do nothing if the file is already closed.
+        The file is opened again by the next read or write.
+
+        Warning:
+            This closes the file even when an operation uses it,
+            e.g. in another thread.
+        """
+        try:
+            if self.__file is not None:
+                self.__file.close()
+        finally:
+            # A handle that fails to close is forgotten all the same,
+            # so that the file is opened again by the next read or write.
+            self.__file = None
+            _open_files.discard(self)
 
     def __getstate__(self):
+        # Another process is about to use the file, e.g. because the cache is sent to
+        # a sub-process, and HDF5 would prevent it from opening a file left open here;
+        # a file used by an operation, e.g. of another thread, is closed by it.
+        self._close_if_idle()
         state = self.__dict__.copy()
         # The hd5py file handle is not pickable.
         del state["_HDF5FileSingleton__file"]
@@ -627,4 +972,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
+        # The pickled state has no file handle.
         self.__file = None
+        _file_singletons.add(self)
+        # The singleton is unpickled by another process, e.g. a worker process.
+        self._forget_parent_process_state()

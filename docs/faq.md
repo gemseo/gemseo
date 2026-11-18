@@ -78,8 +78,6 @@ sudo yum install libnsl
 
 ## Parallel execution limitations on Windows
 
-When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_backup_settings()][gemseo.scenario.mdo.MDOScenario.set_backup_settings] is recommended as an alternative.
-
 The execution of any script using parallel execution on Windows including, but not limited to, [MDOScenario][gemseo.scenario.mdo.MDOScenario] with `n_processes > 1`, [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache], [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.discipline_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
 
 ## Handling paths for different OSes

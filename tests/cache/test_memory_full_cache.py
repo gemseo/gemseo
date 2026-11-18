@@ -19,17 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from collections import UserDict
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import ones
 
 from gemseo.core.cache.factory import CacheFactory
-
-if TYPE_CHECKING:
-    from gemseo.core.cache.memory_full import MemoryFullCache
+from gemseo.core.cache.memory_full import MemoryFullCache
 
 
 def create_cache() -> MemoryFullCache:
@@ -73,3 +71,21 @@ def test_cache_path_miss(tolerance) -> None:
     cache.tolerance = tolerance
     cache.cache_outputs({"p": Path("some_path"), "x": ones(1)}, {"o": ones(1)})
     assert not cache.get({"p": Path("other_path"), "x": ones(1)}).outputs
+
+
+class _MapWithoutValues(UserDict):
+    """A map from hashes to indices that cannot copy its indices."""
+
+    def values(self):  # noqa: D102
+        msg = "The indices shall not be copied."
+        raise AssertionError(msg)
+
+
+def test_bool_does_not_copy_the_indices() -> None:
+    """Check that the truth value of a cache does not copy the indices."""
+    cache = MemoryFullCache()
+    cache.cache_outputs({"x": array([1.0])}, {"y": array([1.0])})
+    cache._hash_to_indices = _MapWithoutValues(cache._hash_to_indices)
+
+    assert cache
+    assert cache.last_item.outputs

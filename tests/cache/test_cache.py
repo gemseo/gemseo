@@ -58,7 +58,6 @@ from gemseo.util._numpy import _uint32_dtype
 from gemseo.util._numpy import _uint64_dtype
 from gemseo.util._numpy import int64_dtype
 from gemseo.util.comparison import compare_dict_of_arrays
-from gemseo.util.singleton import SingleInstancePerFileAttribute
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -643,24 +642,12 @@ def _write_older_file(
         entry.create_dataset(HDF5FileSingleton.hash_tag, data=array([b"1" * 19]))
 
 
-def _forget_file_singletons(monkeypatch) -> None:
-    """Make the next caches use new file singletons, for the current test only.
-
-    The process-wide registry of the singletons is replaced, not emptied,
-    so that the other tests of the same process keep their singletons.
-
-    Args:
-        monkeypatch: The pytest fixture restoring the registry.
-    """
-    monkeypatch.setattr(SingleInstancePerFileAttribute, "instances", {})
-
-
-def test_check_version_older(tmp_wd, monkeypatch) -> None:
+def test_check_version_older(tmp_wd, forget_file_singletons) -> None:
     """Verify that the hashes of a file of an older version are computed again."""
     input_data = _find_input_data_with_long_hash()
     _write_older_file(cache_file_name, "node", input_data)
 
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     new_cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
 
     # The entry is found again although its stored hash was stale,
@@ -672,13 +659,13 @@ def test_check_version_older(tmp_wd, monkeypatch) -> None:
     assert int(stored_hash) == hash_data(input_data)
 
 
-def test_check_version_older_with_nested_node(tmp_wd, monkeypatch) -> None:
+def test_check_version_older_with_nested_node(tmp_wd, forget_file_singletons) -> None:
     """Verify that the hashes of the entries at a nested node are computed again."""
     input_data = _find_input_data_with_long_hash()
     _write_older_file(cache_file_name, "flat", input_data)
     _write_older_file(cache_file_name, "root/sub/node", input_data)
 
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     caches = [
         HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path=hdf_node_path)
         for hdf_node_path in ("flat", "root/sub/node")
@@ -690,7 +677,9 @@ def test_check_version_older_with_nested_node(tmp_wd, monkeypatch) -> None:
         assert h5_file.attrs["version"] == HDF5FileSingleton.file_format_version
 
 
-def test_check_version_older_read_only(tmp_wd, caplog, monkeypatch) -> None:
+def test_check_version_older_read_only(
+    tmp_wd, caplog, monkeypatch, forget_file_singletons
+) -> None:
     """Verify that a file of an older version that cannot be written can be used."""
     input_data = _find_input_data_with_long_hash()
     _write_older_file(cache_file_name, "node", input_data)
@@ -705,7 +694,7 @@ def test_check_version_older_read_only(tmp_wd, caplog, monkeypatch) -> None:
         return open_file(name, mode, *args, **kwargs)
 
     monkeypatch.setattr(h5py, "File", open_read_only)
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
 
     # The hashes are computed from the input data, without writing them.
@@ -716,7 +705,7 @@ def test_check_version_older_read_only(tmp_wd, caplog, monkeypatch) -> None:
     assert "cannot be updated" in caplog.text
 
 
-def test_check_version_older_with_missing_hash(tmp_wd, monkeypatch) -> None:
+def test_check_version_older_with_missing_hash(tmp_wd, forget_file_singletons) -> None:
     """Verify that the update repairs an entry whose hash is missing.
 
     An update interrupted between the deletion of a hash and its creation
@@ -731,7 +720,7 @@ def test_check_version_older_with_missing_hash(tmp_wd, monkeypatch) -> None:
         h5_file.attrs["version"] = HDF5FileSingleton.file_format_version - 1
         del h5_file["node"]["2"][HDF5FileSingleton.hash_tag]
 
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     new_cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="node")
 
     assert len(new_cache) == 2
@@ -743,12 +732,14 @@ def test_check_version_older_with_missing_hash(tmp_wd, monkeypatch) -> None:
     assert int(stored_hash) == hash_data(second_input_data)
 
 
-def test_check_version_older_with_node_named_inputs(tmp_wd, monkeypatch) -> None:
+def test_check_version_older_with_node_named_inputs(
+    tmp_wd, forget_file_singletons
+) -> None:
     """Verify that a node named like the input data of an entry is not an entry."""
     input_data = _find_input_data_with_long_hash()
     _write_older_file(cache_file_name, "root/inputs", input_data)
 
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     cache = HDF5Cache(hdf_file_path=cache_file_name, hdf_node_path="root/inputs")
 
     assert compare_dict_of_arrays(cache[input_data].outputs, {"y": array([2.0])})
@@ -1158,7 +1149,7 @@ class _ColorConverter:
         return self.colors[int(value[0])]
 
 
-def test_reopen_with_input_data_converter(tmp_wd, monkeypatch) -> None:
+def test_reopen_with_input_data_converter(tmp_wd, forget_file_singletons) -> None:
     """Check that an entry is found again in a reopened file with input converter.
 
     The file stores the hash of the input data converted to arrays.
@@ -1171,7 +1162,7 @@ def test_reopen_with_input_data_converter(tmp_wd, monkeypatch) -> None:
     )
     cache.cache_outputs({"color": "red"}, {"y": array([2.0])})
 
-    _forget_file_singletons(monkeypatch)
+    forget_file_singletons()
     new_cache = HDF5Cache(
         hdf_file_path=cache_file_name,
         hdf_node_path="node",

@@ -50,6 +50,35 @@ class HDF5Cache(BaseFullCache):
     The data, either input or output, to be stored in the cache shall be
     castable to a NumPy array. Otherwise, data converters shall be provided when
     creating an instance.
+
+    Several processes can write to the same node of the same file,
+    e.g. when a DOE evaluates a discipline with several processes:
+    the accesses to the file are serialized by the lock of the cache
+    and the index of a new entry is allocated from the file,
+    and not by the cache of a given process.
+
+    The file is opened and closed at every read and write,
+    which costs a lot of time.
+    When a single process uses the file,
+    set [file_kept_open][gemseo.core.cache.hdf5.HDF5Cache.file_kept_open]
+    to keep it open between two operations:
+
+    ```python
+    cache.file_kept_open = True
+    ```
+
+    The file is then closed at the end of the process,
+    whether or not it raises an exception,
+    and can be closed earlier with
+    [close_file()][gemseo.core.cache.hdf5.HDF5Cache.close_file].
+
+    HDF5 forbids a process to open a file that another one has open,
+    so opening a file used by another process,
+    e.g. a worker process or an HDF viewer,
+    waits for its release
+    up to [timeout][gemseo.core.cache.hdf5.HDF5Cache.timeout] seconds,
+    30 by default,
+    then raises an `OSError`.
     """
 
     __input_data_converter: BaseDataConverter | None
@@ -84,11 +113,6 @@ class HDF5Cache(BaseFullCache):
             This class relies on some multiprocessing features, it is therefore
             necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
-            Currently, the use of an HDF5Cache is not supported in parallel on Windows
-            platforms. This is due to the way subprocesses are forked in this
-            architecture. The method
-            [MDOScenario.set_backup_settings()][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
-            is recommended as an alternative.
 
             A file written by GEMSEO 6 or earlier
             is rewritten in place when it is opened,
@@ -117,6 +141,56 @@ class HDF5Cache(BaseFullCache):
     def hdf_node_path(self) -> str:
         """The path to the HDF node."""
         return self.__hdf_node_path
+
+    @property
+    def file_kept_open(self) -> bool:
+        """Whether to keep the HDF file open between two operations.
+
+        Opening and closing the file at every read and write costs a lot of time,
+        which this option avoids when a single process uses the file.
+        The data are written to the disk when the file is closed,
+        at the latest at the end of the process,
+        so a process killed without exiting, e.g. with `SIGKILL`,
+        can leave the file corrupted.
+
+        This option applies to all the caches sharing the HDF file.
+
+        Warning:
+            HDF5 forbids a process to open a file that another one has open,
+            so this option is reset to `False` in a worker process,
+            e.g. when a DOE evaluates a discipline with several processes.
+        """
+        return self.__hdf_file._file_kept_open
+
+    @file_kept_open.setter
+    def file_kept_open(self, value: bool) -> None:
+        self.__hdf_file._file_kept_open = value
+
+    @property
+    def timeout(self) -> float:
+        """The maximum number of seconds to wait for a file locked by another process.
+
+        HDF5 forbids a process to open a file that another one has open,
+        e.g. a worker process or an HDF viewer,
+        so opening it is retried until it is released or this time has elapsed;
+        an `OSError` is raised in the latter case.
+
+        This option applies to all the caches sharing the HDF file,
+        including in the worker processes.
+        """
+        return self.__hdf_file._timeout
+
+    @timeout.setter
+    def timeout(self, value: float) -> None:
+        self.__hdf_file._timeout = value
+
+    def close_file(self) -> None:
+        """Close the HDF file.
+
+        Do nothing if the file is already closed.
+        The file is opened again by the next read or write.
+        """
+        self.__hdf_file.close()
 
     def _get_string_representation(self) -> MultiLineString:
         mls = super()._get_string_representation()
@@ -222,25 +296,51 @@ class HDF5Cache(BaseFullCache):
         group: BaseFullCache.Group,
         index: int,
     ) -> None:
-        data_hash = None
+        # The input data are written by _write_input_data, with their hash.
+        self.__hdf_file.write_data(
+            self.__convert_to_arrays(values, group), group, index, self.__hdf_node_path
+        )
+
+    def _write_input_data(
+        self,
+        input_data: StrKeyMapping,
+        index: int,
+        data_hash: int,
+    ) -> int:
+        # A cache counts the entries in a counter of its own process,
+        # so two processes writing in the same node would pick the same index;
+        # the file allocates it instead, whatever the index counted by the cache.
+        return self.__hdf_file.write_new_entry(
+            self.__convert_to_arrays(input_data, self.Group.INPUTS),
+            self.__hdf_node_path,
+            data_hash,
+        )
+
+    def __convert_to_arrays(
+        self,
+        values: StrKeyMapping,
+        group: BaseFullCache.Group,
+    ) -> StrKeyMapping:
+        """Convert the data of a group to arrays, with the data converter if any.
+
+        Args:
+            values: The data.
+            group: The group.
+
+        Returns:
+            The data converted to arrays.
+        """
         if group == self.Group.INPUTS:
-            # Hash the data as the lookups do.
-            data_hash = self._hash_input_data(values)
             converter = self.__input_data_converter
         elif group == self.Group.OUTPUTS:
             converter = self.__output_data_converter
         else:
             converter = None
-        if converter is not None:
-            to_array = converter.convert_value_to_array
-            values = {name: to_array(name, value) for name, value in values.items()}
-        self.__hdf_file.write_data(
-            values,
-            group,
-            index,
-            self.__hdf_node_path,
-            data_hash,
-        )
+        if converter is None:
+            return values
+
+        to_array = converter.convert_value_to_array
+        return {name: to_array(name, value) for name, value in values.items()}
 
     @staticmethod
     def update_file_format(

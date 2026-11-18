@@ -5,3 +5,6 @@
 # name: test_cache_optional_path_none
   'The value of p is None, which cannot be cached in an HDF5 file.'
 # ---
+# name: test_write_while_reading
+  'The HDF file dummy.h5 cannot be written while it is read.'
+# ---
