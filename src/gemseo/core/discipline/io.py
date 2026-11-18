@@ -407,16 +407,22 @@ class IO:
         self.output_data = DisciplineData()
 
     def finalize(self, validate: bool) -> None:
-        """Remove the output data that are not outputs and validate the others.
+        """Clean the output data at the end of an execution and validate them.
 
-        As in
-        [update_output_data][gemseo.core.discipline.io.IO.update_output_data],
-        an output written without its namespace prefix is an output:
-        its value is moved to the name with the namespace prefix,
-        unless the output data already have this name.
+        The output data whose names are not in the output grammar are removed.
+
+        The only exception is an output written without its namespace prefix:
+        it is renamed with this prefix,
+        as [update_output_data][gemseo.core.discipline.io.IO.update_output_data]
+        does.
+        For example,
+        when the output `y` is in the namespace `n`,
+        the value written as `y` is stored as `n:y`.
+        When both `y` and `n:y` are written,
+        the value of `n:y` is kept and the one of `y` is removed.
 
         Args:
-            validate: Whether to validate the (eventually post-processed) cleaned data.
+            validate: Whether to validate the cleaned output data.
         """
         output_data = self.output_data
         output_grammar = self.output_grammar
@@ -424,9 +430,10 @@ class IO:
         if extra_names:
             to_namespaced = output_grammar.to_namespaced
             for name in extra_names:
-                value = output_data.pop(name)
                 if (name_with_ns := to_namespaced.get(name)) is not None:
-                    output_data.setdefault(name_with_ns, value)
+                    output_data.setdefault(name_with_ns, output_data[name])
+
+                del output_data[name]
 
         if validate:
             self.output_grammar.validate(self.output_data)
