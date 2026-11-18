@@ -65,7 +65,7 @@ check-typing *args:
 [arg("gallery", long="no-gallery", value="--no-gallery")]
 [group('doc')]
 doc-prebuild gallery="":
-    uv run --group doc --extra all python docs/_scripts/prebuild.py {{ gallery }}
+    uv run --group doc --extra all docs-tools prebuild {{ gallery }}
 
 # Build and serve the documentation, `--no-gallery` skips the examples, pass the Zensical options after `--`
 [arg("gallery", long="no-gallery", value="--no-gallery")]

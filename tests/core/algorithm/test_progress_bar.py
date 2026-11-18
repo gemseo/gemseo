@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any
 from typing import ClassVar
@@ -276,3 +277,71 @@ def test_feasibility_missing_constraint_value() -> None:
 
     data = ProgressBarData(problem).get(HashableNdarray(x))
     assert data["feas"] == "Not evaluated"
+
+
+@pytest.mark.parametrize(
+    ("enabled", "total", "n_iterations", "n_closings", "expected"),
+    [
+        (False, 300, 151, 1, list(range(2, 152))),
+        (True, 300, 300, 1, [*range(2, 300, 3), 300]),
+        (True, 300, 151, 1, [*range(2, 150, 3), 151]),
+        (True, 300, 149, 1, list(range(2, 150, 3))),
+        (True, 300, 151, 2, [*range(2, 150, 3), 151]),
+        # A progress bar without total logs no status, its percentage being always 0;
+        # this case checks that the option does not raise.
+        (True, None, 3, 1, []),
+    ],
+    ids=[
+        "disabled",
+        "enabled",
+        "enabled-early_stop",
+        "enabled-early_stop_at_logged_status",
+        "enabled-closed_twice",
+        "enabled-without_total",
+    ],
+)
+def test_log_one_status_per_percentage(
+    caplog, monkeypatch, enabled, total, n_iterations, n_closings, expected
+) -> None:
+    """Check the iterations whose statuses are logged.
+
+    With a total of 300 iterations,
+    the rounded percentage changes at the iterations 2, 5, 8, ..., 299;
+    the status of the first iteration is not logged as its percentage is 0.
+    Without total, no status is logged.
+    """
+    monkeypatch.setattr(
+        CustomTqdmProgressBar, "_log_one_status_per_percentage", enabled
+    )
+    with caplog.at_level(logging.INFO):
+        bar = CustomTqdmProgressBar(total=total, leave=False)
+        for _ in range(n_iterations):
+            bar.n += 1
+            bar.refresh()
+
+        for _ in range(n_closings):
+            bar.close()
+
+    iterations = [
+        int(re.search(r"\|\s*(\d+)/300 ", message)[1]) for message in caplog.messages
+    ]
+    assert iterations == expected
+
+
+def test_log_skipped_status_with_its_elapsed_time(caplog, monkeypatch) -> None:
+    """Check that the status logged at closing has the elapsed time of its iteration."""
+    monkeypatch.setattr(CustomTqdmProgressBar, "_log_one_status_per_percentage", True)
+    with caplog.at_level(logging.INFO):
+        bar = CustomTqdmProgressBar(total=300, leave=False)
+        # The status of the iteration 2 is logged,
+        # the one of the iteration 3 is skipped as its percentage is the same.
+        bar.n = 2
+        bar.refresh()
+        bar.n = 3
+        bar._time = lambda: bar.start_t + 10
+        bar.refresh()
+        # The progress bar is closed one hour later.
+        bar._time = lambda: bar.start_t + 3600
+        bar.close()
+
+    assert re.search(r" 3/300 \[([\d:]+)<", caplog.messages[-1])[1] == "00:10"

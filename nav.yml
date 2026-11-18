@@ -1,7 +1,6 @@
 # The navigation of the documentation.
 # The docs-tools prebuild expands the gallery directories it references
-# and docs/_scripts/prebuild.py, its GEMSEO wrapper, expands the directories
-# whose SUMMARY.md lists the pages, as literate-nav did;
+# and the directories whose SUMMARY.md lists the pages, as literate-nav did;
 # the result is written into _docs/generated.yml, inherited by mkdocs-fast.yml.
 nav:
   - Getting started:

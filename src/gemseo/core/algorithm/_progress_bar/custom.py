@@ -73,12 +73,81 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     __file_stream_class: Final[type] = StringIO
     """The class used to create the dummy file stream for tqdm."""
 
+    _log_one_status_per_percentage: ClassVar[bool] = False
+    """Whether to log a status only when its rounded percentage changes.
+
+    When `True`,
+    a progress bar with a total logs a status
+    only when its rounded percentage differs from the one of the last logged status
+    or at its last iteration,
+    and logs its last skipped status, if any, when it is closed.
+    """
+
+    __last_percentage: str = ""
+    """The rounded percentage of the last logged status, if any."""
+
+    __skipped_status_data: dict[str, Any] | None = None
+    """The data of the last status when it was skipped, otherwise `None`.
+
+    These data are the `format_dict` of the progress bar at the time of this status,
+    so that the status logged at closing has the elapsed time and the rate
+    of its iteration.
+    """
+
     def __init__(self, *args, **kwargs) -> None:  # noqa: D102
         # Use a file stream to prevent tqdm from trying to adapt the progress bar
         # to the current terminal because its rendering will vary and because it is
         # not needed since the progress bar goes to a logger.
         kwargs["file"] = self.__file_stream_class()
         super().__init__(*args, **kwargs)
+
+    def display(self, msg: str | None = None, pos: int | None = None) -> bool:
+        """Log a status, unless it is skipped.
+
+        When `_log_one_status_per_percentage` is `True`
+        and the progress bar has a total,
+        the current status is skipped
+        when its rounded percentage is the one of the last logged status
+        and its iteration is not the last one;
+        its data are kept to log it when the progress bar is closed.
+
+        Args:
+            msg: The status to log.
+                If `None`, use the current status of the progress bar.
+            pos: The position of the progress bar.
+                If `None`, use its current position.
+
+        Returns:
+            `False` when tqdm hides the status
+            because of the position of the progress bar,
+            `True` otherwise, including when the status is skipped.
+        """
+        if msg is None and self._log_one_status_per_percentage and self.total:
+            # The percentage as tqdm.format_meter writes it in the status.
+            percentage = f"{self.n / self.total * 100:3.0f}"
+            if percentage == self.__last_percentage and self.n < self.total:
+                self.__skipped_status_data = self.format_dict
+                return True
+
+            self.__last_percentage = percentage
+            self.__skipped_status_data = None
+
+        return super().display(msg=msg, pos=pos)
+
+    def close(self) -> None:
+        """Log the last status when it was skipped, then close the progress bar.
+
+        This status is the last one
+        e.g. when an optimizer stops before its last iteration;
+        it is logged with the elapsed time and the rate of its iteration.
+        """
+        if not self.disable and self.__skipped_status_data is not None:
+            status = self.format_meter(**self.__skipped_status_data)
+            self.__skipped_status_data = None
+            with self._lock:
+                super().display(msg=status)
+
+        super().close()
 
     @classmethod
     def format_meter(  # noqa: D102
