@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 Indices = tuple[str, int | Iterable[int]]
 NameMapping = dict[str, str | Indices]
 
-_FULL_SLICE: Final[slice] = slice(None)
+_full_slice: Final[slice] = slice(None)
 """The slice selecting all the components of a variable."""
 
 
@@ -274,7 +274,7 @@ class RemappingDiscipline(Discipline):
             if (
                 isinstance(default_value, ndarray)
                 and isinstance(args, slice)
-                and args == _FULL_SLICE
+                and args == _full_slice
             ):
                 # An array variable mapped as a whole is passed without cast.
                 original_input_data[original_name] = array(value)
