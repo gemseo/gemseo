@@ -112,10 +112,15 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     )
     """The base types that are not arrays like."""
 
-    _is_continuous_types: ClassVar[tuple[type, ...]] = (
+    _is_continuous_scalar_types: ClassVar[tuple[type, ...]] = (
         float,
         complex,
         Complex,
+    )
+    """The types that represent continuous scalars."""
+
+    _is_continuous_types: ClassVar[tuple[type, ...]] = (
+        *_is_continuous_scalar_types,
         ndarray,
     )
     """The types that represent continuous data."""
@@ -400,6 +405,19 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             Whether the grammar item is continuous.
         """
         return self._has_type(name, self._is_continuous_types)
+
+    def is_continuous_scalar(self, name: str) -> bool:
+        """Return whether a grammar item is a continuous scalar, e.g. a `float`.
+
+        Unlike `is_continuous()`, this is false for a NumPy array.
+
+        Args:
+            name: The name of the grammar item.
+
+        Returns:
+            Whether the grammar item is a continuous scalar.
+        """
+        return self._has_type(name, self._is_continuous_scalar_types)
 
     def _get_path_type(self, name: str) -> type[PurePath | str] | None:
         """Return the type to read a string of a grammar item with a path type.

@@ -103,6 +103,14 @@ def test_can_differentiate(converter) -> None:
         assert converter.is_continuous(name)
 
 
+def test_is_continuous_scalar(converter) -> None:
+    """Verify is_continuous_scalar."""
+    for name in ("a_bool", "a_int", "a_ndarray", "a_str"):
+        assert not converter.is_continuous_scalar(name)
+    for name in ("a_float", "a_complex"):
+        assert converter.is_continuous_scalar(name)
+
+
 value_to_array_data = [
     ("a_str", "0", array(["0"])),
     ("a_float", 0.0, array([0.0])),
@@ -355,6 +363,12 @@ def test_is_continuous_typed_arrays(converter_ndarray) -> None:
     assert converter_ndarray.is_continuous("complex_array")
     assert not converter_ndarray.is_continuous("int_array")
     assert not converter_ndarray.is_continuous("str_array")
+
+
+def test_is_continuous_scalar_typed_arrays(converter_ndarray) -> None:
+    """Typed arrays are not continuous scalars."""
+    for name in ("float_array", "complex_array", "int_array", "str_array"):
+        assert not converter_ndarray.is_continuous_scalar(name)
 
 
 def test_pydantic_to_simple_grammar_normalizes_ndarray_type() -> None:

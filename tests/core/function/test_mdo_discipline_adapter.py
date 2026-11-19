@@ -26,7 +26,6 @@ from typing import ClassVar
 import pytest
 from numpy import array
 from numpy import dtype
-from numpy import float64
 from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
@@ -453,17 +452,15 @@ class ContainerDiscipline(Discipline):
 
 
 @pytest.mark.parametrize(
-    ("type_", "to_array", "to_value", "get_size", "expected_dtype"),
+    ("type_", "to_array", "to_value", "get_size"),
     [
-        # A value with an astype method is cast to the type of the variable.
-        (Series, Series.to_numpy, Series, operator.attrgetter("size"), int64),
-        # A value without an astype method is left as is.
-        (list, array, ndarray.tolist, len, float64),
+        (Series, Series.to_numpy, Series, operator.attrgetter("size")),
+        (list, array, ndarray.tolist, len),
     ],
     ids=["Series", "list"],
 )
 def test_integer_input_converted_by_user(
-    monkeypatch, type_, to_array, to_value, get_size, expected_dtype
+    monkeypatch, type_, to_array, to_value, get_size
 ) -> None:
     """Check that an integer input converted by a user converter keeps its type."""
     monkeypatch.setattr(BaseDataConverter, "value_to_array_converters", {"n": to_array})
@@ -476,4 +473,5 @@ def test_integer_input_converted_by_user(
     assert_allclose(function.evaluate(x_vect), array([14.0]))
     assert type(discipline.n) is type_
     assert_equal(array(discipline.n), array([3, 4]))
-    assert array(discipline.n).dtype == expected_dtype
+    # The user converter receives an array of the type of the variable.
+    assert array(discipline.n).dtype == int64

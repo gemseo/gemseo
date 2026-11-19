@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -507,9 +506,8 @@ class DisciplineAdapter(ArrayFunction):
         """Create the discipline input data from the function input vector.
 
         The variables in the input data are cast according to the types defined in the
-        design space,
-        except a Python scalar whose grammar declares a continuous type, e.g. `float`,
-        which is left as is.
+        design space before their conversion to the types declared by the grammar,
+        except those whose grammar declares a continuous scalar type, e.g. `float`.
 
         The categorical variables are given as labels.
 
@@ -527,24 +525,20 @@ class DisciplineAdapter(ArrayFunction):
             self.__create_input_name_to_slice()
 
         data_converter = self.__discipline.io.input_grammar.data_converter
-        input_data = data_converter.convert_array_to_data(
-            x_vect, self.__input_name_to_slice
-        )
-        variable_types = x_vect.dtype.metadata
-        if variable_types is not None:
-            # Restore the proper data types as declared in the design space.
-            for name, type_ in variable_types.items():
-                if name not in self.__name_to_categorical_variable:
-                    value = input_data[name]
-                    if hasattr(value, "astype"):
-                        input_data[name] = value.astype(type_, copy=False)
-                    elif isinstance(value, Number) and not data_converter.is_continuous(
-                        name
-                    ):
-                        # A grammar declaring a Python scalar type, e.g. int,
-                        # receives a Python scalar of the type of the variable;
-                        # a continuous one, e.g. float, accepts the value as is.
-                        input_data[name] = type_(value).item()
+        variable_types = x_vect.dtype.metadata or {}
+        input_data = {}
+        for name, slice_ in self.__input_name_to_slice.items():
+            value = x_vect[..., slice_]
+            # Restore the type declared in the design space
+            # before the conversion to the type declared in the grammar,
+            # except for a continuous scalar, e.g. float, which accepts no int.
+            if (
+                (type_ := variable_types.get(name)) is not None
+                and name not in self.__name_to_categorical_variable
+                and not data_converter.is_continuous_scalar(name)
+            ):
+                value = value.astype(type_, copy=False)
+            input_data[name] = data_converter.convert_array_to_value(name, value)
 
         self.__decode_labels(input_data, x_vect)
 
