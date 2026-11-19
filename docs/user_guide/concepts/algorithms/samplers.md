@@ -34,4 +34,21 @@ search:
     is mapped to the centre $(i + 1/2)/n$ of its cell.
     So, each label has the same chance of being sampled.
 
+!!! note "Discrete variables"
+    In the same mapping,
+    the $n$ choices of a discrete variable
+    split $[0, 1]$ into $n$ cells of length $1/n$:
+    a coordinate $u$ in $[0, 1]$ gives
+    the choice at position $\lfloor n u \rfloor$
+    (the last one when $u = 1$),
+    and the choice at position $i$
+    is mapped to the centre $(i + 1/2)/n$ of its cell.
+    So, each choice has the same chance of being sampled
+    whatever their spacing,
+    e.g. the choices 10, 29 and 30 each have the chance $1/3$.
+    This holds for the DOE algorithms that sample the unit hypercube uniformly,
+    such as LHS and Monte Carlo.
+    A full factorial design with as many levels as choices
+    hits each of them once.
+
 ## Advanced use { #concept-advanced-use }

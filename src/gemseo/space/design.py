@@ -740,12 +740,28 @@ class DesignSpace(
 
         Unbounded variables are not normalized.
 
+        When the integer variables are normalized
+        (see
+        [enable_integer_variables_normalization][gemseo.space.design.DesignSpace.enable_integer_variables_normalization]),
+        so are the discrete variables,
+        like the categorical ones:
+        with $n$ choices,
+        the choice at position $i$ is mapped to the centre $(i+1/2)/n$
+        of the $i$-th of the $n$ cells of $[0,1]$;
+        if `minus_lb` is `False`,
+        the discrete components are left as they are.
+
         Args:
             x_vect: The values of the design variables.
             minus_lb: If `True`, remove the lower bounds at normalization.
 
         Returns:
             The normalized vector.
+
+        Raises:
+            TypeError: When `minus_lb` is `True`,
+                `x_vect` is a sparse array
+                and some categorical or discrete variables are normalized.
         """
         return self._normalizer.normalize(
             x_vect,
@@ -828,7 +844,7 @@ class DesignSpace(
         minus_lb: bool = True,
         no_check: bool = False,
     ) -> RealOrComplexArrayT:
-        """Denormalize a normalized vector of the design space.
+        r"""Denormalize a normalized vector of the design space.
 
         If `minus_lb` is True:
 
@@ -843,6 +859,18 @@ class DesignSpace(
 
         $$x = x_u(u_b-l_b)$$
 
+        When the integer variables are normalized
+        (see
+        [enable_integer_variables_normalization][gemseo.space.design.DesignSpace.enable_integer_variables_normalization]),
+        so are the discrete variables,
+        like the categorical ones:
+        with $n$ choices,
+        a normalized value $u$ is denormalized to the choice at position
+        $\lfloor n u \rfloor$ (the last one when $u = 1$),
+        and `x_vect` cannot be a sparse array;
+        if `minus_lb` is `False`,
+        the discrete components are left as they are.
+
         Args:
             x_vect: The values of the design variables.
             minus_lb: Whether to remove the lower bounds at normalization.
@@ -850,6 +878,11 @@ class DesignSpace(
 
         Returns:
             The original vector.
+
+        Raises:
+            TypeError: When `minus_lb` is `True`,
+                `x_vect` is a sparse array
+                and some categorical or discrete variables are normalized.
         """
         return self._normalizer.denormalize(
             x_vect,
@@ -1666,6 +1699,16 @@ class DesignSpace(
     @property
     def enable_integer_variables_normalization(self) -> bool:
         """Whether to enable the normalization of integer variables.
+
+        The discrete and categorical variables are normalized
+        if and only if the integer variables are.
+        A driver working in the normalized design space
+        then sees them as float variables in $[0,1]$,
+        whose values are mapped to the cell of a choice or a label
+        when denormalized:
+        with $n$ choices or labels,
+        the one at position $i$ is mapped to the centre $(i+1/2)/n$
+        of the $i$-th of the $n$ cells of $[0,1]$.
 
         Note:
             Switching the normalization of integer variables shall trigger

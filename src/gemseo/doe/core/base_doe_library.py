@@ -76,10 +76,10 @@ class DOEAlgorithmDescription(DriverDescription):
     """Whether the DOE algorithm handles categorical variables."""
 
     handle_discrete_variables: bool = True
-    """Whether the optimization algorithm handles discrete variables."""
+    """Whether the DOE algorithm handles discrete variables."""
 
     handle_integer_variables: bool = True
-    """Whether the optimization algorithm handles integer variables."""
+    """Whether the DOE algorithm handles integer variables."""
 
     minimum_dimension: int = 1
     """The minimum dimension of the parameter space."""

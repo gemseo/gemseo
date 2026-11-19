@@ -4548,3 +4548,36 @@ def test_catalog_variable_to_complex(catalog_design_space) -> None:
     assert_array_equal(
         catalog_design_space.get_current_value(["m"]), array([1.0j * 0 + 1])
     )
+
+
+@pytest.mark.parametrize("method_name", ["normalize_vect", "denormalize_vect"])
+def test_sparse_point_with_a_discrete_variable(method_name, snapshot) -> None:
+    """Check that a sparse point cannot be (de)normalized with a discrete variable."""
+    design_space = DesignSpace()
+    design_space.add_discrete_variable("t", [10.0, 20.0, 30.0])
+    with (
+        design_space._prepare_untransformation(True),
+        assert_exception(TypeError, snapshot),
+    ):
+        getattr(design_space, method_name)(csr_array([[0.5]]))
+
+
+@pytest.mark.parametrize(
+    ("method_name", "kwargs", "point", "expected"),
+    [
+        ("normalize_vect", {}, 2.0, 0.5),
+        ("denormalize_vect", {"no_check": True}, 0.5, 2.0),
+    ],
+    ids=["normalize", "denormalize"],
+)
+def test_sparse_point_without_a_discrete_variable(
+    method_name, kwargs, point, expected
+) -> None:
+    """Check that a sparse point is (de)normalized without a discrete variable."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x", lower_bound=1.0, upper_bound=3.0)
+    with design_space._prepare_untransformation(True):
+        value = getattr(design_space, method_name)(csr_array([[point]]), **kwargs)
+
+    assert isinstance(value, csr_array)
+    assert_array_equal(value.toarray(), array([[expected]]))

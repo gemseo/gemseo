@@ -28,6 +28,7 @@ from numpy import isin
 from numpy import where
 from numpy import zeros
 
+from gemseo.enum import VariableType
 from gemseo.space._core.registry_derived_data import RegistryDerivedData
 from gemseo.space._design.constants import bound_atol
 from gemseo.space.variable.base_categorical import BaseCategoricalVariable
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
     from gemseo.space._design.bounds import Bounds
     from gemseo.space._design.integer_rounder import IntegerRounder
     from gemseo.space._design.variables import DesignVariables
+    from gemseo.space.variable import DiscreteVariable
     from gemseo.util.typing import IntegerArray
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealOrComplexArrayT
@@ -52,6 +54,13 @@ _sparse_point_message: Final[str] = (
     "as each of its categorical components is mapped to the cell of a label."
 )
 """The message of the error raised for a sparse point with categorical components."""
+
+_sparse_discrete_point_message: Final[str] = (
+    "A point of a design space with discrete variables cannot be a sparse array "
+    "when it is normalized or denormalized, "
+    "as each of its discrete components is mapped to the cell of a choice."
+)
+"""The message of the error raised for a sparse point with discrete components."""
 
 
 class Normalizer(RegistryDerivedData):
@@ -76,12 +85,18 @@ class Normalizer(RegistryDerivedData):
     __affine_indices: IntegerArray | None
     """The indices of the components normalized by an affine map.
 
-    These are the normalizable components that are not categorical.
+    These are the normalizable components that are neither categorical nor discrete.
     `None` when never been used."""
 
     __categorical_indices: IntegerArray | None
     """The indices of the categorical components normalized by cells.
     `None` when never been used."""
+
+    __discrete_components: list[tuple[int, DiscreteVariable]]
+    """The index and the variable of each normalized discrete component.
+
+    These components are normalized by cells, like the categorical ones:
+    a choice owns a cell of the unit interval."""
 
     __n_labels: NumberArray | None
     """The number of labels of each component of `__categorical_indices`.
@@ -109,6 +124,7 @@ class Normalizer(RegistryDerivedData):
         self.__affine_indices = None
         self.__categorical_indices = None
         self.__n_labels = None
+        self.__discrete_components = []
 
     def _rebuild(self) -> None:
         """Rebuild the normalization data."""
@@ -122,8 +138,8 @@ class Normalizer(RegistryDerivedData):
             else zeros(0, dtype=bool)
         )
         self.__normalization_indices = normalization_mask.nonzero()[0]
-        # A categorical component is not scaled by the affine map of its bounds:
-        # a label owns a cell of the unit interval instead.
+        # A categorical or discrete component is not scaled by the affine map
+        # of its bounds: a label or a choice owns a cell of the unit interval instead.
         name_to_n_labels = {
             name: len(variable.labels)
             for name, variable in self._variables.items()
@@ -136,9 +152,24 @@ class Normalizer(RegistryDerivedData):
             is_categorical[indices] = True
             n_labels[indices] = n
         is_categorical_cell = normalization_mask & is_categorical
-        self.__affine_indices = (normalization_mask & ~is_categorical).nonzero()[0]
+        # A normalized discrete component is normalized by cells as well.
+        self.__discrete_components = []
+        is_discrete = zeros(self._variables.size, dtype=bool)
+        for name, variable in self._variables.items():
+            if variable.type != VariableType.DISCRETE:
+                continue
+
+            index = self._variables.name_to_indices[name][0]
+            if normalization_mask[index]:
+                is_discrete[index] = True
+                self.__discrete_components.append((index, variable))
+
+        self.__affine_indices = (
+            normalization_mask & ~is_categorical & ~is_discrete
+        ).nonzero()[0]
         self.__categorical_indices = is_categorical_cell.nonzero()[0]
         self.__n_labels = n_labels[self.__categorical_indices]
+
         # Avoid divide-by-zero when lb == ub.
         is_zero = self.__normalization_factor == 0.0
         self.__normalization_factor_inv = 1.0 / where(
@@ -162,6 +193,11 @@ class Normalizer(RegistryDerivedData):
 
         Returns:
             The normalized full value.
+
+        Raises:
+            TypeError: When `subtract_lower_bound` is `True`,
+                the full value is a sparse array
+                and the design space has categorical or normalized discrete components.
         """
         self._refresh()
         normalization_indices = self.__normalization_indices
@@ -170,12 +206,12 @@ class Normalizer(RegistryDerivedData):
             # the full value is merely copied and so keeps its dtype.
             return full_value.copy()
 
-        if (
-            subtract_lower_bound
-            and self.__categorical_indices.size
-            and isinstance(full_value, sparse_classes)
-        ):
-            raise TypeError(_sparse_point_message)
+        if subtract_lower_bound and isinstance(full_value, sparse_classes):
+            if self.__categorical_indices.size:
+                raise TypeError(_sparse_point_message)
+
+            if self.__discrete_components:
+                raise TypeError(_sparse_discrete_point_message)
 
         current_x_dtype = common_dtype
         if current_x_dtype.kind == "i":
@@ -214,6 +250,14 @@ class Normalizer(RegistryDerivedData):
                 components[..., categorical_indices] + 0.5
             ) / self.__n_labels
 
+        if subtract_lower_bound:
+            # A choice is mapped to the centre of its cell.
+            for index, variable in self.__discrete_components:
+                n_choices = variable.choices.size
+                components[..., index] = (
+                    variable.get_nearest_choice_positions(components[..., index]) + 0.5
+                ) / n_choices
+
         return value
 
     def denormalize(
@@ -234,14 +278,21 @@ class Normalizer(RegistryDerivedData):
 
         Returns:
             The denormalized full value.
+
+        Raises:
+            TypeError: When `add_lower_bound` is `True`,
+                the full value is a sparse array
+                and the design space has categorical or normalized discrete components.
         """
         self._refresh()
-        if (
-            add_lower_bound
-            and self.__categorical_indices.size
-            and isinstance(full_value, sparse_classes)
-        ):
-            raise TypeError(_sparse_point_message)
+        if add_lower_bound and isinstance(full_value, sparse_classes):
+            # A point is decoded component by component
+            # when it has categorical or normalized discrete components.
+            if self.__categorical_indices.size:
+                raise TypeError(_sparse_point_message)
+
+            if self.__discrete_components:
+                raise TypeError(_sparse_discrete_point_message)
 
         normalization_indices = self.__normalization_indices
         lower_bounds = self.__bounds.full_lower_bound
@@ -319,6 +370,18 @@ class Normalizer(RegistryDerivedData):
 
             if add_lower_bound:
                 components[..., affine_indices] += lower_bounds[affine_indices]
+
+        if add_lower_bound and self.__discrete_components:
+            # A choice owns a cell of the unit interval.
+            components = asarray(value)
+            for index, variable in self.__discrete_components:
+                choices = variable.choices
+                positions = clip(
+                    floor(components[..., index].real * choices.size),
+                    0,
+                    choices.size - 1,
+                ).astype(int)
+                components[..., index] = choices[positions]
 
         if decode_labels:
             # A label owns a cell of the unit interval.
