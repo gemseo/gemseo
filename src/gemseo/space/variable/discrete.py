@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -25,6 +26,7 @@ from numpy import asarray
 from numpy import atleast_1d
 from numpy import float64
 from numpy import isfinite
+from numpy import searchsorted
 from numpy import unique
 from pydantic import Field
 from pydantic import model_validator
@@ -47,19 +49,28 @@ if TYPE_CHECKING:
 
     from gemseo.space.variable.numeric import BoundArray
     from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import IntegerArray
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
 _choices: Final[str] = "choices"
 """The name of the field storing the choices of a discrete variable."""
 
-_normalization_mask: Final[BooleanArray] = freeze_array(array([False]))
-"""The normalization mask of a discrete variable (read-only).
+_normalization_masks: Final[tuple[BooleanArray, BooleanArray]] = (
+    freeze_array(array([False])),
+    freeze_array(array([True])),
+)
+"""The normalization masks of a discrete variable (read-only).
 
-A discrete variable is never normalized,
-so this mask is the same for every discrete variable;
-it is frozen once and for all,
-and `DiscreteVariable.get_normalization_mask` hands out views of it.
+A discrete variable is normalized
+only when the integer variables are,
+i.e. when `DesignSpace.enable_integer_variables_normalization` is `True`,
+e.g. for the mapping from the unit hypercube:
+the first mask applies when they are not normalized,
+the second one when they are.
+These masks are the same for every discrete variable;
+they are frozen once and for all,
+and `DiscreteVariable.get_normalization_mask` hands out views of them.
 """
 
 _max_displayed_choices: Final[int] = 6
@@ -195,7 +206,42 @@ class DiscreteVariable(BaseDeterministicVariable, BaseNumericVariable):
         # A view, so that reassigning the shape, the strides or the data type
         # of the mask handed out, which NumPy allows on a read-only array,
         # cannot reach the mask shared by every discrete variable.
-        return _normalization_mask.view()
+        return _normalization_masks[bool(enable_integer_normalization)].view()
+
+    def get_nearest_choice_positions(self, values: NumberArray) -> IntegerArray:
+        """Return the positions of the choices nearest to values.
+
+        Args:
+            values: The values, of any shape; their imaginary parts are ignored.
+
+        Returns:
+            The positions of the nearest choices, with the shape of `values`;
+            a value equidistant from two choices is mapped to the lower one,
+            up to the rounding of the midpoint between them.
+        """
+        # The choices are sorted,
+        # so the nearest one is found from the midpoints between consecutive ones;
+        # `side="left"` maps a value equal to a midpoint to the lower choice.
+        return searchsorted(self.__midpoints, values.real)
+
+    def get_nearest_choices(self, values: NumberArray) -> RealArray:
+        """Return the choices nearest to values.
+
+        Args:
+            values: The values, of any shape; their imaginary parts are ignored.
+
+        Returns:
+            The nearest choices, with the shape of `values`;
+            a value equidistant from two choices is mapped to the lower one,
+            up to the rounding of the midpoint between them.
+        """
+        return self.choices[self.get_nearest_choice_positions(values)]
+
+    @cached_property
+    def __midpoints(self) -> RealArray:
+        """The midpoints between consecutive choices."""
+        choices = self.choices
+        return 0.5 * (choices[1:] + choices[:-1])
 
     def find_components_outside_domain(self, choice: NumberArray) -> set[int]:  # noqa: D102
         choice_0 = atleast_1d(choice)[0]

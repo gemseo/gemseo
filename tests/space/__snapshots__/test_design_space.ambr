@@ -826,6 +826,12 @@
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'
 # ---
+# name: test_sparse_point_with_a_discrete_variable[denormalize_vect]
+  'A point of a design space with discrete variables cannot be a sparse array when it is normalized or denormalized, as each of its discrete components is mapped to the cell of a choice.'
+# ---
+# name: test_sparse_point_with_a_discrete_variable[normalize_vect]
+  'A point of a design space with discrete variables cannot be a sparse array when it is normalized or denormalized, as each of its discrete components is mapped to the cell of a choice.'
+# ---
 # name: test_to_complex_without_current_value
   "'There is no current value for the design variables: y.'"
 # ---

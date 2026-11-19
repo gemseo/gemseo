@@ -20,7 +20,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import abs as np_abs
 from numpy import asarray
 from numpy import float64
 
@@ -32,8 +31,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.space.design import DesignSpace
+    from gemseo.space.variable import DiscreteVariable
     from gemseo.util.typing import NumberArray
-    from gemseo.util.typing import RealArray
 
 
 class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
@@ -69,8 +68,8 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
     __relax_discrete: bool
     """Whether the discrete variables are relaxed."""
 
-    __discrete_components: tuple[tuple[range, RealArray], ...]
-    """The indices and the choices of each relaxed discrete variable."""
+    __discrete_components: tuple[tuple[range, DiscreteVariable], ...]
+    """The indices and the variable of each relaxed discrete variable."""
 
     __relaxed_names: frozenset[str]
     """The names of the variables this transformation relaxes to float ones."""
@@ -99,7 +98,7 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
         )
         name_to_indices = space._variables.name_to_indices
         self.__discrete_components = tuple(
-            (name_to_indices[name], asarray(variable.choices, dtype=float64))
+            (name_to_indices[name], variable)
             for name, variable in space.variables.items()
             if variable.type == VariableType.DISCRETE and relax_discrete
         )
@@ -189,12 +188,9 @@ class SpaceRelaxation(BaseSpaceTransformation["DesignSpace"]):
         projected_value = self._original_space.round_vect(value.copy(), copy=False)
         # `__discrete_components` only holds the relaxed discrete variables,
         # see `__init__`.
-        for indices, choices in self.__discrete_components:
-            component = projected_value[..., indices]
-            # A tie is settled by `argmin`, which keeps the first,
-            # and so the lower, of the two nearest choices.
-            projected_value[..., indices] = choices[
-                np_abs(choices - component[..., None]).argmin(axis=-1)
-            ]
+        for indices, variable in self.__discrete_components:
+            projected_value[..., indices] = variable.get_nearest_choices(
+                projected_value[..., indices]
+            )
 
         return projected_value

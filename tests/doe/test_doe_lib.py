@@ -35,6 +35,7 @@ from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from pandas import DataFrame
 
+from gemseo import compute_doe
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
@@ -985,3 +986,58 @@ def test_lhs_on_a_categorical_variable(material_design_space, vectorize) -> None
     positions = {int(x.wrapped_array[0]) for x in database}
     assert positions == {0, 1, 2}
     assert set(discipline.labels) == set(density)
+
+
+@pytest.fixture
+def discrete_design_space() -> DesignSpace:
+    """A design space with a discrete variable."""
+    design_space = DesignSpace()
+    design_space.add_discrete_variable("d", [10, 20, 30], value=10)
+    return design_space
+
+
+def test_full_factorial_on_a_discrete_variable(discrete_design_space) -> None:
+    """Check that a full-factorial DOE with 3 levels visits each choice once."""
+    samples = compute_doe(
+        discrete_design_space, algo_name="PYDOE_FULLFACT", n_samples=3
+    )
+    assert_array_equal(samples, [[10.0], [20.0], [30.0]])
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"algo_name": "PYDOE_LHS", "n_samples": 30, "seed": 1},
+        {"algo_name": "PYDOE_FULLFACT", "levels": [3, 2, 3]},
+        {"algo_name": "OT_MONTE_CARLO", "n_samples": 30, "seed": 1},
+    ],
+    ids=["lhs", "fullfact", "monte_carlo"],
+)
+def test_doe_on_discrete_variables(discrete_design_space, settings) -> None:
+    """Check that the DOE algorithms only return choices of a discrete variable."""
+    discrete_design_space.add_real_variable(
+        "x", lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
+    discrete_design_space.add_integer_variable(
+        "n", lower_bound=1, upper_bound=3, value=1
+    )
+    samples = compute_doe(discrete_design_space, **settings)
+    assert set(samples[:, 0]) == {10.0, 20.0, 30.0}
+    assert ((samples[:, 1] >= 0.0) & (samples[:, 1] <= 1.0)).all()
+    assert set(samples[:, 2]) <= {1, 2, 3}
+
+
+def test_scenario_on_a_discrete_variable(discrete_design_space) -> None:
+    """Check that the database and the dataset of a DOE store the choices."""
+    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*d"})
+    scenario = MDOScenario([discipline], discrete_design_space)
+    scenario.add_objective("y")
+    scenario.execute(PYDOE_LHS_Settings(n_samples=20, seed=3))
+    database = scenario.formulation.problem.database
+    assert {x.wrapped_array[0] for x in database} <= {10.0, 20.0, 30.0}
+    dataset = scenario.to_dataset(opt_naming=False)
+    assert set(dataset.get_view(variable_names="d").to_numpy().ravel()) <= {
+        10.0,
+        20.0,
+        30.0,
+    }

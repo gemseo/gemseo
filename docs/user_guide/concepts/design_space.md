@@ -179,6 +179,8 @@ tells whether the design space holds a discrete variable.
     rejects a problem including such variables;
     set `relax_discrete_variables` to `True` to relax them to float variables
     and run it anyway.
+    The DOE algorithms sample them
+    ([read more][concept-samplers-doe]).
 
 !!! note
     The components of a discrete variable are stored as floats,
@@ -460,12 +462,12 @@ into $x_{\mathrm{normalized}}$ in $[0, 1]$:
 where $l_b(x)$ and $u_b(x)$ are the lower and upper bounds of the variable $x$.
 
 !!! warning
-    Discrete and catalog variables cannot be normalized.
-    An integer or categorical variable is not normalized either,
+    Catalog variables cannot be normalized.
+    A discrete, integer or categorical variable is not normalized either,
     unless [enable_integer_variables_normalization][gemseo.space.design.DesignSpace.enable_integer_variables_normalization]
     is set to `True`,
     in which case an integer variable follows the same formula as a float variable
-    and a categorical one is mapped as described in [Samplers (DOE)][concept-samplers-doe].
+    and a discrete or categorical one is mapped as described in [Samplers (DOE)][concept-samplers-doe].
 
 !!! how-to
     - [How to (un)normalize design parameters][]

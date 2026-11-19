@@ -137,3 +137,39 @@ def test_working_space_current_value_mutation_is_isolated(mixed_space) -> None:
     working_space.to_complex()
     assert working_space.get_current_value(["continuous"]).dtype.kind == "c"
     assert mixed_space.get_current_value(["continuous"]).dtype.kind == "f"
+
+
+@pytest.fixture
+def discrete_normalization() -> SpaceNormalization:
+    """The normalization of a discrete variable, with integer normalization."""
+    space = DesignSpace()
+    space.add_discrete_variable("x", (10, 20, 30), value=20)
+    space.enable_integer_variables_normalization = True
+    return SpaceNormalization(space)
+
+
+def test_discrete_variable_with_integer_normalization(
+    discrete_normalization,
+) -> None:
+    """Check the working space of a discrete variable normalized with the integers.
+
+    The driver sees a float variable in the unit interval.
+    """
+    variable = discrete_normalization.working_space.variables["x"]
+
+    assert variable.type == VariableType.REAL
+    assert_equal(variable.lower_bound, [0.0])
+    assert_equal(variable.upper_bound, [1.0])
+    assert_equal(discrete_normalization.working_space.get_current_value(), [0.5])
+
+
+@pytest.mark.parametrize(
+    ("unit_value", "choice"), [(0.4, 20.0), (0.0, 10.0)], ids=["middle", "lower-end"]
+)
+def test_discrete_variable_inverse_transform(
+    discrete_normalization, unit_value, choice
+) -> None:
+    """Check that the inverse map gives the choice owning the cell of a unit value."""
+    assert_equal(
+        discrete_normalization.inverse_transform_value(array([unit_value])), [choice]
+    )

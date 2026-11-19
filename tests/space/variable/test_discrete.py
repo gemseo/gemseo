@@ -106,13 +106,6 @@ def test_rejections(kwargs, snapshot) -> None:
         DiscreteVariable(**kwargs)
 
 
-def test_normalization_mask() -> None:
-    """Check that a discrete variable is never normalized."""
-    variable = DiscreteVariable(choices=[1, 2])
-    assert_array_equal(variable.get_normalization_mask(False), array([False]))
-    assert_array_equal(variable.get_normalization_mask(True), array([False]))
-
-
 @pytest.mark.parametrize(
     ("attribute_name", "value"),
     [("shape", (3, 1)), ("strides", (0,)), ("dtype", int32)],
@@ -268,3 +261,50 @@ def test_format_out_of_domain_values() -> None:
         "The following value of variable 'x' is not among its choices "
         "[1.0, 2.0]: 3.0 (index 0)."
     )
+
+
+@pytest.mark.parametrize("enable_integer_normalization", [False, True])
+def test_normalization_mask(enable_integer_normalization) -> None:
+    """Check that a discrete variable is normalized when the integer ones are."""
+    mask = DiscreteVariable(choices=[1, 2]).get_normalization_mask(
+        enable_integer_normalization
+    )
+    assert_array_equal(mask, [enable_integer_normalization])
+
+
+def test_get_nearest_choice_positions() -> None:
+    """Check the positions of the nearest choices, a tie going to the lower one."""
+    variable = DiscreteVariable(choices=[10, 20, 30])
+    values = array([[9.0, 14.9], [15.0, 25.0], [26.0, 100.0]])
+    assert_array_equal(
+        variable.get_nearest_choice_positions(values), [[0, 0], [0, 1], [2, 2]]
+    )
+
+
+def test_get_nearest_choice_positions_ignores_imaginary_part() -> None:
+    """Check that the imaginary part of a value does not change its nearest choice."""
+    variable = DiscreteVariable(choices=[10, 20, 30])
+    assert_array_equal(variable.get_nearest_choice_positions(array([14.0 + 9j])), [0])
+
+
+def test_get_nearest_choices() -> None:
+    """Check that the nearest choice is returned and a tie goes to the lower one."""
+    variable = DiscreteVariable(choices=[10, 20, 30])
+    values = array([[9.0, 14.9], [15.0, 25.0], [26.0, 100.0]])
+    assert_array_equal(
+        variable.get_nearest_choices(values), [[10, 10], [10, 20], [30, 30]]
+    )
+
+
+def test_nearest_choices_cache_keeps_equality() -> None:
+    """Check that the cached midpoints do not change equality."""
+    variable = DiscreteVariable(choices=[10, 20, 30])
+    variable.get_nearest_choices(array([15.0]))
+    assert variable == DiscreteVariable(choices=[10, 20, 30])
+
+
+def test_nearest_choices_cache_keeps_pickling() -> None:
+    """Check that the cached midpoints do not change pickling."""
+    variable = DiscreteVariable(choices=[10, 20, 30])
+    variable.get_nearest_choices(array([15.0]))
+    assert pickle.loads(pickle.dumps(variable)) == variable
