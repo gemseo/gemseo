@@ -430,10 +430,9 @@ class IO:
         if extra_names:
             to_namespaced = output_grammar.to_namespaced
             for name in extra_names:
+                value = output_data.pop(name)
                 if (name_with_ns := to_namespaced.get(name)) is not None:
-                    output_data.setdefault(name_with_ns, output_data[name])
-
-                del output_data[name]
+                    output_data.setdefault(name_with_ns, value)
 
         if validate:
             self.output_grammar.validate(self.output_data)
