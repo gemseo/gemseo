@@ -134,6 +134,7 @@ is shared with `ParameterSpace` and re-exported by `gemseo/enum/__init__.py`.
   freezing, and the `self.__dict__[...] =` write-back that bypasses the frozen model.
   The name is `BaseVariable`, not `Variable`, to match GEMSEO's `Base*` convention
   (`BaseFactory`, `BaseMDA`, `BaseDiscipline`).
+
 - **Concrete subclasses (this phase)**, in a dedicated package
   **`src/gemseo/space/_variable/`** — the current `space/_variable.py` module is turned
   into a package (base + subclasses + factory), so the factory scan scope is tight.
@@ -144,6 +145,7 @@ is shared with `ParameterSpace` and re-exported by `gemseo/enum/__init__.py`.
     - **`IntegerVariable`** — `type` pinned to `INTEGER`; integer-bound
       validation; integer component mask; rounding; `int64` dtype;
       not normalized unless `enable_integer_variables_normalization`.
+
 - **`VariableFactory(BaseFactory[BaseVariable])`** — the **GEMSEO factory** that
   builds variable instances, **not** a `BaseVariable.create` classmethod
   (`_CLASS = BaseVariable`, `_PACKAGE_NAMES = ("gemseo.space._variable",)`;
@@ -157,6 +159,7 @@ is shared with `ParameterSpace` and re-exported by `gemseo/enum/__init__.py`.
   `TYPE_MAP` entry. Retiring `TYPE_MAP` in favour of `BaseVariable.component_type`,
   which would open the discriminator, is follow-up work for #1791. This is the single
   internal construction entry.
+
 - **Package import contract** — `gemseo/enum/__init__.py:116` imports
   `DataType` from `gemseo.space._variable`, and the lazy-import map at `:275` binds
   `"DesignVariableType"` to the string `"gemseo.space._variable:DataType"`. Turning the
@@ -165,6 +168,7 @@ is shared with `ParameterSpace` and re-exported by `gemseo/enum/__init__.py`.
   `space/design/*` import from the same module.
   `tests/test_enums.py::test_all_exports_are_enums` guards the lazy string, since it
   `getattr`s every name in `enum.__all__`.
+
 - **Polymorphic methods on `BaseVariable`** (replacing scattered `type ==`
   branches), each mapping to a current site:
 

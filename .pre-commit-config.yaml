@@ -70,7 +70,7 @@ repos:
         stages: [commit-msg]
 
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.3.4
+    rev: v0.3.5
     hooks:
       - id: rumdl-fmt
         # The changelog template is Jinja, rendered into Markdown by towncrier.

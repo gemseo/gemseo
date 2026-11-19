@@ -684,11 +684,14 @@ src/gemseo/utils/_numpy.py              # + COMPLEX128_DTYPE, FLOAT64_DTYPE, INT
 ### Module — `src/gemseo/algos/design_space/__init__.py` (`DesignSpace` façade)
 
 1. **Responsibility**: orchestrator and public API entry point. No longer the holder of most class-level constants — see the breaking-change note in Requirements/Approach. Declared as `class DesignSpace(metaclass=GoogleDocstringInheritanceMeta)`.
+
 2. **Attributes** (instance, set in `__init__`): `name: str`; `_variables: Variables`; `_bounds: Bounds`; `_integer_rounder: IntegerRounder`; `_normalizer: Normalizer`; `_current: Value`. No `_codec`/`_checking` attributes — both are consumed via direct module-function imports (`_io` is imported `as _design_space_io`; `_codec.concatenate_values`/`split_full_value` are imported under the aliases `_convert_dict_to_array`/`_convert_array_to_dict`).
+
 3. **Class-level constants (surviving)** — only two:
     - `DesignVariableType = DataType` (alias).
     - `VARIABLE_TYPES_TO_DTYPES: Final[dict[str, type[int64 | float64]]] = TYPE_MAP` (from `_variable.TYPE_MAP`; carries a `TODO: API` note that the values are types, not dtypes).
     All others (`MINIMAL_FIELDS`, `TABLE_NAMES`, `DESIGN_SPACE_GROUP`, `NAME_GROUP`, `NAMES_GROUP`, `LB_GROUP`, `UB_GROUP`, `VAR_TYPE_GROUP`, `VALUE_GROUP`, `SIZE_GROUP`) were **removed** — see Safeguards §1/§7 and `changelog/fragments/1801.removed.md`.
+
 4. **`__init__(self, name: str = "") -> None`**: instantiates the five collaborators in order —
 
     ```python
@@ -729,6 +732,7 @@ src/gemseo/utils/_numpy.py              # + COMPLEX128_DTYPE, FLOAT64_DTYPE, INT
     ```
 
     Confirms: the duplicate-name check lives **here**, not in `Variables.__setitem__` (which is an insert-or-replace primitive); the bound/type validation is delegated OUT to `_checking.check_addable_value` plus `self._current.check_value(name)`; the façade itself does no bound math, only orchestration, the dtype cast, and the rollback.
+
 6. **Other methods that retain real logic (not ≤5-line delegates)** — documented individually rather than assumed thin:
     - `remove_variable(name)` — `del self._variables[name]` then `self._current.pop(name)`.
     - `filter(keep_variables, copy=False)` — normalizes the argument via `convert_strings_to_iterable`, **validates every requested name up front** by indexing `self._variables[name]` (bug fix: an unknown name no longer leaves the space partially emptied when `copy=False`), optionally deep-copies, then loops calling `remove_variable` for the names not kept.
@@ -743,11 +747,14 @@ src/gemseo/utils/_numpy.py              # + COMPLEX128_DTYPE, FLOAT64_DTYPE, INT
     - `extend(other)`, `add_variables_from(space, *names)`, `_add_variable_from(space, name)` — loops of per-variable `add_variable` calls reading `other._variables[name]` and `other._current_value.get(name)`.
     - `__eq__(other)` — multi-step structural comparison (class, variable-key equality, per-variable equality, current-value key equality, `array_equal` per value).
     - `__setstate__(state)` — dual-path pickle replay, see §9.
+
 7. **Thin one-to-few-line delegates** (everything else): bounds accessors (`set_lower_bound`, `set_upper_bound`, `get_lower_bound`, `get_upper_bound`, `get_lower_bounds`, `get_upper_bounds` — the last two overloaded on `as_dict`; `project_into_bounds` → `_bounds.clip_to_bounds`), normalization (`normalize_vect` → `_normalizer.normalize(x_vect, self._current.common_dtype, subtract_lower_bound=minus_lb, out=out)`; `denormalize_vect` → `_normalizer.denormalize(x_vect, self._current.common_dtype, add_lower_bound=minus_lb, no_check=no_check, out=out)`; `transform_vect`/`untransform_vect` call `normalize_vect`/`denormalize_vect`; `normalize_grad` calls `denormalize_vect(g_vect, minus_lb=False, no_check=True)`; `denormalize_grad` calls `normalize_vect(g_vect, minus_lb=False)`; `round_vect` → `_integer_rounder.round`), current-value (`set_current_variable`, `get_current_value`, `has_current_value`, `initialize_missing_current_values`, `to_complex` → `_current`), conversion (`convert_array_to_dict` → `_codec.split_full_value`; `convert_dict_to_array` → `_codec.concatenate_values`, defaulting `variable_names` to the registry when empty), membership (`check_membership` → `_checking.check_membership`), IO and View delegates, misc accessors (`get_size` → `_variables[name].size`, `get_type` → `str(_variables[name].type)`, `has_integer_variables` → `_variables.has_integer_variable`), dunders (`__contains__`, `__len__`, `__iter__` → `_variables`).
+
 8. **Deprecated shims** (emit `DeprecationWarning` with `stacklevel=2`, then forward):
     - `normalize` (property) → `name_to_normalization_mask`. Message: `"DesignSpace.normalize is deprecated; use DesignSpace.name_to_normalization_mask instead."`
     - `unnormalize_grad(g_vect)` → `denormalize_grad`. Message: `"DesignSpace.unnormalize_grad is deprecated; use DesignSpace.denormalize_grad instead."`
     - `unnormalize_vect(x_vect, minus_lb=True, no_check=False, out=None)` → `denormalize_vect`. Message: `"DesignSpace.unnormalize_vect is deprecated; use DesignSpace.denormalize_vect instead."`
+
 9. **Backward-compat read-only properties — actual current set**:
 
     | Property | Source |
@@ -765,11 +772,16 @@ src/gemseo/utils/_numpy.py              # + COMPLEX128_DTYPE, FLOAT64_DTYPE, INT
     | `enable_integer_variables_normalization` | getter/setter delegating to `self._variables.enable_integer_variables_normalization` (setter is a no-op on an unchanged value) |
 
     The pre-refactor `_variables` **property** (a `dict[str, Variable]`) no longer exists: `_variables` is now the `Variables` registry instance itself, readable through the mapping protocol. `_lower_bounds`/`_upper_bounds`, `_check_variable_name` and `_get_string_representation` no longer exist either. The `names_to_indices` → `name_to_indices` rename has **no** deprecated alias in the current package (one was added then removed).
+
 10. **Dunder methods**:
     - `__contains__`, `__iter__`, `__len__` — delegate to `_variables`.
+
     - `__repr__` → `_view.render_string(self, use_html=False)`; `__str__` → same with `simplify=True`; `_repr_html_` → `_view.render_html(self)`.
+
     - `__eq__` — see §6, real multi-step comparison.
+
     - `__getstate__` — not overridden (default `__dict__` pickling).
+
     - `__setstate__(state)` — **implemented**, dual-path, keyed on `"_bounds"`:
 
       ```python

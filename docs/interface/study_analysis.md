@@ -116,6 +116,7 @@ gemseo-study [-h] [-o OUT_DIR] [-x] [-p] [--height HEIGHT] [--width WIDTH] [-t S
 with
 
 - positional arguments: study_file The path of the XLS file that describes the study.
+
 - optional arguments:
 
     - `-h, --help`: show this help message and exit
