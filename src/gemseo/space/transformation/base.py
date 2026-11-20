@@ -31,7 +31,6 @@ from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.function.array_function import ArrayFunction
     from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import NumberArray
 
@@ -90,10 +89,15 @@ class BaseSpaceTransformation(
     nor its dimension:
     the maps carry whole values and Jacobians from one space to the other,
     and whoever consumes a transformation reads the working space from it.
-    A transformation splitting a vector into scalars,
-    freezing a component
-    or encoding a variable
+    A transformation splitting a vector into scalars
+    or freezing a component
     fits this contract as it is.
+
+    The contract is that of a change of coordinates:
+    the backward map takes the image of a value back to this value,
+    and the maps of the Jacobians apply the chain rule exactly,
+    so that a function evaluated through the transformation
+    is the same function in other coordinates.
     """  # noqa: E501
 
     is_affine: ClassVar[bool] = False
@@ -268,12 +272,7 @@ class BaseSpaceTransformation(
         so a relaxed working variable is the relaxed original variable of the same name.
         A transformation renaming its variables or adding new ones
         overrides this method,
-        e.g. one encoding a variable into others,
-        whose backward map decodes a value into the domain of the original variable,
-        which is then not relaxed,
-        and which a driver accepts
-        even when its algorithm does not handle the kind of that variable,
-        since the variable is not in the working space the algorithm iterates on;
+        e.g. one splitting a vector into scalars;
         the default refuses a working name that is not an original one,
         rather than silently dropping a relaxed variable.
 
@@ -299,31 +298,3 @@ class BaseSpaceTransformation(
             raise ValueError(msg)
 
         return names
-
-    def create_constraints(
-        self, working_space: BaseVariableSpace
-    ) -> tuple[ArrayFunction, ...]:
-        """Create the constraints that the transformation imposes.
-
-        This states a property of the transformation,
-        for a consumer able to exploit it,
-        such as one adding these constraints to a problem once and for all.
-        The evaluation of a problem does not read it yet:
-        it is part of the contract for the story that will.
-
-        The space is an argument,
-        unlike the working space of this transformation,
-        because the constraints are wanted in the coordinates of whoever consumes them:
-        a composition asks each of its transformations for constraints on the
-        working space of the composition,
-        which is not the working space of the transformation.
-        Carrying the constraints of a transformation to those coordinates
-        is the job of the story that consumes them.
-
-        Args:
-            working_space: The space the constraints are expressed on.
-
-        Returns:
-            The constraints, empty by default.
-        """
-        return ()
