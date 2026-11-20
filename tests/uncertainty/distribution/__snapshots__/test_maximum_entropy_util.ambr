@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_compute_maximum_entropy_moments_error
+  'The truncated normal distribution has no closed-form moments.'
+# ---
+# name: test_compute_truncated_normal_parameters_error
+  "The truncated normal distribution with the mean 0.0 and the standard deviation 0.1 cannot be computed: no fit reached moment residuals below 1e-06, the square root of 'solver_tolerance' (1e-12); a larger 'solver_tolerance', at most 1e-6, loosens this threshold."
+# ---
+# name: test_too_few_solver_iterations
+  "The tilted uniform distribution with the minimum 2.0, the maximum 5.0 and the mean 4.999 cannot be computed within the 1 bracket expansions set by 'maximum_solver_iterations'; increase it or move the mean away from the bounds."
+# ---
+# name: test_too_large_standard_deviation[bounded-log-convex]
+  'The probability distribution maximizing the entropy for this information has a log-convex probability density function, which no truncated normal distribution has: the standard deviation 1.0 must not be greater than about 0.834569.'
+# ---
+# name: test_too_large_standard_deviation[bounded-unachievable]
+  'No probability distribution maximizes the entropy for this information: the standard deviation 1.5 is too large for this support and this mean; it must be less than 1.469693845669907, which only the distribution concentrated at the bounds reaches, and not greater than about 0.834569 for this distribution to be a truncated normal one.'
+# ---
+# name: test_too_large_standard_deviation[maximum-only]
+  'No probability distribution maximizes the entropy for this information: the standard deviation 2.0 is too large for this support and this mean; it must not be greater than 1.7999999999999998.'
+# ---
+# name: test_too_large_standard_deviation[minimum-only]
+  'No probability distribution maximizes the entropy for this information: the standard deviation 1.5 is too large for this support and this mean; it must not be greater than 1.2000000000000002.'
+# ---
