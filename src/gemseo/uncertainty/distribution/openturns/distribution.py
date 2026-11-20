@@ -21,9 +21,12 @@
 
 from __future__ import annotations
 
+from re import escape
+from re import sub
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
 import openturns
 from numpy import array
@@ -47,6 +50,28 @@ if TYPE_CHECKING:
 
     from gemseo.util.typing import RealArray
 
+_relative_slack: Final[float] = 1e-9
+"""The relative distance beyond the support within which a bound is not rejected.
+
+The support of a transformed distribution is known
+up to the rounding error of a numerical range or of a symbolic computation,
+which this slack tolerates when a truncation bound is compared with it.
+It is relative to the bound of the support that the comparison is made with.
+"""
+
+
+def _compute_slack(bound: float) -> float:
+    """Compute the slack of a comparison with a bound of the support.
+
+    Args:
+        bound: The bound of the support.
+
+    Returns:
+        The distance beyond the bound of the support
+        within which a truncation bound is not rejected.
+    """
+    return _relative_slack * max(1.0, abs(bound))
+
 
 class OTDistribution(
     BaseUnivariateDistribution[float, tuple[Any, ...], DistributionImplementation],
@@ -68,15 +93,106 @@ class OTDistribution(
     )
 
     def _create_distribution(self, settings: OTDistribution_Settings) -> None:
+        # Create the original distribution, before transformation and truncation.
         distribution = self._create_distribution_from_module(openturns, settings)
-        self.__set_bounds(distribution)
-        if settings.transformation:
-            distribution = self.__transform_distribution(distribution, settings)
+        # Set the range and support of the original distribution.
+        self.__set_range_and_support(distribution)
 
-        self.__set_bounds(distribution)
+        # OpenTURNS estimates the range of a CompositeDistribution numerically
+        # and reports the ends of the support as finite,
+        # regardless of the transformation and the support before transformation.
+        # This is a bug documented
+        # in the issue: https://github.com/openturns/openturns/issues/3274.
+        # TODO: Remove support management once this OpenTURNS bug has been fixed.
+        # To get round this bug,
+        # the transformation is analyzed symbolically using sympy:
+        # an end of the support after transformation is infinite
+        # where sympy proves that the transformation diverges
+        # or cannot analyze it near a singular point,
+        # and is otherwise the end of the range that OpenTURNS estimates.
+        # On a side that is unbounded before transformation,
+        # this estimate is flagged unknown,
+        # so that comparing a truncation bound with it does not reject valid bounds.
+        # The support is initialized as the set of all real numbers.
+        math_lower_bound = -inf
+        math_upper_bound = inf
+        # Both ends of the support are known without transformation.
+        lower_bound_is_known = upper_bound_is_known = True
+        if settings.transformation:
+            # The spaces are removed to normalize the transformation,
+            # e.g. so that "2*x" and "2 * x" share the support computed below;
+            # this normalized form is the one reported by the transformation property.
+            transformation = settings.transformation.replace(" ", "")
+            math_lower_bound_before_transformation = self.math_lower_bound
+            math_upper_bound_before_transformation = self.math_upper_bound
+            distribution = self.__transform_distribution(distribution, transformation)
+            self.__set_range_and_support(distribution)
+            if transformation == f"-{self.default_variable_name}":
+                # The reflection is special-cased:
+                # it is used by OTMaximumEntropyDistribution,
+                # which must work without the optional dependency sympy.
+                # Its image is the reflected support, with both ends known.
+                support = (
+                    -math_upper_bound_before_transformation,
+                    -math_lower_bound_before_transformation,
+                    True,
+                    True,
+                )
+            else:
+                # This sympy-dependent import is local,
+                # so that sympy which is optional is only imported when needed.
+                from gemseo.uncertainty.distribution.openturns._transformed_support import (  # noqa: E501
+                    compute_transformed_support,
+                )
+
+                support = compute_transformed_support(
+                    transformation,
+                    math_lower_bound_before_transformation,
+                    math_upper_bound_before_transformation,
+                )
+
+            lower_bound, upper_bound, lower_bound_is_known, upper_bound_is_known = (
+                support
+            )
+            # An end that the computation does not provide
+            # is the end of the range that OpenTURNS estimates,
+            # which the call to __set_range_and_support above has already stored.
+            if lower_bound is not None:
+                self.math_lower_bound = lower_bound
+                # The range is estimated numerically,
+                # so it can exceed the support by a rounding error.
+                self.num_lower_bound = max(self.num_lower_bound, lower_bound)
+
+            if upper_bound is not None:
+                self.math_upper_bound = upper_bound
+                self.num_upper_bound = min(self.num_upper_bound, upper_bound)
+
+            math_lower_bound = self.math_lower_bound
+            math_upper_bound = self.math_upper_bound
+
         if settings.lower_bound is not None or settings.upper_bound is not None:
-            distribution = self.__truncate_distribution(distribution, settings)
-        self.__set_bounds(distribution)
+            distribution = self.__truncate_distribution(
+                distribution,
+                settings,
+                lower_bound_is_known,
+                upper_bound_is_known,
+            )
+            self.__set_range_and_support(distribution)
+            if settings.transformation:
+                # The range of the truncated composite distribution is numerical too;
+                # the mathematical bounds are the bounds established above,
+                # narrowed by the truncation bounds.
+                # A truncation bound is not used as is,
+                # as it can exceed the support by the slack of its check.
+                if settings.lower_bound is not None:
+                    math_lower_bound = max(math_lower_bound, settings.lower_bound)
+
+                if settings.upper_bound is not None:
+                    math_upper_bound = min(math_upper_bound, settings.upper_bound)
+
+                self.math_lower_bound = math_lower_bound
+                self.math_upper_bound = math_upper_bound
+
         self.distribution = distribution
 
     def compute_samples(self, n_samples: int = 1) -> RealArray:  # noqa: D102
@@ -107,7 +223,7 @@ class OTDistribution(
         return self.distribution.getStandardDeviation()[0]
 
     def __transform_distribution(
-        self, distribution: Distribution, settings: OTDistribution_Settings
+        self, distribution: Distribution, transformation: str
     ) -> CompositeDistribution:
         """Apply a transformation to a distribution.
 
@@ -115,37 +231,75 @@ class OTDistribution(
 
         Args:
             distribution: The original distribution.
-            settings: The settings of the distribution.
+            transformation: The transformation, without any space.
 
         Returns:
             The transformed distribution.
         """
-        transformation = settings.transformation.replace(" ", "")
-        symbolic_function = SymbolicFunction(
-            [self.default_variable_name], [transformation]
+        # Only the occurrences of the variable are substituted,
+        # and not those inside a name including it, e.g. the "x" of "exp".
+        self._transformation = sub(
+            rf"\b{escape(self.default_variable_name)}\b",
+            lambda _: f"({self._transformation})",
+            transformation,
         )
-        self._transformation = transformation.replace(
-            self.default_variable_name, f"({self._transformation})"
+        return CompositeDistribution(
+            SymbolicFunction([self.default_variable_name], [transformation]),
+            distribution,
         )
-        return CompositeDistribution(symbolic_function, distribution)
 
     def __truncate_distribution(
-        self, distribution: Distribution, settings: OTDistribution_Settings
+        self,
+        distribution: Distribution,
+        settings: OTDistribution_Settings,
+        check_lower_bound: bool = True,
+        check_upper_bound: bool = True,
     ) -> TruncatedDistribution:
         """Truncate the distribution of a random variable.
 
         Args:
             distribution: The original distribution.
             settings: The settings of the distribution.
+            check_lower_bound: Whether to check that the lower truncation bound
+                is not below the support of the distribution.
+                This check must be skipped
+                when the lower end of the support is not known.
+            check_upper_bound: Whether to check that the upper truncation bound
+                is not above the support of the distribution.
+                This check must be skipped
+                when the upper end of the support is not known.
 
         Returns:
-            The transformed distributions.
+            The truncated distribution.
         """
         self._transformation = f"Trunc({self._transformation})"
+        if (
+            check_lower_bound
+            and settings.lower_bound is not None
+            and settings.lower_bound
+            < self.math_lower_bound - _compute_slack(self.math_lower_bound)
+        ):
+            msg = (
+                f"The lower bound {settings.lower_bound} of the truncation "
+                f"is less than the lower bound {self.math_lower_bound:.10g} "
+                "of the support."
+            )
+            raise ValueError(msg)
+
+        if (
+            check_upper_bound
+            and settings.upper_bound is not None
+            and settings.upper_bound
+            > self.math_upper_bound + _compute_slack(self.math_upper_bound)
+        ):
+            msg = (
+                f"The upper bound {settings.upper_bound} of the truncation "
+                f"is greater than the upper bound {self.math_upper_bound:.10g} "
+                "of the support."
+            )
+            raise ValueError(msg)
+
         if settings.lower_bound is None:
-            if settings.upper_bound > self.math_upper_bound:
-                msg = "upper_bound is greater than the current upper bound."
-                raise ValueError(msg)
             args = (
                 distribution,
                 settings.upper_bound,
@@ -153,9 +307,6 @@ class OTDistribution(
                 settings.threshold,
             )
         elif settings.upper_bound is None:
-            if settings.lower_bound < self.math_lower_bound:
-                msg = "lower_bound is less than the current lower bound."
-                raise ValueError(msg)
             args = (
                 distribution,
                 settings.lower_bound,
@@ -163,12 +314,6 @@ class OTDistribution(
                 settings.threshold,
             )
         else:
-            if settings.lower_bound < self.math_lower_bound:
-                msg = "lower_bound is less than the current lower bound."
-                raise ValueError(msg)
-            if settings.upper_bound > self.math_upper_bound:
-                msg = "upper_bound is greater than the current upper bound."
-                raise ValueError(msg)
             args = (
                 distribution,
                 Interval(settings.lower_bound, settings.upper_bound),
@@ -177,20 +322,25 @@ class OTDistribution(
 
         return TruncatedDistribution(*args)
 
-    def __set_bounds(self, distribution: Distribution) -> None:
-        """Set the mathematical and numerical bounds (= support and range).
+    def __set_range_and_support(self, distribution: Distribution) -> None:
+        """Set the range (numerical domain) and support (mathematical domain).
+
+        The lower (resp. upper) bound of the support is
+        the lower (resp. upper) bound of the range when the bound is finite
+        and negative (resp. positive) infinity otherwise.
 
         Args:
             distribution: The original probability distribution.
         """
         range_ = distribution.getRange()
-        lower_bound = range_.getLowerBound()[0]
-        upper_bound = range_.getUpperBound()[0]
-        self.num_lower_bound = lower_bound
-        self.num_upper_bound = upper_bound
-        if not range_.getFiniteLowerBound()[0]:
-            lower_bound = -inf
-        if not range_.getFiniteUpperBound()[0]:
-            upper_bound = inf
-        self.math_lower_bound = lower_bound
-        self.math_upper_bound = upper_bound
+        self.num_lower_bound = range_.getLowerBound()[0]
+        self.num_upper_bound = range_.getUpperBound()[0]
+        if range_.getFiniteLowerBound()[0]:
+            self.math_lower_bound = self.num_lower_bound
+        else:
+            self.math_lower_bound = -inf
+
+        if range_.getFiniteUpperBound()[0]:
+            self.math_upper_bound = self.num_upper_bound
+        else:
+            self.math_upper_bound = inf

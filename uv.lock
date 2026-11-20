@@ -802,6 +802,7 @@ check = [
 dev = [
     { name = "covdefaults" },
     { name = "diff-cover" },
+    { name = "mpmath" },
     { name = "pandera" },
     { name = "prek" },
     { name = "pytest" },
@@ -830,6 +831,7 @@ doc = [
 test = [
     { name = "covdefaults" },
     { name = "diff-cover" },
+    { name = "mpmath" },
     { name = "pandera" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -889,6 +891,7 @@ check = [
 dev = [
     { name = "covdefaults", specifier = ">=2.3.0" },
     { name = "diff-cover", specifier = ">=10.4,<11" },
+    { name = "mpmath", specifier = ">=1.3" },
     { name = "pandera", specifier = ">=0.20" },
     { name = "prek" },
     { name = "pytest", specifier = ">=8,<10" },
@@ -915,6 +918,7 @@ doc = [
 test = [
     { name = "covdefaults", specifier = ">=2.3.0" },
     { name = "diff-cover", specifier = ">=10.4,<11" },
+    { name = "mpmath", specifier = ">=1.3" },
     { name = "pandera", specifier = ">=0.20" },
     { name = "pytest", specifier = ">=8,<10" },
     { name = "pytest-cov", specifier = ">=5" },

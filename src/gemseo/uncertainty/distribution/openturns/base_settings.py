@@ -40,7 +40,15 @@ class BaseOTMarginalDistributionSettings(BaseOTDistributionSettings):  # noqa: N
     transformation: str = Field(
         default="",
         description=r"""A transformation applied
-to the random variable, e.g. $\sin(x)$. If empty, no transformation.""",
+to the random variable, e.g. $\sin(x)$. If empty, no transformation.
+
+The image of the support is not computed:
+sympy only analyzes the transformation,
+and an end of the support of the transformed random variable is infinite
+when the transformation diverges there, e.g. `log(x)` on $[0, 1]$.
+Otherwise, it is the end of the numerical range that OpenTURNS estimates.
+On a side that is unbounded before transformation,
+this estimate is never compared with a truncation bound.""",
     )
 
     lower_bound: float | None = Field(

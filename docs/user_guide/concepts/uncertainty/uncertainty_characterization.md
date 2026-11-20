@@ -25,13 +25,13 @@ to each uncertain input variable.
 The uncertain variable is thus represented by a [random variable](https://en.wikipedia.org/wiki/Random_variable).
 A distribution is a mathematical object
 that describes the relative likelihood of each possible value that the variable can take.
-The integrate (or sum in the case of a discrete variable) of all values is 1.
+The integral (or sum in the case of a discrete variable) of all values is 1.
 For example,
 when rolling an unloaded die,
 the possible outcomes are 1, 2, ..., 6 and each outcome has a probability of occurrence equal to 1/6.
 
 GEMSEO allows you to characterize uncertain scalar variables as random variables,
-using a univariate distributions,
+using univariate distributions,
 and uncertain vector variables as random vectors,
 using joint distributions.
 
@@ -76,28 +76,70 @@ The choice of distribution depends on whether data are available.
 ### Without data { #concept-choosing-a-distribution-without-data }
 
 Without data, expert knowledge can be translated into a distribution
-by the [maximum entropy principle](https://en.wikipedia.org/wiki/Principle_of_maximum_entropy):
+by the [maximum entropy principle](https://en.wikipedia.org/wiki/Principle_of_maximum_entropy) [@jaynes1957]:
 among all distributions consistent with the available information,
 choose the one with the highest Shannon entropy,
 i.e., the least informative one.
+Common distributions are catalogued in [@kapur1989].
 
-Common mappings are:
+The mappings are:
 
-| Prior knowledge                            | Distribution                          |
-|--------------------------------------------|---------------------------------------|
-| Only bounds $[a, b]$ known                 | Uniform $\mathcal{U}(a, b)$           |
-| Bounds and most likely value $c$           | Triangular $\mathcal{T}(a, b, c)$     |
-| Standard deviation $\sigma$ and mean $\mu$ | Normal $\mathcal{N}(\mu, \sigma^2)$   |
-| Strictly positive, mean $\mu$              | Exponential with parameter $\mu^{-1}$ |
+| Prior knowledge                                     | Distribution                                                   | Reference                  |
+|-----------------------------------------------------|----------------------------------------------------------------|----------------------------|
+| Bounds $[a, b]$                                     | Uniform $\mathcal{U}(a, b)$                                    | [@lisman1972]              |
+| Mean $\mu$ and standard deviation $\sigma$          | Normal $\mathcal{N}(\mu, \sigma^2)$                            | [@lisman1972]              |
+| Lower bound $a$ and mean $\mu$                      | Exponential with rate $(\mu-a)^{-1}$, starting at $a$          | [@cover2006], section 12.2 |
+| Upper bound $b$ and mean $\mu$                      | Reflected exponential with rate $(b-\mu)^{-1}$, ending at $b$  | [@cover2006], section 12.2 |
+| Bounds $[a, b]$ and mean $\mu$                      | Uniform tilted by $e^{\lambda x}$ to have the mean $\mu$           | [@conrad], theorem 5.1     |
+| Bounds (one or two), mean $\mu$, standard deviation $\sigma$ | Normal truncated to these bounds, for $\sigma$ not larger than the standard deviation of the row above matching the bounds | [@dowson1973]              |
 
-The user simply needs to provide this prior knowledge to the relevant distribution,
-e.g. `OTUniformDistribution_Settings(minimum=a, maximum=b)`.
+Rather than selecting the distribution yourself,
+state what you know to a maximum-entropy distribution,
+which recognizes the case and applies the mapping:
+
+```python
+from gemseo.uncertainty.distribution import OTMaximumEntropyDistribution_Settings
+
+# Only bounds are known.
+settings = OTMaximumEntropyDistribution_Settings(minimum=a, maximum=b)
+# A lower bound and a mean are known.
+settings = OTMaximumEntropyDistribution_Settings(minimum=a, mu=mu)
+```
+
+These settings can be passed to
+[OTMaximumEntropyDistribution][gemseo.uncertainty.distribution.openturns.maximum_entropy.OTMaximumEntropyDistribution]
+or directly to
+[RandomSpace.add_variable][gemseo.space.random.RandomSpace.add_variable].
+Its SciPy counterpart
+[SPMaximumEntropyDistribution][gemseo.uncertainty.distribution.scipy.maximum_entropy.SPMaximumEntropyDistribution]
+takes
+[SPMaximumEntropyDistribution_Settings][gemseo.uncertainty.distribution.scipy.maximum_entropy_settings.SPMaximumEntropyDistribution_Settings],
+which have the same fields.
+Any other combination of prior knowledge raises an error explaining what to add,
+as no distribution maximizes the entropy for it.
+
+!!! warning "The triangular distribution does not maximize the entropy"
+
+    When an expert knows a minimum, a maximum and a most likely value $c$,
+    engineering practice often uses the triangular distribution
+    $\mathcal{T}(a, b, c)$.
+    This distribution does **not** maximize the entropy:
+    no maximum-entropy distribution is characterized by a most likely value,
+    and assuming one adds information that the entropy principle cannot justify.
+    Use
+    [OTTriangularDistribution][gemseo.uncertainty.distribution.openturns.triangular.OTTriangularDistribution]
+    to make this assumption deliberately,
+    knowing that it is not the least informative choice.
+
+Two of these cases are supported only by OpenTURNS,
+as SciPy implements neither the reflected exponential distribution
+nor the tilted uniform distribution whose density function increases.
 
 ### With data { #concept-choosing-a-distribution-with-data }
 
 With data,
 the parameters of a distribution can be estimated by a statistical technique,
-such as the [maximum likelihood method](https://en.wikipedia.org/wiki/Method_of_moments_(statistics))
+such as the [maximum likelihood method](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation)
 or the [method of moments](https://en.wikipedia.org/wiki/Method_of_moments_(statistics)).
 
 [OTDistributionFitter][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter]
@@ -106,7 +148,7 @@ using this kind of technique.
 It tests each candidate using one of these goodness-of-fit criteria:
 the [Bayesian information criterion (BIC)](https://en.wikipedia.org/wiki/Bayesian_information_criterion),
 the [Kolmogorov–Smirnov statistical hypothesis test](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test)
-or the [Chi-squared statistical hypothesis test](https://en.wikipedia.org/wiki/Chi-squared_test))
+or the [Chi-squared statistical hypothesis test](https://en.wikipedia.org/wiki/Chi-squared_test),
 and returns the distribution that best matches the data.
 
 In the case of SciPy,
@@ -124,7 +166,7 @@ providing a better understanding of the quality of the fit and the selections ma
 A random vector requires a *joint* distribution
 that describes its components collectively.
 These components are characterized by univariate distributions,
-called marginal marginal distributions.
+called marginal distributions.
 When the components are [independent](https://en.wikipedia.org/wiki/Independence_(probability_theory)),
 i.e. when the occurrence of a component does not affect the probability of occurrence of the others,
 the joint distribution is simply the product of the marginal distributions.
@@ -163,7 +205,7 @@ However,
 the upper part is no longer symmetrical to the lower part
 but shows the dependency structure between the components
 by replacing raw data by their component-wise normalized ranks.
-This empirical distribution tends to the the copula
+This empirical distribution tends to the copula
 when the number of samples tends to infinity.
 
 ## Random space { #concept-random-space }

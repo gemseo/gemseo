@@ -60,6 +60,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     # static visibility for mypy / IDEs
+    from gemseo.uncertainty.distribution.core.base_univariate_settings.maximum_entropy_numerical_settings import (  # noqa: E501
+        MaximumEntropyNumericalSettings,  # noqa: F401
+    )
     from gemseo.uncertainty.distribution.factory import distribution_factory  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.beta import OTBetaDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.beta_settings import (
@@ -94,6 +97,12 @@ if TYPE_CHECKING:
     )
     from gemseo.uncertainty.distribution.openturns.log_normal_settings import (
         OTLogNormalDistribution_Settings,  # noqa: F401
+    )
+    from gemseo.uncertainty.distribution.openturns.maximum_entropy import (
+        OTMaximumEntropyDistribution,  # noqa: F401
+    )
+    from gemseo.uncertainty.distribution.openturns.maximum_entropy_settings import (
+        OTMaximumEntropyDistribution_Settings,  # noqa: F401
     )
     from gemseo.uncertainty.distribution.openturns.normal import OTNormalDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.normal_settings import (
@@ -135,6 +144,12 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.scipy.log_normal_settings import (
         SPLogNormalDistribution_Settings,  # noqa: F401
     )
+    from gemseo.uncertainty.distribution.scipy.maximum_entropy import (
+        SPMaximumEntropyDistribution,  # noqa: F401
+    )
+    from gemseo.uncertainty.distribution.scipy.maximum_entropy_settings import (
+        SPMaximumEntropyDistribution_Settings,  # noqa: F401
+    )
     from gemseo.uncertainty.distribution.scipy.normal import SPNormalDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.normal_settings import (
         SPNormalDistribution_Settings,  # noqa: F401
@@ -156,6 +171,9 @@ if TYPE_CHECKING:
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
+    "MaximumEntropyNumericalSettings": (
+        "core.base_univariate_settings.maximum_entropy_numerical_settings"
+    ),
     "OTBetaDistribution": "openturns.beta",
     "OTBetaDistribution_Settings": "openturns.beta_settings",
     "OTDiracDistribution": "openturns.dirac",
@@ -170,6 +188,8 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "OTJointDistribution": "openturns.joint",
     "OTLogNormalDistribution": "openturns.log_normal",
     "OTLogNormalDistribution_Settings": "openturns.log_normal_settings",
+    "OTMaximumEntropyDistribution": "openturns.maximum_entropy",
+    "OTMaximumEntropyDistribution_Settings": "openturns.maximum_entropy_settings",
     "OTNormalDistribution": "openturns.normal",
     "OTNormalDistribution_Settings": "openturns.normal_settings",
     "OTTriangularDistribution": "openturns.triangular",
@@ -188,6 +208,8 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "SPJointDistribution": "scipy.joint",
     "SPLogNormalDistribution": "scipy.log_normal",
     "SPLogNormalDistribution_Settings": "scipy.log_normal_settings",
+    "SPMaximumEntropyDistribution": "scipy.maximum_entropy",
+    "SPMaximumEntropyDistribution_Settings": "scipy.maximum_entropy_settings",
     "SPNormalDistribution": "scipy.normal",
     "SPNormalDistribution_Settings": "scipy.normal_settings",
     "SPTriangularDistribution": "scipy.triangular",

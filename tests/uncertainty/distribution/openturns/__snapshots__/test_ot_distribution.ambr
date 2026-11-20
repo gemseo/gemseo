@@ -12,15 +12,18 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_truncate_exception[kwargs0-upper_bound is greater than the current upper bound.]
-  'upper_bound is greater than the current upper bound.'
+# name: test_truncate_exception[lower-of-both]
+  'The lower bound -0.5 of the truncation is less than the lower bound 0 of the support.'
 # ---
-# name: test_truncate_exception[kwargs1-lower_bound is less than the current lower bound.]
-  'lower_bound is less than the current lower bound.'
+# name: test_truncate_exception[lower-only]
+  'The lower bound -0.5 of the truncation is less than the lower bound 0 of the support.'
 # ---
-# name: test_truncate_exception[kwargs2-lower_bound is less than the current lower bound.]
-  'lower_bound is less than the current lower bound.'
+# name: test_truncate_exception[upper-of-both]
+  'The upper bound 1.5 of the truncation is greater than the upper bound 1 of the support.'
 # ---
-# name: test_truncate_exception[kwargs3-upper_bound is greater than the current upper bound.]
-  'upper_bound is greater than the current upper bound.'
+# name: test_truncate_exception[upper-only]
+  'The upper bound 1.5 of the truncation is greater than the upper bound 1 of the support.'
+# ---
+# name: test_truncate_exception_after_transformation
+  'The lower bound -1.0 of the truncation is less than the lower bound 2 of the support.'
 # ---

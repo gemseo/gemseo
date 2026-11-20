@@ -19,7 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from math import erf
+from math import exp
+from math import gamma
+from math import log
+from math import pi
+from math import sin
 from pathlib import Path
+from sys import modules
 from unittest.mock import patch
 
 import pytest
@@ -28,7 +35,9 @@ from numpy import inf
 from numpy import int32
 from numpy import int_
 from numpy import ndarray
+from numpy.testing import assert_allclose
 from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_less
 from numpy.testing import assert_equal
 from openturns import Bernoulli
 from openturns import Beta
@@ -42,6 +51,7 @@ from openturns import Triangular
 from openturns import Uniform
 from openturns import WeibullMax
 from openturns import WeibullMin
+from scipy.stats import truncnorm
 
 from gemseo.uncertainty.distribution._log_normal_util import compute_mu_l_and_sigma_l
 from gemseo.uncertainty.distribution.core import base_univariate
@@ -204,21 +214,16 @@ def test_truncation(kwargs, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "expected"),
+    "kwargs",
     [
-        ({"upper_bound": 1.5}, "upper_bound is greater than the current upper bound."),
-        ({"lower_bound": -0.5}, "lower_bound is less than the current lower bound."),
-        (
-            {"lower_bound": -0.5, "upper_bound": 1.0},
-            "lower_bound is less than the current lower bound.",
-        ),
-        (
-            {"lower_bound": 0.0, "upper_bound": 1.5},
-            "upper_bound is greater than the current upper bound.",
-        ),
+        {"upper_bound": 1.5},
+        {"lower_bound": -0.5},
+        {"lower_bound": -0.5, "upper_bound": 1.0},
+        {"lower_bound": 0.0, "upper_bound": 1.5},
     ],
+    ids=["upper-only", "lower-only", "lower-of-both", "upper-of-both"],
 )
-def test_truncate_exception(kwargs, expected, snapshot) -> None:
+def test_truncate_exception(kwargs, snapshot) -> None:
     """Check that exceptions are raised when mistruncating a distribution."""
     with assert_exception(ValueError, snapshot):
         OTDistribution(
@@ -228,13 +233,451 @@ def test_truncate_exception(kwargs, expected, snapshot) -> None:
         )
 
 
-def test_transformation() -> None:
+@pytest.mark.parametrize(
+    ("transformation", "expected_transformation"),
+    [
+        ("2*x", "2*(x)"),
+        ("x^2+x", "(x)^2+(x)"),
+        ("exp(x)", "exp((x))"),
+    ],
+    ids=["product", "polynomial", "variable-in-function-name"],
+)
+def test_transformation_expression(transformation, expected_transformation) -> None:
+    """Check the expression of the transformation of the random variable."""
     distribution = OTDistribution(
         OTDistribution_Settings(
-            interfaced_distribution="Uniform", parameters=(0, 2), transformation="2*x"
+            interfaced_distribution="Uniform",
+            parameters=(0.0, 1.0),
+            transformation=transformation,
         )
     )
-    assert_almost_equal(distribution.support, array([0.0, 4.0]), decimal=5)
+    assert distribution.transformation == expected_transformation
+
+
+def test_reflection_support_without_sympy(monkeypatch) -> None:
+    """Check that the support of the reflection does not require sympy."""
+    monkeypatch.setitem(modules, "sympy", None)
+    monkeypatch.delitem(
+        modules,
+        "gemseo.uncertainty.distribution.openturns._transformed_support",
+        raising=False,
+    )
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Exponential",
+            parameters=(1.0, 0.0),
+            transformation="- x",
+        )
+    )
+    assert distribution.math_lower_bound == -inf
+    assert distribution.math_upper_bound == 0.0
+
+
+@pytest.mark.parametrize(
+    ("parameters", "transformation", "expected_support"),
+    [
+        ((0.0, 2.0), "2*x", [0.0, 4.0]),
+        ((0.0, pi), "sin(x)", [0.0, 1.0]),
+        ((-1.0, 2.0), "x^2", [0.0, 4.0]),
+        # OpenTURNS names the constant pi differently from sympy.
+        ((0.0, 1.0), "sin(pi_*x)", [0.0, 1.0]),
+    ],
+    ids=[
+        "linear",
+        "monotone-sine",
+        "square-with-interior-minimum",
+        "constant-named-differently",
+    ],
+)
+def test_support_of_transformation_of_bounded_support(
+    parameters, transformation, expected_support
+) -> None:
+    """Check the support of a transformation of a distribution bounded on both sides.
+
+    The support is the numerical range that OpenTURNS estimates,
+    which is exact up to a rounding error
+    even when the transformation is not monotone
+    and an end is thus attained at an interior point of the support.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Uniform",
+            parameters=parameters,
+            transformation=transformation,
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-11)
+
+
+@pytest.mark.parametrize(
+    ("interfaced_distribution", "parameters", "transformation", "expected_support"),
+    [
+        ("Exponential", (1.0, 0.0), "exp(-x)", [0.0, 1.0]),
+        ("Normal", (0.0, 1.0), "tanh(x)", [-1.0, 1.0]),
+        # These transformations have no limit at the infinity,
+        # so nothing is known about the ends of their support,
+        # which are the ends of the range that OpenTURNS estimates,
+        # flagged as unknown so that they never reject a truncation bound.
+        ("Normal", (0.0, 1.0), "sin(x)", [-1.0, 1.0]),
+        ("Normal", (0.0, 2.0), "sin(x)", [-1.0, 1.0]),
+        ("Student", (3.0,), "sin(x)", [-1.0, 1.0]),
+        ("LogNormal", (0.0, 1.0, 0.0), "cos(x)", [-1.0, 1.0]),
+        ("Normal", (0.0, 1.0), "sin(x)+cos(x/3)", [-1.8096, 1.8787]),
+        ("Exponential", (1.0, 0.0), "sin(x)+cos(x/3)", [-1.8787, 1.8787]),
+        ("Normal", (0.0, 1.0), "x^2", [0.0, inf]),
+        # OpenTURNS estimates the range of its support,
+        # which is [-pi/2, pi/2], as the image of the quantiles of its density.
+        ("Normal", (0.0, 1.0), "atan(x)", [-1.4408249, 1.4408249]),
+        ("Normal", (0.0, 1.0), "x/(1+x^2)", [-0.5, 0.5]),
+        # The image of the real line under this transformation
+        # is a union of two intervals,
+        # of which the support is the smallest interval including it.
+        ("Normal", (0.0, 1.0), "1/x", [-inf, inf]),
+        # sympy does not know this transformation,
+        # so nothing is known about its support,
+        # which is thus the range that OpenTURNS estimates, flagged as unknown.
+        ("Normal", (0.0, 1.0), "besselJ0(x)", [-0.4028, 1.0]),
+        # The transformation is unbounded both ways but has no limit,
+        # so the reported ends are only the estimate of OpenTURNS.
+        ("Normal", (0.0, 1.0), "x*sin(x)", [-4.8145, 7.4930]),
+        # sympy knows this transformation but cannot compute its image;
+        # its limits tell that it converges on both sides of the support.
+        ("Normal", (0.0, 1.0), "erf(x)", [-1.0, 1.0]),
+        # OpenTURNS names this function differently from sympy.
+        ("Exponential", (1.0, 1.0), "log10(x)", [0.0, inf]),
+        # sympy does not know this function of OpenTURNS at all.
+        ("Normal", (0.0, 1.0), "sgn(x)", [-1.0, 1.0]),
+    ],
+    ids=[
+        "decreasing-exponential",
+        "tanh",
+        "sine",
+        "sine-wide-normal",
+        "sine-heavy-tailed",
+        "cosine-lognormal",
+        "sum-of-sines-normal",
+        "sum-of-sines-exponential",
+        "square-diverging",
+        "arctangent",
+        "bounded-rational",
+        "two-interval-image",
+        "unknown-to-sympy",
+        "oscillation-growing-without-limit",
+        "image-unknown-limits-converge",
+        "log10-named-differently",
+        "sign-unknown-to-sympy",
+    ],
+)
+def test_support_of_transformation_of_unbounded_support(
+    interfaced_distribution, parameters, transformation, expected_support
+) -> None:
+    """Check the support of a transformation of a partly unbounded support.
+
+    The image of the support is not computed.
+    An end is infinite when the transformation diverges that way, e.g. `"x^2"`,
+    and is otherwise the end of the range that OpenTURNS estimates,
+    including when the transformation has no limit, e.g. `"sin(x)"`,
+    or is unknown to sympy, e.g. `"besselJ0(x)"`.
+    This range is only a numerical estimate of the end of the support,
+    e.g. for `"atan(x)"`, hence the tolerance.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution=interfaced_distribution,
+            parameters=parameters,
+            transformation=transformation,
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    ("interfaced_distribution", "parameters", "transformation", "expected_support"),
+    [
+        ("Exponential", (1.0, 0.0), "exp(x)", [1.0, inf]),
+        ("Exponential", (1.0, -1.0), "-x", [-inf, 1.0]),
+        ("Exponential", (1.0, 1.0), "log(x)", [0.0, inf]),
+        # The values of these two transformations
+        # leave the representable reals quickly.
+        ("Exponential", (0.1, 0.0), "exp(x)", [1.0, inf]),
+        ("Exponential", (0.1, 0.0), "-exp(x)", [-inf, -1.0]),
+        # sympy cannot compute the image of the real line
+        # under this transformation;
+        # its limits tell that it diverges towards the infinity.
+        ("Normal", (0.0, 1.0), "abs(x)", [0.0, inf]),
+        # sympy does not know these functions of OpenTURNS at all.
+        ("Normal", (0.0, 1.0), "expm1(x)", [-1.0, inf]),
+        ("Exponential", (1.0, 1.0), "log1p(x)", [log(2.0), inf]),
+        ("Normal", (0.0, 1.0), "hypot(x,1)", [1.0, inf]),
+        # The cube root of sympy is the principal complex one,
+        # whereas the one of OpenTURNS is real.
+        ("Normal", (0.0, 1.0), "cbrt(x)", [-inf, inf]),
+    ],
+    ids=[
+        "exponential",
+        "negation",
+        "logarithm",
+        "exponential-leaving-reals",
+        "opposite-exponential-leaving-reals",
+        "absolute-value",
+        "expm1-unknown-to-sympy",
+        "log1p-unknown-to-sympy",
+        "hypot-unknown-to-sympy",
+        "real-cube-root",
+    ],
+)
+def test_support_of_diverging_transformation(
+    interfaced_distribution, parameters, transformation, expected_support
+) -> None:
+    """Check the support of a diverging transformation of an unbounded support.
+
+    OpenTURNS reports the range of a transformed distribution as finite
+    on both sides; the end of this range is an arbitrary finite value
+    on a side where the transformation diverges,
+    and the support is reported as infinite there.
+    The support is deduced from the limits of the transformation,
+    which tell that it diverges at an end of the support;
+    the other end is the numerical estimate of OpenTURNS, hence the tolerance.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution=interfaced_distribution,
+            parameters=parameters,
+            transformation=transformation,
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-3)
+    assert_array_less(abs(distribution.range), inf)
+
+
+@pytest.mark.parametrize(
+    ("interfaced_distribution", "parameters", "transformation", "expected_support"),
+    [
+        # The transformation is not defined at 0,
+        # where OpenTURNS evaluates it as not-a-number,
+        # so its range misses the extremum 1 that the transformation attains there.
+        ("Normal", (0.0, 1.0), "sin(x)/x", [-inf, inf]),
+        ("Uniform", (-8.0, 8.0), "sin(x)/x", [-inf, inf]),
+        # The transformation diverges at the lower end of the support,
+        # which is a bound of the support and not an unbounded side,
+        # so only the upper end of the range is untrustworthy.
+        ("Uniform", (0.0, 1.0), "sin(x)/x^3", [sin(1.0), inf]),
+        # sympy cannot determine the domain of continuity of these transformations,
+        # which diverge at the lower end of the support.
+        ("Uniform", (0.0, 1.0), "gamma(x)", [gamma(1.0), inf]),
+        ("Uniform", (0.0, 1.0), "erf(x)/x^3", [erf(1.0), inf]),
+        # This transformation is bounded around 0 but is not defined at it,
+        # where OpenTURNS evaluates it as not-a-number,
+        # so its range misses the extremum 2/sqrt(pi) that it attains there.
+        ("Normal", (0.0, 1.0), "erf(x)/x", [-inf, inf]),
+    ],
+    ids=[
+        "undefined-at-interior-extremum",
+        "undefined-at-interior-extremum-bounded",
+        "divergence-at-lower-bound",
+        "gamma-divergence-at-lower-bound",
+        "erf-over-cube-divergence-at-lower-bound",
+        "bounded-but-undefined-at-zero",
+    ],
+)
+def test_support_of_singular_transformation(
+    interfaced_distribution, parameters, transformation, expected_support
+) -> None:
+    """Check the support of a transformation that is singular at a point of the support.
+
+    OpenTURNS estimates the range of a `CompositeDistribution`
+    by evaluating the transformation,
+    which fails where the transformation is not defined
+    and misses the extrema that it attains around such a point;
+    the corresponding end of the range must not be reported as an end of the support.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution=interfaced_distribution,
+            parameters=parameters,
+            transformation=transformation,
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-11)
+
+
+@pytest.mark.parametrize(
+    "lower_bound",
+    [0.0, -1e-9, -0.5],
+    ids=["at-the-support", "within-the-rounding-error", "beyond-the-estimated-end"],
+)
+def test_truncation_bound_slack_accepted(lower_bound) -> None:
+    """Check that a lower bound at or below the transformed support is accepted.
+
+    The support of a transformed distribution is known up to a rounding error,
+    which the comparison must tolerate;
+    a bound accepted thanks to the slack does not widen the support.
+    On a side unbounded before transformation,
+    the lower end of the range is a numerical estimate
+    that is not compared with a truncation bound.
+
+    Args:
+        lower_bound: The lower truncation bound
+            of a normal distribution transformed by `x^2`,
+            whose exact support is `[0, inf)` before truncation.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Normal",
+            parameters=(0.0, 1.0),
+            transformation="x^2",
+            lower_bound=lower_bound,
+        )
+    )
+    assert_allclose(distribution.support, array([0.0, inf]), rtol=0.0, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    ("transformation", "bound_name", "bound", "expected_support"),
+    [
+        ("exp(x)", "lower_bound", -50000.0, [1.0, inf]),
+        ("-exp(x)", "upper_bound", 10000.0, [-inf, -1.0]),
+    ],
+    ids=["increasing-lower-bound", "decreasing-upper-bound"],
+)
+def test_truncation_beyond_diverging_transformation_accepted(
+    transformation, bound_name, bound, expected_support
+) -> None:
+    """Check that no bound is rejected on the side that is not infinite.
+
+    The end of the numerical range that OpenTURNS estimates
+    on the side where the transformation does not diverge
+    is not compared with a truncation bound.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Exponential",
+            parameters=(0.1, 0.0),
+            transformation=transformation,
+            **{bound_name: bound},
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "rate", [1.0, 33.33, 100.0], ids=["small-rate", "large-rate", "very-large-rate"]
+)
+@pytest.mark.parametrize(
+    ("transformation", "bound_name", "expected_support", "mean_sign"),
+    [
+        ("-x", "lower_bound", [0.0, 1.0], 1.0),
+        ("x", "upper_bound", [-1.0, 0.0], -1.0),
+    ],
+    ids=["truncation-from-below", "truncation-from-above"],
+)
+def test_truncation_after_transformation_of_unbounded_support(
+    rate, transformation, bound_name, expected_support, mean_sign
+) -> None:
+    """Check the truncation of a transformed distribution with unbounded support.
+
+    OpenTURNS estimates the range of a `CompositeDistribution` numerically
+    and reports it as finite even when the support is unbounded.
+    This range must not be used to check the truncation bounds,
+    otherwise a valid bound is rejected
+    as soon as the numerical range is narrower than the truncation interval,
+    i.e. when `rate` is large here.
+    The mathematical bound on the truncated side must be the truncation bound,
+    whether the truncation is from below or from above.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Exponential",
+            parameters=(rate, -1.0),
+            transformation=transformation,
+            **{bound_name: 0.0},
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-12)
+    # The density is proportional to exp(rate*x) on [0, 1] after the transformation
+    # "-x" and to exp(-rate*x) on [-1, 0] after the transformation "x".
+    expected_mean = mean_sign * (1.0 / (1.0 - exp(-rate)) - 1.0 / rate)
+    assert distribution.mean == pytest.approx(expected_mean, rel=1e-7)
+
+
+@pytest.mark.parametrize(
+    ("bound_name", "bound", "expected_support", "mean_sign"),
+    [
+        ("lower_bound", -1.0, [-1.0, inf], 1.0),
+        ("upper_bound", 1.0, [-inf, 1.0], -1.0),
+    ],
+    ids=["truncation-from-below", "truncation-from-above"],
+)
+def test_truncation_after_transformation_of_infinite_support(
+    bound_name, bound, expected_support, mean_sign
+) -> None:
+    """Check the truncation of a transformed distribution with an infinite support.
+
+    The numerical range that OpenTURNS estimates for a `CompositeDistribution`
+    is finite on both sides, even when the support is infinite on both sides;
+    the side that the truncation does not bound must thus be reported as infinite,
+    instead of being read from that range.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution="Normal",
+            parameters=(0.0, 1.0),
+            transformation="2*x",
+            **{bound_name: bound},
+        )
+    )
+    assert_equal(distribution.support, array(expected_support))
+    # The random variable is twice a standard normal one truncated to [-0.5, +inf),
+    # or its opposite when the truncation is from above.
+    expected_mean = mean_sign * 2.0 * truncnorm(-0.5, inf).mean()
+    assert distribution.mean == pytest.approx(expected_mean, rel=1e-7)
+
+
+@pytest.mark.parametrize(
+    ("interfaced_distribution", "parameters", "transformation", "expected_support"),
+    [
+        # The transformation diverges at the finite lower end of the support.
+        ("Uniform", (0.0, 1.0), "log(x)", [-50.0, 0.0]),
+        # The transformation diverges at a point inside the support.
+        ("Normal", (0.0, 1.0), "1/x", [-50.0, inf]),
+    ],
+    ids=[
+        "pole-at-lower-bound",
+        "pole-inside-support",
+    ],
+)
+def test_truncation_after_transformation_with_pole(
+    interfaced_distribution, parameters, transformation, expected_support
+) -> None:
+    """Check the truncation of a transformed distribution with a pole.
+
+    The image of a support under a transformation with a pole is unbounded,
+    even when the support is bounded,
+    whereas the numerical range that OpenTURNS estimates is finite;
+    a truncation bound beyond this range is thus valid.
+    """
+    distribution = OTDistribution(
+        OTDistribution_Settings(
+            interfaced_distribution=interfaced_distribution,
+            parameters=parameters,
+            transformation=transformation,
+            lower_bound=-50.0,
+        )
+    )
+    assert_allclose(distribution.support, array(expected_support), rtol=0.0, atol=1e-11)
+
+
+def test_truncate_exception_after_transformation(snapshot) -> None:
+    """Check the truncation bound check after transforming a bounded support."""
+    with assert_exception(ValueError, snapshot):
+        OTDistribution(
+            OTDistribution_Settings(
+                interfaced_distribution="Uniform",
+                parameters=(1.0, 2.0),
+                transformation="2*x",
+                lower_bound=-1.0,
+            )
+        )
 
 
 @pytest.mark.parametrize(

@@ -55,7 +55,7 @@ class OTJointDistribution_Settings(  # noqa: N801
     When $U_1,\ldots,U_d$ are continuous random variables,
     this function is unique and defined
     by $C(\boldsymbol{\xi})=F(F_1^{(-1)}(\xi_1),\ldots,F_d^{(-1)}(\xi_d))$
-    where $\xi_1,\ldots,\xi_d$ are the arguments of $C$, in $[0,1]$.\\
+    where $\xi_1,\ldots,\xi_d$ are the arguments of $C$, in $[0,1]$.
 
     When the random variables $U_1,\ldots,U_d$ are independent by block,
     the copula $C$ can be defined as a product of copulas, i.e.

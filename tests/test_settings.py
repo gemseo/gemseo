@@ -251,6 +251,7 @@ def test_default_validation():
             "BaseGradientBasedAlgorithmSettings",
             "SettingsWithInvalidDefault",
             "BaseDistributionSettings",
+            "BaseMaximumEntropyDistributionSettings",
             "BaseJointDistributionSettings",
             "OTJointDistributionSettings",
             "SPJointDistributionSettings",

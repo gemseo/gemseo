@@ -1,0 +1,202 @@
+# serializer version: 1
+# name: test_inconsistent_information_error[minimum-above-maximum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, The maximum 2.0 of the random variable must be greater than its minimum 5.0. [type=value_error, input_value={'minimum': 5.0, 'maximum': 2.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_inconsistent_information_error[mu-at-maximum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, The mean 5.0 of the random variable must be less than its maximum 5.0. [type=value_error, input_value={'minimum': 2.0, 'maximum': 5.0, 'mu': 5.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_inconsistent_information_error[mu-at-minimum-with-maximum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, The mean 2.0 of the random variable must be greater than its minimum 2.0. [type=value_error, input_value={'minimum': 2.0, 'maximum': 5.0, 'mu': 2.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_inconsistent_information_error[mu-at-minimum-without-maximum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, The mean 2.0 of the random variable must be greater than its minimum 2.0. [type=value_error, input_value={'minimum': 2.0, 'mu': 2.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_inconsistent_information_error[sigma-above-largest]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No probability distribution maximizes the entropy for this information: the standard deviation 10.0 is too large for this support and this mean; it must be less than 1.4142135623730951, which only the distribution concentrated at the bounds reaches, and not greater than about 0.777228 for this distribution to be a truncated normal one. [type=value_error, input_value={'minimum': 2.0, 'maximum...mu': 3.0, 'sigma': 10.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-maximum-sigma]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no distribution maximizes the entropy for a semi-infinite support and a standard deviation, as moving the mean away from the bound always increases the entropy, up to that of the normal distribution with this standard deviation, which is never reached; for example, you can give the mean. [type=value_error, input_value={'maximum': 5.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-maximum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with a semi-infinite support is unbounded; for example, you can give the mean, or the other bound. [type=value_error, input_value={'maximum': 5.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-minimum-maximum-sigma]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: a distribution maximizing the entropy for a bounded support and a standard deviation exists, but the constraint defined by the standard deviation is not linear when the mean is unknown and solving this problem is not supported; for example, you can give the mean. [type=value_error, input_value={'minimum': 2.0, 'maximum': 5.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-minimum-sigma]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no distribution maximizes the entropy for a semi-infinite support and a standard deviation, as moving the mean away from the bound always increases the entropy, up to that of the normal distribution with this standard deviation, which is never reached; for example, you can give the mean. [type=value_error, input_value={'minimum': 2.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-minimum]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with a semi-infinite support is unbounded; for example, you can give the mean, or the other bound. [type=value_error, input_value={'minimum': 2.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-mu]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with an infinite support is unbounded; for example, you can give the standard deviation, or a bound. [type=value_error, input_value={'mu': 3.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-nothing]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no information was given; for example, you can give a minimum and a maximum, or a mean and a standard deviation. [type=value_error, input_value={}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[openturns-sigma]
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: every normal distribution with this standard deviation maximizes the entropy, whatever its mean; for example, you can give the mean. [type=value_error, input_value={'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-maximum-sigma]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no distribution maximizes the entropy for a semi-infinite support and a standard deviation, as moving the mean away from the bound always increases the entropy, up to that of the normal distribution with this standard deviation, which is never reached; for example, you can give the mean. [type=value_error, input_value={'maximum': 5.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-maximum]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with a semi-infinite support is unbounded; for example, you can give the mean, or the other bound. [type=value_error, input_value={'maximum': 5.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-minimum-maximum-sigma]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: a distribution maximizing the entropy for a bounded support and a standard deviation exists, but the constraint defined by the standard deviation is not linear when the mean is unknown and solving this problem is not supported; for example, you can give the mean. [type=value_error, input_value={'minimum': 2.0, 'maximum': 5.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-minimum-sigma]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no distribution maximizes the entropy for a semi-infinite support and a standard deviation, as moving the mean away from the bound always increases the entropy, up to that of the normal distribution with this standard deviation, which is never reached; for example, you can give the mean. [type=value_error, input_value={'minimum': 2.0, 'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-minimum]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with a semi-infinite support is unbounded; for example, you can give the mean, or the other bound. [type=value_error, input_value={'minimum': 2.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-mu]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: the entropy of a distribution with an infinite support is unbounded; for example, you can give the standard deviation, or a bound. [type=value_error, input_value={'mu': 3.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-nothing]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: no information was given; for example, you can give a minimum and a maximum, or a mean and a standard deviation. [type=value_error, input_value={}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_information_error[scipy-sigma]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, No maximum-entropy distribution can be created from this information: every normal distribution with this standard deviation maximizes the entropy, whatever its mean; for example, you can give the mean. [type=value_error, input_value={'sigma': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_mode_is_not_supported
+  '''
+  1 validation error for OTMaximumEntropyDistribution_Settings
+  mode
+    Extra inputs are not permitted [type=extra_forbidden, input_value=3.0, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_numerical_settings_error[large_tilt-too-small]
+  '''
+  1 validation error for MaximumEntropyNumericalSettings
+  large_tilt
+    Input should be greater than or equal to 45 [type=greater_than_equal, input_value=5.0, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than_equal
+  '''
+# ---
+# name: test_numerical_settings_error[small_tilt-too-large]
+  '''
+  1 validation error for MaximumEntropyNumericalSettings
+  small_tilt
+    Input should be less than or equal to 0.1 [type=less_than_equal, input_value=2.0, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than_equal
+  '''
+# ---
+# name: test_numerical_settings_error[solver_tolerance-too-large]
+  '''
+  1 validation error for MaximumEntropyNumericalSettings
+  solver_tolerance
+    Input should be less than or equal to 0.000001 [type=less_than_equal, input_value=1.0, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than_equal
+  '''
+# ---
+# name: test_numerical_settings_error[tilt_tolerance-at-half]
+  '''
+  1 validation error for MaximumEntropyNumericalSettings
+  tilt_tolerance
+    Input should be less than 0.5 [type=less_than, input_value=0.5, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than
+  '''
+# ---
+# name: test_scipy_error[increasing_tilted_uniform]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, SciPy does not implement the tilted uniform distribution with an increasing probability density function that maximizes the entropy for this information; use 'OTMaximumEntropyDistribution' instead. [type=value_error, input_value={'minimum': 2.0, 'maximum': 5.0, 'mu': 4.2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_scipy_error[reflected_exponential]
+  '''
+  1 validation error for SPMaximumEntropyDistribution_Settings
+    Value error, SciPy does not implement the reflected exponential distribution that maximizes the entropy for this information; use 'OTMaximumEntropyDistribution' instead. [type=value_error, input_value={'maximum': 5.0, 'mu': 4.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
