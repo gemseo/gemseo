@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import operator
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -29,7 +30,9 @@ from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
+from pandas import Series
 
+from gemseo.core.data_converter.base import BaseDataConverter
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
@@ -43,6 +46,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.function.array_function import ArrayFunction
     from gemseo.core.grammar.properties import GrammarProperties
+    from gemseo.util.typing import StrKeyMapping
 
 input_vector = array([1.0, 1.0])
 
@@ -392,3 +396,82 @@ def test_jacobian_wrt_categorical_inputs_only() -> None:
     assert function.differentiated_input_names_substitute == []
     assert_allclose(function.evaluate(array([1.0])), array([2.7]))
     assert function.jac(array([1.0])).shape == (0,)
+
+
+class ScalarDiscipline(Discipline):
+    """A discipline whose grammar declares a Python scalar input."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self, type_: type) -> None:
+        """
+        Args:
+            type_: The type of the input `n`.
+        """  # noqa: D205, D212
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": type_})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.n = None
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.n = input_data["n"]
+        return {"y": input_data["x"] * self.n}
+
+
+@pytest.mark.parametrize("type_", [int, float])
+def test_integer_input_declared_as_python_scalar(type_) -> None:
+    """Check that an integer input declared as a Python scalar has its declared type."""
+    discipline = ScalarDiscipline(type_)
+    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 1})
+    # As a DOE records the type of the variables of a mixed space.
+    x_vect = array([2.0, 3.0])
+    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
+    assert_allclose(function.evaluate(x_vect), array([6.0]))
+    assert discipline.n == 3
+    assert type(discipline.n) is type_
+
+
+class ContainerDiscipline(Discipline):
+    """A discipline whose input `n` is a container built by user converters."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self, type_: type) -> None:
+        """
+        Args:
+            type_: The type of the input `n`.
+        """  # noqa: D205, D212
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "n": type_})
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.n = None
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.n = input_data["n"]
+        return {"y": input_data["x"] * sum(self.n)}
+
+
+@pytest.mark.parametrize(
+    ("type_", "to_array", "to_value", "get_size"),
+    [
+        (Series, Series.to_numpy, Series, operator.attrgetter("size")),
+        (list, array, ndarray.tolist, len),
+    ],
+    ids=["Series", "list"],
+)
+def test_integer_input_converted_by_user(
+    monkeypatch, type_, to_array, to_value, get_size
+) -> None:
+    """Check that an integer input converted by a user converter keeps its type."""
+    monkeypatch.setattr(BaseDataConverter, "value_to_array_converters", {"n": to_array})
+    monkeypatch.setattr(BaseDataConverter, "array_to_value_converters", {"n": to_value})
+    monkeypatch.setattr(BaseDataConverter, "value_size_getters", {"n": get_size})
+    discipline = ContainerDiscipline(type_)
+    function = DisciplineAdapter(["x", "n"], ["y"], {}, discipline, {"x": 1, "n": 2})
+    x_vect = array([2.0, 3.0, 4.0])
+    x_vect.dtype = dtype(x_vect.dtype, metadata={"n": int64})
+    assert_allclose(function.evaluate(x_vect), array([14.0]))
+    assert type(discipline.n) is type_
+    assert_equal(array(discipline.n), array([3, 4]))
+    # The user converter receives an array of the type of the variable.
+    assert array(discipline.n).dtype == int64

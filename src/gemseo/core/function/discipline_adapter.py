@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import array
 from numpy import empty
@@ -501,11 +502,12 @@ class DisciplineAdapter(ArrayFunction):
     def _create_discipline_input_data(
         self,
         x_vect: ndarray,
-    ) -> dict[str, ndarray]:
+    ) -> dict[str, Any]:
         """Create the discipline input data from the function input vector.
 
         The variables in the input data are cast according to the types defined in the
-        design space.
+        design space before their conversion to the types declared by the grammar,
+        except those whose grammar declares a continuous scalar type, e.g. `float`.
 
         The categorical variables are given as labels.
 
@@ -513,7 +515,8 @@ class DisciplineAdapter(ArrayFunction):
             x_vect: The input vector of the function.
 
         Returns:
-            The input data of the discipline.
+            The input data of the discipline,
+            whose values have the types declared by its grammar.
         """
         if self.__default_inputs:
             self.__discipline.io.input_grammar.defaults.update(self.__default_inputs)
@@ -521,17 +524,21 @@ class DisciplineAdapter(ArrayFunction):
         if not self.__input_name_to_slice:
             self.__create_input_name_to_slice()
 
-        input_data = (
-            self.__discipline.io.input_grammar.data_converter.convert_array_to_data(
-                x_vect, self.__input_name_to_slice
-            )
-        )
-        variable_types = x_vect.dtype.metadata
-        if variable_types is not None:
-            # Restore the proper data types as declared in the design space.
-            for name, type_ in variable_types.items():
-                if name not in self.__name_to_categorical_variable:
-                    input_data[name] = input_data[name].astype(type_, copy=False)
+        data_converter = self.__discipline.io.input_grammar.data_converter
+        variable_types = x_vect.dtype.metadata or {}
+        input_data = {}
+        for name, slice_ in self.__input_name_to_slice.items():
+            value = x_vect[..., slice_]
+            # Restore the type declared in the design space
+            # before the conversion to the type declared in the grammar,
+            # except for a continuous scalar, e.g. float, which accepts no int.
+            if (
+                (type_ := variable_types.get(name)) is not None
+                and name not in self.__name_to_categorical_variable
+                and not data_converter.is_continuous_scalar(name)
+            ):
+                value = value.astype(type_, copy=False)
+            input_data[name] = data_converter.convert_array_to_value(name, value)
 
         self.__decode_labels(input_data, x_vect)
 
@@ -541,7 +548,7 @@ class DisciplineAdapter(ArrayFunction):
         return input_data
 
     def __decode_labels(
-        self, input_data: MutableMapping[str, ndarray], x_vect: ndarray
+        self, input_data: MutableMapping[str, Any], x_vect: ndarray
     ) -> None:
         """Set the categorical inputs to their labels.
 
