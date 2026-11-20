@@ -170,12 +170,12 @@ and its derivative with respect to $u$ is $6$ times the one with respect to $x$.
 
 The types of variables are checked after the transformations.
 A type that a transformation removes does not reject the algorithm.
-No transformation applies to catalog and categorical variables,
+The relaxation and the normalization leave catalog and categorical variables as they are,
 so an algorithm that does not handle them is rejected.
 
 The result is projected once onto the domain the user declared,
 after the run.
-An integer value is rounded
+An integer value is rounded and clipped to its bounds,
 and a discrete value is moved to the nearest choice.
 
 ??? note "Details of the projection"
@@ -208,6 +208,30 @@ and a discrete value is moved to the nearest choice.
 
 !!! how-to
     - [Record the evaluations in the coordinates of the algorithm][]
+
+### Transformations vs encodings { #concept-algorithm-encodings }
+
+An encoding replaces variables of a space by others.
+Its decoding is a choice,
+so a function evaluated at the decoded point is constant by pieces
+with respect to the encoded variables.
+
+|                        | Transformation               | Encoding                     |
+|------------------------|------------------------------|------------------------------|
+| Effect on the space    | changes the coordinates      | replaces variables by others |
+| Backward map           | inverse of the forward map   | choice of an original point  |
+| Jacobians              | mapped by the chain rule     | not mapped                   |
+| Constraints            | none                         | on the encoded variables     |
+| Chaining               | yes                          | no                           |
+| Applied by the drivers | relaxation and normalization | none                         |
+
+The transformations are chained by
+[SpaceComposition][gemseo.space.transformation.SpaceComposition].
+The encodings are defined in
+[`gemseo.space.encoding`][gemseo.space.encoding];
+[SpaceOneHotEncoding][gemseo.space.encoding.SpaceOneHotEncoding]
+replaces each discrete or catalog variable by weights,
+one per choice or alternative.
 
 ## Settings { #concept-algorithm-settings }
 

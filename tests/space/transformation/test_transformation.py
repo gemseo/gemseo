@@ -15,7 +15,6 @@
 
 from __future__ import annotations
 
-from functools import partial
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -24,12 +23,12 @@ from numpy import array
 from numpy import broadcast_to
 from numpy import concatenate
 from numpy import inf
+from numpy import nan
 from numpy import sqrt
 from numpy import zeros
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
-from gemseo.core.function.array_function import ArrayFunction
 from gemseo.enum import VariableType
 from gemseo.space.design import DesignSpace
 from gemseo.space.transformation._working import get_default_transformation_factories
@@ -90,7 +89,7 @@ def test_normalization_delegates_the_rounding_to_denormalize_vect(
     untransformed = transformation.inverse_transform_value(array([0.25, 4.5]))
     assert_allclose(untransformed, array([2.5, 4.0]))
     # This transformation rounds nothing of its own, so projecting changes nothing.
-    assert_allclose(transformation.project(untransformed), untransformed)
+    assert_equal(transformation.project(untransformed), untransformed)
 
 
 def test_relaxation_leaves_the_backward_map_alone(design_space) -> None:
@@ -104,9 +103,9 @@ def test_relaxation_leaves_the_backward_map_alone(design_space) -> None:
     transformation = SpaceRelaxation(design_space)
     value = array([2.5, 4.5])
 
-    assert_allclose(transformation.transform_value(value), value)
-    assert_allclose(transformation.inverse_transform_value(value), value)
-    assert_allclose(transformation.project(value), array([2.5, 4.0]))
+    assert_equal(transformation.transform_value(value), value)
+    assert_equal(transformation.inverse_transform_value(value), value)
+    assert_equal(transformation.project(value), array([2.5, 4.0]))
     assert transformation.working_space is not design_space
     assert transformation.is_affine
 
@@ -274,24 +273,48 @@ def test_relaxation_keeps_a_variable_without_a_value(design_space) -> None:
     assert_allclose(working_space.get_current_value(["x", "i"]), array([2.0, 4.0]))
 
 
-def test_relaxation_projects_onto_the_declared_domain(mixed_space) -> None:
+@pytest.mark.parametrize(
+    ("value", "projected_value"),
+    [
+        pytest.param([2.5, 4.4, 5.4], [2.5, 4.0, 3.0], id="nearest"),
+        pytest.param([2.5, 4.6, 2.0], [2.5, 5.0, 1.0], id="tie"),
+        pytest.param([2.5, 4.0, inf], [2.5, 4.0, 8.0], id="infinite"),
+        pytest.param([2.5, -inf, 2.0], [2.5, 0.0, 1.0], id="infinite integer"),
+        pytest.param([2.5, 12.3, 2.0], [2.5, 10.0, 1.0], id="integer above bounds"),
+        pytest.param([2.5, 2.5, 2.0], [2.5, 2.0, 1.0], id="integer tie"),
+        pytest.param([2.5, nan, nan], [2.5, nan, nan], id="nan"),
+        pytest.param(
+            [[2.5, 4.6, 2.0], [0.0, 0.4, 7.0]],
+            [[2.5, 5.0, 1.0], [0.0, 0.0, 8.0]],
+            id="samples",
+        ),
+    ],
+)
+def test_relaxation_projects_onto_the_declared_domain(
+    mixed_space, value, projected_value
+) -> None:
     """Check that `project` rounds an integer and snaps a discrete one to a choice.
 
-    A discrete component goes to its nearest choice,
-    the lower one when two are as near,
+    An integer component is rounded half to even and clipped to its bounds,
+    a discrete component goes to its nearest choice,
+    the lower one when two are as near
+    and the nearest end of the choices when out of their range,
+    a NaN component stays NaN
     and a matrix of samples is projected row by row.
     """
-    transformation = SpaceRelaxation(mixed_space)
+    assert_equal(
+        SpaceRelaxation(mixed_space).project(array(value)), array(projected_value)
+    )
 
-    assert_allclose(
-        transformation.project(array([2.5, 4.4, 5.4])), array([2.5, 4.0, 3.0])
-    )
-    assert_allclose(
-        transformation.project(array([2.5, 4.6, 2.0])), array([2.5, 5.0, 1.0])
-    )
-    assert_allclose(
-        transformation.project(array([[2.5, 4.6, 2.0], [0.0, 0.4, 7.0]])),
-        array([[2.5, 5.0, 1.0], [0.0, 0.0, 8.0]]),
+
+def test_relaxation_projects_onto_a_single_choice() -> None:
+    """Check that `project` snaps a discrete component to its only choice."""
+    space = DesignSpace()
+    space.add_discrete_variable("d", [3], value=3)
+
+    assert_equal(
+        SpaceRelaxation(space).project(array([[-inf], [2.0], [inf]])),
+        array([[3.0], [3.0], [3.0]]),
     )
 
 
@@ -311,8 +334,8 @@ def test_relaxation_projects_without_mutating_the_input() -> None:
     projected_value = transformation.project(value)
 
     assert projected_value is not value
-    assert_allclose(value, array([2.5, 5.4]))
-    assert_allclose(projected_value, array([2.5, 3.0]))
+    assert_equal(value, array([2.5, 5.4]))
+    assert_equal(projected_value, array([2.5, 3.0]))
 
 
 def test_relaxation_keeps_the_discrete_variables_when_asked(mixed_space) -> None:
@@ -554,7 +577,6 @@ def test_composition_is_the_identity_when_empty(design_space) -> None:
     assert_equal(composition.transform_jacobian(value), value)
     assert_equal(composition.inverse_transform_jacobian(value), value)
     assert_equal(composition.project(value), value)
-    assert composition.create_constraints(design_space) == ()
 
 
 def test_composition_drops_the_identity(design_space) -> None:
@@ -587,44 +609,6 @@ def test_composition_iterates_over_its_transformations(design_space) -> None:
     relaxation, normalization = composition.transformations
 
     assert list(composition) == [relaxation, normalization]
-
-
-def test_composition_collects_the_constraints_of_its_transformations(
-    design_space,
-) -> None:
-    """Check that a composition gathers the constraints of its transformations, ordered.
-
-    Every transformation is handed the working space of the composition,
-    since that is the space the constraints of the composition are expressed on.
-    """
-    working_spaces = []
-
-    class _ConstrainedTransformation(SpaceIdentity):
-        """A transformation imposing a constraint of its own."""
-
-        def __init__(self, space: DesignSpace, name: str) -> None:
-            """
-            Args:
-                space: The original space.
-                name: The name of the constraint.
-            """  # noqa: D205, D212
-            super().__init__(space)
-            self.__name = name
-
-        def create_constraints(self, working_space) -> tuple[ArrayFunction, ...]:  # noqa: D102
-            working_spaces.append(working_space)
-            return (ArrayFunction(lambda value: value, name=self.__name),)
-
-    composition = SpaceComposition(
-        design_space,
-        partial(_ConstrainedTransformation, name="c1"),
-        partial(_ConstrainedTransformation, name="c2"),
-    )
-
-    constraints = composition.create_constraints(design_space)
-
-    assert [constraint.name for constraint in constraints] == ["c1", "c2"]
-    assert [space is design_space for space in working_spaces] == [True, True]
 
 
 def test_composition_composes_chains(design_space) -> None:
@@ -767,7 +751,7 @@ def test_composition_project_uses_the_coordinates_of_each_transformation(
     # Rounding 0.4 gives 0.0,
     # which is 0.5 in the coordinates of the second transformation
     # and therefore not an integer.
-    assert_allclose(projected_value, array([0.5]))
+    assert_equal(projected_value, array([0.5]))
     assert_allclose(composition.transform_value(projected_value), array([1.0]))
 
 
@@ -775,7 +759,7 @@ class FreezingTransformation(BaseSpaceTransformation[DesignSpace]):
     """A transformation freezing the last component of its space at its current value.
 
     The working space has one component fewer than the original one,
-    which is what a transformation encoding, splitting or freezing variables does:
+    which is what a transformation splitting or freezing variables does:
     the contract leaves the dimension of the working space to the transformation.
     """
 
@@ -855,112 +839,6 @@ def test_composition_accepts_a_dimension_change(design_space) -> None:
     )
 
 
-class _BoundsToConstraintsTransformation(BaseSpaceTransformation[DesignSpace]):
-    """A transformation freeing the bounds of its space and imposing them as
-    constraints.
-
-    This is what an algorithm without bound support asks for:
-    the working space has the variables of the original one, unbounded,
-    and the bounds come back as two inequality constraints,
-    `lower_bounds - value <= 0` and `value - upper_bounds <= 0`.
-    The maps are the identity.
-    """
-
-    is_affine: ClassVar[bool] = True
-
-    def _create_working_space(self) -> DesignSpace:  # noqa: D102
-        space = self._original_space.filter(list(self._original_space), copy=True)
-        for name in space:
-            space.set_lower_bound(name, -inf)
-            space.set_upper_bound(name, inf)
-
-        return space
-
-    def transform_value(self, value: NumberArray) -> NumberArray:  # noqa: D102
-        return value
-
-    def inverse_transform_value(  # noqa: D102
-        self, value: NumberArray, no_check: bool = False
-    ) -> NumberArray:
-        return value
-
-    def transform_jacobian(  # noqa: D102
-        self, jacobian: NumberArray, value: NumberArray | None = None
-    ) -> NumberArray:
-        return jacobian
-
-    def inverse_transform_jacobian(  # noqa: D102
-        self, jacobian: NumberArray, value: NumberArray | None = None
-    ) -> NumberArray:
-        return jacobian
-
-    def create_constraints(  # noqa: D102
-        self, working_space: DesignSpace
-    ) -> tuple[ArrayFunction, ...]:
-        lower_bounds = self._original_space.get_lower_bounds()
-        upper_bounds = self._original_space.get_upper_bounds()
-        return (
-            ArrayFunction(
-                lambda value: lower_bounds - value,
-                name="lower_bounds",
-                f_type=ArrayFunction.FunctionType.INEQ,
-                input_names=list(working_space.variables),
-            ),
-            ArrayFunction(
-                lambda value: value - upper_bounds,
-                name="upper_bounds",
-                f_type=ArrayFunction.FunctionType.INEQ,
-                input_names=list(working_space.variables),
-            ),
-        )
-
-
-def test_create_constraints_returns_the_constraints_a_transformation_imposes(
-    design_space,
-) -> None:
-    """Check that a transformation hands back the constraints it imposes.
-
-    The transformation frees the bounds of the space
-    and returns them as inequality constraints,
-    which read negative where a bound holds and positive where it is violated.
-    """
-    transformation = _BoundsToConstraintsTransformation(design_space)
-    working_space = transformation.working_space
-
-    assert list(working_space) == ["x", "i"]
-    assert_equal(working_space.get_lower_bounds(), array([-inf, -inf]))
-    assert_equal(working_space.get_upper_bounds(), array([inf, inf]))
-
-    constraints = transformation.create_constraints(working_space)
-
-    assert len(constraints) == 2
-    assert all(isinstance(constraint, ArrayFunction) for constraint in constraints)
-    assert [constraint.name for constraint in constraints] == [
-        "lower_bounds",
-        "upper_bounds",
-    ]
-    assert all(
-        constraint.f_type == ArrayFunction.FunctionType.INEQ
-        for constraint in constraints
-    )
-    assert all(constraint.input_names == ["x", "i"] for constraint in constraints)
-
-    lower, upper = constraints
-    inside = array([2.0, 4.0])
-    assert_equal(lower.evaluate(inside), array([-2.0, -4.0]))
-    assert_equal(upper.evaluate(inside), array([-8.0, -6.0]))
-    outside = array([-1.0, 12.0])
-    assert_equal(lower.evaluate(outside), array([1.0, -12.0]))
-    assert_equal(upper.evaluate(outside), array([-11.0, 2.0]))
-
-    # A composition collects them from the transformation as they are.
-    composition = SpaceComposition(design_space, _BoundsToConstraintsTransformation)
-    assert [
-        constraint.name
-        for constraint in composition.create_constraints(composition.working_space)
-    ] == ["lower_bounds", "upper_bounds"]
-
-
 def test_composition_reports_requiring_finite_bounds(design_space) -> None:
     """Check that a composition requires finite bounds when one transformation does."""
 
@@ -979,7 +857,6 @@ def test_base_defaults(design_space) -> None:
     transformation = SpaceIdentity(design_space)
     value = array([1.0, 2.0])
     assert_equal(transformation.project(value), value)
-    assert transformation.create_constraints(design_space) == ()
 
 
 def test_working_space_is_built_once(design_space) -> None:

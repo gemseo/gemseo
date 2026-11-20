@@ -28,8 +28,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
 
-    from gemseo.core.function.array_function import ArrayFunction
-    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import NumberArray
 
 
@@ -230,12 +228,3 @@ class SpaceComposition(BaseSpaceTransformation[_SpaceT]):
         # The default checks that the names carried back are original ones,
         # whatever the overrides of the transformations.
         return super().get_relaxed_names(names)
-
-    def create_constraints(  # noqa: D102
-        self, working_space: BaseVariableSpace
-    ) -> tuple[ArrayFunction, ...]:
-        constraints: list[ArrayFunction] = []
-        for transformation in self.__transformations:
-            constraints.extend(transformation.create_constraints(working_space))
-
-        return tuple(constraints)

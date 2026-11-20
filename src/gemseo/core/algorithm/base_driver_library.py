@@ -177,7 +177,7 @@ class BaseDriverLibrary(
     __transformed_kinds: frozenset[VariableType] | None
     """The kinds of variables the working transformation of the run takes care of.
 
-    These are the kinds of the variables it relaxes or encodes into other ones.
+    These are the kinds of the variables it relaxes or takes out of the working space.
     It is `None` when there is no working transformation to read them from,
     and the relaxation settings are read instead.
     """
@@ -234,7 +234,8 @@ class BaseDriverLibrary(
         if self._settings is None:
             return description
 
-        # A kind the working transformation relaxes or encodes is handled.
+        # A kind the working transformation relaxes
+        # or takes out of the working space is handled.
         # Without a transformation, e.g. for a meta-driver,
         # the relaxation settings decide instead,
         # and the catalog and categorical kinds are not handled.
@@ -242,13 +243,13 @@ class BaseDriverLibrary(
         if transformed_kinds is None:
             relax_integer_variables = self._settings.relax_integer_variables
             relax_discrete_variables = self._settings.relax_discrete_variables
-            encode_categorical = False
-            encode_catalog = False
+            handle_categorical = False
+            handle_catalog = False
         else:
             relax_integer_variables = VariableType.INTEGER in transformed_kinds
             relax_discrete_variables = VariableType.DISCRETE in transformed_kinds
-            encode_categorical = VariableType.CATEGORICAL in transformed_kinds
-            encode_catalog = VariableType.CATALOG in transformed_kinds
+            handle_categorical = VariableType.CATEGORICAL in transformed_kinds
+            handle_catalog = VariableType.CATALOG in transformed_kinds
 
         return dataclasses.replace(
             description,
@@ -259,10 +260,10 @@ class BaseDriverLibrary(
                 description.handle_discrete_variables or relax_discrete_variables
             ),
             handle_categorical_variables=(
-                description.handle_categorical_variables or encode_categorical
+                description.handle_categorical_variables or handle_categorical
             ),
             handle_catalog_variables=(
-                description.handle_catalog_variables or encode_catalog
+                description.handle_catalog_variables or handle_catalog
             ),
         )
 
@@ -891,7 +892,8 @@ class BaseDriverLibrary(
             # e.g. a normalization of a space that has no bounds to normalize
             # against, must not hide that the algorithm is not suited anyway,
             # nor the relaxation hint, which comes first.
-            # What the transformations would have relaxed or encoded is unknown,
+            # What the transformations would have relaxed
+            # or taken out of the working space is unknown,
             # so the settings decide, whatever the driver,
             # and the error of the build is chained to the raised one,
             # since a hint may be misleading
@@ -1056,7 +1058,7 @@ class BaseDriverLibrary(
 
         Returns:
             The kinds of the declared variables
-            the transformation relaxes or encodes into other ones.
+            the transformation relaxes or takes out of the working space.
 
         Raises:
             ValueError: When a variable of the working space
@@ -1064,14 +1066,14 @@ class BaseDriverLibrary(
         """  # noqa: E501
         # A catalog or categorical variable has no relaxation,
         # so one remaining in the working space is refused,
-        # whereas one encoded away is accepted, as below.
+        # whereas one taken out of the working space is accepted, as below.
         self.__check_categorical_kinds(transformation.working_space)
         # A declared variable of a kind the algorithm does not handle
         # is accepted when the transformation relaxes it,
         # or when the working space has no variable of its name:
-        # the transformation then encodes it into other variables
-        # and its backward map decodes a value into the domain of the variable,
-        # see `BaseSpaceTransformation.get_relaxed_names`.
+        # the transformation then takes it out of the working space,
+        # e.g. freezes it,
+        # and its backward map hands over a value of the domain of the variable.
         # Otherwise,
         # its working variable may have another type,
         # e.g. a normalized integer variable is a float one,

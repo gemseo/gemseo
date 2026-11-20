@@ -33,7 +33,6 @@ from typing import NoReturn
 from unittest import mock
 
 import pytest
-from numpy import arange
 from numpy import array
 from numpy import full
 from numpy import zeros
@@ -899,52 +898,47 @@ class _IntegerizingTransformation(SpaceIdentity):
         return space
 
 
-class _OneHotEncoding(BaseSpaceTransformation):
-    """The one-hot encoding of a design space made of a scalar discrete variable.
+class _FreezingTransformation(BaseSpaceTransformation):
+    """A transformation freezing the variables but the real ones at their current value.
 
-    A scalar categorical or catalog variable is encoded the same way,
-    its choices being the positions of its labels.
-    The backward map decodes a value into the domain of the variable,
-    which is then not relaxed.
+    The working space has only the real variables,
+    whatever the kinds of the frozen ones.
     """
 
     def __init__(self, space: DesignSpace) -> None:
         super().__init__(space)
-        ((self.__name, variable),) = space.variables.items()
-        if variable.type in {VariableType.CATEGORICAL, VariableType.CATALOG}:
-            choices = arange(len(variable.labels))
-        else:
-            choices = variable.choices
-        self.__choices = array(choices, dtype=float)
+        self.__real_names = [
+            name
+            for name, variable in space.variables.items()
+            if variable.type == VariableType.REAL
+        ]
+        self.__real_indices = space.get_variables_indexes(self.__real_names)
+        self.__frozen_value = space.get_current_value()
 
     def _create_working_space(self) -> DesignSpace:
-        space = DesignSpace()
-        space.add_real_variable(
-            f"{self.__name}_one_hot",
-            size=self.__choices.size,
-            lower_bound=0.0,
-            upper_bound=1.0,
-            value=self.transform_value(self._original_space.get_current_value()),
-        )
-        return space
+        return self._original_space.filter(self.__real_names, copy=True)
 
     def transform_value(self, value):
-        return (
-            abs(self.__choices - value[..., :1]).argmin(axis=-1)[..., None]
-            == arange(self.__choices.size)
-        ).astype(float)
+        return value[..., self.__real_indices]
 
     def inverse_transform_value(self, value, no_check=False):
-        return self.__choices[value.argmax(axis=-1)][..., None]
+        original_value = full(
+            (*value.shape[:-1], self.__frozen_value.size),
+            self.__frozen_value,
+            dtype=value.dtype,
+        )
+        original_value[..., self.__real_indices] = value
+        return original_value
 
     def transform_jacobian(self, jacobian, value=None):
-        return zeros((*jacobian.shape[:-1], self.__choices.size))
+        return jacobian[..., self.__real_indices]
 
     def inverse_transform_jacobian(self, jacobian, value=None):
-        return zeros((*jacobian.shape[:-1], 1))
-
-    def get_relaxed_names(self, working_names=()):
-        return set()
+        original_jacobian = zeros(
+            (*jacobian.shape[:-1], self.__frozen_value.size), dtype=jacobian.dtype
+        )
+        original_jacobian[..., self.__real_indices] = jacobian
+        return original_jacobian
 
 
 def _create_discrete_space() -> DesignSpace:
@@ -966,31 +960,32 @@ def _create_catalog_space() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    ("create_space", "values"),
+    ("create_space", "value"),
     [
-        (_create_discrete_space, {1.0, 3.0, 8.0}),
-        (_create_categorical_space, {0.0, 1.0, 2.0}),
-        (_create_catalog_space, {0.0, 1.0, 2.0}),
+        (_create_discrete_space, 3.0),
+        (_create_categorical_space, 1.0),
+        (_create_catalog_space, 1.0),
     ],
     ids=["discrete", "categorical", "catalog"],
 )
-def test_encoded_variable(create_space, values) -> None:
-    """Check that a variable encoded into other ones need not be relaxed.
+def test_variable_out_of_working_space(create_space, value) -> None:
+    """Check that a variable out of the working space need not be relaxed.
 
     SLSQP handles no discrete, categorical or catalog variables,
-    but the encoding replaces the variable with float ones
-    and its backward map decodes a value into the domain of the variable.
+    but the transformation freezes the variable at its current value,
+    so that the algorithm does not iterate on it.
     """
     design_space = create_space()
+    design_space.add_real_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(
-        operator.itemgetter(slice(1)), name="f", jac=lambda x: array([[1.0]])
+        operator.itemgetter(slice(1, 2)), name="f", jac=lambda x: array([[0.0, 1.0]])
     )
-    _create_driver([_OneHotEncoding]).execute(
+    _create_driver([_FreezingTransformation]).execute(
         problem, settings=SLSQP_Settings(max_iter=1)
     )
 
-    assert problem.solution.x_opt[0] in values
+    assert problem.solution.x_opt[0] == value
     assert problem.database.relaxed_variable_names == set()
 
 

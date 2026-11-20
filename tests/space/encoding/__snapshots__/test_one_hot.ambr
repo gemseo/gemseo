@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_decode_nan_weight[catalog]
+  'SpaceOneHotEncoding cannot decode weights with a NaN component, weights with no NaN component being expected: c: [0.0, nan, 0.0].'
+# ---
+# name: test_decode_nan_weight[discrete and catalog]
+  'SpaceOneHotEncoding cannot decode weights with a NaN component, weights with no NaN component being expected: d: [0.0, nan, 1.0]; c: [0.0, nan, 0.0].'
+# ---
+# name: test_decode_nan_weight[discrete]
+  'SpaceOneHotEncoding cannot decode weights with a NaN component, weights with no NaN component being expected: d: [0.0, nan, 1.0].'
+# ---
+# name: test_encode_outside_domain[batch]
+  'SpaceOneHotEncoding cannot encode values that are not choices, the choices of a catalog variable being the positions of its alternatives: d: [2.0] not in [1.0, 3.0, 8.0].'
+# ---
+# name: test_encode_outside_domain[nan]
+  'SpaceOneHotEncoding cannot encode values that are not choices, the choices of a catalog variable being the positions of its alternatives: d: [nan] not in [1.0, 3.0, 8.0].'
+# ---
+# name: test_encode_outside_domain[not choices]
+  'SpaceOneHotEncoding cannot encode values that are not choices, the choices of a catalog variable being the positions of its alternatives: d: [2.0] not in [1.0, 3.0, 8.0]; c: [1.4] not in [0.0, 1.0, 2.0]; u: [7.0] not in [0.0, 1.0].'
+# ---
+# name: test_weights_name_taken
+  'SpaceOneHotEncoding names the weights of an encoded variable x as x_weights, a name that no other variable of the design space may take; the design space has variables named d_weights.'
+# ---
