@@ -194,6 +194,29 @@ def test_get_extra_output_names_namespace(io: IO):
     assert not io.get_extra_output_names({"output": 0, "n:output": 0})
 
 
+@pytest.mark.parametrize(
+    ("namespace", "output_data", "expected"),
+    [
+        ("", {"o": 1, "extra": 2}, {"o": 1}),
+        ("n", {"n:o": 1, "extra": 2}, {"n:o": 1}),
+        ("n", {"o": 1, "extra": 2}, {"n:o": 1}),
+        ("n", {"n:o": 1, "o": 3, "extra": 2}, {"n:o": 1}),
+    ],
+    ids=["no_namespace", "prefixed", "unprefixed", "prefixed_and_unprefixed"],
+)
+def test_finalize_removes_extra_output_data(io: IO, namespace, output_data, expected):
+    """Check that finalize removes the output data that are not outputs.
+
+    An output written without its namespace prefix is kept under its prefixed name.
+    """
+    io.output_grammar.update_from_data({"o": 0})
+    if namespace:
+        io.output_grammar.add_namespace("o", namespace)
+    io.output_data = DisciplineData(output_data)
+    io.finalize(False)
+    assert io.output_data == expected
+
+
 def test_update_output_data_no_mirror_for_auto_coupled():
     """Auto-coupled keys land in `_output_data` only after `update_output_data`."""
     io = IO(type, "io", GrammarType.SIMPLE)
