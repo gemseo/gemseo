@@ -20,6 +20,12 @@
   {{ super() }}
   <meta name="google-site-verification" content="in-BSPYwVmH_-ZIHgucF9HvUAM3A27mOBcHHdubhHDc" />
   <meta name="msvalidate.01" content="F08588BEB8EDBDB910F09BD0E854B1BC" />
+  {#-
+    Cookieless audience measurement with the self-hosted Plausible instance of IRT Saint Exupery.
+    Each page view is sent to the site "gemseo.gitlab.io" and to the roll-up site "all.gemseo"
+    which aggregates gemseo.org and the GEMSEO documentation.
+  -#}
+  <script defer data-domain="gemseo.gitlab.io,all.gemseo" src="https://gemseo-plausible.pf.irt-saintexupery.com/js/script.js"></script>
 {% endblock %}
 
 {#-
