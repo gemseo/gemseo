@@ -81,8 +81,5 @@ An ODE solver is typically used to solve an [ODEProblem][gemseo.ode.problem.ODEP
 Please refer to the [ODE solvers section][concept-ode-solvers] for more information.
 
 Once solved,
-the `result` attribute holds an [ODEResult][gemseo.ode.result.ODEResult]
-describing the state trajectories at the evaluation times,
-the final state and termination time,
-the index of the termination event (if any),
-and convergence information from the solver.
+the `result` attribute holds an [ODEResult][gemseo.ode.result.ODEResult],
+described in [Result][concept-ode-result].

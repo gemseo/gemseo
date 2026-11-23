@@ -1,8 +1,7 @@
 ---
 reading_time: true
 complexity: intermediate
-status: draft
-description: "GEMSEO integrates ordinary differential equations with a choice of explicit, implicit and backwards-differentiation solvers, and can stop the integration early using event functions."
+description: "An ODE solver integrates an ODE problem from its initial state over its time interval and stops early when an event function changes sign."
 tags: ['user_guide']
 search:
   boost: 2
@@ -19,36 +18,54 @@ search:
 
 # ODE solvers { #concept-ode-solvers }
 
-## Generalities { #concept-generalities }
+An ODE solver integrates an [ODE problem][concept-ode-problem]:
+it computes the state from the initial state over the time interval.
 
-GEMSEO integrates first-order ordinary differential equations
-by computing the solution of an Initial Value Problem (IVP).
-See [ODE problem][concept-ode-problem] for the formal definition of an IVP.
+## Algorithms { #concept-ode-algorithms }
 
-## Algorithms for the numerical solution { #concept-algorithms-for-the-numerical-solution }
+GEMSEO wraps the ODE solvers of the SciPy function `solve_ivp`.
+The [ODE catalog](https://gemseo.org/more_on/catalogs/ode/) lists them with their settings.
+The plugin [gemseo-petsc](https://gemseo.gitlab.io/dev/gemseo-petsc) provides other ODE solvers.
+It also computes the sensitivities of the solution
+with respect to the initial state and the design variables by an adjoint method.
+The [plugin catalog](https://gemseo.org/plugins/catalog/) lists the GEMSEO plugins.
 
-Multiple algorithms are available in the literature.
-The algorithms available in GEMSEO, developed in the method `solve_ivp`
-of the library `scipy.integrate`, are:
+??? note "Jacobian of the right-hand side"
+    The solvers `Radau`, `BDF` and `LSODA` use the Jacobian
+    of the right-hand side $f$ with respect to the state.
+    The ODE problem gives it
+    as a constant matrix or as a function of the time and the state.
+    Otherwise, it is approximated.
 
-* the *explicit Runge-Kutta* algorithms (`RK45`, `RK23`, `DOP853`),
-* an *implicit Runge-Kutta* algorithm (`Radau`),
-* and two algorithms based on a backwards differentiation formula (`BDF` and `LSODA`).
+!!! tutorial
+    - [Tutorial - Solving an ODE with ODEProblem][]
+    - [Tutorial - Solving an ODE with GEMSEO][]
+    - [Tutorial - Solving a system of coupled ODEs][]
 
-The algorithms `Radau`, `BDF`, and `LSODA` require the knowledge of the Jacobian of
-the function $f$ with respect to the state $y$: $J f = \frac{\partial f}{\partial y}$.
-The Jacobian can be either passed to the algorithm, or computed by finite differences.
+## Result { #concept-ode-result }
 
-Further algorithms for the solution of IVPs are available in the plugin
-[gemseo-petsc](https://gitlab.com/gemseo/dev/gemseo-petsc).
-The plugin [gemseo-petsc](https://gitlab.com/gemseo/dev/gemseo-petsc) provides also an adjoint mode
-to perform a sensitivity analysis on the solution of the ODE
-with respect to its initial values and the design parameters.
+The solver stores its result in the `result` attribute of the ODE problem,
+an [ODEResult][gemseo.ode.result.ODEResult].
+It holds the final state and the termination time,
+the numbers of evaluations of $f$ and of its Jacobian,
+whether the solver has converged and its termination message.
+When the solver has not converged, GEMSEO logs a warning.
 
-## Event functions { #concept-event-functions }
+??? note "Stored states"
+    The solver stores the state at the evaluation times of the ODE problem.
+    When an event stops the integration, it stores only the evaluation times before the event.
+    If the ODE problem asks to solve at the algorithm times,
+    it stores the state at the times chosen by the solver.
+    Otherwise, without evaluation times, it stores only the final state,
+    but `result.times` still holds the times chosen by the solver.
 
-For some problems, it might be interesting not to integrate the dynamic for the entire
-time interval $[t_0, t_f]$, but only up to the realization of a terminating condition.
-Such conditions are encoded by **event functions**:
-real-valued continuous functions $g_1, \ldots, g_m: [t_0, t_f] \times \mathbb{R}^n \rightarrow \mathbb{R}$.
-The terminating condition is realized when any of the event function crosses the threshold $0$.
+## Event functions { #concept-ode-event-functions }
+
+An event function is a function of the time and the state.
+The integration stops when one of the event functions of the ODE problem changes sign.
+Then, the result gives the index of this event function,
+the time of this event and the state at this time.
+Without event, the solver integrates over the whole time interval.
+
+!!! how-to
+    - [Add a termination condition to an ODE][]
