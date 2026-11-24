@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_repeated_input
+  "The input names cannot be repeated: 'a'."
+# ---

@@ -823,3 +823,36 @@ def test_list_variable(mapping, value, expected) -> None:
     discipline = RemappingDiscipline(original_discipline, {"a": mapping})
     discipline.execute({"a": value})
     assert original_discipline.io.input_data["x"] == expected
+
+
+@pytest.mark.parametrize(
+    ("namespace_wrapped", "namespace_remapping", "input_name", "output_name"),
+    [
+        (True, False, "u", "z"),
+        (False, True, "n:u", "m:z"),
+        (True, True, "n:u", "m:z"),
+    ],
+    ids=["wrapped", "remapping", "both"],
+)
+def test_linearize_with_namespaces(
+    namespace_wrapped, namespace_remapping, input_name, output_name
+) -> None:
+    """Check the Jacobian when the wrapped or remapping discipline has namespaces."""
+    wrapped = AnalyticDiscipline({"y": "2*a+3*b"})
+    if namespace_wrapped:
+        wrapped.add_namespace_to_input("a", "w")
+        wrapped.add_namespace_to_output("y", "v")
+        a_name, y_name = "w:a", "v:y"
+    else:
+        a_name, y_name = "a", "y"
+
+    discipline = RemappingDiscipline(
+        wrapped, {"u": (a_name, 0), "t": ("b", 0)}, {"z": (y_name, 0)}
+    )
+    if namespace_remapping:
+        discipline.add_namespace_to_input("u", "n")
+        discipline.add_namespace_to_output("z", "m")
+
+    jac = discipline.linearize(compute_all_jacobians=True)
+    assert_equal(jac[output_name][input_name], array([[2.0]]))
+    assert_equal(jac[output_name]["t"], array([[3.0]]))

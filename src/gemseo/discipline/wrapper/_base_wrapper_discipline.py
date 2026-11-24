@@ -21,7 +21,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from typing import Any
+
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.core.grammar.base import BaseGrammar
 
 
 class BaseWrapperDiscipline(Discipline):
@@ -58,3 +65,46 @@ class BaseWrapperDiscipline(Discipline):
         self._differentiated_output_names = (
             self._discipline._differentiated_output_names
         )
+
+    @staticmethod
+    def _get_wrapped_name(
+        name: str, grammar: BaseGrammar, wrapped_grammar: BaseGrammar
+    ) -> str:
+        """Return the name of a variable of the wrapped discipline.
+
+        A variable has at most one namespace,
+        either set on the wrapped discipline or added on the wrapper:
+        the name is kept in the first case
+        and stripped of its namespace prefix in the second one.
+
+        Args:
+            name: The name of the variable of the wrapper.
+            grammar: The grammar of the wrapper.
+            wrapped_grammar: The grammar of the wrapped discipline.
+
+        Returns:
+            The name of the variable of the wrapped discipline.
+        """
+        if name in wrapped_grammar:
+            return name
+
+        return grammar.from_namespaced.get(name, name)
+
+    def _get_wrapped_input_data(self) -> DisciplineData | dict[str, Any]:
+        """Return the input data of the wrapped discipline.
+
+        Returns:
+            The input data of the wrapper
+            keyed by the names of the wrapped discipline.
+        """
+        io = self.io
+        grammar = io.input_grammar
+        if not grammar.from_namespaced:
+            return io.input_data
+
+        wrapped_grammar = self._discipline.io.input_grammar
+        get_wrapped_name = self._get_wrapped_name
+        return {
+            get_wrapped_name(name, grammar, wrapped_grammar): value
+            for name, value in io.input_data.items()
+        }

@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.cache.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import JacobianData
     from gemseo.util.typing import StrKeyMapping
 
@@ -307,7 +308,9 @@ class Discipline(BaseDiscipline):
                     self.__output_names, self.__input_names
                 )
         else:
-            self._compute_jacobian(self.__input_names, self.__output_names)
+            self._compute_jacobian_with_namespaces(
+                self.__input_names, self.__output_names
+            )
 
     def set_jacobian_approximation(
         self,
@@ -528,40 +531,50 @@ class Discipline(BaseDiscipline):
     ) -> tuple[list[str], list[str]]:
         """Initialize the Jacobian dictionary `jac`.
 
+        The names, those passed to this method, those returned and those of `jac`,
+        have no namespace prefix,
+        as for `_compute_jacobian()`.
+
         Args:
-            input_names: The inputs with respect to which to differentiate the outputs.
+            input_names: The names of the inputs, without namespace prefix,
+                with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
-            output_names: The outputs to be differentiated.
+            output_names: The names of the outputs, without namespace prefix,
+                to be differentiated.
                 If empty, use all the outputs.
             init_type: The type used to initialize the Jacobian matrices.
             fill_missing_keys: Whether to just fill the missing items with zeros/empty
                 but do not override the existing data.
 
         Returns:
-            The names of the input variables
+            The names of the input variables, without namespace prefix,
             with respect to which to differentiate the output ones,
-            and these output variables.
+            and the names of these output variables, without namespace prefix.
         """
-        if init_type == self.InitJacobianType.EMPTY:
+        init_jacobian_type = self.InitJacobianType
+        if init_type == init_jacobian_type.EMPTY:
             default_matrix = empty
-        elif init_type == self.InitJacobianType.DENSE:
+        elif init_type == init_jacobian_type.DENSE:
             default_matrix = zeros
-        elif init_type == self.InitJacobianType.SPARSE:
+        elif init_type == init_jacobian_type.SPARSE:
             default_matrix = csr_array
         else:
             # Cast the argument so that the enum class raise an explicit error.
-            self.InitJacobianType(init_type)
+            init_jacobian_type(init_type)
 
-        input_names = input_names or self._differentiated_input_names
-        input_name_to_size = self.io.input_grammar.data_converter.compute_name_to_size(
-            input_names, self.io.input_data
+        io = self.io
+        input_names = input_names or self._remove_namespaces_from_names(
+            self._differentiated_input_names, io.input_grammar
+        )
+        input_name_to_size = self.__compute_name_to_size(
+            input_names, io.input_grammar, io.input_data
         )
 
-        output_names = output_names or self._differentiated_output_names
-        output_name_to_size = (
-            self.io.output_grammar.data_converter.compute_name_to_size(
-                output_names, self.io.output_data
-            )
+        output_names = output_names or self._remove_namespaces_from_names(
+            self._differentiated_output_names, io.output_grammar
+        )
+        output_name_to_size = self.__compute_name_to_size(
+            output_names, io.output_grammar, io.output_data
         )
 
         if fill_missing_keys:
@@ -585,6 +598,38 @@ class Discipline(BaseDiscipline):
             self.jac = jac
 
         return input_names, output_names
+
+    @staticmethod
+    def __compute_name_to_size(
+        names: Iterable[str], grammar: BaseGrammar, data: StrKeyMapping
+    ) -> dict[str, int]:
+        """Compute the size of the data from names that may have no namespace prefix.
+
+        Args:
+            names: The names, with or without namespace prefix.
+            grammar: The grammar of the data.
+            data: The data, whose names have their namespace prefixes.
+
+        Returns:
+            The sizes of the data bound to the names, keyed by the names as given.
+        """
+        to_namespaced = grammar.to_namespaced
+        names = tuple(names)
+        if not to_namespaced:
+            return grammar.data_converter.compute_name_to_size(names, data)
+
+        # A name of the grammar is kept as is,
+        # even if it is also the name without prefix of namespaced variables.
+        namespaced_names = [
+            name if name in grammar else to_namespaced.get(name, name) for name in names
+        ]
+        name_to_size = grammar.data_converter.compute_name_to_size(
+            namespaced_names, data
+        )
+        return {
+            name: name_to_size[namespaced_name]
+            for name, namespaced_name in zip(names, namespaced_names, strict=True)
+        }
 
     def _get_differentiated_io(
         self,
@@ -711,6 +756,57 @@ class Discipline(BaseDiscipline):
             #  this should be made explicit.
             self.jac = {}
 
+    def _compute_jacobian_with_namespaces(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """Compute the Jacobian from the names without namespace prefix.
+
+        This is to `_compute_jacobian()` what `_execute()` is to `_run()`:
+        the discipline implementer never deals with namespaces.
+
+        Args:
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
+        """
+        input_grammar = self.io.input_grammar
+        output_grammar = self.io.output_grammar
+        if not (input_grammar.to_namespaced or output_grammar.to_namespaced):
+            self._compute_jacobian(input_names, output_names)
+            return
+
+        self._compute_jacobian(
+            self._remove_namespaces_from_names(input_names, input_grammar),
+            self._remove_namespaces_from_names(output_names, output_grammar),
+        )
+        self.jac = self._add_namespaces_to_jacobian(self.jac)
+
+    def _remove_namespaces_from_names(
+        self, names: Iterable[str], grammar: BaseGrammar
+    ) -> list[str]:
+        """Convert names of a grammar into the names used by `_compute_jacobian()`.
+
+        A namespaced name is stripped of its prefix,
+        unless the stripped name is itself a name of the grammar,
+        in which case the stripped name would be ambiguous.
+
+        Args:
+            names: The names, with their namespace prefixes if any.
+            grammar: The grammar of the names.
+
+        Returns:
+            The names without namespace prefix, except the ambiguous ones.
+        """
+        from_namespaced_get = grammar.from_namespaced.get
+        result = []
+        for name in names:
+            stripped_name = from_namespaced_get(name, name)
+            result.append(name if stripped_name in grammar else stripped_name)
+        return result
+
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
@@ -722,13 +818,61 @@ class Discipline(BaseDiscipline):
         [jac][gemseo.core.discipline.discipline.Discipline.jac]
         as a dictionary `{output_name: {input_name: jacobian_matrix}}`.
 
+        The names, those passed to this method and those of `jac`,
+        have no namespace prefix,
+        as for `_run()`;
+        the framework adds the prefixes afterwards.
+        The process disciplines are the exception:
+        they work with the names of their sub-disciplines, namespace prefixes included.
+
         Args:
-            input_names: The names of the inputs
+            input_names: The names of the inputs, without namespace prefix,
                 with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
-            output_names: The names of the outputs to be differentiated.
+            output_names: The names of the outputs, without namespace prefix,
+                to be differentiated.
                 If empty, use all the outputs.
         """
+
+    def _add_namespaces_to_jacobian(self, jacobian: JacobianData) -> JacobianData:
+        """Prefix the names of a Jacobian with their namespaces, if any.
+
+        The framework calls this method after
+        `_compute_jacobian()`,
+        which sets [jac][gemseo.core.discipline.discipline.Discipline.jac]
+        with names without namespace prefix.
+        A name that already has its prefix is left unchanged.
+
+        Args:
+            jacobian: The Jacobian whose names have no namespace prefix.
+
+        Returns:
+            The Jacobian whose names have their namespace prefixes, if any.
+        """
+        input_to_namespaced = self.io.input_grammar.to_namespaced
+        output_to_namespaced = self.io.output_grammar.to_namespaced
+        if not (input_to_namespaced or output_to_namespaced):
+            return jacobian
+
+        input_grammar = self.io.input_grammar
+        output_grammar = self.io.output_grammar
+        return {
+            # A name of the grammar is kept as is,
+            # even if it is also the name without prefix of namespaced variables.
+            (
+                output_name
+                if output_name in output_grammar
+                else output_to_namespaced.get(output_name, output_name)
+            ): {
+                (
+                    input_name
+                    if input_name in input_grammar
+                    else input_to_namespaced.get(input_name, input_name)
+                ): value
+                for input_name, value in input_name_to_value.items()
+            }
+            for output_name, input_name_to_value in jacobian.items()
+        }
 
     def _compose_hybrid_jacobian(
         self,
@@ -745,7 +889,7 @@ class Discipline(BaseDiscipline):
             input_names: The names of the input wrt the `output_names` are
                 linearized.
         """
-        self._compute_jacobian(self.__input_names, self.__output_names)
+        self._compute_jacobian_with_namespaces(self.__input_names, self.__output_names)
         analytical_jacobian = self.jac
 
         approximated_jac = {}
@@ -778,7 +922,7 @@ class Discipline(BaseDiscipline):
         # Fill in missing inputs of the Jacobian.
         for output_name in output_names:
             analytical_jacobian_out = analytical_jacobian[output_name]
-            approximated_jac_out = approximated_jac[output_name]
+            approximated_jac_out = approximated_jac.get(output_name, {})
             for input_name in input_names:
                 if input_name not in analytical_jacobian_out:
                     analytical_jacobian_out[input_name] = approximated_jac_out[

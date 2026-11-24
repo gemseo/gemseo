@@ -11,6 +11,9 @@
 # name: test_handle_outputs_errors.1
   'An error.'
 # ---
+# name: test_handle_outputs_with_unknown_jacobian_names
+  '"The Jacobian of the discipline SobieskiMission has names that are not variables of JobSchedulerDiscipline(SobieskiMission): \'bar\' and \'foo\'."'
+# ---
 # name: test_run_fail
   '[Errno 2] No such file or directory'
 # ---

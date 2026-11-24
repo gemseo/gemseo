@@ -30,6 +30,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.discipline.constraint_aggregation import ConstraintAggregation
+from gemseo.optimization.aggregation._functions import compute_upper_bound_ks_agg
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
@@ -171,3 +172,73 @@ def test_evaluation_function_as_enum(aggregation_attribute_value) -> None:
     discipline.execute()
     output_data_without_enum = discipline.io.get_output_data()
     assert_equal(output_data_without_enum, output_data_with_enum)
+
+
+@pytest.fixture
+def namespaced_discipline() -> ConstraintAggregation:
+    """A ConstraintAggregation whose first constraint has a namespace."""
+    discipline = ConstraintAggregation(["c1", "c2"], "upper_bound_KS")
+    discipline.add_namespace_to_input("c1", "ns")
+    discipline.io.input_grammar.defaults = {
+        "ns:c1": array([1.0, 2.0]),
+        "c2": array([5.0]),
+    }
+    return discipline
+
+
+def test_namespaces(namespaced_discipline) -> None:
+    """Check that each constraint is aggregated into its own output."""
+    namespaced_discipline.execute()
+    output_data = namespaced_discipline.io.output_data
+    assert_equal(
+        output_data["upper_bound_KS_c1"],
+        compute_upper_bound_ks_agg(array([1.0, 2.0])),
+    )
+    assert_equal(
+        output_data["upper_bound_KS_c2"], compute_upper_bound_ks_agg(array([5.0]))
+    )
+
+
+def test_namespaces_jacobian(namespaced_discipline) -> None:
+    """Check the Jacobian when an input has a namespace."""
+    checker = DisciplineJacobianChecker(namespaced_discipline)
+    assert checker.check(atol=1e-6, rtol=1e-6, step=1e-8)
+
+
+@pytest.mark.parametrize(
+    ("options", "c", "expected"),
+    [
+        ({}, array([1.0, 3.0, 2.0]), array([[0.0, 1.0, 0.0]])),
+        (
+            {"indices": [1, 0], "scale": array([2.0, 3.0])},
+            array([0.0, 10.0]),
+            array([[0.0, 2.0]]),
+        ),
+    ],
+    ids=["default", "indices_and_array_scale"],
+)
+def test_max_jacobian(options, c, expected) -> None:
+    """Check the Jacobian of the maximum."""
+    discipline = ConstraintAggregation(["c"], "MAX", **options)
+    jacobian = discipline.linearize({"c": c}, compute_all_jacobians=True)
+    assert_equal(jacobian["MAX_c"]["c"], expected)
+
+
+def test_max_with_indices_and_scale() -> None:
+    """Check the maximum with indices and an array scale."""
+    discipline = ConstraintAggregation(
+        ["c"], "MAX", indices=[1, 0], scale=array([2.0, 3.0])
+    )
+    output_data = discipline.execute({"c": array([0.0, 10.0])})
+    assert_equal(output_data["MAX_c"], array([20.0]))
+
+
+def test_indices_of_each_constraint() -> None:
+    """Check that the indices refer to the components of each constraint."""
+    discipline = ConstraintAggregation(["c1", "c2"], "MAX", indices=[1])
+    output_data = discipline.execute({
+        "c1": array([1.0, 2.0]),
+        "c2": array([4.0, 3.0]),
+    })
+    assert_equal(output_data["MAX_c1"], array([2.0]))
+    assert_equal(output_data["MAX_c2"], array([3.0]))

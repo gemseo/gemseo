@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from itertools import product
+
 import pytest
 from numpy import allclose
 from numpy import array
@@ -176,21 +178,61 @@ def test_max_aggreg(sellar_problem) -> None:
     assert allclose(sol2.x_opt, xopt_ref, rtol=1e-2)
 
 
-@pytest.mark.parametrize("indices", [None, [0], [0, 1]])
+def _has_array_scale_of_length_above_one(aggregation_meth, indices, use_array_scale):
+    """Return whether the case is a KS or IKS one with a scale of several items."""
+    return (
+        use_array_scale
+        and aggregation_meth
+        in {aggregate_upper_bound_ks, aggregate_lower_bound_ks, aggregate_iks}
+        and (indices is None or len(indices) > 1)
+    )
+
+
+_gradient_cases = [
+    pytest.param(
+        aggregation_meth,
+        indices,
+        use_array_scale,
+        id=f"{aggregation_meth.__name__}-{indices}-"
+        f"{'array' if use_array_scale else 'scalar'}",
+        marks=pytest.mark.xfail(
+            raises=ValueError,
+            reason="The KS and IKS Jacobians do not support an array scale (#2175).",
+            strict=True,
+        )
+        if _has_array_scale_of_length_above_one(
+            aggregation_meth, indices, use_array_scale
+        )
+        else (),
+    )
+    for aggregation_meth, indices, use_array_scale in product(
+        [
+            aggregate_max,
+            aggregate_upper_bound_ks,
+            aggregate_lower_bound_ks,
+            aggregate_iks,
+            aggregate_positive_sum_square,
+        ],
+        [None, [0], [0, 1]],
+        [False, True],
+    )
+]
+
+
 @pytest.mark.parametrize(
-    "aggregation_meth",
-    [
-        aggregate_max,
-        aggregate_upper_bound_ks,
-        aggregate_lower_bound_ks,
-        aggregate_iks,
-        aggregate_positive_sum_square,
-    ],
+    ("aggregation_meth", "indices", "use_array_scale"), _gradient_cases
 )
-def test_gradients_ineq(sellar_problem, aggregation_meth, indices) -> None:
+def test_gradients_ineq(
+    sellar_problem, aggregation_meth, indices, use_array_scale
+) -> None:
     """Checks gradients of inequality aggregation methods by finite differences."""
     c = sellar_problem.constraints[0]
-    f1 = aggregation_meth(c, indices=indices)
+    if use_array_scale:
+        scale = array([2.0, 3.0])[: 2 if indices is None else len(indices)]
+    else:
+        scale = 2.0
+
+    f1 = aggregation_meth(c, indices=indices, scale=scale)
     assert FunctionJacobianChecker(f1).check(
         array([0.5, 0.6, 0.2]), atol=1e-5, rtol=1e-5
     )

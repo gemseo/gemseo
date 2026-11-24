@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import create_mda
@@ -32,6 +33,7 @@ from gemseo.core.discipline.namespace import update_nested_namespaces
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
+from gemseo.discipline.wrapper.filtering_discipline import FilteringDiscipline
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 from gemseo.util.testing.helper import assert_exception
 
@@ -305,3 +307,66 @@ def test_update_nested_namespaces_preserves_source() -> None:
     update_nested_namespaces(namespaces, {"x": "ns2:x"})
     assert namespaces == {"x": ["ns1:x", "ns2:x"]}
     assert source == {"x": ["ns1:x"]}
+
+
+class _InitJacobianDiscipline(Discipline):
+    """A discipline whose Jacobian is initialized without names."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults = {"x": array([1.0])}
+
+    def _run(self, input_data):
+        return {"y": 2 * input_data["x"]}
+
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+        self._init_jacobian()
+        self.jac["y"]["x"][:, :] = 2.0
+
+
+def test_init_jacobian_without_names_removes_namespaces() -> None:
+    """`_init_jacobian` without names uses the names without namespace prefix."""
+    discipline = _InitJacobianDiscipline()
+    discipline.add_namespace_to_input("x", "ns")
+    discipline.add_differentiated_inputs()
+    discipline.add_differentiated_outputs()
+    jacobian = discipline.linearize()
+    assert_equal(jacobian, {"y": {"ns:x": array([[2.0]])}})
+
+
+def test_add_namespaces_to_jacobian_keeps_name_of_grammar() -> None:
+    """A plain name sharing its base name with a namespaced one is kept."""
+    discipline = _InitJacobianDiscipline()
+    grammar = discipline.io.input_grammar
+    grammar.update_from_names(["ns:x"])
+    grammar.to_namespaced = {"x": "ns:x"}
+    grammar.from_namespaced = {"ns:x": "x"}
+    jacobian = {"y": {"x": array([[1.0]]), "ns:x": array([[2.0]])}}
+    assert_equal(discipline._add_namespaces_to_jacobian(jacobian), jacobian)
+
+
+def test_remove_namespaces_from_names_keeps_ambiguous_name() -> None:
+    """Stripping then adding the namespaces is a round trip for ambiguous names."""
+    discipline = _InitJacobianDiscipline()
+    grammar = discipline.io.input_grammar
+    grammar.update_from_names(["ns:x", "ns:z"])
+    grammar.to_namespaced = {"x": "ns:x", "z": "ns:z"}
+    grammar.from_namespaced = {"ns:x": "x", "ns:z": "z"}
+    names = discipline._remove_namespaces_from_names(["x", "ns:x", "ns:z"], grammar)
+    assert names == ["x", "ns:x", "z"]
+
+
+@pytest.mark.parametrize(
+    "wrap",
+    [lambda discipline: DisciplineChain([discipline]), FilteringDiscipline],
+    ids=["process", "filtering"],
+)
+def test_remove_namespaces_from_names_keeps_names(wrap) -> None:
+    """A discipline working with namespaced names keeps the names unchanged."""
+    discipline = _InitJacobianDiscipline()
+    discipline.add_namespace_to_input("x", "ns")
+    discipline = wrap(discipline)
+    grammar = discipline.io.input_grammar
+    assert discipline._remove_namespaces_from_names(["ns:x"], grammar) == ["ns:x"]

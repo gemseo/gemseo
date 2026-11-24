@@ -26,10 +26,12 @@ from typing import TYPE_CHECKING
 import psutil
 import pytest
 from numpy import array
+from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline.wrapper.retry_discipline import RetryDiscipline
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.platform import platform_is_windows
@@ -84,6 +86,29 @@ class FictiveDiscipline(Discipline):
         if self.attempt < 3:
             msg = "runtime error in FictiveDiscipline"
             raise RuntimeError(msg)
+
+
+@pytest.mark.parametrize(
+    "namespaces_on_wrapper", [False, True], ids=["on_wrapped", "on_wrapper"]
+)
+@pytest.mark.parametrize("timeout", [math.inf, 10.0], ids=["no_timeout", "timeout"])
+def test_execute_with_namespaces(timeout, namespaces_on_wrapper) -> None:
+    """Check the execution with namespaces.
+
+    The namespaces are added either on the wrapped discipline or on the wrapper.
+    """
+    discipline = AnalyticDiscipline({"y": "2*x"})
+    if namespaces_on_wrapper:
+        retry_discipline = RetryDiscipline(discipline, timeout=timeout)
+        retry_discipline.add_namespace_to_input("x", "n")
+        retry_discipline.add_namespace_to_output("y", "m")
+    else:
+        discipline.add_namespace_to_input("x", "n")
+        discipline.add_namespace_to_output("y", "m")
+        retry_discipline = RetryDiscipline(discipline, timeout=timeout)
+
+    output_data = retry_discipline.execute({"n:x": array([3.0])})
+    assert_array_equal(output_data["m:y"], array([6.0]))
 
 
 @pytest.mark.parametrize("timeout", [math.inf, 10.0])

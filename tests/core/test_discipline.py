@@ -372,6 +372,35 @@ def test_check_jac_hybrid_approx(
     assert len(cached_jac) == 1
 
 
+def test_check_jac_hybrid_output_without_missing_block() -> None:
+    """The hybrid Jacobian supports an output whose blocks are all analytic."""
+
+    class PartiallyAnalyticDiscipline(Discipline):
+        def __init__(self) -> None:
+            super().__init__()
+            self.io.input_grammar.update_from_names(["x", "z"])
+            self.io.output_grammar.update_from_names(["y", "w"])
+            self.io.input_grammar.defaults = {"x": array([1.0]), "z": array([2.0])}
+
+        def _run(self, input_data):
+            x, z = input_data["x"], input_data["z"]
+            return {"y": 2 * x + 3 * z, "w": 4 * x + 5 * z}
+
+        def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+            self.jac = {
+                "y": {"x": array([[2.0]]), "z": array([[3.0]])},
+                "w": {"x": array([[4.0]])},
+            }
+
+    discipline = PartiallyAnalyticDiscipline()
+    discipline.set_jacobian_approximation("hybrid_centered_differences")
+    jacobian = discipline.linearize(compute_all_jacobians=True)
+    assert_equal(jacobian["y"]["x"], [[2.0]])
+    assert_equal(jacobian["y"]["z"], [[3.0]])
+    assert_equal(jacobian["w"]["x"], [[4.0]])
+    assert_allclose(jacobian["w"]["z"], [[5.0]], rtol=1e-6)
+
+
 @pytest.mark.parametrize("hybrid_mode", Discipline.HybridApproximationMode)
 def test_linearization_mode_setter_hybrid(
     hybrid_jacobian_discipline, hybrid_mode
@@ -1682,3 +1711,127 @@ def test_forbid_extra_output_names_status(monkeypatch):
     with pytest.raises(InvalidDataError):
         discipline.execute()
     assert discipline.execution_status.value == ExecutionStatus.Status.FAILED
+
+
+@pytest.fixture
+def analytic_discipline() -> AnalyticDiscipline:
+    """A discipline with two inputs a and b and two outputs y and z."""
+    return AnalyticDiscipline({"y": "a+b", "z": "a-b"})
+
+
+def test_add_namespaces_to_jacobian_without_namespace(
+    analytic_discipline: AnalyticDiscipline,
+):
+    """Verify that a Jacobian is returned as is when there is no namespace."""
+    jacobian = {"y": {"a": array([[1.0]])}}
+    assert analytic_discipline._add_namespaces_to_jacobian(jacobian) is jacobian
+
+
+def test_add_namespaces_to_jacobian(analytic_discipline: AnalyticDiscipline):
+    """Verify that the names of a Jacobian are prefixed with their namespaces."""
+    analytic_discipline.add_namespace_to_input("a", "n")
+    analytic_discipline.add_namespace_to_output("y", "m")
+    jacobian = {
+        "y": {"a": array([[1.0]]), "b": array([[2.0]])},
+        "z": {"a": array([[3.0]]), "b": array([[4.0]])},
+    }
+    namespaced_jacobian = analytic_discipline._add_namespaces_to_jacobian(jacobian)
+    assert list(namespaced_jacobian) == ["m:y", "z"]
+    assert list(namespaced_jacobian["m:y"]) == ["n:a", "b"]
+    assert list(namespaced_jacobian["z"]) == ["n:a", "b"]
+    assert namespaced_jacobian["m:y"]["n:a"] is jacobian["y"]["a"]
+    assert namespaced_jacobian["z"]["b"] is jacobian["z"]["b"]
+
+
+class _NamespacedJacobianDiscipline(Discipline):
+    """A discipline y = 2 * a + 3 * b whose Jacobian uses the names without prefix."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a", "b"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults = {"a": array([1.0]), "b": array([2.0])}
+        self.received_names = None
+        self.is_jacobian_complete = True
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": 2 * input_data["a"] + 3 * input_data["b"]}
+
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        self.received_names = (sorted(input_names), sorted(output_names))
+        self.jac = {"y": {"a": array([[2.0]])}}
+        if self.is_jacobian_complete:
+            self.jac["y"]["b"] = array([[3.0]])
+
+
+@pytest.fixture
+def namespaced_jacobian_discipline() -> _NamespacedJacobianDiscipline:
+    """A discipline whose input a and output y have a namespace."""
+    discipline = _NamespacedJacobianDiscipline()
+    discipline.add_namespace_to_input("a", "n")
+    discipline.add_namespace_to_output("y", "m")
+    return discipline
+
+
+def test_linearize_adds_namespaces_to_jacobian(
+    namespaced_jacobian_discipline: _NamespacedJacobianDiscipline,
+):
+    """Check that linearize prefixes the Jacobian set without prefix."""
+    jac = namespaced_jacobian_discipline.linearize(compute_all_jacobians=True)
+    assert list(jac) == ["m:y"]
+    assert_equal(jac["m:y"], {"n:a": array([[2.0]]), "b": array([[3.0]])})
+
+
+@pytest.mark.parametrize("with_namespaces", [False, True], ids=["without", "with"])
+def test_compute_jacobian_receives_names_without_namespaces(
+    with_namespaces: bool,
+):
+    """Check that _compute_jacobian receives the names without prefix."""
+    discipline = _NamespacedJacobianDiscipline()
+    if with_namespaces:
+        discipline.add_namespace_to_input("a", "n")
+        discipline.add_namespace_to_output("y", "m")
+
+    discipline.linearize(compute_all_jacobians=True)
+    assert discipline.received_names == (["a", "b"], ["y"])
+
+
+def test_hybrid_jacobian_with_namespaces(
+    namespaced_jacobian_discipline: _NamespacedJacobianDiscipline,
+):
+    """Check the hybrid Jacobian of a discipline with namespaces."""
+    namespaced_jacobian_discipline.is_jacobian_complete = False
+    namespaced_jacobian_discipline.linearization_mode = "hybrid_finite_differences"
+    jac = namespaced_jacobian_discipline.linearize(compute_all_jacobians=True)
+    assert namespaced_jacobian_discipline.received_names == (["a", "b"], ["y"])
+    assert_equal(jac["m:y"]["n:a"], array([[2.0]]))
+    assert_allclose(jac["m:y"]["b"], array([[3.0]]), rtol=1e-6)
+
+
+def test_process_discipline_compute_jacobian_receives_namespaced_names():
+    """Check that a process discipline gets the names with their prefixes."""
+    discipline = AnalyticDiscipline({"y": "a"})
+    discipline.add_namespace_to_input("a", "n")
+    chain = DisciplineChain([discipline])
+    received = []
+    chain._compute_jacobian = lambda *args: received.append(args)
+    chain._compute_jacobian_with_namespaces(["n:a"], ["y"])
+    assert received == [(["n:a"], ["y"])]
+
+
+def test_init_jacobian_with_names_without_namespaces(
+    namespaced_jacobian_discipline: _NamespacedJacobianDiscipline,
+):
+    """Check that _init_jacobian keys the Jacobian with the names as given."""
+    discipline = namespaced_jacobian_discipline
+    discipline.execute()
+    discipline._init_jacobian(["a", "b"], ["y"])
+    assert list(discipline.jac) == ["y"]
+    assert {k: v.shape for k, v in discipline.jac["y"].items()} == {
+        "a": (1, 1),
+        "b": (1, 1),
+    }

@@ -22,9 +22,12 @@ from __future__ import annotations
 import pytest
 from numpy import array
 from numpy import atleast_1d
+from numpy import concatenate
+from numpy import full
 from numpy import ndarray
 from numpy import ones
 from numpy import sqrt
+from numpy.testing import assert_array_equal
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
@@ -162,6 +165,59 @@ def test_jac() -> None:
     """Test a basic jacobian."""
     disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
     assert DisciplineJacobianChecker(disc).check()
+
+
+def _double(x: float = 1.0) -> float:
+    """Double a number."""
+    x = 2 * x
+    return x  # noqa: RET504
+
+
+def _jac_double(x: float = 1.0) -> RealArray:
+    """Compute the Jacobian of the doubling function."""
+    return array([[2.0]])
+
+
+def test_jac_with_name_both_input_and_output() -> None:
+    """Check the Jacobian when a name is both an input and an output."""
+    discipline = AutoPyDiscipline(_double, py_jac=_jac_double)
+    jacobian = discipline.linearize(compute_all_jacobians=True)
+    assert_array_equal(jacobian["x"]["x"], array([[2.0]]))
+
+
+def test_jac_with_namespaced_output_of_other_size_than_input() -> None:
+    """Check the Jacobian when an input and a namespaced output share a name."""
+
+    def f(x=array([1.0, 2.0])):  # noqa: B008
+        x = concatenate([x, x[:1]])
+        return x  # noqa: RET504
+
+    def df(x):
+        return array([[1.0, 0.0], [0.0, 1.0], [1.0, 0.0]])
+
+    discipline = AutoPyDiscipline(f, py_jac=df, use_arrays=True)
+    discipline.add_namespace_to_output("x", "out")
+    jacobian = discipline.linearize(compute_all_jacobians=True)
+    assert set(jacobian) == {"out:x"}
+    assert_array_equal(jacobian["out:x"]["x"], df(None))
+
+
+def test_jac_with_size_change_between_linearizations() -> None:
+    """Check that the Jacobian shape follows the input size of each linearization."""
+
+    def f(x):
+        y = 2 * x.sum()
+        return y  # noqa: RET504
+
+    def df(x):
+        return full((1, x.size), 2.0)
+
+    discipline = AutoPyDiscipline(f, df)
+    discipline.linearize({"x": array([1.0, 2.0])}, compute_all_jacobians=True)
+    jacobian = discipline.linearize(
+        {"x": array([1.0, 2.0, 3.0])}, compute_all_jacobians=True
+    )
+    assert_array_equal(jacobian["y"]["x"], full((1, 3), 2.0))
 
 
 @pytest.mark.parametrize(

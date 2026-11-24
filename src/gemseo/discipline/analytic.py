@@ -215,17 +215,21 @@ class AnalyticDiscipline(Discipline):
         input_names, output_names = self._init_jacobian(input_names, output_names)
         input_data = self.io.get_input_data(with_namespaces=False)
         input_values = {name: input_data[name].item() for name in input_data}
+        input_names = set(input_names)
+        jac = {}
         for output_name in output_names:
-            gradient_function = self._sympy_jac_funcs[output_name]
             input_data = tuple(
                 input_values[name] for name in self.output_name_to_symbols[output_name]
             )
-            jac = self.jac[output_name]
-            for input_symbol, derivative_function in gradient_function.items():
-                if input_symbol in input_names:
-                    jac[input_symbol] = array(
-                        [[derivative_function(*input_data)]], dtype=float64
-                    )
+            derivative_functions = self._sympy_jac_funcs[output_name]
+            jac[output_name] = {
+                input_name: array([[derivative_function(*input_data)]], dtype=float64)
+                for input_name, derivative_function in derivative_functions.items()
+                if input_name in input_names
+            }
+
+        for output_name, input_name_to_derivative in jac.items():
+            self.jac[output_name].update(input_name_to_derivative)
 
     def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
