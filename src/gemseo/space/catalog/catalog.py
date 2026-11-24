@@ -229,7 +229,7 @@ label naming a single row, not an absence of labels.""",
     )
 
     _numerical_properties: _NumericalProperties | None = PrivateAttr(default=None)
-    """The numerical properties, computed on the first combination."""
+    """The numerical properties, computed on the first use."""
 
     @model_validator(mode="before")
     @classmethod
@@ -275,6 +275,14 @@ label naming a single row, not an absence of labels.""",
         it drives equality, hashing and the layout on file.
         """
         return tuple(self.properties)
+
+    @property
+    def numerical_property_names(self) -> tuple[str, ...]:
+        """The names of the numerical properties, in the order they are weighted.
+
+        The first use warns about the ignored properties holding numbers.
+        """
+        return self.__get_numerical_properties().names
 
     def __len__(self) -> int:
         return len(self.labels)
@@ -406,7 +414,9 @@ label naming a single row, not an absence of labels.""",
         as floats;
         the others, e.g. strings or booleans, are ignored,
         as well as those holding non-finite values, e.g. a missing value read as NaN.
-        The first call warns about the ignored properties holding numbers,
+        The first call, or the first use of
+        [numerical_property_names][gemseo.space.catalog.catalog.Catalog.numerical_property_names],
+        warns about the ignored properties holding numbers,
         e.g. complex numbers, floats mixed with `None`,
         integers beyond the range of `int64` or non-finite values.
 

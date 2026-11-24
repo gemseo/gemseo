@@ -1893,6 +1893,14 @@ def test_compute_weighted_properties(
     assert jacobian == {}
 
 
+def test_numerical_property_names() -> None:
+    """Check the names of the numerical properties, in the order they are weighted."""
+    catalog = Catalog(
+        properties={"mass": [2.0, 8.0], "supplier": ["A", "B"], "cost": [1, 3]}
+    )
+    assert catalog.numerical_property_names == ("mass", "cost")
+
+
 @pytest.mark.parametrize("normalize", [True, False])
 def test_compute_weighted_properties_jacobian(mixed_catalog, normalize) -> None:
     """Check the Jacobian of the weighted properties against finite differences."""
@@ -2002,12 +2010,22 @@ def test_compute_weighted_properties_ignores_masses(case) -> None:
     assert properties == pytest.approx({"cost": 4.5})
 
 
+@pytest.mark.parametrize(
+    "use",
+    [
+        pytest.param(lambda catalog: catalog.numerical_property_names, id="names"),
+        pytest.param(
+            lambda catalog: catalog.compute_weighted_properties([1, 0, 1]),
+            id="weighting",
+        ),
+    ],
+)
 @pytest.mark.parametrize("case", _ignored_masses)
-def test_compute_weighted_properties_warns_about_ignored_masses(caplog, case) -> None:
-    """Check the warning naming the ignored masses, logged once per catalog."""
+def test_first_use_warns_about_ignored_masses(caplog, case, use) -> None:
+    """Check the warning naming the ignored masses, logged at the first use only."""
     catalog = _create_catalog_with_ignored_masses(_ignored_masses[case])
     with caplog.at_level(logging.WARNING):
-        catalog.compute_weighted_properties([1, 0, 1])
+        use(catalog)
         catalog.compute_weighted_properties([1, 0, 1])
 
     assert len(caplog.records) == 1

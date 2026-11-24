@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_get_catalog_input_values_error_fed_twice
+  "A discipline input must be fed by a single design variable; the input 'density' is fed by the variables 'material' and 'spar'."
+# ---
+# name: test_get_feeding_variable_names_error_fed_twice
+  "A discipline input must be fed by a single design variable; the input 'density' is fed by the variables 'material' and 'spar'."
+# ---
+# name: test_get_input_to_variable_names_error[two-catalogs]
+  "A discipline input must be fed by a single design variable; the input 'young_modulus' is fed by the variables 'skin' and 'spar'; the input 'density' is fed by the variables 'skin' and 'spar'."
+# ---
+# name: test_get_input_to_variable_names_error[variable-and-property]
+  "A discipline input must be fed by a single design variable; the input 'density' is fed by the variables 'density' and 'material'."
+# ---
