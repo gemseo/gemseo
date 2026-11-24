@@ -203,6 +203,9 @@
   
   '''
 # ---
+# name: test_save_with_wrong_suffix[current_directory]
+  "The file path '.' has no extension; add one to set the format, e.g. 'graph.pdf'."
+# ---
 # name: test_save_with_wrong_suffix[gtk]
   "The extension of the file path 'coupling_graph.gtk' is that of a Graphviz format opening a window instead of writing a file; use another one of graphviz.FORMATS, e.g. '.pdf'."
 # ---

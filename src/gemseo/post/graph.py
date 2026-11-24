@@ -18,9 +18,10 @@
 draws the graph of the couplings between disciplines
 with [Graphviz](https://graphviz.org/)
 as a [graphviz.Digraph](https://graphviz.readthedocs.io/en/stable/api.html#graphviz.Digraph).
-[save_coupling_graph()][gemseo.post.graph.save_coupling_graph] saves it to a file,
+[save_graph()][gemseo.post.graph.save_graph]
+saves it, or any other graph, to a file,
 whose extension sets the format;
-its `render()` method can also save it or show it.
+the `render()` method of the graph can also save it or show it.
 
 This module requires the optional dependency
 [graphviz](https://pypi.org/project/graphviz/),
@@ -48,7 +49,7 @@ from warnings import catch_warnings
 from warnings import simplefilter
 
 from graphviz import FORMATS
-from graphviz import Digraph
+from graphviz import Digraph as GraphvizDigraph
 from graphviz import UnknownSuffixWarning
 from graphviz import nohtml
 
@@ -59,7 +60,8 @@ from gemseo.util.string import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from networkx import DiGraph
+    from graphviz import Graph as GraphvizGraph
+    from networkx import DiGraph as NetworkxDiGraph
 
     from gemseo.core.dependency_graph import DependencyGraph
     from gemseo.util.discipline import DisciplineVariableProperties
@@ -107,12 +109,13 @@ def draw_coupling_graph(
     input_names: Iterable[str] = (),
     output_names: Iterable[str] = (),
     get_node_attributes: NodeAttributeGetter | None = None,
-) -> Digraph:
+) -> GraphvizDigraph:
     """Draw the coupling graph of a dependency graph.
 
     The graph is neither saved nor shown;
-    use [save_coupling_graph()][gemseo.post.graph.save_coupling_graph]
-    or its `render()` method, e.g. `graph.render(outfile="graph.pdf")`,
+    use [save_graph()][gemseo.post.graph.save_graph]
+    or the `render()` method of the returned graph,
+    e.g. `graph.render(outfile="graph.pdf")`,
     to save it.
 
     This function requires the optional dependency
@@ -237,7 +240,7 @@ def draw_coupling_graph(
     graph = (
         dependency_graph.graph if full else dependency_graph.create_condensed_graph()
     )
-    digraph = Digraph(node_attr={"style": "filled", "fillcolor": "white"})
+    digraph = GraphvizDigraph(node_attr={"style": "filled", "fillcolor": "white"})
     # The tooltips need a full graph;
     # the properties are computed once per discipline and only when needed.
     get_properties = cache(get_discipline_variable_properties) if full else None
@@ -310,12 +313,12 @@ def draw_coupling_graph(
     return digraph
 
 
-def save_coupling_graph(
-    digraph: Digraph,
+def save_graph(
+    graph: GraphvizGraph | GraphvizDigraph,
     file_path: StrPath,
     clean_up: bool = True,
 ) -> None:
-    """Save a coupling graph to a file.
+    """Save a Graphviz graph to a file.
 
     The extension of the file sets the format, e.g. `".pdf"` or `".svg"`;
     it must be one of
@@ -332,7 +335,7 @@ def save_coupling_graph(
     the `dot` executable of [Graphviz](https://graphviz.org/).
 
     Args:
-        digraph: The coupling graph,
+        graph: The Graphviz graph, directed or not,
             e.g. drawn by
             [draw_coupling_graph()][gemseo.post.graph.draw_coupling_graph].
         file_path: The path of the file,
@@ -358,7 +361,7 @@ def save_coupling_graph(
             an extension that is not a Graphviz format
             or that of a Graphviz format opening a window.
     """
-    file_format = _check_coupling_graph_file_path(file_path)
+    file_format = _check_graph_file_path(file_path)
     # Use an absolute path,
     # as render() resolves a relative one against the directory of the graph.
     path = Path(file_path).absolute()
@@ -393,7 +396,7 @@ def save_coupling_graph(
             # and ignore its warning about a format containing dots, e.g. xdot1.4.
             with catch_warnings():
                 simplefilter("ignore", UnknownSuffixWarning)
-                digraph.copy().render(source, outfile=path, format=file_format)
+                graph.copy().render(source, outfile=path, format=file_format)
         except BaseException:
             for file in new_files:
                 file.unlink(missing_ok=True)
@@ -408,11 +411,13 @@ def save_coupling_graph(
             raise
 
 
-def _check_coupling_graph_file_path(file_path: StrPath) -> str:
-    """Check the path of a file to save a coupling graph to.
+def _check_graph_file_path(
+    file_path: StrPath, example_file_name: str = "graph.pdf"
+) -> str:
+    """Check the path of a file to save a graph to.
 
     Use it to check the path before drawing a graph that takes long to draw;
-    [save_coupling_graph()][gemseo.post.graph.save_coupling_graph]
+    [save_graph()][gemseo.post.graph.save_graph]
     also checks it.
 
     Args:
@@ -422,6 +427,9 @@ def _check_coupling_graph_file_path(file_path: StrPath) -> str:
             except `".gtk"`, `".x11"` and `".xlib"`,
             which open a window instead of writing a file.
             This extension can contain dots, e.g. `".xdot1.4"`.
+        example_file_name: The name of the file
+            that the error message suggests adding to `file_path`
+            when it is `"."` or `".."`.
 
     Returns:
         The Graphviz format set by the extension of the file path, in lower case.
@@ -434,9 +442,7 @@ def _check_coupling_graph_file_path(file_path: StrPath) -> str:
     path = Path(file_path)
     if not path.suffix:
         # Path(".").name and Path("..").name are not file names to extend.
-        example = (
-            path / "coupling_graph.pdf" if path.name in {"", ".."} else f"{path}.pdf"
-        )
+        example = path / example_file_name if path.name in {"", ".."} else f"{path}.pdf"
         msg = (
             f"The file path '{path}' has no extension; "
             f"add one to set the format, e.g. '{example}'."
@@ -565,7 +571,7 @@ def _get_default_label(text: str) -> str:
 
 
 def _add_variable_nodes(
-    digraph: Digraph,
+    digraph: GraphvizDigraph,
     names: Sequence[str],
     is_input: bool,
     get_node_attributes: NodeAttributeGetter | None,
@@ -603,7 +609,7 @@ def _add_variable_nodes(
 
 
 def _get_members(
-    graph: DiGraph, node: int | BaseDiscipline
+    graph: NetworkxDiGraph, node: int | BaseDiscipline
 ) -> tuple[BaseDiscipline, ...]:
     """Return the disciplines of a node.
 
@@ -625,7 +631,7 @@ def _get_members(
 
 
 def _get_variable_names(
-    graph: DiGraph, node: int | BaseDiscipline, is_input: bool
+    graph: NetworkxDiGraph, node: int | BaseDiscipline, is_input: bool
 ) -> frozenset[str]:
     """Return the names of the inputs or outputs of the disciplines of a node.
 
@@ -648,7 +654,9 @@ def _get_variable_names(
 
 
 def _add_discipline_nodes(
-    digraph: Digraph, graph: DiGraph, disciplines: Iterable[BaseDiscipline]
+    digraph: GraphvizDigraph,
+    graph: NetworkxDiGraph,
+    disciplines: Iterable[BaseDiscipline],
 ) -> dict[int | BaseDiscipline, str]:
     """Add the nodes of the disciplines to a graph.
 
@@ -686,7 +694,7 @@ def _add_discipline_nodes(
 
 
 def _add_edges(
-    digraph: Digraph,
+    digraph: GraphvizDigraph,
     get_edges: EdgeGetter | None,
     get_properties: _PropertyGetter | None,
     coupling_names: Iterable[str],

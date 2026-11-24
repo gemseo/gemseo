@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 from typing import Final
 from typing import cast
 
-from networkx import DiGraph
+from networkx import DiGraph as NetworkxDiGraph
 from networkx import condensation
 from networkx import strongly_connected_components
 
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Sequence
 
-    from graphviz import Digraph
+    from graphviz import Digraph as GraphvizDigraph
 
     from gemseo.util.typing import StrPath
 
@@ -64,7 +64,7 @@ class DependencyGraph:
     The couplings between the disciplines can also be computed.
     """
 
-    __graph: DiGraph
+    __graph: NetworkxDiGraph
     """The graph representing the disciplines data dependencies.
 
     The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -86,7 +86,7 @@ class DependencyGraph:
         return iter(self.__graph.nodes)
 
     @property
-    def graph(self) -> DiGraph:
+    def graph(self) -> NetworkxDiGraph:
         """The disciplines data graph."""
         return self.__graph
 
@@ -119,7 +119,7 @@ class DependencyGraph:
 
         return list(reversed(execution_sequence))
 
-    def create_condensed_graph(self) -> DiGraph:
+    def create_condensed_graph(self) -> NetworkxDiGraph:
         """Create the condensed graph.
 
         The condensed graph merges each strongly connected component
@@ -200,7 +200,7 @@ class DependencyGraph:
         return couplings
 
     @staticmethod
-    def __create_graph(disciplines: Iterable[BaseDiscipline]) -> DiGraph:
+    def __create_graph(disciplines: Iterable[BaseDiscipline]) -> NetworkxDiGraph:
         """Create the full graph.
 
         The coupled inputs and outputs names are stored as an edge attributes named io.
@@ -219,7 +219,7 @@ class DependencyGraph:
                 set(disc.io.output_grammar),
             )
 
-        graph = DiGraph()
+        graph = NetworkxDiGraph()
         graph.add_nodes_from(disciplines)
         graph_add_edge = graph.add_edge
         # Create the graph edges by discovering the coupled disciplines
@@ -238,7 +238,7 @@ class DependencyGraph:
         file_path: StrPath,
         clean_up: bool,
         show_edge_labels: bool,
-    ) -> Digraph | None:
+    ) -> GraphvizDigraph | None:
         """Render the graph when graphviz is installed.
 
         Args:
@@ -264,9 +264,9 @@ class DependencyGraph:
             logger.warning("Cannot render graph: graphviz is not installed.")
             return None
 
-        from gemseo.post.graph import _check_coupling_graph_file_path
+        from gemseo.post.graph import _check_graph_file_path
         from gemseo.post.graph import draw_coupling_graph
-        from gemseo.post.graph import save_coupling_graph
+        from gemseo.post.graph import save_graph
 
         # An empty path means that nothing is saved:
         # "" as a string, Path("") as a path-like object,
@@ -279,13 +279,13 @@ class DependencyGraph:
 
         if save:
             # Check the file path before drawing the graph, which can take long.
-            _check_coupling_graph_file_path(file_path)
+            _check_graph_file_path(file_path, "coupling_graph.pdf")
 
         digraph = draw_coupling_graph(
             self, full=full, show_edge_labels=show_edge_labels
         )
         if save:
-            save_coupling_graph(digraph, file_path, clean_up=clean_up)
+            save_graph(digraph, file_path, clean_up=clean_up)
 
         return digraph
 
@@ -294,7 +294,7 @@ class DependencyGraph:
         file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
-    ) -> Digraph | None:
+    ) -> GraphvizDigraph | None:
         """Render the full graph.
 
         Args:
@@ -325,7 +325,7 @@ class DependencyGraph:
         file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
-    ) -> Digraph | None:
+    ) -> GraphvizDigraph | None:
         """Render the condensed graph.
 
         Args:
@@ -352,7 +352,7 @@ class DependencyGraph:
         return self.__render_graph(False, file_path, clean_up, show_edge_labels)
 
     @staticmethod
-    def __get_leaves(graph: DiGraph) -> list[BaseDiscipline] | list[int]:
+    def __get_leaves(graph: NetworkxDiGraph) -> list[BaseDiscipline] | list[int]:
         """Return the leaf nodes of a graph.
 
         Args:
