@@ -18,11 +18,13 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.uncertainty.reliability.openturns.base_is_settings import BaseOTISSettings
+from gemseo.uncertainty.reliability.openturns.base_sampling_settings import (
+    BaseOTSamplingSettings,
+)
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 
 
-class OT_IS_FORM_Settings(BaseOTISSettings):  # noqa: N801
+class OT_IS_FORM_Settings(BaseOTSamplingSettings):  # noqa: N801
     """The settings for the FORM-based importance sampling algorithm."""
 
     control: bool = Field(
