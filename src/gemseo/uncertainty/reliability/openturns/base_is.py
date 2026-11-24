@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base class for importance sampling algorithms."""
+"""Base class for adaptive importance sampling algorithms."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class BaseOTImportanceSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
-    """The base class for importance sampling algorithms."""
+    """The base class for adaptive importance sampling algorithms."""
 
     settings_class: ClassVar[type[BaseOTISSettings]]
 

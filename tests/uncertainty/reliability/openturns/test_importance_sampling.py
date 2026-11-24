@@ -71,15 +71,6 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
             form_settings=OT_FORM_Settings(
                 optimizer=OTCobyla(maximum_constraint_error=1e-3)
             ),
-            quantile_level=0.2,
-        ),
-        OT_IS_FORM_Settings(
-            maximum_outer_sampling=900,
-            maximum_standard_deviation=0.01,
-            maximum_coefficient_of_variation=0.01,
-            form_settings=OT_FORM_Settings(
-                optimizer=OTCobyla(maximum_constraint_error=1e-3)
-            ),
             control=True,
         ),
     ],

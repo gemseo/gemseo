@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base class for the settings of the importance sampling algorithms."""
+"""Base class for the settings of the adaptive importance sampling algorithms."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from gemseo.uncertainty.reliability.openturns.base_sampling_settings import (
 
 
 class BaseOTISSettings(BaseOTSamplingSettings):  # noqa: N801
-    """The base class for the settings of importance sampling algorithms."""
+    """The base class for the settings of adaptive importance sampling algorithms."""
 
     instantiation_arguments: ClassVar[tuple[str, ...]] = ("quantile_level",)
     """The arguments used to instantiate the algorithm."""
