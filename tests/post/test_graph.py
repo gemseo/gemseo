@@ -24,12 +24,13 @@ from typing import get_type_hints
 
 import pytest
 from graphviz import Digraph
+from graphviz import Graph
 
 import gemseo.post.graph
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.post.graph import draw_coupling_graph
-from gemseo.post.graph import save_coupling_graph
+from gemseo.post.graph import save_graph
 from gemseo.problem.mdo.sellar import Sellar1
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.testing.helper import assert_exception
@@ -685,22 +686,33 @@ def coupling_graph(sellar_dependency_graph) -> Digraph:
     [("graph.dot", "graph.gv"), ("graph.gv", "graph.dot")],
     ids=["dot", "gv"],
 )
+@pytest.mark.parametrize("directed", [False, True], ids=["undirected", "directed"])
 def test_save_dot_language_file(
-    tmp_wd, coupling_graph, file_name, source_name, clean_up
+    request, tmp_wd, directed, file_name, source_name, clean_up
 ):
-    """Check that a graph can be saved in the DOT language, keeping its source or not.
+    """Check that a directed or undirected graph can be saved in the DOT language.
 
-    The source file kept with the output file has the other extension.
+    The source file is kept or not;
+    when kept,
+    it has the other extension.
     """
-    save_coupling_graph(coupling_graph, file_name, clean_up=clean_up)
+    if directed:
+        graph = request.getfixturevalue("coupling_graph")
+        header = "digraph {"
+    else:
+        graph = Graph()
+        graph.edge("a", "b")
+        header = "graph {"
+
+    save_graph(graph, file_name, clean_up=clean_up)
     # The output file is laid out from the source file.
     output = Path(file_name).read_text()
-    assert output.startswith("digraph {")
+    assert output.startswith(header)
     assert "pos=" in output
     sources = [] if clean_up else [source_name]
     assert sorted(os.listdir(tmp_wd)) == sorted([file_name, *sources])
     for source in sources:
-        assert Path(source).read_text() == coupling_graph.source
+        assert Path(source).read_text() == graph.source
 
 
 def test_save_ignores_graph_directory(tmp_wd):
@@ -710,14 +722,14 @@ def test_save_ignores_graph_directory(tmp_wd):
     """
     digraph = Digraph(directory="sub")
     digraph.node("a")
-    save_coupling_graph(digraph, "graph.svg", clean_up=False)
+    save_graph(digraph, "graph.svg", clean_up=False)
     assert sorted(os.listdir(tmp_wd)) == ["graph.gv", "graph.svg"]
 
 
 @pytest.mark.parametrize("clean_up", [False, True], ids=["keep_source", "clean_up"])
 def test_save_in_missing_directory(tmp_wd, coupling_graph, clean_up):
     """Check that a graph can be saved in a directory that does not exist yet."""
-    save_coupling_graph(coupling_graph, "sub/sub/graph.svg", clean_up=clean_up)
+    save_graph(coupling_graph, "sub/sub/graph.svg", clean_up=clean_up)
     assert Path("sub/sub/graph.svg").read_text().startswith("<?xml")
 
 
@@ -775,7 +787,7 @@ def test_save_failure_removes_created_directories(
 
     monkeypatch.setattr(Digraph, "render", render)
     with pytest.raises(RuntimeError):
-        save_coupling_graph(coupling_graph, "sub/sub/graph.svg", clean_up=clean_up)
+        save_graph(coupling_graph, "sub/sub/graph.svg", clean_up=clean_up)
 
     assert sorted(path.as_posix() for path in Path().rglob("*")) == sorted(
         expected_paths
@@ -800,7 +812,7 @@ def test_save_mkdir_failure_removes_created_directories(
 
     monkeypatch.setattr(Path, "mkdir", mkdir_failing_at_sub_sub)
     with pytest.raises(PermissionError, match="mkdir failed"):
-        save_coupling_graph(coupling_graph, "sub/sub/graph.svg")
+        save_graph(coupling_graph, "sub/sub/graph.svg")
 
     assert list(Path().rglob("*")) == []
 
@@ -822,7 +834,7 @@ def test_save_failure_removes_written_files(tmp_wd, clean_up, existing_files):
     # Make dot fail with a syntax error.
     digraph.body.append("{{{\n")
     with pytest.raises(CalledProcessError):
-        save_coupling_graph(digraph, "graph.svg", clean_up=clean_up)
+        save_graph(digraph, "graph.svg", clean_up=clean_up)
 
     assert sorted(os.listdir(tmp_wd)) == sorted(existing_files)
 
@@ -833,7 +845,7 @@ def test_save_format_with_dots(tmp_wd, coupling_graph, file_format):
     file_name = f"graph.{file_format}"
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        save_coupling_graph(coupling_graph, file_name, clean_up=False)
+        save_graph(coupling_graph, file_name, clean_up=False)
 
     assert f"xdotversion={file_format[4:]}" in Path(file_name).read_text()
     assert sorted(os.listdir(tmp_wd)) == sorted([file_name, "graph.gv"])
@@ -843,7 +855,7 @@ def test_save_preserves_gv_file(tmp_wd, coupling_graph):
     """Check that saving with clean_up=True preserves a sibling GV file."""
     source_path = Path("graph.gv")
     source_path.write_text("foo")
-    save_coupling_graph(coupling_graph, "graph.pdf")
+    save_graph(coupling_graph, "graph.pdf")
     assert source_path.read_text() == "foo"
     assert Path("graph.pdf").exists()
 
@@ -851,7 +863,7 @@ def test_save_preserves_gv_file(tmp_wd, coupling_graph):
 def test_save_keeps_filename(tmp_wd, coupling_graph):
     """Check that saving the graph does not change its filename."""
     filename = coupling_graph.filename
-    save_coupling_graph(coupling_graph, "graph.pdf")
+    save_graph(coupling_graph, "graph.pdf")
     assert coupling_graph.filename == filename
 
 
@@ -863,12 +875,13 @@ def test_save_keeps_filename(tmp_wd, coupling_graph):
         "coupling_graph.gtk",
         "coupling_graph.x11",
         "coupling_graph.XLIB",
+        ".",
     ],
-    ids=["no_suffix", "unknown_suffix", "gtk", "x11", "xlib"],
+    ids=["no_suffix", "unknown_suffix", "gtk", "x11", "xlib", "current_directory"],
 )
 def test_save_with_wrong_suffix(tmp_wd, coupling_graph, file_path, snapshot):
     """Check the error raised when the suffix of the file path is not a format."""
     with assert_exception(ValueError, snapshot):
-        save_coupling_graph(coupling_graph, file_path)
+        save_graph(coupling_graph, file_path)
 
     assert not os.listdir(tmp_wd)
