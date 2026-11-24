@@ -20,10 +20,13 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
 from numpy import ndarray
+from numpy.testing import assert_equal
 from scipy.sparse import issparse
 
 from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.mark.parametrize(
@@ -80,3 +83,44 @@ def test_compute_jac_at_run(linearize_first: bool):
 
     assert "o" in discipline.jac
     assert "i" in discipline.jac["o"]
+
+
+@pytest.fixture(params=[False, True], ids=["jac_at_linearize", "jac_at_run"])
+def namespaced_discipline(request) -> LinearDiscipline:
+    """A LinearDiscipline whose first input and first output have a namespace."""
+    discipline = LinearDiscipline(
+        "A", ["i1", "i2"], ["o1", "o2"], compute_jac_at_run=request.param
+    )
+    discipline.add_namespace_to_input("i1", "ns")
+    discipline.add_namespace_to_output("o1", "ns")
+    return discipline
+
+
+def test_namespaces(namespaced_discipline):
+    """Check that the namespaces do not change the order of the variables."""
+    namespaced_discipline.execute({"ns:i1": array([1.0]), "i2": array([2.0])})
+    output_vector = namespaced_discipline.mat @ array([1.0, 2.0])
+    assert_equal(namespaced_discipline.io.output_data["ns:o1"], output_vector[:1])
+    assert_equal(namespaced_discipline.io.output_data["o2"], output_vector[1:])
+
+
+def test_namespaces_jacobian(namespaced_discipline):
+    """Check the Jacobian when an input and an output have a namespace."""
+    namespaced_discipline.execute({"ns:i1": array([1.0]), "i2": array([2.0])})
+    matrix = namespaced_discipline.mat
+    jac = namespaced_discipline.linearize(compute_all_jacobians=True)
+    assert_equal(jac["ns:o1"]["ns:i1"], matrix[:1, :1])
+    assert_equal(jac["ns:o1"]["i2"], matrix[:1, 1:])
+    assert_equal(jac["o2"]["ns:i1"], matrix[1:, :1])
+    assert_equal(jac["o2"]["i2"], matrix[1:, 1:])
+
+
+@pytest.mark.parametrize(
+    ("input_names", "output_names"),
+    [(["x", "y", "x"], ["z"]), (["x"], ["z", "z"])],
+    ids=["input", "output"],
+)
+def test_repeated_name(input_names, output_names, snapshot) -> None:
+    """Check the error when an input name or an output name is repeated."""
+    with assert_exception(ValueError, snapshot):
+        LinearDiscipline("foo", input_names, output_names)

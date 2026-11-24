@@ -180,7 +180,9 @@ class RemappingDiscipline(Discipline):
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
+        self._discipline.execute(
+            self.__convert_to_origin(self.io.get_input_data(with_namespaces=False))
+        )
         return self.__convert_from_origin(
             self._discipline.io.get_output_data(), self._output_mapping
         )
@@ -192,7 +194,7 @@ class RemappingDiscipline(Discipline):
     ) -> None:
         original_discipline = self._discipline
         original_input_data = original_discipline.io.prepare_input_data(
-            self.__convert_to_origin(self.io.get_input_data())
+            self.__convert_to_origin(self.io.get_input_data(with_namespaces=False))
         )
         # The original discipline can hold other input data,
         # e.g. when the output data of this discipline come from its cache
@@ -216,7 +218,7 @@ class RemappingDiscipline(Discipline):
         original_input_names = {input_mapping[n][0] for n in input_names}
         output_mapping = self._output_mapping
         original_output_names = {output_mapping[n][0] for n in output_names}
-        self._discipline._compute_jacobian(
+        self._discipline._compute_jacobian_with_namespaces(
             input_names=original_input_names, output_names=original_output_names
         )
         original_jac = self._discipline.jac

@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
@@ -30,11 +31,13 @@ from gemseo.core.discipline import Discipline
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.seeder import seed
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.util.typing import JacobianData
     from gemseo.util.typing import StrKeyMapping
 
 
@@ -64,6 +67,18 @@ class LinearDiscipline(Discipline):
     _compute_jac_at_run: bool
     """Whether to compute the Jacobian in the `_run()` method."""
 
+    __input_names: tuple[str, ...]
+    """The names of the inputs, in the order of the matrix columns."""
+
+    __output_names: tuple[str, ...]
+    """The names of the outputs, in the order of the matrix rows."""
+
+    __input_name_to_size: dict[str, int]
+    """The sizes of the inputs."""
+
+    __output_name_to_size: dict[str, int]
+    """The sizes of the outputs."""
+
     def __init__(
         self,
         name: str,
@@ -80,6 +95,7 @@ class LinearDiscipline(Discipline):
         Args:
             name: The discipline name.
             input_names: The input data names.
+                The columns of the matrix follow the order of these names.
             output_names: The output data names.
             inputs_size: The size of input data vectors,
                 each input data is of shape (inputs_size,).
@@ -93,7 +109,8 @@ class LinearDiscipline(Discipline):
                 `_run()` method.
 
         Raises:
-            ValueError: if `input_names` or `output_names` are empty.
+            ValueError: if `input_names` or `output_names` are empty
+                or have a repeated name.
         """  # noqa: D205, D212, D415
         if not input_names:
             msg = "input_names must not be empty."
@@ -101,8 +118,20 @@ class LinearDiscipline(Discipline):
         if not output_names:
             msg = "output_names must not be empty."
             raise ValueError(msg)
+        for kind, names in (("input", input_names), ("output", output_names)):
+            repeated_names = {
+                name for name, count in Counter(names).items() if count > 1
+            }
+            if repeated_names:
+                msg = (
+                    f"The {kind} names cannot be repeated: "
+                    f"{pretty_repr(repeated_names)}."
+                )
+                raise ValueError(msg)
         super().__init__(name)
 
+        self.__input_names = tuple(input_names)
+        self.__output_names = tuple(output_names)
         self.io.input_grammar.update_from_names(input_names)
         self.io.output_grammar.update_from_names(output_names)
 
@@ -130,40 +159,49 @@ class LinearDiscipline(Discipline):
                 / self.size_in
             )
 
-        self.__sizes_d = dict.fromkeys(input_names, self.inputs_size)
-        self.__sizes_d.update(dict.fromkeys(output_names, self.outputs_size))
+        self.__input_name_to_size = dict.fromkeys(input_names, inputs_size)
+        self.__output_name_to_size = dict.fromkeys(output_names, outputs_size)
 
         self.io.input_grammar.defaults = {
             k: 0.5 * ones(inputs_size) for k in input_names
         }
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
+        input_data = concatenate_dict_of_arrays_to_array(input_data, self.__input_names)
         output_data = self.mat.dot(input_data)
         if self._compute_jac_at_run:
-            self.jac = split_array_to_dict_of_arrays(
-                self.mat,
-                self.__sizes_d,
-                self.output_grammar.names,
-                self.input_grammar.names,
-            )
+            self.jac = self._add_namespaces_to_jacobian(self.__compute_full_jacobian())
             self._has_jacobian = True
 
         return split_array_to_dict_of_arrays(
-            output_data, self.__sizes_d, self.output_grammar.names
+            output_data, self.__output_name_to_size, self.__output_names
         )
+
+    def __compute_full_jacobian(self) -> JacobianData:
+        """Compute the Jacobian with respect to all the inputs.
+
+        Returns:
+            The Jacobian, whose names have no namespace prefix.
+        """
+        # The rows and the columns are split with their own sizes
+        # because a name can be both an input and an output with different sizes.
+        input_name_to_size = self.__input_name_to_size
+        output_name_to_size = self.__output_name_to_size
+        return {
+            output_name: split_array_to_dict_of_arrays(
+                rows.T, input_name_to_size, input_name_to_size
+            )
+            for output_name, rows in split_array_to_dict_of_arrays(
+                self.mat.T, output_name_to_size, output_name_to_size
+            ).items()
+        }
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        full_jac = split_array_to_dict_of_arrays(
-            self.mat,
-            self.__sizes_d,
-            self.output_grammar.names,
-            self.input_grammar.names,
-        )
+        full_jac = self.__compute_full_jacobian()
 
         self.jac = {
             output_name: {

@@ -24,6 +24,8 @@ from string import Template
 from subprocess import CalledProcessError
 
 import pytest
+from numpy import array
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
@@ -160,6 +162,22 @@ def test_handle_outputs_errors(
         discipline._handle_outputs(tmp_wd, outputs_path)
 
 
+def test_handle_outputs_with_unknown_jacobian_names(
+    discipline: JobSchedulerDiscipline,
+    tmp_wd,
+    snapshot,
+) -> None:
+    """Check the error when the Jacobian has names that are not variables.
+
+    The unknown input name is under the second output, to check all the outputs.
+    """
+    jacobian = {"y_4": {"x_shared": array([[1.0]])}, "foo": {"bar": array([[1.0]])}}
+    outputs_path = tmp_wd / "outputs.pickl"
+    outputs_path.write_bytes(pickle.dumps(({}, jacobian)))
+    with assert_exception(KeyError, snapshot):
+        discipline._handle_outputs(tmp_wd, outputs_path)
+
+
 def add_namespace_sobieski_mission(discipline):
     """Add a namespace to the discipline grammars."""
     discipline.input_grammar.add_namespace("y_14", "ns")
@@ -185,6 +203,60 @@ def test_execution(discipline_mocked_js) -> None:
     add_namespace_sobieski_mission(mission_local)
     out_ref = mission_local.execute(ref_data)
     assert compare_dict_of_arrays(out, out_ref)
+
+
+def wrap_analytic_discipline(
+    expression: str, namespaces_on_wrapper: bool, workdir_path: Path
+) -> JobSchedulerDiscipline:
+    """Wrap an analytic discipline with namespaces on x and y.
+
+    Args:
+        expression: The expression of the output `y`.
+        namespaces_on_wrapper: Whether to add the namespaces on the wrapper.
+            Otherwise, add them on the wrapped discipline.
+        workdir_path: The path to the working directory.
+
+    Returns:
+        The wrapper.
+    """
+    discipline = AnalyticDiscipline({"y": expression})
+    if not namespaces_on_wrapper:
+        discipline.add_namespace_to_input("x", "n")
+        discipline.add_namespace_to_output("y", "m")
+
+    wrapper = JobSchedulerDiscipline(
+        discipline,
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=workdir_path,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+    if namespaces_on_wrapper:
+        wrapper.add_namespace_to_input("x", "n")
+        wrapper.add_namespace_to_output("y", "m")
+
+    return wrapper
+
+
+@pytest.mark.parametrize(
+    "namespaces_on_wrapper", [False, True], ids=["on_wrapped", "on_wrapper"]
+)
+def test_execution_with_namespaces_on_x_and_y(tmp_wd, namespaces_on_wrapper) -> None:
+    """Check that the wrapped discipline is executed from the data of the wrapper."""
+    wrapper = wrap_analytic_discipline("2*x", namespaces_on_wrapper, tmp_wd)
+    assert_equal(wrapper.execute({"n:x": array([3.0])})["m:y"], array([6.0]))
+
+
+@pytest.mark.parametrize(
+    "namespaces_on_wrapper", [False, True], ids=["on_wrapped", "on_wrapper"]
+)
+def test_linearize_with_namespaces_on_x_and_y(tmp_wd, namespaces_on_wrapper) -> None:
+    """Check the Jacobian keys and values with namespaces on the wrapper or wrapped."""
+    wrapper = wrap_analytic_discipline("2*x", namespaces_on_wrapper, tmp_wd)
+    jac = wrapper.linearize({"n:x": array([1.0])}, compute_all_jacobians=True)
+    assert list(jac) == ["m:y"]
+    assert list(jac["m:y"]) == ["n:x"]
+    assert_equal(jac["m:y"]["n:x"], array([[2.0]]))
 
 
 @pytest.mark.parametrize("compute_all_jacobians", [False, True])

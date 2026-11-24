@@ -45,11 +45,11 @@ class ArrayBasedFunctionDiscipline(Discipline):
     __jac_function: Callable[[RealArray], RealArray] | None
     """The function computing the derivatives of the function of interest, if any."""
 
-    __variable_name_to_size: dict[str, int]
-    """The map from a variable name to its size."""
+    __input_name_to_size: dict[str, int]
+    """The map from an input name to its size, in the order of the function argument."""
 
     __output_name_to_size: dict[str, int]
-    """The map from an output name to its size."""
+    """The map from an output name to its size, in the order of the function output."""
 
     def __init__(
         self,
@@ -78,16 +78,17 @@ class ArrayBasedFunctionDiscipline(Discipline):
         self.io.input_grammar.defaults = {
             name: zeros(size) for name, size in input_name_to_size.items()
         }
+        self.__input_name_to_size = input_name_to_size.copy()
         self.__output_name_to_size = output_name_to_size.copy()
-        self.__variable_name_to_size = output_name_to_size.copy()
-        self.__variable_name_to_size.update(input_name_to_size)
         self.__jac_function = jac_function
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        input_vector = concatenate_dict_of_arrays_to_array(input_data, input_data)
+        input_vector = concatenate_dict_of_arrays_to_array(
+            input_data, self.__input_name_to_size
+        )
         output_vector = self.__function(input_vector)
         return split_array_to_dict_of_arrays(
-            output_vector, self.__output_name_to_size, self.io.output_grammar
+            output_vector, self.__output_name_to_size, self.__output_name_to_size
         )
 
     def _compute_jacobian(
@@ -103,13 +104,20 @@ class ArrayBasedFunctionDiscipline(Discipline):
             msg = f"The discipline {self.name} cannot compute the analytic derivatives."
             raise RuntimeError(msg)
 
-        input_data = self.io.get_input_data()
         input_vector = concatenate_dict_of_arrays_to_array(
-            input_data, self.io.input_grammar
+            self.io.get_input_data(with_namespaces=False), self.__input_name_to_size
         )
-        self.jac = split_array_to_dict_of_arrays(
-            self.__jac_function(input_vector),
-            self.__variable_name_to_size,
-            self.io.output_grammar,
-            self.io.input_grammar,
-        )
+        # The rows and the columns are split with their own sizes
+        # because a name can be both an input and an output with different sizes.
+        input_name_to_size = self.__input_name_to_size
+        output_name_to_size = self.__output_name_to_size
+        self.jac = {
+            output_name: split_array_to_dict_of_arrays(
+                rows.T, input_name_to_size, input_name_to_size
+            )
+            for output_name, rows in split_array_to_dict_of_arrays(
+                self.__jac_function(input_vector).T,
+                output_name_to_size,
+                output_name_to_size,
+            ).items()
+        }

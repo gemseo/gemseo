@@ -27,6 +27,7 @@ from numpy import argmax as np_argmax
 from numpy import array
 from numpy import atleast_2d
 from numpy import exp as np_exp
+from numpy import eye
 from numpy import full
 from numpy import heaviside
 from numpy import max as np_max
@@ -423,11 +424,30 @@ def compute_max_agg_jac(
     if indices is not None:
         orig_jac = orig_jac[indices, :]
         orig_val = orig_val[indices]
-    orig_jac *= scale
-    orig_val *= scale
-    i_max = np_argmax(orig_val)
+    scale = full(orig_val.shape, scale)
+    i_max = np_argmax(orig_val * scale)
+    return scale[i_max] * atleast_2d(orig_jac)[i_max, :]
 
-    return atleast_2d(orig_jac)[i_max, :]
+
+def compute_partial_max_agg_jac(
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
+    """Compute the Jacobian of max function with respect to the constraints.
+
+    Args:
+        orig_val: The original constraint values.
+        indices: The indices to generate a subset of the outputs to aggregate.
+            If `None`, aggregate all the outputs.
+        scale: The scaling factor for multiplying the constraints.
+
+    Returns:
+        The Jacobian of max function with respect to the constraints.
+    """
+    return atleast_2d(
+        compute_max_agg_jac(orig_val, eye(orig_val.size), indices=indices, scale=scale)
+    )
 
 
 def compute_sum_positive_square_agg(

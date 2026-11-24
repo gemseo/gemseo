@@ -24,7 +24,7 @@ from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.io import IO
 from gemseo.core.grammar.error import InvalidDataError
 from gemseo.core.grammar.factory import GrammarType
-from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:

@@ -150,6 +150,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
         return self.__n_executions
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_data = self._get_wrapped_input_data()
         self.__n_executions = 0
 
         for n_trial in range(1, self.n_trials + 1):

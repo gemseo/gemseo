@@ -18,9 +18,12 @@ import pickle
 from itertools import permutations
 
 import pytest
+from numpy import array
 from numpy import ones
+from numpy.testing import assert_array_equal
 
 from gemseo.core.derivative.jacobian_operator import JacobianOperator
+from gemseo.discipline import AutoPyDiscipline
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.chain.chain import ChainDerivationMode
 from gemseo.discipline.chain.chain import DisciplineChain
@@ -657,3 +660,23 @@ def test_discipline_chain_complex_topology_jacobian(
         step=_approximation_step,
         **_check_jacobian_kwargs,
     )
+
+
+def test_discipline_chain_jacobian_with_name_and_namespaced_names() -> None:
+    """Check the Jacobian of a chain whose outputs are y, ns:y and ns2:y."""
+
+    def f(x):
+        y = 2 * x
+        return y  # noqa: RET504
+
+    def df(x):
+        return array([[2.0]])
+
+    disciplines = [AutoPyDiscipline(f, df) for _ in range(3)]
+    disciplines[1].add_namespace_to_output("y", "ns")
+    disciplines[2].add_namespace_to_output("y", "ns2")
+    chain = DisciplineChain(disciplines)
+    jac = chain.linearize({"x": array([1.0])}, compute_all_jacobians=True)
+    assert set(jac) == {"y", "ns:y", "ns2:y"}
+    for output_name in ("y", "ns:y", "ns2:y"):
+        assert_array_equal(jac[output_name]["x"], array([[2.0]]))

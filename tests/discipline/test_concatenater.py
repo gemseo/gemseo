@@ -31,12 +31,12 @@ from numpy import zeros
 from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
+from gemseo.discipline import Concatenater
 
 if TYPE_CHECKING:
     from numpy import ndarray
-
-    from gemseo.discipline.concatenater import Concatenater
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(params=[None, {"c_1": 1.0, "c_2": -1.0}])
@@ -117,3 +117,36 @@ def test_check_gradient(
     concatenation_disc.io.input_grammar.defaults = input_data
     checker = DisciplineJacobianChecker(concatenation_disc)
     assert checker.check(atol=1e-3, rtol=1e-3, step=1e-4)
+
+
+@pytest.fixture
+def namespaced_concatenater() -> Concatenater:
+    """A Concatenater whose first input has a namespace."""
+    discipline = Concatenater(["a", "b"], "c", input_coefficients={"a": 2.0, "b": 3.0})
+    discipline.add_namespace_to_input("a", "ns")
+    return discipline
+
+
+def test_namespaces_execution(namespaced_concatenater: Concatenater) -> None:
+    """Check that the namespaces do not change the order of the concatenation."""
+    output_data = namespaced_concatenater.execute({
+        "ns:a": array([1.0]),
+        "b": array([10.0]),
+    })
+    assert_array_equal(output_data["c"], array([2.0, 30.0]))
+
+
+def test_namespaces_linearization(namespaced_concatenater: Concatenater) -> None:
+    """Check the Jacobian of a Concatenater with a namespaced input."""
+    jac = namespaced_concatenater.linearize(
+        {"ns:a": array([1.0]), "b": array([10.0])}, compute_all_jacobians=True
+    )
+    assert set(jac["c"]) == {"ns:a", "b"}
+    assert_array_equal(jac["c"]["ns:a"].toarray(), array([[2.0], [0.0]]))
+    assert_array_equal(jac["c"]["b"].toarray(), array([[0.0], [3.0]]))
+
+
+def test_repeated_input(snapshot) -> None:
+    """Check the error when an input name is repeated."""
+    with assert_exception(ValueError, snapshot):
+        Concatenater(["a", "b", "a"], "c")

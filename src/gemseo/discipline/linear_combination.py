@@ -95,8 +95,10 @@ class LinearCombination(Discipline):
             input_name: zeros(input_size) for input_name in input_names
         })
         if input_coefficients:
-            self.__coefficients = dict.fromkeys(input_names, 1.0)
-            self.__coefficients.update(input_coefficients)
+            self.__coefficients = {
+                input_name: input_coefficients.get(input_name, 1.0)
+                for input_name in input_names
+            }
         elif average:
             self.__coefficients = dict.fromkeys(input_names, 1.0 / len(input_grammar))
         else:
@@ -118,11 +120,13 @@ class LinearCombination(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(
-            input_names, output_names, init_type=self.InitJacobianType.SPARSE
-        )
-        identity = eye(self.io.output_data[self.__output_name].size, format="csr")
-
-        jac = self.jac[self.__output_name]
-        for input_name in self.io.input_grammar:
-            jac[input_name] = self.__coefficients[input_name] * identity
+        output_size = self.io.get_output_data(with_namespaces=False)[
+            self.__output_name
+        ].size
+        identity = eye(output_size, format="csr")
+        self.jac = {
+            self.__output_name: {
+                input_name: coefficient * identity
+                for input_name, coefficient in self.__coefficients.items()
+            }
+        }

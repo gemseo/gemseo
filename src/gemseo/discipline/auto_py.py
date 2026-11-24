@@ -94,17 +94,11 @@ class AutoPyDiscipline(Discipline):
     __input_names: tuple[str, ...]
     """The names of the input variables."""
 
-    __input_names_with_namespaces: tuple[str, ...]
-    """The namespaced names of the input variables."""
-
     __jac_shape: tuple[int, int]
     """The shape of the Jacobian matrix."""
 
     __output_names: tuple[str, ...]
     """The names of the output variables."""
-
-    __output_names_with_namespaces: tuple[str, ...]
-    """The namespaced names of the output variables."""
 
     __py_func: Callable
     """The Python function to compute the outputs from the inputs."""
@@ -112,8 +106,11 @@ class AutoPyDiscipline(Discipline):
     __py_jac: Callable | None
     """The Python function to compute the Jacobian from the inputs."""
 
-    __sizes: dict[str, int]
-    """The sizes of the input and output variables."""
+    __input_sizes: dict[str, int]
+    """The sizes of the input variables, without namespace prefix."""
+
+    __output_sizes: dict[str, int]
+    """The sizes of the output variables, without namespace prefix."""
 
     __log_prefix: Final[str] = "The py_func of the AutoPyDiscipline '%s' has"
 
@@ -171,10 +168,9 @@ class AutoPyDiscipline(Discipline):
         if self.__py_jac is None:
             self.set_jacobian_approximation()
 
-        self.__sizes = {}
+        self.__input_sizes = {}
+        self.__output_sizes = {}
         self.__jac_shape = (0, 0)
-        self.__input_names_with_namespaces = ()
-        self.__output_names_with_namespaces = ()
 
     @staticmethod
     def __is_functor(f: Callable) -> bool:
@@ -383,36 +379,23 @@ class AutoPyDiscipline(Discipline):
             msg = "The analytic Jacobian is missing."
             raise RuntimeError(msg)
 
-        if not self.__sizes:
-            for store, grammar in (
-                (self.io.input_data, self.io.input_grammar),
-                (self.io.output_data, self.io.output_grammar),
-            ):
-                converter = grammar.data_converter
-                for name, value in store.items():
-                    if name not in self.__sizes:
-                        self.__sizes[name] = converter.get_value_size(name, value)
+        # The inputs and the outputs have their own sizes
+        # because a name can be both an input and an output with different sizes.
+        for store, grammar, sizes in (
+            (self.io.input_data, self.io.input_grammar, self.__input_sizes),
+            (self.io.output_data, self.io.output_grammar, self.__output_sizes),
+        ):
+            converter = grammar.data_converter
+            from_namespaced = grammar.from_namespaced
+            for name, value in store.items():
+                sizes[from_namespaced.get(name, name)] = converter.get_value_size(
+                    name, value
+                )
 
-            in_to_ns = self.io.input_grammar.to_namespaced
-            self.__input_names_with_namespaces = tuple(
-                in_to_ns.get(input_name, input_name)
-                for input_name in self.__input_names
-            )
-            out_to_ns = self.io.output_grammar.to_namespaced
-            self.__output_names_with_namespaces = tuple(
-                out_to_ns.get(output_name, output_name)
-                for output_name in self.__output_names
-            )
-            self.__jac_shape = (
-                sum(
-                    self.__sizes[output_name]
-                    for output_name in self.__output_names_with_namespaces
-                ),
-                sum(
-                    self.__sizes[input_name]
-                    for input_name in self.__input_names_with_namespaces
-                ),
-            )
+        self.__jac_shape = (
+            sum(self.__output_sizes[name] for name in self.__output_names),
+            sum(self.__input_sizes[name] for name in self.__input_names),
+        )
 
         func_jac = self.__py_jac(**self.io.get_input_data(with_namespaces=False))
         if len(func_jac.shape) < 2:
@@ -428,12 +411,16 @@ class AutoPyDiscipline(Discipline):
             )
             raise ValueError(msg)
 
-        self.jac = split_array_to_dict_of_arrays(
-            func_jac,
-            self.__sizes,
-            self.__output_names_with_namespaces,
-            self.__input_names_with_namespaces,
-        )
+        input_sizes = self.__input_sizes
+        output_sizes = self.__output_sizes
+        self.jac = {
+            output_name: split_array_to_dict_of_arrays(
+                rows.T, input_sizes, self.__input_names
+            )
+            for output_name, rows in split_array_to_dict_of_arrays(
+                func_jac.T, output_sizes, self.__output_names
+            ).items()
+        }
 
 
 class AutoDiscDataProcessor(DataProcessor):

@@ -153,3 +153,24 @@ def test_jacobian_approximation(linearization_mode) -> None:
     discipline.linearization_mode = linearization_mode
     discipline.linearize({"x": array([0.0])}, True)
     assert discipline.jac["y"]["x"] == pytest.approx(1)
+
+
+@pytest.mark.parametrize(
+    ("input_namespace", "output_namespace"),
+    [("ns", ""), ("", "ns"), ("ns", "ns")],
+    ids=["input", "output", "both"],
+)
+def test_jacobian_with_namespaces(input_namespace, output_namespace) -> None:
+    """Check the Jacobian with a namespaced input or output."""
+    discipline = AnalyticDiscipline({"y": "2*a+3*b"})
+    if input_namespace:
+        discipline.add_namespace_to_input("a", input_namespace)
+    if output_namespace:
+        discipline.add_namespace_to_output("y", output_namespace)
+    a = f"{input_namespace}:a" if input_namespace else "a"
+    y = f"{output_namespace}:y" if output_namespace else "y"
+    jac = discipline.linearize(
+        {a: array([1.0]), "b": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(jac[y][a], array([[2.0]]))
+    assert_equal(jac[y]["b"], array([[3.0]]))

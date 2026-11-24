@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from itertools import accumulate
 from typing import TYPE_CHECKING
 
@@ -27,6 +28,7 @@ from numpy import concatenate
 from scipy.sparse import csr_array
 
 from gemseo.core.discipline import Discipline
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -41,6 +43,9 @@ class Concatenater(Discipline):
     These input variables can be scaled before concatenation.
     """
 
+    __input_names: tuple[str, ...]
+    """The names of the input variables, in the order of the concatenation."""
+
     def __init__(
         self,
         input_variables: Sequence[str],
@@ -49,11 +54,22 @@ class Concatenater(Discipline):
     ) -> None:
         """
         Args:
-            input_variables: The input variables to concatenate.
+            input_variables: The names of the input variables to concatenate.
+                The values are concatenated in the order of these names.
             output_variable: The output variable name.
             input_coefficients: The coefficients
                 related to the different input variables.
+
+        Raises:
+            ValueError: When an input name is repeated.
         """  # noqa: D205 D212 D415
+        repeated_names = {
+            name for name, count in Counter(input_variables).items() if count > 1
+        }
+        if repeated_names:
+            msg = f"The input names cannot be repeated: {pretty_repr(repeated_names)}."
+            raise ValueError(msg)
+
         super().__init__()
         self.io.input_grammar.update_from_names(input_variables)
         self.io.output_grammar.update_from_names([output_variable])
@@ -62,13 +78,14 @@ class Concatenater(Discipline):
         if input_coefficients:
             self.__coefficients.update(input_coefficients)
 
+        self.__input_names = tuple(input_variables)
         self.__output_name = output_variable
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         return {
             self.__output_name: concatenate([
-                self.__coefficients[input_name] * input_value
-                for input_name, input_value in input_data.items()
+                self.__coefficients[input_name] * input_data[input_name]
+                for input_name in self.__input_names
             ])
         }
 
@@ -77,29 +94,21 @@ class Concatenater(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        """Compute the jacobian matrix.
+        """Compute the Jacobian with respect to all the inputs and for the output.
 
         Args:
-            input_names: The linearization should be performed with respect
-                to inputs list. If `None`, linearization should
-                be performed wrt all inputs (Default value = None)
-            output_names: The linearization should be performed on outputs list.
-                If `None`, linearization should be performed
-                on all outputs (Default value = None)
+            input_names: These names are ignored.
+            output_names: These names are ignored.
         """
-        self._init_jacobian(
-            input_names, output_names, init_type=self.InitJacobianType.SPARSE
-        )
-
-        input_names = self.io.input_grammar
-        local_data = self.io.input_data
-        input_sizes = [local_data[name].size for name in self.io.input_grammar]
+        input_data = self.io.get_input_data(with_namespaces=False)
+        input_sizes = tuple(input_data[name].size for name in self.__input_names)
         total_size = sum(input_sizes)
-
-        # Instead of manually accumulating, we use the accumulate() iterator.
-        jac = self.jac[self.__output_name]
+        jac = {}
         for name, size, start in zip(
-            input_names, input_sizes, accumulate(input_sizes, initial=0), strict=False
+            self.__input_names,
+            input_sizes,
+            accumulate(input_sizes, initial=0),
+            strict=False,
         ):
             jac[name] = csr_array(
                 (
@@ -108,3 +117,4 @@ class Concatenater(Discipline):
                 ),
                 shape=(total_size, size),
             )
+        self.jac = {self.__output_name: jac}

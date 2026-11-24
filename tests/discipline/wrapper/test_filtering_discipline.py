@@ -20,8 +20,12 @@
 from __future__ import annotations
 
 import pytest
+from numpy import array
+from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.discipline import DisciplineChain
 from gemseo.discipline.wrapper.filtering_discipline import FilteringDiscipline
 
 
@@ -101,3 +105,70 @@ def test_keep_in_remove_out(discipline) -> None:
     assert "y1" not in fdisc.jac
     for input_name in ["x2", "x3"]:
         assert input_name not in fdisc.jac["y2"]
+
+
+def test_linearize_with_namespaces(discipline) -> None:
+    """Check the Jacobian when the wrapped discipline has namespaces."""
+    discipline.add_namespace_to_input("x1", "n")
+    discipline.add_namespace_to_output("y1", "m")
+    jac = FilteringDiscipline(discipline, ["n:x1", "x2"], ["m:y1"]).linearize(
+        compute_all_jacobians=True
+    )
+    assert {k: sorted(v) for k, v in jac.items()} == {"m:y1": ["n:x1", "x2"]}
+    assert_array_equal(jac["m:y1"]["n:x1"], array([[1.0]]))
+
+
+@pytest.fixture(params=[False, True], ids=["on_wrapped", "on_wrapper"])
+def namespaced_wrapper(request) -> FilteringDiscipline:
+    """A filtering discipline whose wrapped discipline has namespaces.
+
+    The namespaces are added either on the wrapped discipline or on the wrapper.
+    """
+    discipline = AnalyticDiscipline({"y": "2*x"})
+    if request.param:
+        wrapper = FilteringDiscipline(discipline)
+        wrapper.add_namespace_to_input("x", "n")
+        wrapper.add_namespace_to_output("y", "m")
+    else:
+        discipline.add_namespace_to_input("x", "n")
+        discipline.add_namespace_to_output("y", "m")
+        wrapper = FilteringDiscipline(discipline)
+
+    return wrapper
+
+
+def test_namespaces_execution(namespaced_wrapper) -> None:
+    """Check the execution with namespaces."""
+    output_data = namespaced_wrapper.execute({"n:x": array([3.0])})
+    assert_array_equal(output_data["m:y"], array([6.0]))
+
+
+def test_namespaces_linearization(namespaced_wrapper) -> None:
+    """Check the Jacobian with namespaces."""
+    jacobian = namespaced_wrapper.linearize(
+        {"n:x": array([3.0])}, compute_all_jacobians=True
+    )
+    assert {k: list(v) for k, v in jacobian.items()} == {"m:y": ["n:x"]}
+    assert_array_equal(jacobian["m:y"]["n:x"], array([[2.0]]))
+
+
+def test_linearize_chain_with_shared_name_in_namespaces() -> None:
+    """Check the Jacobian of a chain whose input has several namespace prefixes."""
+    discipline_1 = AnalyticDiscipline({"y1": "2*x"})
+    discipline_1.add_namespace_to_input("x", "ns1")
+    discipline_2 = AnalyticDiscipline({"y2": "3*x"})
+    discipline_2.add_namespace_to_input("x", "ns2")
+    chain = DisciplineChain([discipline_1, discipline_2])
+    wrapper = FilteringDiscipline(chain)
+    wrapper.execute({"ns1:x": array([1.0]), "ns2:x": array([2.0])})
+    jac = wrapper.linearize(compute_all_jacobians=True)
+    expected = {
+        "y1": {"ns1:x": [[2.0]], "ns2:x": [[0.0]]},
+        "y2": {"ns1:x": [[0.0]], "ns2:x": [[3.0]]},
+    }
+    assert {k: sorted(v) for k, v in jac.items()} == {
+        k: sorted(v) for k, v in expected.items()
+    }
+    for output_name, input_name_to_value in expected.items():
+        for input_name, value in input_name_to_value.items():
+            assert_array_equal(jac[output_name][input_name], array(value))

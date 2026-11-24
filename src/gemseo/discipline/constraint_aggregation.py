@@ -26,15 +26,17 @@ from typing import Any
 from typing import ClassVar
 
 from numpy import atleast_1d
+from numpy import atleast_2d
+from scipy.sparse import csr_array
 
 from gemseo.core.discipline import Discipline
 from gemseo.enum._constraint_aggregation import AggregationFunction
 from gemseo.optimization.aggregation._functions import compute_iks_agg
 from gemseo.optimization.aggregation._functions import compute_lower_bound_ks_agg
 from gemseo.optimization.aggregation._functions import compute_max_agg
-from gemseo.optimization.aggregation._functions import compute_max_agg_jac
 from gemseo.optimization.aggregation._functions import compute_partial_iks_agg_jac
 from gemseo.optimization.aggregation._functions import compute_partial_ks_agg_jac
+from gemseo.optimization.aggregation._functions import compute_partial_max_agg_jac
 from gemseo.optimization.aggregation._functions import (
     compute_partial_sum_positive_square_agg_jac,
 )
@@ -44,8 +46,6 @@ from gemseo.optimization.aggregation._functions import (
 from gemseo.optimization.aggregation._functions import compute_sum_positive_square_agg
 from gemseo.optimization.aggregation._functions import compute_sum_square_agg
 from gemseo.optimization.aggregation._functions import compute_upper_bound_ks_agg
-from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -98,7 +98,7 @@ class ConstraintAggregation(Discipline):
         AggregationFunction.LOWER_BOUND_KS: compute_partial_ks_agg_jac,
         AggregationFunction.UPPER_BOUND_KS: compute_partial_ks_agg_jac,
         AggregationFunction.POS_SUM: compute_partial_sum_positive_square_agg_jac,
-        AggregationFunction.MAX: compute_max_agg_jac,
+        AggregationFunction.MAX: compute_partial_max_agg_jac,
         AggregationFunction.SUM: compute_partial_sum_square_agg_jac,
     })
 
@@ -113,9 +113,13 @@ class ConstraintAggregation(Discipline):
         Args:
             constraint_names: The names of the constraints to aggregate,
                 which must be discipline outputs.
+                Each constraint is aggregated separately
+                into the output named `f"{aggregation_function}_{constraint_name}"`.
             aggregation_function: The aggregation function or its name,
                 e.g. IKS, lower_bound_KS,upper_bound_KS, POS_SUM and SUM.
-            **options: The options for the aggregation method.
+            **options: The options for the aggregation method,
+                shared by the constraints;
+                `indices` and `scale` refer to the components of each constraint.
 
         Raises:
             ValueError: If the method is not supported.
@@ -123,48 +127,51 @@ class ConstraintAggregation(Discipline):
         super().__init__(name=name)
         self.__method_name = aggregation_function
         self.__meth_options = options
-        self.io.input_grammar.update_from_names(constraint_names)
-        self.io.output_grammar.update_from_names([
-            f"{aggregation_function}_{constraint_name}"
+        self.__constraint_name_to_output_name = {
+            constraint_name: f"{aggregation_function}_{constraint_name}"
             for constraint_name in constraint_names
-        ])
-        self.__data_sizes = {}
+        }
+        self.io.input_grammar.update_from_names(constraint_names)
+        self.io.output_grammar.update_from_names(
+            self.__constraint_name_to_output_name.values()
+        )
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
         aggregation_function = self._aggregation_function_map[self.__method_name]
-        output_data = atleast_1d(
-            aggregation_function(input_data, **self.__meth_options)
-        )
-        output_names = self.io.output_grammar
-        output_name_to_output_value = split_array_to_dict_of_arrays(
-            output_data,
-            dict.fromkeys(output_names, 1),
-            output_names,
-        )
-        self.io.update_output_data(output_name_to_output_value)
-        if not self.__data_sizes:
-            self.__data_sizes = {
-                variable_name: variable_value.size
-                for store in (self.io.input_data, self.io.output_data)
-                for variable_name, variable_value in store.items()
-            }
+        return {
+            output_name: atleast_1d(
+                aggregation_function(
+                    input_data[constraint_name].copy(), **self.__meth_options
+                )
+            )
+            for constraint_name, output_name in (
+                self.__constraint_name_to_output_name.items()
+            )
+        }
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        input_names = self.io.input_grammar
         aggregation_function = self._jacobian_aggregation_function_map[
             self.__method_name
         ]
-        self.jac = split_array_to_dict_of_arrays(
-            aggregation_function(
-                concatenate_dict_of_arrays_to_array(self.io.input_data, input_names),
-                **self.__meth_options,
-            ),
-            self.__data_sizes,
-            self.io.output_grammar,
-            input_names,
-        )
+        input_data = self.io.get_input_data(with_namespaces=False)
+        constraint_name_to_output_name = self.__constraint_name_to_output_name
+        # An output depends only on its constraint;
+        # the zero blocks are shared by the outputs.
+        constraint_name_to_zero_block = {
+            name: csr_array((1, input_data[name].size))
+            for name in constraint_name_to_output_name
+        }
+        jacobian = {}
+        for constraint_name, output_name in constraint_name_to_output_name.items():
+            jacobian[output_name] = constraint_name_to_zero_block.copy()
+            jacobian[output_name][constraint_name] = atleast_2d(
+                aggregation_function(
+                    input_data[constraint_name].copy(), **self.__meth_options
+                )
+            )
+
+        self.jac = jacobian

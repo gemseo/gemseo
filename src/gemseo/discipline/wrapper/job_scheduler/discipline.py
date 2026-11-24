@@ -28,13 +28,13 @@ from typing import ClassVar
 from gemseo.discipline.wrapper._base_wrapper_discipline import BaseWrapperDiscipline
 from gemseo.util.directory_creator import DirectoryCreator
 from gemseo.util.pickle import from_pickle
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from subprocess import CompletedProcess
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import JacobianData
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
@@ -285,6 +285,8 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
 
         Raises:
             FileNotFoundError: When the outputs contain an error.
+            KeyError: When the Jacobian has names
+                that are not variables of the discipline.
         """
         if not outputs_path.exists():
             msg = (
@@ -313,9 +315,23 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         )
 
         if output[1]:
-            self.jac = output[1]
+            jacobian = self._add_namespaces_to_jacobian(output[1])
+            # Raise now rather than submitting a new job to compute the Jacobian.
+            input_grammar = self.io.input_grammar
+            output_grammar = self.io.output_grammar
+            unknown_names = (jacobian.keys() - output_grammar.names) | (
+                set().union(*jacobian.values()) - input_grammar.names
+            )
+            if unknown_names:
+                msg = (
+                    f"The Jacobian of the discipline {self._discipline.name} "
+                    f"has names that are not variables of {self.name}: "
+                    f"{pretty_repr(unknown_names)}."
+                )
+                raise KeyError(msg)
+
+            self.jac = jacobian
             self._has_jacobian = True
-            self._handle_ns_in_jacobian()
 
         self.io.update_output_data(output[0])
 
@@ -330,9 +346,11 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         Args:
             current_workdir: The current working directory.
             differentiated_inputs: If the linearization is performed, the
-                inputs that define the rows of the jacobian.
+                names of the wrapped discipline inputs
+                that define the rows of the jacobian.
             differentiated_outputs: If the linearization is performed, the
-                outputs that define the columns of the jacobian.
+                names of the wrapped discipline outputs
+                that define the columns of the jacobian.
 
         Returns:
             The path to the serialized discipline and inputs.
@@ -340,8 +358,17 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         discipline_path = current_workdir / self.disc_pickle_file_name
         discipline_path.write_bytes(self.pickled_discipline)
         inputs_path = current_workdir / self.disc_input_file_name
+        io = self.io
+        wrapped_output_grammar = self._discipline.io.output_grammar
+        output_grammar = io.output_grammar
+        get_wrapped_name = self._get_wrapped_name
+        wrapped_data = dict(self._get_wrapped_input_data())
+        wrapped_data.update({
+            get_wrapped_name(name, output_grammar, wrapped_output_grammar): value
+            for name, value in io.output_data.items()
+        })
         serialized_data = pickle.dumps((
-            self.io.get_merged_data(),
+            wrapped_data,
             differentiated_inputs,
             differentiated_outputs,
         ))
@@ -414,48 +441,53 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
             execute=False,
         )
 
+    def _compute_jacobian_with_namespaces(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """Compute the Jacobian from the names with their namespace prefixes.
+
+        The names are not stripped of their namespace prefixes,
+        as the wrapped discipline can have its own ones:
+        `_compute_jacobian()` maps them to the names of the wrapped discipline.
+
+        Args:
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
+        """
+        self._compute_jacobian(input_names, output_names)
+
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        input_names = self._clean_namespaces_data_names(input_names, self.input_grammar)
-        output_names = self._clean_namespaces_data_names(
-            output_names, self.output_grammar
-        )
-        self._run_or_compute_jacobian(
-            True, differentiated_inputs=input_names, differentiated_outputs=output_names
-        )
+        """Compute one Jacobian matrix per input-output pair.
 
-    def _clean_namespaces_data_names(
-        self, io_names: Iterable[str], grammar: BaseGrammar
-    ) -> Iterable[str]:
-        """Cleans the data names to be differentiated to remove the namespace prefixes.
+        Unlike `Discipline._compute_jacobian()`,
+        the names keep their namespace prefixes:
+        this method maps them to the names of the wrapped discipline.
 
         Args:
-            io_names: The data names to differentiate.
-
-        Returns:
-            The cleaned data names.
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
         """
-        to_namespaced = grammar.to_namespaced
-        if not to_namespaced:
-            return io_names
-
-        io_names_no_namespace = list(io_names)
-        for name, ns_name in to_namespaced.items():
-            io_names_no_namespace.remove(ns_name)
-            io_names_no_namespace.append(name)
-        return io_names_no_namespace
-
-    def _handle_ns_in_jacobian(self) -> None:
-        """Rename the Jacobian input and output names to handle the namespaces."""
-        jac = self.jac
-        for name, namespaced_name in self.io.output_grammar.to_namespaced.items():
-            jac[namespaced_name] = jac.pop(name)
-
-        to_namespaced = self.input_grammar.to_namespaced
-        if to_namespaced:
-            for local_jac in self.jac.values():
-                for input_name, input_namespace in to_namespaced.items():
-                    local_jac[input_namespace] = local_jac.pop(input_name)
+        io = self.io
+        wrapped_io = self._discipline.io
+        get_wrapped_name = self._get_wrapped_name
+        self._run_or_compute_jacobian(
+            True,
+            differentiated_inputs=[
+                get_wrapped_name(name, io.input_grammar, wrapped_io.input_grammar)
+                for name in input_names
+            ],
+            differentiated_outputs=[
+                get_wrapped_name(name, io.output_grammar, wrapped_io.output_grammar)
+                for name in output_names
+            ],
+        )

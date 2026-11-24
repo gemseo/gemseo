@@ -24,9 +24,11 @@ from typing import final
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
 
@@ -64,6 +66,43 @@ class ProcessDiscipline(Discipline):
         """This method shall be implemented, implement _execute instead."""
         msg = "Do not use _run for process disciplines, use _execute."
         raise NotImplementedError(msg)
+
+    def _compute_jacobian_with_namespaces(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """Compute the Jacobian from the names with their namespace prefixes.
+
+        This mirrors `_execute()`:
+        a system of disciplines works with the namespaced names of its sub-disciplines,
+        and a name without namespace prefix can match several namespaced names,
+        so the names are passed to `_compute_jacobian()` as they are
+        and `jac` is not prefixed afterwards.
+
+        Args:
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
+        """
+        self._compute_jacobian(input_names, output_names)
+
+    def _remove_namespaces_from_names(
+        self, names: Iterable[str], grammar: BaseGrammar
+    ) -> list[str]:
+        """Return the names unchanged.
+
+        A process discipline works with the namespaced names of its sub-disciplines.
+
+        Args:
+            names: The names, with their namespace prefixes if any.
+            grammar: The grammar of the names.
+
+        Returns:
+            The names, with their namespace prefixes if any.
+        """
+        return list(names)
 
     @abstractmethod
     def _execute(self) -> None:

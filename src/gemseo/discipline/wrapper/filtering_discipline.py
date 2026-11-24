@@ -100,19 +100,88 @@ class FilteringDiscipline(BaseWrapperDiscipline):
         )
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        data = self._discipline.execute(input_data)
-        return {name: data[name] for name in self.io.output_grammar}
+        data = self._discipline.execute(self._get_wrapped_input_data())
+        grammar = self.io.output_grammar
+        wrapped_grammar = self._discipline.io.output_grammar
+        get_wrapped_name = self._get_wrapped_name
+        return {
+            name: data[get_wrapped_name(name, grammar, wrapped_grammar)]
+            for name in grammar
+        }
+
+    def _compute_jacobian_with_namespaces(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """Compute the Jacobian from the names with their namespace prefixes.
+
+        The names are not stripped of their namespace prefixes,
+        as a name of the wrapped discipline can have several of them,
+        e.g. when it is a chain of disciplines:
+        `_compute_jacobian()` maps them to the names of the wrapped discipline,
+        as `_run()` does with the data.
+
+        Args:
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
+        """
+        self._compute_jacobian(input_names, output_names)
+
+    def _remove_namespaces_from_names(
+        self, names: Iterable[str], grammar: BaseGrammar
+    ) -> list[str]:
+        """Return the names unchanged.
+
+        `_compute_jacobian()` maps the namespaced names to the wrapped ones.
+
+        Args:
+            names: The names, with their namespace prefixes if any.
+            grammar: The grammar of the names.
+
+        Returns:
+            The names, with their namespace prefixes if any.
+        """
+        return list(names)
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self._discipline._compute_jacobian(input_names, output_names)
-        wrapped_jac = self._discipline.jac
+        """Compute one Jacobian matrix per input-output pair.
+
+        Unlike `Discipline._compute_jacobian()`,
+        the names keep their namespace prefixes:
+        this method maps them to the names of the wrapped discipline.
+
+        Args:
+            input_names: The names of the inputs, with their namespace prefixes,
+                with respect to which to differentiate the outputs.
+            output_names: The names of the outputs, with their namespace prefixes,
+                to be differentiated.
+        """
+        io = self.io
+        wrapped_discipline = self._discipline
+        wrapped_io = wrapped_discipline.io
+        get_wrapped_name = self._get_wrapped_name
+        input_names_ = {
+            name: get_wrapped_name(name, io.input_grammar, wrapped_io.input_grammar)
+            for name in input_names
+        }
+        output_names_ = {
+            name: get_wrapped_name(name, io.output_grammar, wrapped_io.output_grammar)
+            for name in output_names
+        }
+        wrapped_discipline._compute_jacobian_with_namespaces(
+            input_names_.values(), output_names_.values()
+        )
+        wrapped_jac = wrapped_discipline.jac
         jac = self.jac
-        for output_name in output_names:
+        for output_name, wrapped_output_name in output_names_.items():
             jac_output = jac[output_name] = {}
-            wrapped_jac_output = wrapped_jac[output_name]
-            for input_name in input_names:
-                jac_output[input_name] = wrapped_jac_output[input_name]
+            wrapped_jac_output = wrapped_jac[wrapped_output_name]
+            for input_name, wrapped_input_name in input_names_.items():
+                jac_output[input_name] = wrapped_jac_output[wrapped_input_name]
