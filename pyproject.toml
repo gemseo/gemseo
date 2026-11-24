@@ -35,7 +35,7 @@ dependencies = [
     "pyxdsm >=2.2.1,<=2.3.2",
     "pydantic >=2.12,<=2.14.1",
     "pydantic-settings >=2.9.0,<=2.16.1",
-    "pyyaml >=6.0,<=6.0.3",
+    "pyyaml >=6.0,<=6.0.4",
     "requests >=2.28.2,<3",
     "scipy >=1.15,<=1.17.1",
     "tqdm >=4.64.1,<=4.70.1",
