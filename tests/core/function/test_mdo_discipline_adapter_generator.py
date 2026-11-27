@@ -33,7 +33,9 @@ from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.formulation.disciplinary_opt import DisciplinaryOpt
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.space import Catalog
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import CatalogVariable
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.derivative.check.function import FunctionJacobianChecker
 from gemseo.util.testing.helper import assert_exception
@@ -157,3 +159,43 @@ def test_function_from_discipline_input_names(input_names, expected_output_value
     evaluation_problem.objective = formulation.create_objective(["y"])
     function = FunctionFromDiscipline(["y"], formulation, input_names=input_names)
     assert_equal(function.evaluate(array([1, 2])), expected_output_value)
+
+
+def _create_catalog_generator(*property_names: str) -> DisciplineAdapterGenerator:
+    """Create a generator for a discipline of a property of a catalog.
+
+    Args:
+        *property_names: The names of the properties of the catalog.
+
+    Returns:
+        The generator of the functions of the discipline.
+    """
+    catalog = Catalog(properties={name: [200.0, 70.0] for name in property_names})
+    return DisciplineAdapterGenerator(
+        AnalyticDiscipline({"y": "young_modulus*x"}),
+        name_to_categorical_variable={"material": CatalogVariable(catalog=catalog)},
+    )
+
+
+def test_get_function_of_catalog_input() -> None:
+    """Check that a catalog input feeding a discipline is not differentiated."""
+    generator = _create_catalog_generator("young_modulus", "density")
+    function = generator.get_function(["material", "x"], ["y"])
+    assert function.differentiated_input_names_substitute == ["x"]
+    assert generator.discipline._differentiated_input_names == ["x"]
+
+
+@pytest.mark.parametrize(
+    ("property_name", "input_name"),
+    [
+        pytest.param("young_modulus", "toto", id="unknown-name"),
+        pytest.param("density", "material", id="catalog-feeding-nothing"),
+    ],
+)
+def test_get_function_of_wrong_catalog_input(
+    property_name, input_name, snapshot
+) -> None:
+    """Check that an input name must be a discipline input or a feeding catalog."""
+    generator = _create_catalog_generator(property_name)
+    with assert_exception(ValueError, snapshot):
+        generator.get_function([input_name, "x"], ["y"])

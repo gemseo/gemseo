@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_catalog_input_out_of_range
+  "3 is not the position of a label; the labels are ['steel', 'aluminium', 'titanium']."
+# ---
 # name: test_error
   'The size of the input x cannot be guessed from the discipline my_func, nor from its default inputs or from its local data.'
 # ---
@@ -7,4 +10,10 @@
 # ---
 # name: test_error_several_inputs
   'The sizes of the inputs x and y cannot be guessed from the discipline my_func, nor from its default inputs or from its local data.'
+# ---
+# name: test_input_fed_twice[two-catalogs]
+  "A discipline input must be fed by a single design variable; the input 'young_modulus' is fed by the variables 'material' and 'alloy'."
+# ---
+# name: test_input_fed_twice[variable-and-property]
+  "A discipline input must be fed by a single design variable; the input 'young_modulus' is fed by the variables 'material' and 'young_modulus'."
 # ---

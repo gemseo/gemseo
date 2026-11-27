@@ -5,3 +5,9 @@
 # name: test_get_function.1
   "['toto'] are not names of outputs in the discipline SobieskiMission; expected names among ['y_4']."
 # ---
+# name: test_get_function_of_wrong_catalog_input[catalog-feeding-nothing]
+  "['material'] are not names of inputs in the discipline AnalyticDiscipline; expected names among ['x', 'young_modulus']."
+# ---
+# name: test_get_function_of_wrong_catalog_input[unknown-name]
+  "['toto'] are not names of inputs in the discipline AnalyticDiscipline; expected names among ['material', 'x', 'young_modulus']."
+# ---

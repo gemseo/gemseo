@@ -25,9 +25,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
+from gemseo.space._catalog_input import get_fed_input_names
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from collections.abc import Mapping
     from collections.abc import MutableMapping
     from collections.abc import Sequence
@@ -79,6 +81,8 @@ class DisciplineAdapterGenerator:
                 the discipline receives its label
                 instead of its position in the input vector.
                 If empty, no input is categorical.
+                A catalog input that is not a discipline input is accepted
+                when the numerical properties of its catalog feed the discipline.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
         self.__name_to_size = name_to_size or {}
@@ -117,14 +121,21 @@ class DisciplineAdapterGenerator:
 
         Raises:
             ValueError: When either
-                an input name is not a discipline input name,
+                an input name is neither a discipline input name
+                nor the name of a catalog variable feeding the discipline,
                 a differentiated input name is not a discipline input name
                 or an output name is not a discipline output name.
         """
+        input_grammar = self.discipline.io.input_grammar
         input_names = self.__get_names(
             "inputs",
             input_names,
-            self.discipline.io.input_grammar,
+            input_grammar,
+            accepted_names=tuple(
+                name
+                for name, variable in self.__name_to_categorical_variable.items()
+                if get_fed_input_names(name, variable, input_grammar)
+            ),
         )
         output_names = self.__get_names(
             "outputs",
@@ -135,11 +146,12 @@ class DisciplineAdapterGenerator:
             self.__get_names(
                 "inputs",
                 differentiated_input_names_substitute,
-                self.discipline.io.input_grammar,
+                input_grammar,
             )
         else:
             # A categorical input is not differentiable,
-            # its label is not a number.
+            # its label is not a number,
+            # and a catalog input may not even be a discipline input.
             differentiated_input_names_substitute = [
                 name
                 for name in input_names
@@ -171,6 +183,7 @@ class DisciplineAdapterGenerator:
         group_name: str,
         names: Sequence[str],
         grammar: BaseGrammar,
+        accepted_names: Collection[str] = (),
     ) -> Sequence[str]:
         """Return the variable names.
 
@@ -180,20 +193,22 @@ class DisciplineAdapterGenerator:
                 If empty,
                 return the names of all the variables in the group of interest.
             grammar: The grammar defining the variables available in the group.
+            accepted_names: The names accepted although not defined in the grammar.
 
         Returns:
             The variable names.
 
         Raises:
-            ValueError: When a variable name is not defined in the grammar.
+            ValueError: When a variable name is neither defined in the grammar
+                nor accepted.
         """
         if names:
-            wrong_names = set(names).difference(grammar)
+            wrong_names = set(names).difference(grammar, accepted_names)
             if wrong_names:
                 msg = (
                     f"{sorted(wrong_names)} are not names of {group_name} "
                     f"in the discipline {self.discipline.name}; "
-                    f"expected names among {sorted(grammar)}."
+                    f"expected names among {sorted({*grammar, *accepted_names})}."
                 )
                 raise ValueError(msg)
 

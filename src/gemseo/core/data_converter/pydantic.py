@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from types import NoneType
 from types import UnionType
 from typing import TYPE_CHECKING
 from typing import Annotated
@@ -50,8 +51,29 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
         name: str,
         types: tuple[type, ...],
     ) -> bool:
-        annotation = self._grammar[name].annotation
+        return self.__has_annotation_type(self._grammar[name].annotation, types)
 
+    def is_continuous(self, name: str) -> bool:  # noqa: D102
+        annotation = self._grammar[name].annotation
+        if get_origin(annotation) in {Union, UnionType}:
+            types = tuple(
+                type_ for type_ in get_args(annotation) if type_ is not NoneType
+            )
+            if len(types) == 1:
+                annotation = types[0]
+
+        return self.__has_annotation_type(annotation, self._is_continuous_types)
+
+    def __has_annotation_type(self, annotation: Any, types: tuple[type, ...]) -> bool:
+        """Return whether an annotation is one of the expected types.
+
+        Args:
+            annotation: The annotation.
+            types: The expected types.
+
+        Returns:
+            Whether the annotation is one of the expected types.
+        """
         if annotation in types or annotation is _NDArrayPydantic:
             return True
 
