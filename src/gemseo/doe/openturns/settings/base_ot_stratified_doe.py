@@ -44,8 +44,7 @@ to the center; e.g. `[0.2, 0.8]` in dimension 1 will generate the samples
 `[0.15, 0.6, 0.75, 0.8, 0.95, 1]` for an axial DOE; the values must be in
 $]0,1]$.
 
-In the case of a full-factorial DOE, the number of levels per input direction;
-if scalar, this value is applied to each input direction.
+A single number is a single level.
 """,
     )
 
