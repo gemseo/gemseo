@@ -48,11 +48,15 @@ class BaseOTStratifiedDOE(BaseOTDOE):
         """
         Raises:
             ValueError: When the number of centers is different from the dimension,
-                when a center is outside $]0,1[$
-                or when a level is outside $[0,1]$.
+                when a center is outside $]0,1[$,
+                when a level is outside $]0,1]$
+                or when no level is given and `n_samples` is 0.
         """  # noqa: D205, D212
         centers = settings.centers
         levels = settings.levels
+        if isinstance(levels, float):
+            levels = [levels]
+
         n_samples = settings.n_samples
         if n_samples > 0:
             n_levels = self._compute_n_levels(n_samples, dimension)
@@ -60,7 +64,6 @@ class BaseOTStratifiedDOE(BaseOTDOE):
             levels = linspace(0, 1, n_levels + 1)[1:]
         elif isinstance(centers, float):
             centers = [centers] * dimension
-            levels = levels
         elif len(centers) == 1:
             centers = list(centers) * dimension
 
@@ -70,11 +73,18 @@ class BaseOTStratifiedDOE(BaseOTDOE):
             raise ValueError(msg)
 
         if any(not 0 < center < 1 for center in centers):
-            msg = f"The centers must be in ]0,1[; got {centers}."
+            msg = f"The centers must be in ]0,1[; got {settings.centers}."
+            raise ValueError(msg)
+
+        if len(levels) == 0:
+            msg = (
+                "The levels must be given when n_samples is 0; "
+                f"got levels={settings.levels}."
+            )
             raise ValueError(msg)
 
         if any(not 0 < level <= 1 for level in levels):
-            msg = f"The levels must be in ]0,1]; got {levels}."
+            msg = f"The levels must be in ]0,1]; got {settings.levels}."
             raise ValueError(msg)
 
         # We use openturns.StratifiedExperiment(center, levels).

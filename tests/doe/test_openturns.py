@@ -395,10 +395,15 @@ def test_ot_stratified_centers_value_error(cls, centers, snapshot):
 
 
 @pytest.mark.parametrize("cls", [OTAxialDOE, OTCompositeDOE, OTFactorialDOE])
-def test_ot_stratified_levels_value_error(cls, snapshot):
-    """Verify that a stratified DOE algorithm raises when centers has wrong values."""
+@pytest.mark.parametrize(
+    "levels",
+    [[0, 0.5], 1.5, ()],
+    ids=["out-of-range", "out-of-range-scalar", "empty"],
+)
+def test_ot_stratified_levels_value_error(cls, levels, snapshot):
+    """Verify that a stratified DOE algorithm raises when levels has wrong values."""
     with assert_exception(ValueError, snapshot):
-        cls().generate_samples(2, BaseOTStratifiedDOESettings(levels=[0, 0.5]))
+        cls().generate_samples(2, BaseOTStratifiedDOESettings(levels=levels))
 
 
 @pytest.mark.parametrize(
@@ -494,6 +499,48 @@ def test_ot_stratified_levels_value_error(cls, snapshot):
             [0.5],
             array([[0.7, 0.5], [0.35, 0.25], [0.85, 0.25], [0.35, 0.75], [0.85, 0.75]]),
         ),
+        (
+            OTAxialDOE,
+            0.5,
+            0.5,
+            array([[0.5, 0.5], [0.75, 0.5], [0.25, 0.5], [0.5, 0.75], [0.5, 0.25]]),
+        ),
+        (
+            OTCompositeDOE,
+            0.5,
+            0.5,
+            array([
+                [0.5, 0.5],
+                [0.25, 0.25],
+                [0.75, 0.25],
+                [0.25, 0.75],
+                [0.75, 0.75],
+                [0.75, 0.5],
+                [0.25, 0.5],
+                [0.5, 0.75],
+                [0.5, 0.25],
+            ]),
+        ),
+        (
+            OTFactorialDOE,
+            0.5,
+            0.5,
+            array([[0.5, 0.5], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]),
+        ),
+    ],
+    ids=[
+        "axial-scalar-center",
+        "axial-single-center",
+        "axial-two-centers",
+        "composite-scalar-center",
+        "composite-single-center",
+        "composite-two-centers",
+        "factorial-scalar-center",
+        "factorial-single-center",
+        "factorial-two-centers",
+        "axial-scalar-levels",
+        "composite-scalar-levels",
+        "factorial-scalar-levels",
     ],
 )
 def test_ot_stratified_results(cls, centers, levels, expected_samples):

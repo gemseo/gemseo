@@ -59,12 +59,30 @@
 # name: test_ot_stratified_doe_n_samples_error[OTFactorialDOE-A factorial DOE in dimension d=2 requires at least 1+2^d=5 samples; got 4.]
   'A factorial DOE in dimension d=2 requires at least 1+2^d=5 samples; got 4.'
 # ---
-# name: test_ot_stratified_levels_value_error[OTAxialDOE]
+# name: test_ot_stratified_levels_value_error[empty-OTAxialDOE]
+  'The levels must be given when n_samples is 0; got levels=().'
+# ---
+# name: test_ot_stratified_levels_value_error[empty-OTCompositeDOE]
+  'The levels must be given when n_samples is 0; got levels=().'
+# ---
+# name: test_ot_stratified_levels_value_error[empty-OTFactorialDOE]
+  'The levels must be given when n_samples is 0; got levels=().'
+# ---
+# name: test_ot_stratified_levels_value_error[out-of-range-OTAxialDOE]
   'The levels must be in ]0,1]; got [0.0, 0.5].'
 # ---
-# name: test_ot_stratified_levels_value_error[OTCompositeDOE]
+# name: test_ot_stratified_levels_value_error[out-of-range-OTCompositeDOE]
   'The levels must be in ]0,1]; got [0.0, 0.5].'
 # ---
-# name: test_ot_stratified_levels_value_error[OTFactorialDOE]
+# name: test_ot_stratified_levels_value_error[out-of-range-OTFactorialDOE]
   'The levels must be in ]0,1]; got [0.0, 0.5].'
+# ---
+# name: test_ot_stratified_levels_value_error[out-of-range-scalar-OTAxialDOE]
+  'The levels must be in ]0,1]; got 1.5.'
+# ---
+# name: test_ot_stratified_levels_value_error[out-of-range-scalar-OTCompositeDOE]
+  'The levels must be in ]0,1]; got 1.5.'
+# ---
+# name: test_ot_stratified_levels_value_error[out-of-range-scalar-OTFactorialDOE]
+  'The levels must be in ]0,1]; got 1.5.'
 # ---
