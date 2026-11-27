@@ -398,6 +398,9 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     def is_continuous(self, name: str) -> bool:
         """Return whether a grammar item is continuous.
 
+        A `None` alternative of its type is ignored,
+        e.g. `float | None` is continuous.
+
         Args:
             name: The name of the grammar item.
 

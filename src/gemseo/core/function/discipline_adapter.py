@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from collections import ChainMap
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -36,6 +37,10 @@ from scipy.sparse import dok_array
 
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space._catalog_input import cast_property_values
+from gemseo.space._catalog_input import get_fed_input_names
+from gemseo.space._catalog_input import get_input_to_variable_names
+from gemseo.space.variable.catalog import CatalogVariable
 from gemseo.util._compatibility.scipy import get_row
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import read_only_empty_dict
@@ -76,6 +81,15 @@ class DisciplineAdapter(ArrayFunction):
 
     __name_to_categorical_variable: Mapping[str, BaseCategoricalVariable]
     """The map from the name of a categorical input to its variable."""
+
+    __name_to_property_values: Mapping[str, Mapping[str, ndarray]]
+    """The values of the properties fed to the discipline, by catalog input name.
+
+    Each property has one value per alternative.
+    """
+
+    __catalog_input_name_to_size: Mapping[str, int]
+    """The sizes of the catalog inputs that are not discipline inputs."""
 
     differentiated_input_names_substitute: Sequence[str]
     """The names of the inputs with respect to which to differentiate the functions.
@@ -121,6 +135,8 @@ class DisciplineAdapter(ArrayFunction):
                 the discipline receives its label
                 instead of its position in the input vector.
                 If empty, no input is categorical.
+                A catalog input may be absent from the discipline inputs
+                when its numerical properties feed the discipline.
         """  # noqa: D205, D212, D415
         super().__init__(
             self._func_to_wrap,
@@ -147,11 +163,47 @@ class DisciplineAdapter(ArrayFunction):
             for name, variable in name_to_categorical_variable.items()
             if name in input_names
         }
+        input_grammar = discipline.io.input_grammar
+        # Otherwise, the value of an input fed twice would be the last one.
+        get_input_to_variable_names(
+            {
+                name: self.__name_to_categorical_variable.get(name)
+                for name in input_names
+            },
+            input_grammar,
+        )
+        self.__name_to_property_values = {}
+        for name, variable in self.__name_to_categorical_variable.items():
+            if isinstance(variable, CatalogVariable):
+                # The properties are read and cast once
+                # as the catalog rebuilds their mapping at each access.
+                properties = variable.catalog.properties
+                self.__name_to_property_values[name] = {
+                    property_name: cast_property_values(
+                        property_name, properties[property_name], input_grammar
+                    )
+                    for property_name in get_fed_input_names(
+                        name, variable, input_grammar
+                    )
+                    if property_name != name
+                }
+
+        self.__catalog_input_name_to_size = {
+            name: self.__name_to_categorical_variable[name].size
+            for name, property_values in self.__name_to_property_values.items()
+            if property_values and name not in input_grammar
+        }
         self.__given_input_names = frozenset(name_to_size)
         self.__differentiated_input_name_to_slice = {}
+        self.__grammar_input_name_to_slice = {}
         input_names = set(self.input_names)
-        self.__is_linear = self.__discipline.io.have_linear_relationships(
-            input_names, output_names
+        # A categorical input has no derivative:
+        # a linear approximation would drop the dependence on it.
+        self.__is_linear = (
+            not self.__name_to_categorical_variable
+            and self.__discipline.io.have_linear_relationships(
+                input_names, output_names
+            )
         )
         self.__input_dimension = self.__compute_input_dimension(default_input_data)
         self.__convert_array_to_data = (
@@ -185,13 +237,22 @@ class DisciplineAdapter(ArrayFunction):
         get_value_size = (
             self.__discipline.io.input_grammar.data_converter.get_value_size
         )
+        # The name of a catalog input that is not a discipline input has no value:
+        # its size is known in advance.
+        catalog_input_name_to_size = self.__catalog_input_name_to_size
+        catalog_input_dimension = sum(
+            catalog_input_name_to_size.get(name, 0) for name in self.input_names
+        )
+        input_names = [
+            name for name in self.input_names if name not in catalog_input_name_to_size
+        ]
 
         if default_input_data and all(
-            name in default_input_data for name in self.input_names
+            name in default_input_data for name in input_names
         ):
-            return sum(
+            return catalog_input_dimension + sum(
                 get_value_size(input_name, default_input_data[input_name])
-                for input_name in self.input_names
+                for input_name in input_names
             )
 
         if len(self.__input_name_to_size) > 0:
@@ -199,10 +260,10 @@ class DisciplineAdapter(ArrayFunction):
 
         default_input_data = self.__discipline.io.input_grammar.defaults
 
-        if all(name in default_input_data for name in self.input_names):
-            return sum(
+        if all(name in default_input_data for name in input_names):
+            return catalog_input_dimension + sum(
                 get_value_size(input_name, default_input_data[input_name])
-                for input_name in self.input_names
+                for input_name in input_names
             )
 
         # TODO: document what None means. We could use 0 instead.
@@ -467,10 +528,14 @@ class DisciplineAdapter(ArrayFunction):
             )
         )
 
+        # Complete the sizes without writing into a possibly shared mapping.
+        name_to_size = ChainMap(
+            self.__input_name_to_size, self.__catalog_input_name_to_size
+        )
         missing_names = (
             set(self.input_names)
             .union(self.differentiated_input_names_substitute)
-            .difference(self.__input_name_to_size.keys())
+            .difference(name_to_size.keys())
         )
 
         if missing_names:
@@ -488,8 +553,14 @@ class DisciplineAdapter(ArrayFunction):
             self.__input_name_to_slice,
             self.__input_size,
         ) = self.__discipline.io.input_grammar.data_converter.compute_name_to_slice(
-            self.input_names, input_data, self.__input_name_to_size
+            self.input_names, input_data, name_to_size
         )
+        # Only the discipline inputs can be converted by the data converter.
+        self.__grammar_input_name_to_slice = {
+            name: slice_
+            for name, slice_ in self.__input_name_to_slice.items()
+            if name not in self.__catalog_input_name_to_size
+        }
         (
             self.__differentiated_input_name_to_slice,
             self.__differentiated_input_size,
@@ -509,7 +580,8 @@ class DisciplineAdapter(ArrayFunction):
         design space before their conversion to the types declared by the grammar,
         except those whose grammar declares a continuous scalar type, e.g. `float`.
 
-        The categorical variables are given as labels.
+        The categorical variables are given as labels
+        and the catalog variables also as the numerical properties of their catalogs.
 
         Args:
             x_vect: The input vector of the function.
@@ -527,7 +599,7 @@ class DisciplineAdapter(ArrayFunction):
         data_converter = self.__discipline.io.input_grammar.data_converter
         variable_types = x_vect.dtype.metadata or {}
         input_data = {}
-        for name, slice_ in self.__input_name_to_slice.items():
+        for name, slice_ in self.__grammar_input_name_to_slice.items():
             value = x_vect[..., slice_]
             # Restore the type declared in the design space
             # before the conversion to the type declared in the grammar,
@@ -540,33 +612,46 @@ class DisciplineAdapter(ArrayFunction):
                 value = value.astype(type_, copy=False)
             input_data[name] = data_converter.convert_array_to_value(name, value)
 
-        self.__decode_labels(input_data, x_vect)
+        self.__decode_categorical_inputs(input_data, x_vect)
 
         if x_vect.ndim == 2:
             return {k: v.ravel() for k, v in input_data.items()}
 
         return input_data
 
-    def __decode_labels(
+    def __decode_categorical_inputs(
         self, input_data: MutableMapping[str, Any], x_vect: ndarray
     ) -> None:
-        """Set the categorical inputs to their labels.
+        """Set the categorical inputs to their labels and the catalog properties.
+
+        A label is set only for a discipline input.
+        A catalog input also sets its numerical properties that are discipline inputs.
 
         Args:
             input_data: The input data of the discipline.
             x_vect: The input vector of the function,
                 whose categorical components are positions among the labels.
+
+        Raises:
+            ValueError: When a categorical component is not the position of a label.
         """
-        data_converter = self.__discipline.io.input_grammar.data_converter
+        input_grammar = self.__discipline.io.input_grammar
+        convert_array_to_value = input_grammar.data_converter.convert_array_to_value
         for name, variable in self.__name_to_categorical_variable.items():
             # A finite-difference or complex-step perturbation of the design vector
             # may leave the integer positions: round the real part to the nearest one.
-            labels = variable.decode(
-                rint(x_vect[..., self.__input_name_to_slice[name]].real)
-            )
-            # The labels of several samples are given as such to the discipline.
-            input_data[name] = (
-                labels
-                if x_vect.ndim == 2
-                else data_converter.convert_array_to_value(name, labels)
-            )
+            positions = rint(x_vect[..., self.__input_name_to_slice[name]].real)
+            # Decoding also checks that the positions are those of labels.
+            labels = variable.decode(positions)
+            name_to_value = {name: labels} if name in input_grammar else {}
+            positions = positions.astype(variable.coordinate_type)
+            for property_name, values in self.__name_to_property_values.get(
+                name, {}
+            ).items():
+                name_to_value[property_name] = values[positions]
+
+            for name_, value in name_to_value.items():
+                # The values of several samples are given as such to the discipline.
+                input_data[name_] = (
+                    value if x_vect.ndim == 2 else convert_array_to_value(name_, value)
+                )

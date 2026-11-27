@@ -29,6 +29,7 @@ import pytest
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_array_equal
+from pydantic import BaseModel
 from pydantic import DirectoryPath
 from pydantic import FilePath
 from pydantic import NewPath
@@ -109,6 +110,51 @@ def test_is_continuous_scalar(converter) -> None:
         assert not converter.is_continuous_scalar(name)
     for name in ("a_float", "a_complex"):
         assert converter.is_continuous_scalar(name)
+
+
+class _NullableModel(BaseModel):
+    """A model whose fields may be `None`."""
+
+    a_float: float | None
+    a_int: int | None
+    a_float_or_str: float | str | None
+
+
+def _create_nullable_json_grammar() -> JSONGrammar:
+    """Create a JSON grammar whose items may be `null`.
+
+    Returns:
+        The JSON grammar.
+    """
+    grammar = JSONGrammar("g")
+    grammar.update_from_schema({
+        "type": "object",
+        "properties": {
+            "a_float": {"type": ["number", "null"]},
+            "a_int": {"type": ["integer", "null"]},
+            "a_float_or_str": {"type": ["number", "string", "null"]},
+            "a_ndarray": {"type": "array", "items": {"type": ["number", "null"]}},
+        },
+    })
+    return grammar
+
+
+@pytest.mark.parametrize(
+    ("grammar", "continuous_names"),
+    [
+        pytest.param(
+            _create_nullable_json_grammar(), ("a_float", "a_ndarray"), id="json"
+        ),
+        pytest.param(PydanticGrammar("g", _NullableModel), ("a_float",), id="pydantic"),
+    ],
+)
+def test_is_continuous_with_null(grammar, continuous_names) -> None:
+    """Verify that is_continuous ignores a null alternative."""
+    converter = grammar.data_converter
+    for name in continuous_names:
+        assert converter.is_continuous(name)
+    for name in ("a_int", "a_float_or_str"):
+        assert not converter.is_continuous(name)
 
 
 value_to_array_data = [

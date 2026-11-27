@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from numpy import float64
+
 from gemseo.space.variable.catalog import CatalogVariable
 from gemseo.util.string import pretty_repr
 
@@ -27,12 +29,13 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
+    from gemseo.core.grammar.base import BaseGrammar
     from gemseo.space.design import DesignSpace
     from gemseo.space.variable.base import BaseVariable
 
 
 def get_fed_input_names(
-    variable_name: str, variable: BaseVariable, input_names: Container[str]
+    variable_name: str, variable: BaseVariable | None, input_names: Container[str]
 ) -> tuple[str, ...]:
     """Return the names of the discipline inputs fed by a design variable.
 
@@ -42,6 +45,7 @@ def get_fed_input_names(
     Args:
         variable_name: The name of the design variable.
         variable: The design variable.
+            If `None`, the variable is not a catalog variable.
         input_names: The names of the discipline inputs.
 
     Returns:
@@ -62,12 +66,13 @@ def get_fed_input_names(
 
 
 def get_input_to_variable_names(
-    variables: Mapping[str, BaseVariable], input_names: Container[str]
+    variables: Mapping[str, BaseVariable | None], input_names: Container[str]
 ) -> dict[str, str]:
     """Return the name of the design variable feeding each discipline input.
 
     Args:
-        variables: The design variables, by name.
+        variables: The design variables, by name;
+            `None` for a variable that is not a catalog variable.
         input_names: The names of the discipline inputs.
 
     Returns:
@@ -153,5 +158,26 @@ def get_catalog_input_values(
         # The space may be cast to complex numbers, e.g. for the complex step.
         indices = positions[name].real.astype(int)
         values[input_name] = catalog.properties[input_name][indices]
+
+    return values
+
+
+def cast_property_values(name: str, values: ndarray, grammar: BaseGrammar) -> ndarray:
+    """Cast the values of a catalog property for the discipline input of this name.
+
+    Integer values are cast to floats
+    when the grammar declares the input as continuous, e.g. `float` or `ndarray`.
+    Otherwise, they keep their data type.
+
+    Args:
+        name: The name of the property, which is an input of the grammar.
+        values: The values of the property.
+        grammar: The input grammar of the discipline.
+
+    Returns:
+        The values of the property, cast to floats if needed.
+    """
+    if values.dtype.kind in "iu" and grammar.data_converter.is_continuous(name):
+        return values.astype(float64)
 
     return values

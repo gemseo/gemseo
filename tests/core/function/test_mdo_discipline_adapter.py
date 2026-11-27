@@ -20,8 +20,10 @@
 from __future__ import annotations
 
 import operator
+from functools import partial
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 import pytest
 from numpy import array
@@ -29,6 +31,7 @@ from numpy import dtype
 from numpy import int64
 from numpy import ndarray
 from numpy.testing import assert_allclose
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from pandas import Series
 
@@ -36,7 +39,10 @@ from gemseo.core.data_converter.base import BaseDataConverter
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.space import Catalog
+from gemseo.space.variable import CatalogVariable
 from gemseo.space.variable import CategoricalVariable
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.testing.helper import assert_exception
@@ -304,72 +310,15 @@ class MaterialDiscipline(Discipline):
             "material": array(["steel"]) if vectorized else "steel",
             "x": array([1.0]),
         }
-        self.materials = []
+        self.received_input_data = []
 
     def _run(self, input_data):
+        self.received_input_data.append(dict(input_data))
         material = input_data["material"]
-        self.materials.append(material)
         if isinstance(material, str):
             return {"y": self.density[material] * input_data["x"]}
 
         return {"y": array([self.density[m] for m in material]) * input_data["x"]}
-
-
-def create_categorical_function(vectorized: bool) -> DisciplineAdapter:
-    """Create a function of a categorical input and a real input.
-
-    Args:
-        vectorized: Whether the discipline handles several samples at once.
-    """
-    discipline = MaterialDiscipline(vectorized)
-    return DisciplineAdapter(
-        ["material", "x"],
-        ["y"],
-        {},
-        discipline,
-        {"material": 1, "x": 1},
-        name_to_categorical_variable={
-            "material": CategoricalVariable(labels=("steel", "aluminium", "titanium"))
-        },
-    )
-
-
-@pytest.mark.parametrize("with_dtype_metadata", [False, True])
-def test_categorical_input_is_given_as_a_label(with_dtype_metadata) -> None:
-    """Check that the discipline receives the label of a categorical input."""
-    function = create_categorical_function(False)
-    x_vect = array([2.0, 0.5])
-    if with_dtype_metadata:
-        # As a DOE records the type of the variables of a mixed space.
-        x_vect.dtype = dtype(x_vect.dtype, metadata={"material": int64})
-
-    assert_allclose(function.evaluate(x_vect), array([4.5 * 0.5]))
-    assert function._DisciplineAdapter__discipline.materials == ["titanium"]
-
-    assert_allclose(function.evaluate(array([1.0, 2.0])), array([2.7 * 2.0]))
-    assert function._DisciplineAdapter__discipline.materials == [
-        "titanium",
-        "aluminium",
-    ]
-
-
-def test_categorical_input_of_several_samples_is_given_as_labels() -> None:
-    """Check that the discipline receives the labels of several samples at once."""
-    function = create_categorical_function(True)
-    x_vect = array([[2.0, 0.5], [0.0, 1.0], [1.0, 2.0]])
-    assert_allclose(
-        function.evaluate(x_vect).ravel(), array([4.5 * 0.5, 7.8, 2.7 * 2.0])
-    )
-    materials = function._DisciplineAdapter__discipline.materials
-    assert_equal(materials[0], array(["titanium", "steel", "aluminium"]))
-
-
-def test_categorical_input_with_complex_coordinates() -> None:
-    """Check that the complex coordinates of a complex-step perturbation are rounded."""
-    function = create_categorical_function(False)
-    output = function.evaluate(array([2 + 0j, 0.5 + 1e-30j]))
-    assert_allclose(output, array([4.5 * 0.5]))
-    assert function._DisciplineAdapter__discipline.materials == ["titanium"]
 
 
 class OnlyMaterialDiscipline(Discipline):
@@ -383,19 +332,6 @@ class OnlyMaterialDiscipline(Discipline):
 
     def _run(self, input_data):
         return {"y": array([MaterialDiscipline.density[input_data["material"]]])}
-
-
-def test_jacobian_wrt_categorical_inputs_only() -> None:
-    """Check that the Jacobian has no column when all the inputs are categorical."""
-    generator = DisciplineAdapterGenerator(
-        OnlyMaterialDiscipline(),
-        {"material": 1},
-        {"material": CategoricalVariable(labels=("steel", "aluminium"))},
-    )
-    function = generator.get_function(["material"], ["y"])
-    assert function.differentiated_input_names_substitute == []
-    assert_allclose(function.evaluate(array([1.0])), array([2.7]))
-    assert function.jac(array([1.0])).shape == (0,)
 
 
 class ScalarDiscipline(Discipline):
@@ -475,3 +411,442 @@ def test_integer_input_converted_by_user(
     assert_equal(array(discipline.n), array([3, 4]))
     # The user converter receives an array of the type of the variable.
     assert array(discipline.n).dtype == int64
+
+
+_material_catalog: Final[Catalog] = Catalog(
+    properties={"young_modulus": [200.0, 70.0, 110.0], "density": [7.8, 2.7, 4.5]},
+    labels=("steel", "aluminium", "titanium"),
+)
+"""A catalog of materials, whose density is not an input of the disciplines."""
+
+_integer_material_catalog: Final[Catalog] = Catalog(
+    properties={"young_modulus": [200, 70, 110]},
+    labels=("steel", "aluminium", "titanium"),
+)
+"""A catalog of materials with an integer property, e.g. read from a CSV file."""
+
+
+class _CatalogDiscipline(Discipline):
+    """A discipline computing `y = young_modulus * x`, maybe reading the label."""
+
+    def __init__(
+        self, property_type: type = ndarray, label_type: type | None = None
+    ) -> None:
+        """
+        Args:
+            property_type: The type of the property `young_modulus`.
+            label_type: The type of the label `material`, if read.
+        """  # noqa: D205, D212, D415
+        super().__init__()
+        types = {"young_modulus": property_type, "x": ndarray}
+        defaults = {
+            "young_modulus": property_type(200)
+            if property_type in {float, int}
+            else array([200.0]),
+            "x": array([1.0]),
+        }
+        if label_type is not None:
+            types["material"] = label_type
+            defaults["material"] = "steel" if label_type is str else array(["steel"])
+
+        self.io.input_grammar.update_from_types(types)
+        self.io.output_grammar.update_from_types({"y": ndarray})
+        self.io.input_grammar.defaults = defaults
+        self.received_input_data = []
+
+    def _run(self, input_data):
+        self.received_input_data.append(dict(input_data))
+        return {"y": input_data["young_modulus"] * input_data["x"]}
+
+
+class _JSONCatalogDiscipline(_CatalogDiscipline):
+    """A discipline with JSON grammars computing `y` from a catalog property."""
+
+    default_grammar_type = Discipline.GrammarType.JSON
+
+
+class _NullableJSONCatalogDiscipline(_JSONCatalogDiscipline):
+    """A discipline with JSON grammars whose catalog property may hold `null`."""
+
+    def __init__(
+        self, property_type: type = ndarray, label_type: type | None = None
+    ) -> None:
+        """
+        Args:
+            property_type: The type of the property `young_modulus`.
+            label_type: The type of the label `material`, if read.
+        """  # noqa: D205, D212, D415
+        super().__init__(property_type, label_type)
+        self.io.input_grammar.update_from_schema({
+            "type": "object",
+            "properties": {
+                "young_modulus": {
+                    "type": "array",
+                    "items": {"type": ["number", "null"]},
+                }
+            },
+        })
+
+
+def _create_catalog_function(
+    discipline: _CatalogDiscipline,
+    name_to_size: Mapping[str, int] = read_only_empty_dict,
+) -> DisciplineAdapter:
+    """Create a function of a catalog input and a real input.
+
+    Args:
+        discipline: The discipline.
+        name_to_size: The input sizes passed at instantiation.
+
+    Returns:
+        The function.
+    """
+    return DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        {},
+        discipline,
+        name_to_size,
+        name_to_categorical_variable={
+            "material": CatalogVariable(catalog=_material_catalog)
+        },
+    )
+
+
+_material_variable: Final[CategoricalVariable] = CategoricalVariable(
+    labels=("steel", "aluminium", "titanium")
+)
+"""A categorical variable whose labels are the materials."""
+
+
+@pytest.mark.parametrize(
+    ("create_discipline", "variable", "x_vect", "expected_output", "expected_inputs"),
+    [
+        pytest.param(
+            partial(MaterialDiscipline, False),
+            _material_variable,
+            array([2.0, 3.0]),
+            4.5 * 3.0,
+            {"material": "titanium"},
+            id="label",
+        ),
+        pytest.param(
+            partial(MaterialDiscipline, False),
+            _material_variable,
+            # As a DOE records the type of the non-real variables of a mixed space,
+            # including those that are not inputs of the function, e.g. n.
+            array(
+                [2.0, 3.0],
+                dtype=dtype(
+                    "float64", metadata={"material": int64, "x": int64, "n": int64}
+                ),
+            ),
+            4.5 * 3.0,
+            {"material": "titanium"},
+            id="label-dtype-metadata",
+        ),
+        pytest.param(
+            partial(MaterialDiscipline, False),
+            _material_variable,
+            array([2 + 0j, 0.5 + 1e-30j]),
+            4.5 * 0.5,
+            {"material": "titanium"},
+            id="label-complex",
+        ),
+        pytest.param(
+            _CatalogDiscipline,
+            CatalogVariable(catalog=_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": array([110.0])},
+            id="properties-simple-array",
+        ),
+        pytest.param(
+            partial(_CatalogDiscipline, float),
+            CatalogVariable(catalog=_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110.0},
+            id="properties-simple-scalar",
+        ),
+        pytest.param(
+            _JSONCatalogDiscipline,
+            CatalogVariable(catalog=_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": array([110.0])},
+            id="properties-json-array",
+        ),
+        pytest.param(
+            partial(_JSONCatalogDiscipline, float),
+            CatalogVariable(catalog=_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110.0},
+            id="properties-json-scalar",
+        ),
+        pytest.param(
+            partial(_CatalogDiscipline, label_type=str),
+            CatalogVariable(catalog=_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": array([110.0]), "material": "titanium"},
+            id="label-and-properties",
+        ),
+        pytest.param(
+            _CatalogDiscipline,
+            CatalogVariable(catalog=_material_catalog),
+            array([2 + 0j, 0.5 + 1e-30j]),
+            110.0 * 0.5,
+            {"young_modulus": array([110.0])},
+            id="properties-complex",
+        ),
+        pytest.param(
+            partial(_CatalogDiscipline, float),
+            CatalogVariable(catalog=_integer_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110.0},
+            id="integer-property-simple-float",
+        ),
+        pytest.param(
+            partial(_CatalogDiscipline, int),
+            CatalogVariable(catalog=_integer_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110},
+            id="integer-property-simple-int",
+        ),
+        pytest.param(
+            partial(_JSONCatalogDiscipline, float),
+            CatalogVariable(catalog=_integer_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110.0},
+            id="integer-property-json-float",
+        ),
+        pytest.param(
+            partial(_JSONCatalogDiscipline, int),
+            CatalogVariable(catalog=_integer_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": 110},
+            id="integer-property-json-int",
+        ),
+        pytest.param(
+            _NullableJSONCatalogDiscipline,
+            CatalogVariable(catalog=_integer_material_catalog),
+            array([2.0, 0.5]),
+            110.0 * 0.5,
+            {"young_modulus": array([110.0])},
+            id="integer-property-json-nullable-float",
+        ),
+    ],
+)
+def test_categorical_input_is_decoded(
+    create_discipline, variable, x_vect, expected_output, expected_inputs
+) -> None:
+    """Check that the discipline receives the label or the properties of the choice."""
+    discipline = create_discipline()
+    function = DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        {},
+        discipline,
+        name_to_categorical_variable={"material": variable},
+    )
+    assert_allclose(
+        function.evaluate(x_vect), array([expected_output]), rtol=0.0, atol=1e-15
+    )
+    (input_data,) = discipline.received_input_data
+    assert input_data.keys() == {"x", *expected_inputs}
+    for name, value in expected_inputs.items():
+        assert type(input_data[name]) is type(value)
+        assert_array_equal(input_data[name], value, strict=True)
+
+
+@pytest.mark.parametrize(
+    ("create_discipline", "variable", "expected_output", "expected_inputs"),
+    [
+        pytest.param(
+            partial(MaterialDiscipline, True),
+            _material_variable,
+            array([4.5 * 0.5, 7.8, 2.7 * 2.0]),
+            {"material": array(["titanium", "steel", "aluminium"])},
+            id="label",
+        ),
+        pytest.param(
+            _CatalogDiscipline,
+            CatalogVariable(catalog=_material_catalog),
+            array([110.0 * 0.5, 200.0, 70.0 * 2.0]),
+            {"young_modulus": array([110.0, 200.0, 70.0])},
+            id="properties",
+        ),
+        pytest.param(
+            partial(_CatalogDiscipline, label_type=ndarray),
+            CatalogVariable(catalog=_material_catalog),
+            array([110.0 * 0.5, 200.0, 70.0 * 2.0]),
+            {
+                "young_modulus": array([110.0, 200.0, 70.0]),
+                "material": array(["titanium", "steel", "aluminium"]),
+            },
+            id="label-and-properties",
+        ),
+    ],
+)
+def test_categorical_input_of_several_samples_is_decoded(
+    create_discipline, variable, expected_output, expected_inputs
+) -> None:
+    """Check that the discipline receives the decoded values of several samples."""
+    discipline = create_discipline()
+    function = DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        {},
+        discipline,
+        name_to_categorical_variable={"material": variable},
+    )
+    x_vect = array([[2.0, 0.5], [0.0, 1.0], [1.0, 2.0]])
+    assert_array_equal(function.evaluate(x_vect).ravel(), expected_output)
+    (input_data,) = discipline.received_input_data
+    assert input_data.keys() == {"x", *expected_inputs}
+    for name, value in expected_inputs.items():
+        assert_equal(input_data[name], value)
+
+
+def test_catalog_input_out_of_range(snapshot) -> None:
+    """Check the error when the position of a catalog input is not one of a label."""
+    function = _create_catalog_function(_CatalogDiscipline())
+    with assert_exception(ValueError, snapshot):
+        function.evaluate(array([3.0, 0.5]))
+
+
+@pytest.mark.parametrize(
+    ("input_names", "name_to_variable"),
+    [
+        pytest.param(
+            ["material", "young_modulus", "x"],
+            {"material": CatalogVariable(catalog=_material_catalog)},
+            id="variable-and-property",
+        ),
+        pytest.param(
+            ["material", "alloy", "x"],
+            {
+                "material": CatalogVariable(catalog=_material_catalog),
+                "alloy": CatalogVariable(catalog=_integer_material_catalog),
+            },
+            id="two-catalogs",
+        ),
+    ],
+)
+def test_input_fed_twice(input_names, name_to_variable, snapshot) -> None:
+    """Check the error when a discipline input is fed by two design variables."""
+    with assert_exception(ValueError, snapshot):
+        DisciplineAdapter(
+            input_names,
+            ["y"],
+            {},
+            _CatalogDiscipline(),
+            name_to_categorical_variable=name_to_variable,
+        )
+
+
+@pytest.mark.parametrize(
+    ("default_input_data", "expected"),
+    [
+        pytest.param({}, 2, id="grammar-defaults"),
+        pytest.param({"x": array([1.0, 2.0])}, 3, id="default-input-data"),
+    ],
+)
+def test_input_dimension_without_sizes(default_input_data, expected) -> None:
+    """Check the input dimension of a catalog input that is not a discipline input."""
+    function = DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        default_input_data,
+        _CatalogDiscipline(),
+        name_to_categorical_variable={
+            "material": CatalogVariable(catalog=_material_catalog)
+        },
+    )
+    assert function.input_dimension == expected
+
+
+def test_shared_sizes_without_catalog_input() -> None:
+    """Check that the size of a catalog input is not written into a shared mapping."""
+    name_to_size = {"x": 1}
+    function = _create_catalog_function(_CatalogDiscipline(), name_to_size)
+    function.evaluate(array([2.0, 0.5]))
+    assert name_to_size == {"x": 1}
+
+
+@pytest.mark.parametrize(
+    ("create_discipline", "variable", "expected"),
+    [
+        pytest.param(
+            OnlyMaterialDiscipline,
+            CategoricalVariable(labels=("steel", "aluminium")),
+            2.7,
+            id="label",
+        ),
+        pytest.param(
+            partial(AnalyticDiscipline, {"y": "young_modulus"}),
+            CatalogVariable(catalog=_material_catalog),
+            70.0,
+            id="properties",
+        ),
+    ],
+)
+def test_jacobian_wrt_categorical_inputs_only(
+    create_discipline, variable, expected
+) -> None:
+    """Check that the Jacobian has no column when all the inputs are categorical."""
+    generator = DisciplineAdapterGenerator(
+        create_discipline(), {"material": 1}, {"material": variable}
+    )
+    function = generator.get_function(["material"], ["y"])
+    assert function.differentiated_input_names_substitute == []
+    assert_array_equal(function.evaluate(array([1.0])), array([expected]))
+    assert function.jac(array([1.0])).shape == (0,)
+
+
+def test_jacobian_wrt_catalog_input() -> None:
+    """Check that the Jacobian has no column for a catalog input."""
+    discipline = AnalyticDiscipline({"y": "young_modulus*x"})
+    generator = DisciplineAdapterGenerator(
+        discipline,
+        name_to_categorical_variable={
+            "material": CatalogVariable(catalog=_material_catalog)
+        },
+    )
+    function = generator.get_function(["material", "x"], ["y"])
+    assert_array_equal(function.jac(array([2.0, 0.5])), array([110.0]))
+
+
+@pytest.mark.parametrize(
+    ("create_discipline", "variable"),
+    [
+        pytest.param(
+            partial(MaterialDiscipline, False),
+            CategoricalVariable(labels=("steel", "aluminium", "titanium")),
+            id="label",
+        ),
+        pytest.param(
+            _CatalogDiscipline,
+            CatalogVariable(catalog=_material_catalog),
+            id="properties",
+        ),
+    ],
+)
+def test_categorical_input_is_not_linear(create_discipline, variable) -> None:
+    """Check that a function of a categorical input is not linear."""
+    discipline = create_discipline()
+    discipline.io.set_linear_relationships()
+    function = DisciplineAdapter(
+        ["material", "x"],
+        ["y"],
+        {},
+        discipline,
+        name_to_categorical_variable={"material": variable},
+    )
+    assert not function.is_linear
